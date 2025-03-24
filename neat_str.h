@@ -190,6 +190,19 @@ __VA_OPT__( \
 NEAT_ARG1(__VA_ARGS__) NEAT_FOREACH(NEAT_TYPEOF_ARG, __VA_ARGS__) \
 )
 
+#define INT_TYPES_GENERIC_BRANCHES(rhs, ...)                           \
+void(*)(__VA_OPT__(__VA_ARGS__,) char):                          rhs,  \
+NEAT_SCHAR_CASE(void(*)(__VA_OPT__(__VA_ARGS__,) signed char):   rhs,) \
+NEAT_UCHAR_CASE(void(*)(__VA_OPT__(__VA_ARGS__,) unsigned char): rhs,) \
+void(*)(__VA_OPT__(__VA_ARGS__,) short):                         rhs,  \
+void(*)(__VA_OPT__(__VA_ARGS__,) unsigned short):                rhs,  \
+void(*)(__VA_OPT__(__VA_ARGS__,) int):                           rhs,  \
+void(*)(__VA_OPT__(__VA_ARGS__,) unsigned int):                  rhs,  \
+void(*)(__VA_OPT__(__VA_ARGS__,) long):                          rhs,  \
+void(*)(__VA_OPT__(__VA_ARGS__,) unsigned long):                 rhs,  \
+void(*)(__VA_OPT__(__VA_ARGS__,) long long):                     rhs,  \
+void(*)(__VA_OPT__(__VA_ARGS__,) unsigned long long):            rhs
+
 // TODO remove allocator, instead user passes it at each call.
 // Dynamic String
 typedef struct Neat_DString
