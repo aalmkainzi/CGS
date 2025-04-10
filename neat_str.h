@@ -615,6 +615,7 @@ NEAT_UCHAR_CASE(unsigned char(*)[sizeof(typeof(any_str))]: (Neat_Buffer){.ptr = 
 #define neat_mutstr_ref(any_str, ...) \
 NEAT_CAT(neat_mutstr_ref_, __VA_OPT__(2))(any_str __VA_OPT__(,) __VA_ARGS__)
 
+// TODO redo this
 #define neat_mutstr_ref_(any_str)                                                  \
 _Generic((typeof(any_str)*){0},                                                    \
 char**                          : neat_mutstr_ref_to_cstr,                         \
@@ -638,6 +639,25 @@ NEAT_UCHAR_CASE(unsigned char(*)[sizeof(typeof(any_str))]: neat_mutstr_ref_to_bu
 ( \
     neat_static_assertx(NEAT_IS_SSTRING_PTR(sstr_ptr), "Must pass SString(N)*"), \
     (Neat_SString_Ref){.cap = sizeof((sstr_ptr)->chars), .sstr = (void*) sstr_ptr} \
+)
+
+// TODO do this
+// IDEA: 
+
+#define neat_gurantee_is_not_value_stype(s, fallback) \
+_Generic(s,                                  \
+    Neat_SString_Ref   : fallback,           \
+    Neat_String_Buffer : fallback,           \
+    Neat_String_View   : fallback,           \
+    Neat_DString       : fallback,           \
+    Neat_Mut_String_Ref: fallback,           \
+    default            : s                   \
+)
+
+#define sstr_ref_if_sstr(sstr_ptr_or_not) \
+_Generic((char(*)[NEAT_IS_SSTRING_PTR(sstr_ptr_or_not)] + 1){0}, \
+    char(*)[1]: sstr_ptr_or_not, \
+    char(*)[2]: neat_sstr_ref_from_vptr(neat_gurantee_is_not_value_stype(sstr_ptr_or_not, ""), sizeof(*neat_gurantee_is_not_value_stype(sstr_ptr_or_not, ""))) \
 )
 
 #define neat_sstr_ref_new(nb)               \
@@ -954,6 +974,8 @@ Neat_String_Buffer neat_strbuf_new_default(unsigned int cap, Neat_String_Error *
 
 Neat_String_Buffer neat_strbuf_from_ptr(void *ptr, unsigned int cap);
 Neat_String_Buffer neat_strbuf_from_buf(const Neat_Buffer buf);
+
+Neat_SString_Ref neat_sstr_ref_from_vptr(void *sstr, size_t struct_size);
 
 Neat_Mut_String_Ref neat_cstr_as_mutstr_ref(char *str);
 Neat_Mut_String_Ref neat_ucstr_as_mutstr_ref(unsigned char *str);

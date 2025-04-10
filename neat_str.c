@@ -2019,6 +2019,16 @@ Neat_String_Error neat_dstr_fread_line_(Neat_DString *dstr, FILE *stream)
     return neat_dstr_append_fread_line_(dstr, stream);
 }
 
+Neat_SString_Ref neat_sstr_ref_from_vptr(void *sstr, size_t struct_size)
+{
+    size_t char_arr_size = struct_size - sizeof(unsigned int);
+    Neat_SString_Ref ret = {
+        .cap  = char_arr_size,
+        .sstr = sstr
+    };
+    return ret;
+}
+
 Neat_String_Error neat_dstr_append_fread_line_(Neat_DString *dstr, FILE *stream)
 {
     // TODO optimize this
