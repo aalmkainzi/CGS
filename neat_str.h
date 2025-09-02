@@ -53,24 +53,24 @@ Neat_Allocator neat_get_default_allocator();
 Neat_Allocator neat_get_noop_allocator();
 
 #define neat_alloc(allocator, T, n, actual) \
-(typeof(T)*) neat_allocator_invoke_alloc(allocator, _Alignof(T), sizeof(T), n, actual)
+(typeof(T)*) neat_allocator_invoke_alloc(allocator, _Alignof(T), sizeof(T), (n), (actual))
 
 #define neat_dealloc(allocator, ptr, T, n) \
-neat_allocator_invoke_dealloc(allocator, ptr, sizeof(T), n)
+neat_allocator_invoke_dealloc((allocator), (ptr), sizeof(T), (n))
 
 #define neat_realloc(allocator, ptr, T, old_n, new_n, actual) \
-(typeof(T)*) neat_allocator_invoke_realloc(allocator, ptr, _Alignof(T), sizeof(T), old_n, new_n, actual)
+(typeof(T)*) neat_allocator_invoke_realloc((allocator), (ptr), _Alignof(T), sizeof(T), (old_n), (new_n), (actual))
 
 #define neat_alloc_bytes(allocator, n, actual) \
-neat_allocator_invoke_alloc(allocator, _Alignof(max_align_t), 1, n, actual)
+neat_allocator_invoke_alloc((allocator), _Alignof(max_align_t), 1, (n), (actual))
 
 #define neat_dealloc_bytes(allocator, ptr, n) \
-neat_allocator_invoke_dealloc(allocator, ptr, 1, n)
+neat_allocator_invoke_dealloc((allocator), (ptr), 1, (n))
 
 #define neat_realloc_bytes(allocator, ptr, old_n, new_n, actual) \
-neat_allocator_invoke_realloc(allocator, ptr, _Alignof(max_align_t), 1, old_n, new_n, actual)
+neat_allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old_n), (new_n), (actual))
 
-// below is needed for MSVC because (for some reason) 'signed char' and 'char' are type aliases in MSVC
+// below is needed because 'signed char' and 'char' are type aliases in MSVC (for some reason)
 #ifdef _MSC_VER
 
 #if _CHAR_UNSIGNED
@@ -92,11 +92,11 @@ neat_allocator_invoke_realloc(allocator, ptr, _Alignof(max_align_t), 1, old_n, n
 
 #endif
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 
     #define NEAT_NODISCARD(...) _Check_return_
 
-    #elif __STDC_VERSION__ >= 202311L
+#elif __STDC_VERSION__ >= 202311L
 
     #define NEAT_NODISCARD(...) [[nodiscard (__VA_ARGS__)]]
 
