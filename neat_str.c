@@ -278,26 +278,15 @@ bool neat_is_strv_within(Neat_String_View base, Neat_String_View sub)
     return sub_begin >= begin && sub_begin < end;
 }
 
-NEAT_NODISCARD("discarding a new DString will cause memory leak") Neat_DString neat_dstr_new(unsigned int cap, Neat_Allocator allocator, Neat_String_Error *err)
+NEAT_NODISCARD("discarding a new DString will cause memory leak") Neat_DString neat_dstr_new(unsigned int cap, Neat_Allocator allocator)
 {
-    // if(allocator.ctx == NULL)
-    //     allocator.init(&allocator.ctx, NULL);
-    
     Neat_DString ret = { 0 };
     
     ret.allocator = allocator;
     size_t actual_allocated_cap;
     
-    ret.chars = neat_alloc(allocator, unsigned char, cap, &actual_allocated_cap);
+    ret.chars = neat_alloc(allocator, unsigned char, cap + 1, &actual_allocated_cap);
     ret.cap = actual_allocated_cap;
-    
-    if(err)
-    {
-        if(ret.chars == NULL || ret.cap < cap)
-            *err = NEAT_ALLOC_ERR;
-        else
-            *err = NEAT_OK;
-    }
     
     if(ret.chars != NULL && ret.cap > 0)
     {
@@ -307,7 +296,7 @@ NEAT_NODISCARD("discarding a new DString will cause memory leak") Neat_DString n
     return ret;
 }
 
-Neat_DString neat_new_dstr_from(Neat_String_View str, Neat_Allocator allocator, Neat_String_Error *err)
+Neat_DString neat_dstr_new_from(Neat_String_View str, Neat_Allocator allocator)
 {
     Neat_String_Error dstr_new_err;
     Neat_DString ret = neat_dstr_new(str.len + 1, allocator, &dstr_new_err);
