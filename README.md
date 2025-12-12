@@ -1,3 +1,5 @@
+# THIS PROJECT IS NOT READY FOR ACTUAL USE. ITS A STILL AN EXPERIMENTAL PROJECT OF MINE
+
 # neat_str
 A library to make dealing with strings more intuitive in C.
 
