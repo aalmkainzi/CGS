@@ -11,17 +11,16 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include <limits.h>
-#include <ctype.h>
 
-#define neat_func_ptr(ret, ...) \
-typeof(typeof(ret)(*)(__VA_ARGS__))
+#define neat_fn_t(ret, ...) \
+typeof(typeof(ret)(__VA_ARGS__))
 
-typedef neat_func_ptr(void*, void *ctx, size_t alignment, size_t n, size_t *actual) neat_alloc_func;
-typedef neat_func_ptr(void,  void *ctx, void *ptr, size_t n) neat_dealloc_func;
-typedef neat_func_ptr(void*, void *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual) neat_realloc_func;
+typedef neat_fn_t(void*, void *ctx, size_t alignment, size_t n, size_t *actual) *neat_alloc_func;
+typedef neat_fn_t(void,  void *ctx, void *ptr, size_t n) *neat_dealloc_func;
+typedef neat_fn_t(void*, void *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual) *neat_realloc_func;
 
-typedef neat_func_ptr(void,  void **ctx, void *arg) neat_allocator_init_func;
-typedef neat_func_ptr(void,  void *ctx)  neat_allocator_deinit_func;
+typedef neat_fn_t(void,  void **ctx, void *arg) *neat_allocator_init_func;
+typedef neat_fn_t(void,  void *ctx)  *neat_allocator_deinit_func;
 
 typedef struct Neat_Allocator
 {
@@ -232,6 +231,7 @@ typedef struct Neat_SString_Ref
     } *sstr;
 } Neat_SString_Ref;
 
+// Used for passing arrays, such that they don't lose size information
 typedef struct Neat_Buffer
 {
     unsigned char *ptr;
@@ -251,10 +251,9 @@ typedef struct Neat_Mut_String_Ref
     union
     {
         Neat_DString *dstr;
-        // Neat_Fixed_Mut_String_Ref fmutstr_ref;
         Neat_String_Buffer *strbuf;
         Neat_SString_Ref sstr_ref;
-        Neat_Buffer *carr;
+        Neat_Buffer carr;
     } str;
 } Neat_Mut_String_Ref;
 
@@ -470,33 +469,19 @@ do \
 do \
 { \
     Neat_Mut_String_Ref neat_as_mutstr_ref = neat_mutstr_ref(any_str_dst); \
-    unsigned int neat_mutstr_ref_len; \
-    if(neat_as_mutstr_ref.len == NULL) \
-    { \
-        unsigned char *neat_str_end = memchr(neat_as_mutstr_ref.chars, '\0', neat_as_mutstr_ref.cap); \
-        if(neat_str_end != NULL) \
-        { \
-            neat_mutstr_ref_len = neat_str_end - neat_as_mutstr_ref.chars; \
-        } \
-        else \
-        { \
-            neat_mutstr_ref_len = neat_as_mutstr_ref.cap - 1; \
-        } \
-        neat_as_mutstr_ref.len = &neat_mutstr_ref_len; \
-    } \
     __VA_OPT__( \
     \
-    unsigned int neat_appended_len = 0; \
-    Neat_Mut_String_Ref neat_anystr_ref_append_buf = \
-    { \
-        .cap = neat_as_mutstr_ref.cap, \
-        .len = &neat_appended_len, \
-        .chars = neat_as_mutstr_ref.chars, \
-    }; \
-    neat_tostr(neat_anystr_ref_append_buf, NEAT_ARG1(__VA_ARGS__)); \
-    *neat_as_mutstr_ref.len = neat_appended_len; \
-    \
-    NEAT_FOREACH(neat_str_print_each, NEAT_OMIT1(__VA_ARGS__)); \
+        unsigned int neat_appended_len = 0; \
+        Neat_String_Buffer neat_anystr_ref_append_buf = \
+        { \
+            .cap = neat_mutstr_ref_cap(neat_as_mutstr_ref), \
+            .len = 0, \
+            .chars = neat_mutstr_ref_as_cstr(neat_as_mutstr_ref), \
+        }; \
+        neat_tostr(neat_anystr_ref_append_buf, NEAT_ARG1(__VA_ARGS__)); \
+        *neat_as_mutstr_ref.len = neat_appended_len; \
+        \
+        NEAT_FOREACH(neat_str_print_each, NEAT_OMIT1(__VA_ARGS__)); \
     ) \
 } while(0)
 
@@ -592,17 +577,17 @@ NEAT_CAT(neat_mutstr_ref_, __VA_OPT__(2))((any_str) __VA_OPT__(,) __VA_ARGS__)
 // TODO redo this
 #define neat_mutstr_ref_(any_str)                                                  \
 _Generic((typeof(any_str)*){0},                                                    \
-char**                          : neat_mutstr_ref_to_cstr,                         \
-NEAT_UCHAR_CASE(unsigned char** : neat_mutstr_ref_to_ucstr,)                       \
-Neat_DString**                  : neat_mutstr_ref_to_dstr_ptr,                     \
-Neat_String_Buffer**            : neat_mutstr_ref_to_strbuf_ptr,                   \
-Neat_SString_Ref*               : neat_mutstr_ref_to_sstr_ref,                     \
-Neat_Mut_String_Ref*            : neat_mutstr_ref_to_mutstr_ref,                   \
-char(*)[sizeof(typeof(any_str))]: neat_mutstr_ref_to_buf,                          \
-NEAT_UCHAR_CASE(unsigned char(*)[sizeof(typeof(any_str))]: neat_mutstr_ref_to_buf) \
+char**                          : neat_cstr_as_mutstr_ref,                         \
+unsigned char**                 : neat_ucstr_as_mutstr_ref,                        \
+Neat_DString**                  : neat_dstr_ptr_as_mutstr_ref,                     \
+Neat_String_Buffer**            : neat_strbuf_ptr_as_mutstr_ref,                   \
+Neat_SString_Ref*               : neat_sstr_ref_as_mutstr_ref,                     \
+Neat_Mut_String_Ref*            : neat_mutstr_ref_as_mutstr_ref,                   \
+char(*)[sizeof(typeof(any_str))]: neat_buf_as_mutstr_ref,                          \
+NEAT_UCHAR_CASE(unsigned char(*)[sizeof(typeof(any_str))]: neat_buf_as_mutstr_ref) \
 )(_Generic((typeof(any_str)*){0},                                                  \
     char(*)[sizeof(typeof(any_str))]: (Neat_Buffer){.ptr = (unsigned char*) neat_coerce(any_str, char*), .cap = sizeof(typeof(any_str))}, \
-    NEAT_UCHAR_CASE(unsigned char(*)[sizeof(typeof(any_str))]: (Neat_Buffer){.ptr = neat_coerce(any_str, unsigned char*), .cap = sizeof(typeof(any_str))},) \
+    unsigned char(*)[sizeof(typeof(any_str))]: (Neat_Buffer){.ptr = neat_coerce(any_str, unsigned char*), .cap = sizeof(typeof(any_str))}, \
     default: any_str \
 ))
 
@@ -762,7 +747,7 @@ do                                           \
 #define neat_fprint_(x)                                                                                                                                              \
 do                                                                                                                                                                   \
 {                                                                                                                                                                    \
-    Neat_DString neat_temp;                                                                                                                                          \
+    Neat_DString neat_temp = dstr();                                                                                                                                          \
     _Generic(x,                                                                                                                                                      \
         char*                         : neat_fprint_strv(neat_file_stream, neat_strv_cstr2(neat_coerce(x, char*), 0)),                                             \
         NEAT_UCHAR_CASE(unsigned char*: neat_fprint_strv(neat_file_stream, neat_strv_ucstr2(neat_coerce(x, unsigned char*), 0)),)                                  \
@@ -774,7 +759,7 @@ do                                                                              
         Neat_String_Buffer*           : neat_fprint_strv(neat_file_stream, neat_strv_strbuf_ptr2(neat_coerce(x, Neat_String_Buffer*), 0)),                         \
         Neat_SString_Ref              : neat_fprint_strv(neat_file_stream, neat_strv_sstr_ref2(neat_coerce(x, Neat_SString_Ref), 0)),                              \
         Neat_Mut_String_Ref           : neat_fprint_strv(neat_file_stream, neat_strv_mutstr_ref2(neat_coerce(x, Neat_Mut_String_Ref), 0)),                         \
-        default                       : (neat_temp = neat_tostr(x), neat_fprint_strv(neat_file_stream, neat_strv_dstr2(neat_temp, 0)), neat_dstr_deinit(&neat_temp)) \
+        default                       : (neat_tostr(&neat_temp, x), neat_fprint_strv(neat_file_stream, neat_strv_dstr2(neat_temp, 0)), neat_dstr_deinit(&neat_temp)) \
     );                                                                                                                                                               \
     (void) neat_temp;                                                                                                                                                \
 } while(0);
@@ -856,7 +841,7 @@ NEAT_IF_DEF(NEAT_TOSTR32)(neat_tostr_type_32: neat_tostr_func_32,) \
 NEAT_DEFAULT_TOSTR_TYPES
 
 struct neat_fail_type;
-typedef neat_func_ptr(void, struct neat_fail_type*) neat_tostr_fail;
+typedef neat_fn_t(void, struct neat_fail_type*) *neat_tostr_fail;
 
 #define neat_get_tostr_func(ty) \
 _Generic((ty){0}, \
@@ -869,8 +854,8 @@ _Generic((ty){0}, \
     default: (neat_tostr_fail){0} \
 )
 
-#define neat_tostr(x) \
-neat_get_tostr_func(typeof(x))(x)
+#define neat_tostr(dst, src) \
+neat_get_tostr_func(typeof(src))(neat_mutstr_ref(dst), src)
 
 #define neat_has_tostr(ty) \
 (!neat_has_type(neat_get_tostr_func_ft(ty), neat_tostr_fail))
@@ -1107,7 +1092,7 @@ typedef Neat_String_Error       String_Error;
 #define strv_arr(...) neat_strv_arr(__VA_ARGS__)
 #define strv_arr_carr(strv_carr, ...) neat_strv_arr_carr(strv_carr __VA_OPT__(,) __VA_ARGS__)
 
-#define tostr(x) neat_tostr(x)
+#define tostr(dst, src) neat_tostr(dst, src)
 
 #define print(...) neat_print(__VA_ARGS__)
 #define println(...) neat_println(__VA_ARGS__)
@@ -1219,115 +1204,5 @@ NEAT_DECL_TOSTR_FUNC(32)
 #endif
 
 #undef ADD_TOSTR
-
-#endif
-
-#if defined(ADD_TOSTR_INTO)
-
-#if !defined(NEAT_TOSTR_INTO1)
-#define NEAT_TOSTR_INTO1
-NEAT_DECL_TOSTR_INTO_FUNC(1)
-#elif !defined(NEAT_TOSTR_INTO2)
-#define NEAT_TOSTR_INTO2
-NEAT_DECL_TOSTR_INTO_FUNC(2)
-#elif !defined(NEAT_TOSTR_INTO3)
-#define NEAT_TOSTR_INTO3
-NEAT_DECL_TOSTR_INTO_FUNC(3)
-#elif !defined(NEAT_TOSTR_INTO4)
-#define NEAT_TOSTR_INTO4
-NEAT_DECL_TOSTR_INTO_FUNC(4)
-#elif !defined(NEAT_TOSTR_INTO5)
-#define NEAT_TOSTR_INTO5
-NEAT_DECL_TOSTR_INTO_FUNC(5)
-#elif !defined(NEAT_TOSTR_INTO6)
-#define NEAT_TOSTR_INTO6
-NEAT_DECL_TOSTR_INTO_FUNC(6)
-#elif !defined(NEAT_TOSTR_INTO7)
-#define NEAT_TOSTR_INTO7
-NEAT_DECL_TOSTR_INTO_FUNC(7)
-#elif !defined(NEAT_TOSTR_INTO8)
-#define NEAT_TOSTR_INTO8
-NEAT_DECL_TOSTR_INTO_FUNC(8)
-#elif !defined(NEAT_TOSTR_INTO9)
-#define NEAT_TOSTR_INTO9
-NEAT_DECL_TOSTR_INTO_FUNC(9)
-#elif !defined(NEAT_TOSTR_INTO10)
-#define NEAT_TOSTR_INTO10
-NEAT_DECL_TOSTR_INTO_FUNC(10)
-#elif !defined(NEAT_TOSTR_INTO11)
-#define NEAT_TOSTR_INTO11
-NEAT_DECL_TOSTR_INTO_FUNC(11)
-#elif !defined(NEAT_TOSTR_INTO12)
-#define NEAT_TOSTR_INTO12
-NEAT_DECL_TOSTR_INTO_FUNC(12)
-#elif !defined(NEAT_TOSTR_INTO13)
-#define NEAT_TOSTR_INTO13
-NEAT_DECL_TOSTR_INTO_FUNC(13)
-#elif !defined(NEAT_TOSTR_INTO14)
-#define NEAT_TOSTR_INTO14
-NEAT_DECL_TOSTR_INTO_FUNC(14)
-#elif !defined(NEAT_TOSTR_INTO15)
-#define NEAT_TOSTR_INTO15
-NEAT_DECL_TOSTR_INTO_FUNC(15)
-#elif !defined(NEAT_TOSTR_INTO16)
-#define NEAT_TOSTR_INTO16
-NEAT_DECL_TOSTR_INTO_FUNC(16)
-#elif !defined(NEAT_TOSTR_INTO17)
-#define NEAT_TOSTR_INTO17
-NEAT_DECL_TOSTR_INTO_FUNC(17)
-#elif !defined(NEAT_TOSTR_INTO18)
-#define NEAT_TOSTR_INTO18
-NEAT_DECL_TOSTR_INTO_FUNC(18)
-#elif !defined(NEAT_TOSTR_INTO19)
-#define NEAT_TOSTR_INTO19
-NEAT_DECL_TOSTR_INTO_FUNC(19)
-#elif !defined(NEAT_TOSTR_INTO20)
-#define NEAT_TOSTR_INTO20
-NEAT_DECL_TOSTR_INTO_FUNC(20)
-#elif !defined(NEAT_TOSTR_INTO21)
-#define NEAT_TOSTR_INTO21
-NEAT_DECL_TOSTR_INTO_FUNC(21)
-#elif !defined(NEAT_TOSTR_INTO22)
-#define NEAT_TOSTR_INTO22
-NEAT_DECL_TOSTR_INTO_FUNC(22)
-#elif !defined(NEAT_TOSTR_INTO23)
-#define NEAT_TOSTR_INTO23
-NEAT_DECL_TOSTR_INTO_FUNC(23)
-#elif !defined(NEAT_TOSTR_INTO24)
-#define NEAT_TOSTR_INTO24
-NEAT_DECL_TOSTR_INTO_FUNC(24)
-#elif !defined(NEAT_TOSTR_INTO25)
-#define NEAT_TOSTR_INTO25
-NEAT_DECL_TOSTR_INTO_FUNC(25)
-#elif !defined(NEAT_TOSTR_INTO26)
-#define NEAT_TOSTR_INTO26
-NEAT_DECL_TOSTR_INTO_FUNC(26)
-#elif !defined(NEAT_TOSTR_INTO27)
-#define NEAT_TOSTR_INTO27
-NEAT_DECL_TOSTR_INTO_FUNC(27)
-#elif !defined(NEAT_TOSTR_INTO28)
-#define NEAT_TOSTR_INTO28
-NEAT_DECL_TOSTR_INTO_FUNC(28)
-#elif !defined(NEAT_TOSTR_INTO29)
-#define NEAT_TOSTR_INTO29
-NEAT_DECL_TOSTR_INTO_FUNC(29)
-#elif !defined(NEAT_TOSTR_INTO30)
-#define NEAT_TOSTR_INTO30
-NEAT_DECL_TOSTR_INTO_FUNC(30)
-#elif !defined(NEAT_TOSTR_INTO31)
-#define NEAT_TOSTR_INTO31
-NEAT_DECL_TOSTR_INTO_FUNC(31)
-#elif !defined(NEAT_TOSTR_INTO32)
-#define NEAT_TOSTR_INTO32
-NEAT_DECL_TOSTR_INTO_FUNC(32)
-#else
-#error "Maximum number of tostr functions is 32"
-#endif
-
-#undef ADD_TOSTR_INTO
-
-#endif
-#if 1 || defined(NEAT_STR_IMPL) && !defined(NEAT_STR_IMPLED)
-#define NEAT_STR_IMPLED
 
 #endif
