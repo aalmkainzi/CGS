@@ -243,15 +243,26 @@ Neat_DString_Append_Allocator neat_get_dstr_append_allocator(Neat_DString *dstr)
     };
 }
 
-Neat_DString neat_make_appender_dstr(Neat_DString *owner, Neat_DString_Append_Allocator *allocator)
+static Neat_DString neat_make_appender_dstr(Neat_DString *owner, Neat_DString_Append_Allocator *allocator)
 {
-    allocator->owner = owner;
+    *allocator = neat_get_dstr_append_allocator(owner);
     return (Neat_DString){
         .allocator = (void*) allocator,
         .cap = owner->cap - owner->len,
         .len = 0,
         .chars = owner->chars + owner->len
     };
+}
+
+Neat_Mut_String_Ref neat_make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, Neat_DString_Append_Allocator *appender_dstr_allocator_opt)
+{
+    switch(owner.ty)
+    {
+        case NEAT_DSTR_TY:
+            *appender_dstr_opt = neat_make_appender_dstr(owner.str.dstr, appender_dstr_allocator_opt);
+            return neat_mutstr_ref(appender_dstr_opt);
+        default: _Static_assert(0 && "implement");
+    }
 }
 
 static inline unsigned int neat_uint_min(unsigned int a, unsigned int b)
