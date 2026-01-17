@@ -15,38 +15,36 @@
 #define neat_fn_t(ret, ...) \
 typeof(typeof(ret)(__VA_ARGS__))
 
-typedef neat_fn_t(void*, void *ctx, size_t alignment, size_t n, size_t *actual) *neat_alloc_func;
-typedef neat_fn_t(void,  void *ctx, void *ptr, size_t n) *neat_dealloc_func;
-typedef neat_fn_t(void*, void *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual) *neat_realloc_func;
+struct Neat_Allocator;
 
-typedef neat_fn_t(void,  void **ctx, void *arg) *neat_allocator_init_func;
-typedef neat_fn_t(void,  void *ctx)  *neat_allocator_deinit_func;
+typedef neat_fn_t(void*, struct Neat_Allocator*, size_t alignment, size_t n, size_t *actual) *neat_alloc_func;
+typedef neat_fn_t(void,  struct Neat_Allocator*, void *ptr, size_t n) *neat_dealloc_func;
+typedef neat_fn_t(void*, struct Neat_Allocator*, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual) *neat_realloc_func;
 
 typedef struct Neat_Allocator
 {
-    void *ctx;
     neat_alloc_func alloc;
     neat_dealloc_func dealloc;
     neat_realloc_func realloc;
-    neat_allocator_init_func init;
-    neat_allocator_deinit_func deinit;
 } Neat_Allocator;
 
-void *neat_default_allocator_alloc(void *ctx, size_t alignment, size_t n, size_t *actual);
-void neat_default_allocator_dealloc(void *ctx, void *ptr, size_t n);
-void *neat_default_allocator_realloc(void *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual);
-void neat_default_allocator_init(void **ctx, void *arg);
-void neat_default_allocator_deinit(void *ctx);
+typedef struct Neat_DString_Append_Allocator
+{
+    Neat_Allocator funcs;
+    struct Neat_DString *owner;
+} Neat_DString_Append_Allocator;
 
-void *neat_noop_allocator_alloc(void *ctx, size_t alignment, size_t n, size_t *actual);
-void neat_noop_allocator_dealloc(void *ctx, void *ptr, size_t n);
-void *neat_noop_allocator_realloc(void *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual);
-void neat_noop_allocator_init(void **ctx, void *arg);
-void neat_noop_allocator_deinit(void *ctx);
+void *neat_default_allocator_alloc(Neat_Allocator *ctx, size_t alignment, size_t n, size_t *actual);
+void neat_default_allocator_dealloc(Neat_Allocator *ctx, void *ptr, size_t n);
+void *neat_default_allocator_realloc(Neat_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual);
 
-void *neat_allocator_invoke_alloc(Neat_Allocator allocator, size_t alignment, size_t obj_size, size_t nb, size_t *actual);
-void neat_allocator_invoke_dealloc(Neat_Allocator allocator, void *ptr, size_t obj_size, size_t nb);
-void *neat_allocator_invoke_realloc(Neat_Allocator allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb, size_t *actual);
+void *neat_noop_allocator_alloc(Neat_Allocator *ctx, size_t alignment, size_t n, size_t *actual);
+void neat_noop_allocator_dealloc(Neat_Allocator *ctx, void *ptr, size_t n);
+void *neat_noop_allocator_realloc(Neat_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual);
+
+void *neat_allocator_invoke_alloc(Neat_Allocator *allocator, size_t alignment, size_t obj_size, size_t nb, size_t *actual);
+void neat_allocator_invoke_dealloc(Neat_Allocator *allocator, void *ptr, size_t obj_size, size_t nb);
+void *neat_allocator_invoke_realloc(Neat_Allocator *allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb, size_t *actual);
 
 Neat_Allocator neat_get_default_allocator();
 Neat_Allocator neat_get_noop_allocator();
@@ -189,7 +187,7 @@ NEAT_ARG1(__VA_ARGS__) NEAT_FOREACH(NEAT_TYPEOF_ARG, __VA_ARGS__) \
 // Dynamic String
 typedef struct Neat_DString
 {
-    Neat_Allocator allocator;
+    Neat_Allocator *allocator;
     unsigned int cap;
     unsigned int len;
     unsigned char *chars;
@@ -336,7 +334,7 @@ _Generic(any_str,                                            \
 )(any_str, idx)
 
 #define neat_str_len(any_str) \
-((void) 0, neat_strv(any_str).len)
+((void)0, neat_strv(any_str).len)
 
 #define neat_str_cap(any_str)                                                 \
 _Generic((typeof(any_str)*){0},                                               \
@@ -449,31 +447,22 @@ neat_mutstr_ref_concat_fread_line(neat_mutstr_ref(any_str), stdin)
 
 // helper macro
 #define neat_str_print_each(x) \
-do \
-{ \
-    Neat_String_Buffer neat_append_buf2 = \
-    { \
-        .cap = neat_append_buf.cap - neat_append_buf.len, \
-        .len = 0, \
-        .chars = neat_append_buf.chars + neat_append_buf.len, \
-    }; \
-    neat_tostr(&neat_append_buf2, x); \
-    neat_append_buf.len += neat_append_buf2.len; \
-} while(0);
+    neat_tostr(neat_as_mutstr_ref, x);
 
 #define neat_str_print(any_str_dst, ...) \
 do \
 { \
+    auto neat_dst = any_str_dst; \
+    _Generic(neat_dst, \
+        Neat_DString*: ( \
+            neat_dst = 
+        ),\
+        default: (void)0 \
+    ); \
     Neat_Mut_String_Ref neat_as_mutstr_ref = neat_mutstr_ref(any_str_dst); \
     __VA_OPT__( \
     \
-        Neat_String_Buffer neat_append_buf = \
-        { \
-            .cap = neat_mutstr_ref_cap(neat_as_mutstr_ref), \
-            .len = 0, \
-            .chars = (unsigned char*) neat_mutstr_ref_as_cstr(neat_as_mutstr_ref), \
-        }; \
-        neat_tostr(&neat_append_buf, NEAT_ARG1(__VA_ARGS__)); \
+        neat_tostr(neat_as_mutstr_ref, NEAT_ARG1(__VA_ARGS__)); \
         \
         NEAT_FOREACH(neat_str_print_each, NEAT_OMIT1(__VA_ARGS__)); \
     ) \
@@ -533,15 +522,12 @@ neat_static_assertx(!neat_is_array_of(NEAT_ARG1(__VA_ARGS__), Neat_String_View),
 #define neat_strbuf(str_or_cap, ...) \
 NEAT_CAT(neat_strbuf_, __VA_OPT__(2))(str_or_cap __VA_OPT__(,) __VA_ARGS__)
 
-#define neat_strbuf_(str_or_cap)                                           \
-_Generic((typeof(str_or_cap)*){0},                                         \
-    char(*)[sizeof(typeof(str_or_cap))]          : neat_strbuf_from_buf,   \
-    unsigned char(*)[sizeof(typeof(str_or_cap))] : neat_strbuf_from_buf,   \
-    default                                      : neat_strbuf_new_default \
-)(_Generic((typeof(str_or_cap)*){0},                                       \
-    char(*)[sizeof(typeof(str_or_cap))]: (Neat_Buffer){.ptr = (unsigned char*) neat_coerce(str_or_cap, char*), .cap = sizeof(typeof(str_or_cap))},  \
-    unsigned char(*)[sizeof(typeof(str_or_cap))]: (Neat_Buffer){.ptr = neat_coerce(str_or_cap, unsigned char*), .cap = sizeof(typeof(str_or_cap))}, \
-    default: str_or_cap \
+#define neat_strbuf_(buf)                                                                                                      \
+neat_strbuf_from_buf(                                                                                                          \
+_Generic((typeof(buf)*){0},                                                                                                    \
+    char(*)[sizeof(typeof(buf))]: (Neat_Buffer){.ptr = (unsigned char*) neat_coerce(buf, char*), .cap = sizeof(typeof(buf))},  \
+    unsigned char(*)[sizeof(typeof(buf))]: (Neat_Buffer){.ptr = neat_coerce(buf, unsigned char*), .cap = sizeof(typeof(buf))}, \
+    default: buf \
 ))
 
 #define neat_strbuf_2(carr, cap) \
@@ -671,10 +657,10 @@ neat_dstr_new(0, neat_get_default_allocator())
 __VA_OPT__(neat_dstr2(cap_or_alloc, __VA_ARGS__))                             \
 NEAT_IF_EMPTY(                                                                    \
 _Generic(cap_or_alloc,                                                       \
-    Neat_Allocator: neat_dstr_new(0, neat_coerce(cap_or_alloc, Neat_Allocator)), \
+    Neat_Allocator*: neat_dstr_new(0, neat_coerce(cap_or_alloc, Neat_Allocator*)), \
     default: \
         neat_dstr_new(                                                \
-            neat_coerce_not((cap_or_alloc), Neat_Allocator, int), \
+            neat_coerce_not((cap_or_alloc), Neat_Allocator*, int), \
             neat_get_default_allocator() \
         )                                                             \
 ), __VA_ARGS__                                                                    \
@@ -857,19 +843,9 @@ neat_get_tostr_func(typeof(src))(neat_mutstr_ref(dst), src)
 
 #define NEAT_DECL_TOSTR_FUNC(n) \
 typedef typeof(NEAT_ARG1(ADD_TOSTR)) neat_tostr_type_##n; \
-static inline void neat_tostr_func_##n (neat_tostr_type_##n *obj, Neat_Allocator allocator) \
+static inline Neat_String_Error neat_tostr_func_##n (Neat_Mut_String_Ref dst, neat_tostr_type_##n obj) \
 { \
-    _Static_assert(neat_has_type(NEAT_ARG2(ADD_TOSTR), void(*)(Neat_DString*, neat_tostr_type_##n*)), "tostr function must have type void(DString*, T*)"); \
-    Neat_DString ret = dstr(allocator); \
-    return NEAT_ARG2(ADD_TOSTR)(&ret, obj); \
-}
-
-#define NEAT_DECL_TOSTR_INTO_FUNC(n) \
-typedef typeof(NEAT_ARG1(ADD_TOSTR_INTO)) neat_type_##n##_tostr; \
-static inline void neat_tostr_func_##n (Neat_Mut_String_Ref dst, neat_type_##n##_tostr *obj) \
-{ \
-    _Static_assert(neat_has_type(NEAT_ARG2(ADD_TOSTR_INTO), typeof(void(*)(Neat_Mut_String_Ref, neat_type_##n##_tostr*))), "tostr functions must have type void (T*)"); \
-    if(dst.len != NULL) *dst.len = 0; \
+    _Static_assert(neat_has_type(NEAT_ARG2(ADD_TOSTR_INTO), typeof(Neat_String_Error(*)(Neat_Mut_String_Ref, neat_tostr_type_##n))), "tostr functions must have signature `Neat_String_Error(Neat_Mut_String_Ref dst, T src)`"); \
     return NEAT_ARG2(ADD_TOSTR_INTO)(dst, obj); \
 }
 
@@ -896,9 +872,6 @@ Neat_String_View neat_strv_strbuf3(Neat_String_Buffer str, unsigned int begin, u
 Neat_String_View neat_strv_strbuf_ptr3(Neat_String_Buffer *str, unsigned int begin, unsigned int end);
 Neat_String_View neat_strv_sstr_ref3(Neat_SString_Ref str, unsigned int begin, unsigned int end);
 Neat_String_View neat_strv_mutstr_ref3(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end);
-
-Neat_String_Buffer neat_strbuf_new(unsigned int cap, Neat_Allocator allocator, Neat_String_Error *err);
-Neat_String_Buffer neat_strbuf_new_default(unsigned int cap, Neat_String_Error *err);
 
 Neat_String_Buffer neat_strbuf_from_ptr(void *ptr, unsigned int cap);
 Neat_String_Buffer neat_strbuf_from_buf(const Neat_Buffer buf);
@@ -945,8 +918,8 @@ unsigned char neat_mutstr_ref_char_at(const Neat_Mut_String_Ref str, unsigned in
 
 bool neat_is_strv_within(Neat_String_View base, Neat_String_View sub);
 
-NEAT_NODISCARD("discarding a new DString may cause memory leak") Neat_DString neat_dstr_new(unsigned int cap, Neat_Allocator allocator);
-NEAT_NODISCARD("discarding a new DString will cause memory leak") Neat_DString neat_dstr_new_from(Neat_String_View from, Neat_Allocator allocator);
+NEAT_NODISCARD("discarding a new DString may cause memory leak") Neat_DString neat_dstr_new(unsigned int cap, Neat_Allocator *allocator);
+NEAT_NODISCARD("discarding a new DString will cause memory leak") Neat_DString neat_dstr_new_from(Neat_String_View from, Neat_Allocator *allocator);
 void neat_dstr_deinit_(Neat_DString *dstr);
 Neat_String_Error neat_dstr_append_strv(Neat_DString *dstr, Neat_String_View str);
 Neat_String_Error neat_dstr_prepend_strv(Neat_DString *dstr, Neat_String_View str);
@@ -966,12 +939,12 @@ Neat_String_Error neat_mutstr_ref_insert(Neat_Mut_String_Ref dst, const Neat_Str
 Neat_String_Error neat_mutstr_ref_replace(Neat_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement);
 Neat_String_Error neat_mutstr_ref_replace_first(Neat_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement);
 Neat_String_Error neat_mustr_ref_replace_range(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement);
-Neat_DString neat_tostr_all_into_new_dstr(Neat_Allocator allocator, unsigned int nb, ...);
+Neat_DString neat_tostr_all_into_new_dstr(Neat_Allocator *allocator, unsigned int nb, ...);
 
 Neat_String_Error neat_dstr_copy(Neat_DString *dstr, Neat_String_View src);
 
-NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array neat_strv_split(Neat_String_View str, Neat_String_View delim, Neat_Allocator allocator);
-NEAT_NODISCARD("str_join_new returns new DString, discarding will cause memory leak") Neat_DString neat_strv_arr_join_new(Neat_String_View_Array strs, Neat_String_View delim, Neat_Allocator allocator);
+NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array neat_strv_split(Neat_String_View str, Neat_String_View delim, Neat_Allocator* allocator);
+NEAT_NODISCARD("str_join_new returns new DString, discarding will cause memory leak") Neat_DString neat_strv_arr_join_new(Neat_String_View_Array strs, Neat_String_View delim, Neat_Allocator *allocator);
 Neat_String_Error neat_strv_arr_join(Neat_Mut_String_Ref dst, Neat_String_View_Array strs, Neat_String_View delim);
 
 Neat_String_View_Array neat_strv_arr_from_carr(Neat_String_View *carr, unsigned int nb);

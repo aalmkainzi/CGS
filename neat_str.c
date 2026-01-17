@@ -122,7 +122,7 @@ unsigned int neat_numstr_len_ull(unsigned long long num)
     return len;
 }
 
-void *neat_default_allocator_alloc(void *ctx, size_t alignment, size_t n, size_t *actual)
+void *neat_default_allocator_alloc(Neat_Allocator *ctx, size_t alignment, size_t n, size_t *actual)
 {
     (void) alignment;
     (void) ctx;
@@ -130,14 +130,14 @@ void *neat_default_allocator_alloc(void *ctx, size_t alignment, size_t n, size_t
     return malloc(n);
 }
 
-void neat_default_allocator_dealloc(void *ctx, void *ptr, size_t n)
+void neat_default_allocator_dealloc(Neat_Allocator *ctx, void *ptr, size_t n)
 {
     (void) ctx;
     (void) n;
     free(ptr);
 }
 
-void *neat_default_allocator_realloc(void *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual)
+void *neat_default_allocator_realloc(Neat_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual)
 {
     (void) ctx;
     (void) alignment;
@@ -146,18 +146,7 @@ void *neat_default_allocator_realloc(void *ctx, void *ptr, size_t alignment, siz
     return realloc(ptr, new_size);
 }
 
-void neat_default_allocator_init(void **ctx, void *arg)
-{
-    (void) ctx;
-    (void) arg;
-}
-
-void neat_default_allocator_deinit(void *ctx)
-{
-    (void) ctx;
-}
-
-void *neat_noop_allocator_alloc(void *ctx, size_t alignment, size_t n, size_t *actual)
+void *neat_noop_allocator_alloc(Neat_Allocator *ctx, size_t alignment, size_t n, size_t *actual)
 {
     (void) ctx;
     (void) alignment;
@@ -166,14 +155,14 @@ void *neat_noop_allocator_alloc(void *ctx, size_t alignment, size_t n, size_t *a
     return NULL;
 }
 
-void neat_noop_allocator_dealloc(void *ctx, void *ptr, size_t n)
+void neat_noop_allocator_dealloc(Neat_Allocator *ctx, void *ptr, size_t n)
 {
     (void) ctx;
     (void) ptr;
     (void) n;
 }
 
-void *neat_noop_allocator_realloc(void *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual)
+void *neat_noop_allocator_realloc(Neat_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual)
 {
     (void) ctx;
     (void) ptr;
@@ -184,53 +173,84 @@ void *neat_noop_allocator_realloc(void *ctx, void *ptr, size_t alignment, size_t
     return NULL;
 }
 
-void neat_noop_allocator_init(void **ctx, void *arg)
+void *neat_dstr_append_allocator_alloc(Neat_Allocator *allocator, size_t alignment, size_t n, size_t *actual)
 {
-    (void) ctx;
-    (void) arg;
+    assert(0); // this should never get called
+    return NULL;
 }
 
-void neat_noop_allocator_deinit(void *ctx)
+void neat_dstr_append_allocator_dealloc(Neat_Allocator *allocator, void *ptr, size_t obj_size, size_t nb)
 {
-    (void) ctx;
+    assert(0); // this should never get called
 }
 
-void *neat_allocator_invoke_alloc(Neat_Allocator allocator, size_t alignment, size_t obj_size, size_t nb, size_t *actual)
+void *neat_dstr_append_allocator_realloc(Neat_Allocator *allocator, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual)
 {
-    return allocator.alloc(allocator.ctx, alignment, nb * obj_size, actual);
+    Neat_DString_Append_Allocator *dstr_append_allocator = (typeof(dstr_append_allocator)) allocator;
+    
+    Neat_DString *owner = dstr_append_allocator->owner;
+    
+    assert(old_size == owner->cap - owner->len);
+    assert(((unsigned char*)ptr - owner->chars) == owner->len);
+    
+    dstr_ensure_cap(owner, owner->cap + (new_size - old_size));
+    *actual = owner->cap - owner->len;
+    return owner->chars + owner->len;
 }
 
-void neat_allocator_invoke_dealloc(Neat_Allocator allocator, void *ptr, size_t obj_size, size_t nb)
+void *neat_allocator_invoke_alloc(Neat_Allocator *allocator, size_t alignment, size_t obj_size, size_t nb, size_t *actual)
 {
-    allocator.dealloc(allocator.ctx, ptr, nb * obj_size);
+    return allocator->alloc(allocator, alignment, nb * obj_size, actual);
 }
 
-void *neat_allocator_invoke_realloc(Neat_Allocator allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb, size_t *actual)
+void neat_allocator_invoke_dealloc(Neat_Allocator *allocator, void *ptr, size_t obj_size, size_t nb)
 {
-    return allocator.realloc(allocator.ctx, ptr, alignment, old_nb * obj_size, new_nb * obj_size, actual);
+    allocator->dealloc(allocator, ptr, nb * obj_size);
+}
+
+void *neat_allocator_invoke_realloc(Neat_Allocator *allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb, size_t *actual)
+{
+    return allocator->realloc(allocator, ptr, alignment, old_nb * obj_size, new_nb * obj_size, actual);
 }
 
 Neat_Allocator neat_get_default_allocator()
 {
-    return
-    (Neat_Allocator){
+    return (Neat_Allocator){
         .alloc   = neat_default_allocator_alloc,
         .dealloc = neat_default_allocator_dealloc,
         .realloc = neat_default_allocator_realloc,
-        .init    = neat_default_allocator_init,
-        .deinit  = neat_default_allocator_deinit,
     };
 }
 
 Neat_Allocator neat_get_noop_allocator()
 {
-    return
-    (Neat_Allocator){
+    return (Neat_Allocator){
         .alloc   = neat_noop_allocator_alloc,
         .dealloc = neat_noop_allocator_dealloc,
         .realloc = neat_noop_allocator_realloc,
-        .init    = neat_noop_allocator_init,
-        .deinit  = neat_noop_allocator_deinit,
+    };
+}
+
+Neat_DString_Append_Allocator neat_get_dstr_append_allocator(Neat_DString *dstr)
+{
+    return (Neat_DString_Append_Allocator){
+        .funcs = {
+            .alloc   = neat_dstr_append_allocator_alloc,
+            .dealloc = neat_noop_allocator_dealloc,
+            .realloc = neat_noop_allocator_realloc,
+        },
+        .owner = dstr
+    };
+}
+
+Neat_DString neat_make_appender_dstr(Neat_DString *owner, Neat_DString_Append_Allocator *allocator)
+{
+    allocator->owner = owner;
+    return (Neat_DString){
+        .allocator = (void*) allocator,
+        .cap = owner->cap - owner->len,
+        .len = 0,
+        .chars = owner->chars + owner->len
     };
 }
 
@@ -244,9 +264,9 @@ static inline unsigned int neat_uint_max(unsigned int a, unsigned int b)
     return a > b ? a : b;
 }
 
-static unsigned int neat_chars_strlen(unsigned char *chars, unsigned int cap)
+static unsigned int neat_chars_strlen(char *chars, unsigned int cap)
 {
-    unsigned char *str_end = (unsigned char*) memchr(chars, '\0', cap);
+    char *str_end = memchr(chars, '\0', cap);
     unsigned int len;
     
     if(str_end != NULL)
@@ -261,16 +281,6 @@ static unsigned int neat_chars_strlen(unsigned char *chars, unsigned int cap)
     return len;
 }
 
-// static unsigned int neat_mutstr_ref_len(Neat_Mut_String_Ref str)
-// {
-//     switch(str.ty)
-//     {
-//         case NEAT_DSTR_TY        : return str.str.dstr->len;
-//         case NEAT_FMUTSTR_REF_TY : return *str.str.fmutstr_ref.len;
-//         case NEAT_CARR_TY     : return neat_chars_strlen(str.str.carr.ptr, str.str.carr.cap);
-//     };
-// }
-
 bool neat_is_strv_within(Neat_String_View base, Neat_String_View sub)
 {
     uintptr_t begin = (uintptr_t) base.chars;
@@ -279,7 +289,7 @@ bool neat_is_strv_within(Neat_String_View base, Neat_String_View sub)
     return sub_begin >= begin && sub_begin < end;
 }
 
-NEAT_NODISCARD("discarding a new DString may cause memory leak") Neat_DString neat_dstr_new(unsigned int cap, Neat_Allocator allocator)
+NEAT_NODISCARD("discarding a new DString may cause memory leak") Neat_DString neat_dstr_new(unsigned int cap, Neat_Allocator *allocator)
 {
     Neat_DString ret = { 0 };
     
@@ -298,7 +308,7 @@ NEAT_NODISCARD("discarding a new DString may cause memory leak") Neat_DString ne
     return ret;
 }
 
-Neat_DString neat_dstr_new_from(Neat_String_View str, Neat_Allocator allocator)
+Neat_DString neat_dstr_new_from(Neat_String_View str, Neat_Allocator *allocator)
 {
     Neat_String_Error dstr_new_err;
     Neat_DString ret = neat_dstr_new(str.len + 1, allocator);
@@ -311,7 +321,6 @@ Neat_DString neat_dstr_new_from(Neat_String_View str, Neat_Allocator allocator)
 void neat_dstr_deinit_(Neat_DString *dstr)
 {
     neat_dealloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap);
-    dstr->allocator.deinit(&dstr->allocator.ctx);
     dstr->cap = 0;
     dstr->len = 0;
     dstr->chars = NULL;
@@ -937,11 +946,8 @@ Neat_String_View_Array neat_strv_arr_from_carr(Neat_String_View *carr, unsigned 
     };
 }
 
-NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array neat_strv_split(Neat_String_View str, Neat_String_View delim, Neat_Allocator allocator)
+NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array neat_strv_split(Neat_String_View str, Neat_String_View delim, Neat_Allocator *allocator)
 {
-    // if(allocator.ctx == NULL)
-    //     allocator.init(&allocator.ctx, NULL);
-    
     if(delim.len > str.len)
     {
         size_t alloced_size;
@@ -1663,46 +1669,29 @@ Neat_Mut_String_Ref neat_mutstr_ref_as_mutstr_ref(Neat_Mut_String_Ref str)
     return str;
 }
 
-Neat_String_Buffer neat_strbuf_new(unsigned int cap, Neat_Allocator allocator, Neat_String_Error *err)
-{
-    // if(allocator.ctx == NULL)
-    //     allocator.init(&allocator.ctx, NULL);
-    
-    Neat_String_Buffer ret = { 0 };
-    size_t actual_allocated_cap;
-    ret.chars = neat_alloc(allocator, unsigned char, cap, &actual_allocated_cap);
-    ret.cap = actual_allocated_cap;
-    
-    if(err)
-    {
-        if(ret.chars == NULL || ret.cap < cap)
-            *err = NEAT_ALLOC_ERR;
-        else
-            *err = NEAT_OK;
-    }
-    
-    return ret;
-}
-
-Neat_String_Buffer neat_strbuf_new_default(unsigned int cap, Neat_String_Error *err)
-{
-    return neat_strbuf_new(cap, neat_get_default_allocator(), err);
-}
-
-Neat_String_Buffer neat_strbuf_from_ptr(void *ptr, unsigned int cap)
+Neat_String_Buffer neat_strbuf_from_cstr(char *ptr, unsigned int cap)
 {
     unsigned int len = neat_chars_strlen(ptr, cap);
     
     return (Neat_String_Buffer){
         .cap = cap,
         .len = len,
-        .chars = ptr
+        .chars = (unsigned char*) ptr
     };
 }
 
 Neat_String_Buffer neat_strbuf_from_buf(Neat_Buffer buf)
 {
-    return neat_strbuf_from_ptr(buf.ptr, buf.cap);
+    Neat_String_Buffer ret = {
+        .cap = buf.cap,
+        .len = 0,
+        .chars = buf.ptr
+    };
+    
+    if(ret.cap > 0)
+        ret.chars[0] = '\0';
+    
+    return ret;
 }
 
 Neat_String_View neat_strv_cstr2(char *str, unsigned int begin)
