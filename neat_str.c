@@ -19,6 +19,12 @@ typedef struct Fixed_Mut_String_Ref
     unsigned int cap;
 } Fixed_Mut_String_Ref;
 
+typedef struct Neat_DString_Append_Allocator
+{
+    Neat_Allocator funcs;
+    struct Neat_DString *owner;
+} Neat_DString_Append_Allocator;
+
 Fixed_Mut_String_Ref neat_buf_as_fmutstr_ref(Neat_Buffer buf, unsigned int *len_ptr)
 {
     *len_ptr = strlen((char*) buf.ptr);
@@ -176,16 +182,25 @@ void *neat_noop_allocator_realloc(Neat_Allocator *ctx, void *ptr, size_t alignme
 void *neat_dstr_append_allocator_alloc(Neat_Allocator *allocator, size_t alignment, size_t n, size_t *actual)
 {
     assert(0); // this should never get called
+    (void) allocator;
+    (void) alignment;
+    (void) n;
+    (void) actual;
     return NULL;
 }
 
-void neat_dstr_append_allocator_dealloc(Neat_Allocator *allocator, void *ptr, size_t obj_size, size_t nb)
+void neat_dstr_append_allocator_dealloc(Neat_Allocator *allocator, void *ptr, size_t n)
 {
     assert(0); // this should never get called
+    (void) allocator;
+    (void) ptr;
+    (void) n;
 }
 
 void *neat_dstr_append_allocator_realloc(Neat_Allocator *allocator, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual)
 {
+    (void) alignment;
+    
     Neat_DString_Append_Allocator *dstr_append_allocator = (typeof(dstr_append_allocator)) allocator;
     
     Neat_DString *owner = dstr_append_allocator->owner;
@@ -213,31 +228,35 @@ void *neat_allocator_invoke_realloc(Neat_Allocator *allocator, void *ptr, size_t
     return allocator->realloc(allocator, ptr, alignment, old_nb * obj_size, new_nb * obj_size, actual);
 }
 
-Neat_Allocator neat_get_default_allocator()
+Neat_Allocator neat_default_allocator = {
+    .alloc   = neat_default_allocator_alloc,
+    .dealloc = neat_default_allocator_dealloc,
+    .realloc = neat_default_allocator_realloc,
+};
+
+Neat_Allocator *neat_get_default_allocator()
 {
-    return (Neat_Allocator){
-        .alloc   = neat_default_allocator_alloc,
-        .dealloc = neat_default_allocator_dealloc,
-        .realloc = neat_default_allocator_realloc,
-    };
+    return &neat_default_allocator;
 }
 
-Neat_Allocator neat_get_noop_allocator()
+Neat_Allocator neat_noop_allocator = {
+    .alloc   = neat_noop_allocator_alloc,
+    .dealloc = neat_noop_allocator_dealloc,
+    .realloc = neat_noop_allocator_realloc,
+};
+
+Neat_Allocator *neat_get_noop_allocator()
 {
-    return (Neat_Allocator){
-        .alloc   = neat_noop_allocator_alloc,
-        .dealloc = neat_noop_allocator_dealloc,
-        .realloc = neat_noop_allocator_realloc,
-    };
+    return &neat_noop_allocator;
 }
 
-Neat_DString_Append_Allocator neat_get_dstr_append_allocator(Neat_DString *dstr)
+void neat_make_dstr_append_allocator(Neat_DString *dstr, Neat_DString_Append_Allocator *out)
 {
-    return (Neat_DString_Append_Allocator){
+    *out = (Neat_DString_Append_Allocator){
         .funcs = {
             .alloc   = neat_dstr_append_allocator_alloc,
-            .dealloc = neat_noop_allocator_dealloc,
-            .realloc = neat_noop_allocator_realloc,
+            .dealloc = neat_dstr_append_allocator_dealloc,
+            .realloc = neat_dstr_append_allocator_realloc,
         },
         .owner = dstr
     };
@@ -245,7 +264,7 @@ Neat_DString_Append_Allocator neat_get_dstr_append_allocator(Neat_DString *dstr)
 
 static Neat_DString neat_make_appender_dstr(Neat_DString *owner, Neat_DString_Append_Allocator *allocator)
 {
-    *allocator = neat_get_dstr_append_allocator(owner);
+    neat_make_dstr_append_allocator(owner, allocator);
     return (Neat_DString){
         .allocator = (void*) allocator,
         .cap = owner->cap - owner->len,
@@ -254,14 +273,32 @@ static Neat_DString neat_make_appender_dstr(Neat_DString *owner, Neat_DString_Ap
     };
 }
 
-Neat_Mut_String_Ref neat_make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, Neat_DString_Append_Allocator *appender_dstr_allocator_opt)
+Neat_String_Buffer neat_make_appender_strbuf(Neat_Mut_String_Ref owner)
+{
+    return (Neat_String_Buffer){
+        .cap = neat_str_cap(owner) - neat_str_len(owner),
+        .len = 0,
+        .chars = (unsigned char*)neat_str_chars(owner) + neat_str_len(owner)
+    };
+}
+
+Neat_Mut_String_Ref neat_make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, Neat_DString_Append_Allocator *appender_dstr_allocator_opt, Neat_String_Buffer *appender_strbuf_opt)
 {
     switch(owner.ty)
     {
-        case NEAT_DSTR_TY:
+        case NEAT_DSTR_TY    :
             *appender_dstr_opt = neat_make_appender_dstr(owner.str.dstr, appender_dstr_allocator_opt);
             return neat_mutstr_ref(appender_dstr_opt);
-        default: _Static_assert(0 && "implement");
+        case NEAT_STRBUF_TY  :
+        case NEAT_SSTR_REF_TY:
+        case NEAT_CARR_TY    :
+            Neat_Mut_String_Ref ret = {0};
+            ret.ty = NEAT_STRBUF_TY;
+            ret.str.strbuf = appender_strbuf_opt;
+            *ret.str.strbuf = neat_make_appender_strbuf(owner);
+            return ret;
+        default              :
+            unreachable();
     }
 }
 
@@ -321,7 +358,6 @@ NEAT_NODISCARD("discarding a new DString may cause memory leak") Neat_DString ne
 
 Neat_DString neat_dstr_new_from(Neat_String_View str, Neat_Allocator *allocator)
 {
-    Neat_String_Error dstr_new_err;
     Neat_DString ret = neat_dstr_new(str.len + 1, allocator);
     
     neat_dstr_copy(&ret, str);
@@ -603,6 +639,30 @@ unsigned char neat_sstr_ref_char_at(Neat_SString_Ref str, unsigned int idx)
 unsigned char neat_mutstr_ref_char_at(Neat_Mut_String_Ref str, unsigned int idx)
 {
     return neat_mutstr_ref_as_cstr(str)[idx];
+}
+
+Neat_String_Error neat_mutstr_ref_set_len(Neat_Mut_String_Ref str, size_t new_len)
+{
+    switch(str.ty)
+    {
+        case NEAT_DSTR_TY     :
+            str.str.dstr->len = new_len;
+            assert(str.str.dstr->cap >= str.str.dstr->len);
+            break;
+        case NEAT_STRBUF_TY   :
+            str.str.strbuf->len = new_len;
+            assert(str.str.strbuf->cap >= str.str.strbuf->len);
+            break;
+        case NEAT_SSTR_REF_TY :
+            str.str.sstr_ref.sstr->len = new_len;
+            assert(str.str.sstr_ref.cap >= str.str.sstr_ref.sstr->len);
+            break;
+        case NEAT_CARR_TY     :
+            return NEAT_INCORRECT_TYPE;
+        default               :
+            unreachable();
+    };
+    return NEAT_OK;
 }
 
 unsigned int neat_dstr_cap(Neat_DString str)
@@ -2425,7 +2485,179 @@ Neat_String_Error neat_ushort_tostr(Neat_Mut_String_Ref dst, unsigned short obj)
 
 Neat_String_Error neat_int_tostr(Neat_Mut_String_Ref dst, int obj)
 {
-    neat_sinteger_tostr();
+
+  do {
+    Neat_String_Error err = NEAT_OK;
+    switch (dst.ty) {
+    case NEAT_DSTR_TY: {
+      do {
+        unsigned int numlen = neat_numstr_len(obj);
+        err = neat_dstr_ensure_cap_(dst.str.dstr, numlen + 1);
+        if (err != NEAT_OK)
+          return err;
+        Fixed_Mut_String_Ref as_fixed = neat_dstr_as_fmutstr_ref(dst.str.dstr);
+        do {
+          if (as_fixed.cap <= 1)
+            return NEAT_DST_TOO_SMALL;
+          if (obj == _Generic((typeof(obj)){0},
+                  signed char: (-127 - 1),
+                  short: (-32767 - 1),
+                  int: (-2147483647 - 1),
+                  long: (-2147483647L - 1L),
+                  long long: (-9223372036854775807LL - 1LL))) {
+            return _Generic((typeof(obj)){0},
+                signed char: neat_schar_min_into_fmutstr_ref,
+                short: neat_short_min_into_fmutstr_ref,
+                int: neat_int_min_into_fmutstr_ref,
+                long: neat_long_min_into_fmutstr_ref,
+                long long: neat_llong_min_into_fmutstr_ref)(as_fixed);
+          }
+          typeof(obj) num = obj;
+          bool isneg = num < 0;
+          if (isneg) {
+            num *= -1;
+            if (as_fixed.cap > 1) {
+              as_fixed.chars[0] = '-';
+            }
+          }
+          unsigned int numstr_len = neat_numstr_len(num);
+          unsigned int chars_to_copy =
+              neat_uint_min(as_fixed.cap - (1 + isneg), numstr_len);
+          num /= neat_ten_pows[numstr_len - chars_to_copy];
+          for (unsigned int i = 0; i < chars_to_copy; i++) {
+            unsigned int rem = num % 10;
+            num = num / 10;
+            as_fixed.chars[isneg + chars_to_copy - (i + 1)] = rem + '0';
+          }
+          *as_fixed.len = chars_to_copy;
+        } while (0);
+      } while (0);
+      return err;
+    }
+    case NEAT_STRBUF_TY: {
+      Fixed_Mut_String_Ref strbuf_as_fixed =
+          neat_strbuf_as_fmutstr_ref(dst.str.strbuf);
+      do {
+        if (strbuf_as_fixed.cap <= 1)
+          return NEAT_DST_TOO_SMALL;
+        if (obj == _Generic((typeof(obj)){0},
+                signed char: (-127 - 1),
+                short: (-32767 - 1),
+                int: (-2147483647 - 1),
+                long: (-2147483647L - 1L),
+                long long: (-9223372036854775807LL - 1LL))) {
+          return _Generic((typeof(obj)){0},
+              signed char: neat_schar_min_into_fmutstr_ref,
+              short: neat_short_min_into_fmutstr_ref,
+              int: neat_int_min_into_fmutstr_ref,
+              long: neat_long_min_into_fmutstr_ref,
+              long long: neat_llong_min_into_fmutstr_ref)(strbuf_as_fixed);
+        }
+        typeof(obj) num = obj;
+        bool isneg = num < 0;
+        if (isneg) {
+          num *= -1;
+          if (strbuf_as_fixed.cap > 1) {
+            strbuf_as_fixed.chars[0] = '-';
+          }
+        }
+        unsigned int numstr_len = neat_numstr_len(num);
+        unsigned int chars_to_copy =
+            neat_uint_min(strbuf_as_fixed.cap - (1 + isneg), numstr_len);
+        num /= neat_ten_pows[numstr_len - chars_to_copy];
+        for (unsigned int i = 0; i < chars_to_copy; i++) {
+          unsigned int rem = num % 10;
+          num = num / 10;
+          strbuf_as_fixed.chars[isneg + chars_to_copy - (i + 1)] = rem + '0';
+        }
+        *strbuf_as_fixed.len = chars_to_copy;
+      } while (0);
+      return err;
+    }
+    case NEAT_SSTR_REF_TY: {
+      Fixed_Mut_String_Ref sstr_ref_as_fixed =
+          neat_sstr_ref_as_fmutstr_ref(dst.str.sstr_ref);
+      do {
+        if (sstr_ref_as_fixed.cap <= 1)
+          return NEAT_DST_TOO_SMALL;
+        if (obj == _Generic((typeof(obj)){0},
+                signed char: (-127 - 1),
+                short: (-32767 - 1),
+                int: (-2147483647 - 1),
+                long: (-2147483647L - 1L),
+                long long: (-9223372036854775807LL - 1LL))) {
+          return _Generic((typeof(obj)){0},
+              signed char: neat_schar_min_into_fmutstr_ref,
+              short: neat_short_min_into_fmutstr_ref,
+              int: neat_int_min_into_fmutstr_ref,
+              long: neat_long_min_into_fmutstr_ref,
+              long long: neat_llong_min_into_fmutstr_ref)(sstr_ref_as_fixed);
+        }
+        typeof(obj) num = obj;
+        bool isneg = num < 0;
+        if (isneg) {
+          num *= -1;
+          if (sstr_ref_as_fixed.cap > 1) {
+            sstr_ref_as_fixed.chars[0] = '-';
+          }
+        }
+        unsigned int numstr_len = neat_numstr_len(num);
+        unsigned int chars_to_copy =
+            neat_uint_min(sstr_ref_as_fixed.cap - (1 + isneg), numstr_len);
+        num /= neat_ten_pows[numstr_len - chars_to_copy];
+        for (unsigned int i = 0; i < chars_to_copy; i++) {
+          unsigned int rem = num % 10;
+          num = num / 10;
+          sstr_ref_as_fixed.chars[isneg + chars_to_copy - (i + 1)] = rem + '0';
+        }
+        *sstr_ref_as_fixed.len = chars_to_copy;
+      } while (0);
+      return err;
+    }
+    case NEAT_CARR_TY: {
+      Fixed_Mut_String_Ref buf_as_fixed =
+          neat_buf_as_fmutstr_ref(dst.str.carr, &(unsigned int){0});
+      do {
+        if (buf_as_fixed.cap <= 1)
+          return NEAT_DST_TOO_SMALL;
+        if (obj == _Generic((typeof(obj)){0},
+                signed char: (-127 - 1),
+                short: (-32767 - 1),
+                int: (-2147483647 - 1),
+                long: (-2147483647L - 1L),
+                long long: (-9223372036854775807LL - 1LL))) {
+          return _Generic((typeof(obj)){0},
+              signed char: neat_schar_min_into_fmutstr_ref,
+              short: neat_short_min_into_fmutstr_ref,
+              int: neat_int_min_into_fmutstr_ref,
+              long: neat_long_min_into_fmutstr_ref,
+              long long: neat_llong_min_into_fmutstr_ref)(buf_as_fixed);
+        }
+        typeof(obj) num = obj;
+        bool isneg = num < 0;
+        if (isneg) {
+          num *= -1;
+          if (buf_as_fixed.cap > 1) {
+            buf_as_fixed.chars[0] = '-';
+          }
+        }
+        unsigned int numstr_len = neat_numstr_len(num);
+        unsigned int chars_to_copy =
+            neat_uint_min(buf_as_fixed.cap - (1 + isneg), numstr_len);
+        num /= neat_ten_pows[numstr_len - chars_to_copy];
+        for (unsigned int i = 0; i < chars_to_copy; i++) {
+          unsigned int rem = num % 10;
+          num = num / 10;
+          buf_as_fixed.chars[isneg + chars_to_copy - (i + 1)] = rem + '0';
+        }
+        *buf_as_fixed.len = chars_to_copy;
+      } while (0);
+      return err;
+    }
+    default:
+      __builtin_unreachable();
+    }
+  } while (0);
 }
 
 Neat_String_Error neat_uint_tostr(Neat_Mut_String_Ref dst, unsigned int obj)
