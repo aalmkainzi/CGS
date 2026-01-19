@@ -865,8 +865,6 @@ Neat_String_Error neat_fmutstr_ref_putc(Fixed_Mut_String_Ref dst, unsigned char 
         return NEAT_DST_TOO_SMALL;
     }
     
-    // TODO check if valid 7 bit ascii
-    
     dst.chars[*dst.len] = c;
     dst.chars[*dst.len + 1] = '\0';
     *dst.len += 1;
@@ -901,7 +899,7 @@ Neat_String_Error neat_mutstr_ref_putc(Neat_Mut_String_Ref dst, unsigned char c)
     }
 }
 
-Neat_String_Error neat_fmutstr_ref_concat(Fixed_Mut_String_Ref dst, Neat_String_View src)
+Neat_String_Error neat_fmutstr_ref_append(Fixed_Mut_String_Ref dst, Neat_String_View src)
 {
     unsigned int dst_len = *dst.len;
     
@@ -921,32 +919,32 @@ Neat_String_Error neat_fmutstr_ref_concat(Fixed_Mut_String_Ref dst, Neat_String_
     return chars_to_copy == src.len ? NEAT_OK : NEAT_DST_TOO_SMALL;
 }
 
-Neat_String_Error neat_buf_concat(Neat_Buffer dst, Neat_String_View src)
+Neat_String_Error neat_buf_append(Neat_Buffer dst, Neat_String_View src)
 {
-    return neat_fmutstr_ref_concat(neat_buf_as_fmutstr_ref(dst, &(unsigned int){0}), src);
+    return neat_fmutstr_ref_append(neat_buf_as_fmutstr_ref(dst, &(unsigned int){0}), src);
 }
 
-Neat_String_Error neat_strbuf_concat(Neat_String_Buffer *dst, Neat_String_View src)
+Neat_String_Error neat_strbuf_append(Neat_String_Buffer *dst, Neat_String_View src)
 {
-    return neat_fmutstr_ref_concat(neat_strbuf_as_fmutstr_ref(dst), src);
+    return neat_fmutstr_ref_append(neat_strbuf_as_fmutstr_ref(dst), src);
 }
 
-Neat_String_Error neat_sstr_ref_concat(Neat_SString_Ref dst, Neat_String_View src)
+Neat_String_Error neat_sstr_ref_append(Neat_SString_Ref dst, Neat_String_View src)
 {
-    return neat_fmutstr_ref_concat(neat_sstr_ref_as_fmutstr_ref(dst), src);
+    return neat_fmutstr_ref_append(neat_sstr_ref_as_fmutstr_ref(dst), src);
 }
 
 // TODO rename dstr_ functions to match others
 // also rename lib to STS
 
-Neat_String_Error neat_mutstr_ref_concat(Neat_Mut_String_Ref dst, Neat_String_View src)
+Neat_String_Error neat_mutstr_ref_append(Neat_Mut_String_Ref dst, Neat_String_View src)
 {
     switch(dst.ty)
     {
         case NEAT_DSTR_TY     : return neat_dstr_append_strv(dst.str.dstr, src);
-        case NEAT_STRBUF_TY   : return neat_strbuf_concat(dst.str.strbuf, src);
-        case NEAT_SSTR_REF_TY : return neat_sstr_ref_concat(dst.str.sstr_ref, src);
-        case NEAT_CARR_TY     : return neat_buf_concat(dst.str.carr, src);
+        case NEAT_STRBUF_TY   : return neat_strbuf_append(dst.str.strbuf, src);
+        case NEAT_SSTR_REF_TY : return neat_sstr_ref_append(dst.str.sstr_ref, src);
+        case NEAT_CARR_TY     : return neat_buf_append(dst.str.carr, src);
         default               : unreachable();
     };
 }
@@ -1153,8 +1151,8 @@ Neat_String_Error neat_strv_arr_join_into_fmutstr_ref(Fixed_Mut_String_Ref dst, 
     
     for(unsigned int i = 1 ; i < strs.len && err == NEAT_OK; i++)
     {
-        neat_fmutstr_ref_concat(dst, delim);
-        err = neat_fmutstr_ref_concat(dst, strs.strs[i]);
+        neat_fmutstr_ref_append(dst, delim);
+        err = neat_fmutstr_ref_append(dst, strs.strs[i]);
     }
     
     return err;
@@ -1740,7 +1738,7 @@ Neat_Mut_String_Ref neat_mutstr_ref_as_mutstr_ref(Neat_Mut_String_Ref str)
     return str;
 }
 
-Neat_String_Buffer neat_strbuf_from_cstr(char *ptr, unsigned int cap)
+Neat_String_Buffer neat_strbuf_from_cstr_(char *ptr, unsigned int cap)
 {
     unsigned int len = neat_chars_strlen(ptr, cap);
     
@@ -1751,7 +1749,7 @@ Neat_String_Buffer neat_strbuf_from_cstr(char *ptr, unsigned int cap)
     };
 }
 
-Neat_String_Buffer neat_strbuf_from_buf(Neat_Buffer buf)
+Neat_String_Buffer neat_strbuf_from_buf_(Neat_Buffer buf)
 {
     Neat_String_Buffer ret = {
         .cap = buf.cap,
@@ -2135,11 +2133,11 @@ Neat_String_Error neat_fmutstr_ref_append_fread_line(Fixed_Mut_String_Ref dst, F
     if(dst.cap == 0)
         return false;
     
-    unsigned int concated_len = 0;
+    unsigned int appended_len = 0;
     
     Fixed_Mut_String_Ref right = {
         .cap = dst.cap - *dst.len,
-        .len = &concated_len
+        .len = &appended_len
     };
     
     right.chars = dst.chars + *dst.len;
