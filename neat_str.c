@@ -2,14 +2,15 @@
 #include "neat_str.h"
 
 const char *neat_string_error_str[] = {
-    [NEAT_OK]                     = "OK",
-    [NEAT_DST_TOO_SMALL]          = "DST_TOO_SMALL",
-    [NEAT_ALLOC_ERR]              = "ALLOC_ERR",
-    [NEAT_INDEX_OUT_OF_BOUNDS]    = "INDEX_OUT_OF_BOUNDS",
-    [NEAT_BAD_RANGE]              = "BAD_RANGE",
-    [NEAT_NOT_FOUND]              = "NOT_FOUND",
-    [NEAT_UTF8_ERR]               = "UTF8_ERR",
-    [NEAT_ALIASING_NOT_SUPPORTED] = "ALIASING_NOT_SUPPORTED",
+    [NEAT_OK] = "NEAT_OK",
+    [NEAT_DST_TOO_SMALL] = "NEAT_DST_TOO_SMALL",
+    [NEAT_ALLOC_ERR] = "NEAT_ALLOC_ERR",
+    [NEAT_INDEX_OUT_OF_BOUNDS] = "NEAT_INDEX_OUT_OF_BOUNDS",
+    [NEAT_BAD_RANGE] = "NEAT_BAD_RANGE",
+    [NEAT_NOT_FOUND] = "NEAT_NOT_FOUND",
+    [NEAT_UTF8_ERR] = "NEAT_UTF8_ERR",
+    [NEAT_ALIASING_NOT_SUPPORTED] = "NEAT_ALIASING_NOT_SUPPORTED",
+    [NEAT_INCORRECT_TYPE] = "NEAT_INCORRECT_TYPE",
 };
 
 typedef struct Fixed_Mut_String_Ref
@@ -110,9 +111,6 @@ static const unsigned long long neat_ten_pows_ull[] = {
     1000000000000000000ull,
     10000000000000000000ull,
 };
-
-// Neat_String_View neat_strv_fmutstr_ref2(Fixed_Mut_String_Ref str, unsigned int begin);
-// Neat_String_View neat_strv_fmutstr_ref3(Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end);
 
 unsigned int neat_numstr_len(long long num)
 {
@@ -312,7 +310,7 @@ static inline unsigned int neat_uint_max(unsigned int a, unsigned int b)
     return a > b ? a : b;
 }
 
-static unsigned int neat_chars_strlen(char *chars, unsigned int cap)
+static unsigned int neat_chars_strlen(const char *chars, unsigned int cap)
 {
     char *str_end = memchr(chars, '\0', cap);
     unsigned int len;
@@ -356,7 +354,7 @@ NEAT_NODISCARD("discarding a new DString may cause memory leak") Neat_DString ne
     return ret;
 }
 
-Neat_DString neat_dstr_new_from(Neat_String_View str, Neat_Allocator *allocator)
+Neat_DString neat_dstr_new_from(const Neat_String_View str, Neat_Allocator *allocator)
 {
     Neat_DString ret = neat_dstr_new(str.len + 1, allocator);
     
@@ -380,7 +378,7 @@ void neat_dstr_shrink_to_fit_(Neat_DString *dstr)
     dstr->cap = actual_new_cap;
 }
 
-Neat_String_Error neat_dstr_maybe_grow(Neat_DString *dstr, unsigned int len_to_append)
+Neat_Error neat_dstr_maybe_grow(Neat_DString *dstr, unsigned int len_to_append)
 {
     if(dstr->cap - dstr->len <= len_to_append)
     {
@@ -400,10 +398,10 @@ Neat_String_Error neat_dstr_maybe_grow(Neat_DString *dstr, unsigned int len_to_a
     return NEAT_OK;
 }
 
-Neat_String_Error neat_dstr_append_strv(Neat_DString *dstr, Neat_String_View src)
+Neat_Error neat_dstr_append_strv(Neat_DString *dstr, const Neat_String_View src)
 {
     Neat_String_View to_append = src;
-    Neat_String_Error err = NEAT_OK;
+    Neat_Error err = NEAT_OK;
     if(neat_is_strv_within(neat_strv_dstr_ptr2(dstr, 0), to_append))
     {
         unsigned int begin_idx = to_append.chars - dstr->chars;
@@ -429,10 +427,10 @@ Neat_String_Error neat_dstr_append_strv(Neat_DString *dstr, Neat_String_View src
     return err;
 }
 
-Neat_String_Error neat_dstr_prepend_strv(Neat_DString *dstr, Neat_String_View src)
+Neat_Error neat_dstr_prepend_strv(Neat_DString *dstr, const Neat_String_View src)
 {
     Neat_String_View to_prepend = src;
-    Neat_String_Error err = NEAT_OK;
+    Neat_Error err = NEAT_OK;
     
     if(neat_is_strv_within(neat_strv_dstr_ptr2(dstr, 0), src))
     {
@@ -460,7 +458,7 @@ Neat_String_Error neat_dstr_prepend_strv(Neat_DString *dstr, Neat_String_View sr
     return err;
 }
 
-Neat_String_Error neat_dstr_insert_strv(Neat_DString *dstr, Neat_String_View src, unsigned int idx)
+Neat_Error neat_dstr_insert_strv(Neat_DString *dstr, const Neat_String_View src, unsigned int idx)
 {
     if(idx > dstr->len)
     {
@@ -492,26 +490,7 @@ Neat_String_Error neat_dstr_insert_strv(Neat_DString *dstr, Neat_String_View src
     return true;
 }
 
-void neat_dstr_append_tostr_(Neat_DString *dstr, Neat_DString tostr)
-{
-    neat_dstr_append_strv(dstr, neat_strv_dstr2(tostr, 0));
-    neat_dstr_deinit_(&tostr);
-}
-
-void neat_dstr_prepend_tostr_(Neat_DString *dstr, Neat_DString tostr)
-{
-    neat_dstr_prepend_strv(dstr, neat_strv_dstr2(tostr, 0));
-    neat_dstr_deinit_(&tostr);
-}
-
-Neat_String_Error neat_dstr_insert_tostr_(Neat_DString *dstr, Neat_DString tostr, unsigned int idx)
-{
-    Neat_String_Error ret = neat_dstr_insert_strv(dstr, neat_strv_dstr2(tostr, 0), idx);
-    neat_dstr_deinit_(&tostr);
-    return ret;
-}
-
-Neat_String_Error neat_dstr_ensure_cap_(Neat_DString *dstr, unsigned int at_least)
+Neat_Error neat_dstr_ensure_cap_(Neat_DString *dstr, unsigned int at_least)
 {
     if(dstr->cap < at_least)
     {
@@ -534,17 +513,17 @@ Neat_String_Error neat_dstr_ensure_cap_(Neat_DString *dstr, unsigned int at_leas
     return NEAT_OK;
 }
 
-char *neat_cstr_as_cstr(char *str)
-{
-    return str;
-}
-
-char *neat_ucstr_as_cstr(unsigned char *str)
+char *neat_cstr_as_cstr(const char *str)
 {
     return (char*) str;
 }
 
-char *neat_dstr_as_cstr(Neat_DString str)
+char *neat_ucstr_as_cstr(const unsigned char *str)
+{
+    return (char*) str;
+}
+
+char *neat_dstr_as_cstr(const Neat_DString str)
 {
     return (char*) str.chars;
 }
@@ -621,7 +600,7 @@ unsigned char neat_strv_ptr_char_at(const Neat_String_View *str, unsigned int id
     return str->chars[idx];
 }
 
-unsigned char neat_strbuf_char_at(Neat_String_Buffer str, unsigned int idx)
+unsigned char neat_strbuf_char_at(const Neat_String_Buffer str, unsigned int idx)
 {
     return str.chars[idx];
 }
@@ -631,17 +610,17 @@ unsigned char neat_strbuf_ptr_char_at(const Neat_String_Buffer *str, unsigned in
     return str->chars[idx];
 }
 
-unsigned char neat_sstr_ref_char_at(Neat_SString_Ref str, unsigned int idx)
+unsigned char neat_sstr_ref_char_at(const Neat_SString_Ref str, unsigned int idx)
 {
     return str.sstr->chars[idx];
 }
 
-unsigned char neat_mutstr_ref_char_at(Neat_Mut_String_Ref str, unsigned int idx)
+unsigned char neat_mutstr_ref_char_at(const Neat_Mut_String_Ref str, unsigned int idx)
 {
     return neat_mutstr_ref_as_cstr(str)[idx];
 }
 
-Neat_String_Error neat_mutstr_ref_set_len(Neat_Mut_String_Ref str, size_t new_len)
+Neat_Error neat_mutstr_ref_set_len(Neat_Mut_String_Ref str, size_t new_len)
 {
     switch(str.ty)
     {
@@ -665,7 +644,7 @@ Neat_String_Error neat_mutstr_ref_set_len(Neat_Mut_String_Ref str, size_t new_le
     return NEAT_OK;
 }
 
-unsigned int neat_dstr_cap(Neat_DString str)
+unsigned int neat_dstr_cap(const Neat_DString str)
 {
     return str.cap;
 }
@@ -675,7 +654,7 @@ unsigned int neat_dstr_ptr_cap(const Neat_DString *str)
     return str->cap;
 }
 
-unsigned int neat_strbuf_cap(Neat_String_Buffer str)
+unsigned int neat_strbuf_cap(const Neat_String_Buffer str)
 {
     return str.cap;
 }
@@ -695,7 +674,7 @@ unsigned int neat_buf_cap(const Neat_Buffer buf)
     return buf.cap;
 }
 
-unsigned int neat_mutstr_ref_cap(Neat_Mut_String_Ref str)
+unsigned int neat_mutstr_ref_cap(const Neat_Mut_String_Ref str)
 {
     switch(str.ty)
     {
@@ -707,7 +686,7 @@ unsigned int neat_mutstr_ref_cap(Neat_Mut_String_Ref str)
     };
 }
 
-Neat_String_Error neat_fmutstr_ref_insert(Fixed_Mut_String_Ref dst, Neat_String_View src, unsigned int idx)
+Neat_Error neat_fmutstr_ref_insert(Fixed_Mut_String_Ref dst, const Neat_String_View src, unsigned int idx)
 {
     unsigned int len = *dst.len;
     if(idx > len)
@@ -730,26 +709,26 @@ Neat_String_Error neat_fmutstr_ref_insert(Fixed_Mut_String_Ref dst, Neat_String_
     return nb_chars_to_insert == src.len ? NEAT_OK : NEAT_DST_TOO_SMALL;
 }
 
-Neat_String_Error neat_buf_insert(Neat_Buffer dst, Neat_String_View src, unsigned int idx)
+Neat_Error neat_buf_insert(Neat_Buffer dst, const Neat_String_View src, unsigned int idx)
 {
     unsigned int len;
     Fixed_Mut_String_Ref as_fmutstr_ref = neat_buf_as_fmutstr_ref(dst, &len);
     return neat_fmutstr_ref_insert(as_fmutstr_ref, src, idx);
 }
 
-Neat_String_Error neat_sstr_ref_insert(Neat_SString_Ref dst, Neat_String_View src, unsigned int idx)
+Neat_Error neat_sstr_ref_insert(Neat_SString_Ref dst, const Neat_String_View src, unsigned int idx)
 {
     Fixed_Mut_String_Ref as_fmutstr_ref = neat_sstr_ref_as_fmutstr_ref(dst);
     return neat_fmutstr_ref_insert(as_fmutstr_ref, src, idx);
 }
 
-Neat_String_Error neat_strbuf_insert(Neat_String_Buffer *dst, Neat_String_View src, unsigned int idx)
+Neat_Error neat_strbuf_insert(Neat_String_Buffer *dst, const Neat_String_View src, unsigned int idx)
 {
     Fixed_Mut_String_Ref as_fmutstr_ref = neat_strbuf_as_fmutstr_ref(dst);
     return neat_fmutstr_ref_insert(as_fmutstr_ref, src, idx);
 }
 
-Neat_String_Error neat_mutstr_ref_insert(Neat_Mut_String_Ref dst, Neat_String_View src, unsigned int idx)
+Neat_Error neat_mutstr_ref_insert(Neat_Mut_String_Ref dst, const Neat_String_View src, unsigned int idx)
 {
     switch(dst.ty)
     {
@@ -761,7 +740,7 @@ Neat_String_Error neat_mutstr_ref_insert(Neat_Mut_String_Ref dst, Neat_String_Vi
     };
 }
 
-bool neat_strv_equal(Neat_String_View str1, Neat_String_View str2)
+bool neat_strv_equal(const Neat_String_View str1, const Neat_String_View str2)
 {
     return
     (str1.len == str2.len) &&
@@ -790,7 +769,7 @@ Neat_String_View neat_strv_memmem(const Neat_String_View hay, const Neat_String_
     return (Neat_String_View){.chars = NULL, .len = 0};
 }
 
-Neat_String_Error neat_fmutstr_ref_copy(Fixed_Mut_String_Ref dst, Neat_String_View src)
+Neat_Error neat_fmutstr_ref_copy(Fixed_Mut_String_Ref dst, const Neat_String_View src)
 {
     unsigned int chars_to_copy = neat_uint_min(src.len, dst.cap - 1);
     
@@ -802,9 +781,9 @@ Neat_String_Error neat_fmutstr_ref_copy(Fixed_Mut_String_Ref dst, Neat_String_Vi
     return chars_to_copy == src.len ? NEAT_OK : NEAT_DST_TOO_SMALL;
 }
 
-Neat_String_Error neat_dstr_copy(Neat_DString *dstr, Neat_String_View src)
+Neat_Error neat_dstr_copy(Neat_DString *dstr, Neat_String_View src)
 {
-    Neat_String_Error err = neat_dstr_ensure_cap_(dstr, src.len + 1);
+    Neat_Error err = neat_dstr_ensure_cap_(dstr, src.len + 1);
     
     if(err == NEAT_OK)
     {
@@ -817,23 +796,23 @@ Neat_String_Error neat_dstr_copy(Neat_DString *dstr, Neat_String_View src)
     return err;
 }
 
-Neat_String_Error neat_buf_copy(Neat_Buffer dst, Neat_String_View src)
+Neat_Error neat_buf_copy(Neat_Buffer dst, const Neat_String_View src)
 {
     unsigned int len;
     return neat_fmutstr_ref_copy(neat_buf_as_fmutstr_ref(dst, &len), src);
 }
 
-Neat_String_Error neat_strbuf_copy(Neat_String_Buffer *dst, Neat_String_View src)
+Neat_Error neat_strbuf_copy(Neat_String_Buffer *dst, const Neat_String_View src)
 {
     return neat_fmutstr_ref_copy(neat_strbuf_as_fmutstr_ref(dst), src);
 }
 
-Neat_String_Error neat_sstr_ref_copy(Neat_SString_Ref dst, Neat_String_View src)
+Neat_Error neat_sstr_ref_copy(Neat_SString_Ref dst, const Neat_String_View src)
 {
     return neat_fmutstr_ref_copy(neat_sstr_ref_as_fmutstr_ref(dst), src);
 }
 
-Neat_String_Error neat_mutstr_ref_copy(Neat_Mut_String_Ref dst, Neat_String_View src)
+Neat_Error neat_mutstr_ref_copy(Neat_Mut_String_Ref dst, const Neat_String_View src)
 {
     switch(dst.ty)
     {
@@ -845,9 +824,9 @@ Neat_String_Error neat_mutstr_ref_copy(Neat_Mut_String_Ref dst, Neat_String_View
     };
 }
 
-Neat_String_Error neat_dstr_putc(Neat_DString *dst, unsigned char c)
+Neat_Error neat_dstr_putc(Neat_DString *dst, unsigned char c)
 {
-    Neat_String_Error err = neat_dstr_ensure_cap_(dst, dst->len + 2);
+    Neat_Error err = neat_dstr_ensure_cap_(dst, dst->len + 2);
     if(err != NEAT_OK)
         return err;
     
@@ -858,7 +837,7 @@ Neat_String_Error neat_dstr_putc(Neat_DString *dst, unsigned char c)
     return NEAT_OK;
 }
 
-Neat_String_Error neat_fmutstr_ref_putc(Fixed_Mut_String_Ref dst, unsigned char c)
+Neat_Error neat_fmutstr_ref_putc(Fixed_Mut_String_Ref dst, unsigned char c)
 {
     if(dst.cap - *dst.len <= 1)
     {
@@ -872,22 +851,22 @@ Neat_String_Error neat_fmutstr_ref_putc(Fixed_Mut_String_Ref dst, unsigned char 
     return NEAT_OK;
 }
 
-Neat_String_Error neat_strbuf_putc(Neat_String_Buffer *dst, unsigned char c)
+Neat_Error neat_strbuf_putc(Neat_String_Buffer *dst, unsigned char c)
 {
     return neat_fmutstr_ref_putc(neat_strbuf_as_fmutstr_ref(dst), c);
 }
 
-Neat_String_Error neat_sstr_ref_putc(Neat_SString_Ref dst, unsigned char c)
+Neat_Error neat_sstr_ref_putc(Neat_SString_Ref dst, unsigned char c)
 {
     return neat_fmutstr_ref_putc(neat_sstr_ref_as_fmutstr_ref(dst), c);
 }
 
-Neat_String_Error neat_buf_putc(Neat_Buffer dst, unsigned char c)
+Neat_Error neat_buf_putc(Neat_Buffer dst, unsigned char c)
 {
     return neat_fmutstr_ref_putc(neat_buf_as_fmutstr_ref(dst, &(unsigned int){0}), c);
 }
 
-Neat_String_Error neat_mutstr_ref_putc(Neat_Mut_String_Ref dst, unsigned char c)
+Neat_Error neat_mutstr_ref_putc(Neat_Mut_String_Ref dst, unsigned char c)
 {
     switch(dst.ty)
     {
@@ -899,7 +878,7 @@ Neat_String_Error neat_mutstr_ref_putc(Neat_Mut_String_Ref dst, unsigned char c)
     }
 }
 
-Neat_String_Error neat_fmutstr_ref_append(Fixed_Mut_String_Ref dst, Neat_String_View src)
+Neat_Error neat_fmutstr_ref_append(Fixed_Mut_String_Ref dst, const Neat_String_View src)
 {
     unsigned int dst_len = *dst.len;
     
@@ -919,17 +898,17 @@ Neat_String_Error neat_fmutstr_ref_append(Fixed_Mut_String_Ref dst, Neat_String_
     return chars_to_copy == src.len ? NEAT_OK : NEAT_DST_TOO_SMALL;
 }
 
-Neat_String_Error neat_buf_append(Neat_Buffer dst, Neat_String_View src)
+Neat_Error neat_buf_append(Neat_Buffer dst, const Neat_String_View src)
 {
     return neat_fmutstr_ref_append(neat_buf_as_fmutstr_ref(dst, &(unsigned int){0}), src);
 }
 
-Neat_String_Error neat_strbuf_append(Neat_String_Buffer *dst, Neat_String_View src)
+Neat_Error neat_strbuf_append(Neat_String_Buffer *dst, const Neat_String_View src)
 {
     return neat_fmutstr_ref_append(neat_strbuf_as_fmutstr_ref(dst), src);
 }
 
-Neat_String_Error neat_sstr_ref_append(Neat_SString_Ref dst, Neat_String_View src)
+Neat_Error neat_sstr_ref_append(Neat_SString_Ref dst, const Neat_String_View src)
 {
     return neat_fmutstr_ref_append(neat_sstr_ref_as_fmutstr_ref(dst), src);
 }
@@ -937,7 +916,7 @@ Neat_String_Error neat_sstr_ref_append(Neat_SString_Ref dst, Neat_String_View sr
 // TODO rename dstr_ functions to match others
 // also rename lib to STS
 
-Neat_String_Error neat_mutstr_ref_append(Neat_Mut_String_Ref dst, Neat_String_View src)
+Neat_Error neat_mutstr_ref_append(Neat_Mut_String_Ref dst, const Neat_String_View src)
 {
     switch(dst.ty)
     {
@@ -949,7 +928,7 @@ Neat_String_Error neat_mutstr_ref_append(Neat_Mut_String_Ref dst, Neat_String_Vi
     };
 }
 
-Neat_String_Error neat_fmutstr_ref_delete_range(Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end)
+Neat_Error neat_fmutstr_ref_delete_range(Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end)
 {
     unsigned int len = *str.len;
     
@@ -974,27 +953,27 @@ Neat_String_Error neat_fmutstr_ref_delete_range(Fixed_Mut_String_Ref str, unsign
     return NEAT_OK;
 }
 
-Neat_String_Error neat_dstr_delete_range(Neat_DString *dstr, unsigned int begin, unsigned int end)
+Neat_Error neat_dstr_delete_range(Neat_DString *dstr, unsigned int begin, unsigned int end)
 {
     return neat_fmutstr_ref_delete_range(neat_dstr_as_fmutstr_ref(dstr), begin, end);
 }
 
-Neat_String_Error neat_buf_delete_range(Neat_Buffer buf, unsigned int begin, unsigned int end)
+Neat_Error neat_buf_delete_range(Neat_Buffer buf, unsigned int begin, unsigned int end)
 {
     return neat_fmutstr_ref_delete_range(neat_buf_as_fmutstr_ref(buf, &(unsigned int){0}), begin, end);
 }
 
-Neat_String_Error neat_strbuf_delete_range(Neat_String_Buffer *strbuf, unsigned int begin, unsigned int end)
+Neat_Error neat_strbuf_delete_range(Neat_String_Buffer *strbuf, unsigned int begin, unsigned int end)
 {
     return neat_fmutstr_ref_delete_range(neat_strbuf_as_fmutstr_ref(strbuf), begin, end);
 }
 
-Neat_String_Error neat_sstr_ref_delete_range(Neat_SString_Ref sstr_ref, unsigned int begin, unsigned int end)
+Neat_Error neat_sstr_ref_delete_range(Neat_SString_Ref sstr_ref, unsigned int begin, unsigned int end)
 {
     return neat_fmutstr_ref_delete_range(neat_sstr_ref_as_fmutstr_ref(sstr_ref), begin, end);
 }
 
-Neat_String_Error neat_mutstr_ref_delete_range(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end)
+Neat_Error neat_mutstr_ref_delete_range(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end)
 {
     switch(str.ty)
     {
@@ -1006,16 +985,16 @@ Neat_String_Error neat_mutstr_ref_delete_range(Neat_Mut_String_Ref str, unsigned
     };
 }
 
-Neat_String_View_Array neat_strv_arr_from_carr(Neat_String_View *carr, unsigned int nb)
+Neat_String_View_Array neat_strv_arr_from_carr(const Neat_String_View *carr, unsigned int nb)
 {
     return (Neat_String_View_Array){
         .cap  = nb,
-        .len   = nb,
-        .strs = carr
+        .len  = nb,
+        .strs = (Neat_String_View*) carr
     };
 }
 
-NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array neat_strv_split(Neat_String_View str, Neat_String_View delim, Neat_Allocator *allocator)
+NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array neat_strv_split(const Neat_String_View str, const Neat_String_View delim, Neat_Allocator *allocator)
 {
     if(delim.len > str.len)
     {
@@ -1126,9 +1105,9 @@ NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array
     }
 }
 
-Neat_String_Error neat_strv_arr_join_into_dstr(Neat_DString *dstr, Neat_String_View_Array strs, Neat_String_View delim)
+Neat_Error neat_strv_arr_join_into_dstr(Neat_DString *dstr, const Neat_String_View_Array strs, const Neat_String_View delim)
 {
-    Neat_String_Error err = NEAT_OK;
+    Neat_Error err = NEAT_OK;
     
     if(strs.len > 0)
         err = neat_dstr_copy(dstr, strs.strs[0]);
@@ -1142,9 +1121,9 @@ Neat_String_Error neat_strv_arr_join_into_dstr(Neat_DString *dstr, Neat_String_V
     return err;
 }
 
-Neat_String_Error neat_strv_arr_join_into_fmutstr_ref(Fixed_Mut_String_Ref dst, Neat_String_View_Array strs, Neat_String_View delim)
+Neat_Error neat_strv_arr_join_into_fmutstr_ref(Fixed_Mut_String_Ref dst, const Neat_String_View_Array strs, const Neat_String_View delim)
 {
-    Neat_String_Error err = NEAT_OK;
+    Neat_Error err = NEAT_OK;
     
     if(strs.len > 0)
         err = neat_fmutstr_ref_copy(dst, strs.strs[0]);
@@ -1158,22 +1137,22 @@ Neat_String_Error neat_strv_arr_join_into_fmutstr_ref(Fixed_Mut_String_Ref dst, 
     return err;
 }
 
-Neat_String_Error neat_strv_arr_join_into_buf(Neat_Buffer dst, Neat_String_View_Array strs, Neat_String_View delim)
+Neat_Error neat_strv_arr_join_into_buf(Neat_Buffer dst, const Neat_String_View_Array strs, const Neat_String_View delim)
 {
     return neat_strv_arr_join_into_fmutstr_ref(neat_buf_as_fmutstr_ref(dst, &(unsigned int){0}), strs, delim);
 }
 
-Neat_String_Error neat_strv_arr_join_into_strbuf(Neat_String_Buffer *dst, Neat_String_View_Array strs, Neat_String_View delim)
+Neat_Error neat_strv_arr_join_into_strbuf(Neat_String_Buffer *dst, const Neat_String_View_Array strs, const Neat_String_View delim)
 {
     return neat_strv_arr_join_into_fmutstr_ref(neat_strbuf_as_fmutstr_ref(dst), strs, delim);
 }
 
-Neat_String_Error neat_strv_arr_join_into_sstr_ref(Neat_SString_Ref dst, Neat_String_View_Array strs, Neat_String_View delim)
+Neat_Error neat_strv_arr_join_into_sstr_ref(Neat_SString_Ref dst, const Neat_String_View_Array strs, const Neat_String_View delim)
 {
     return neat_strv_arr_join_into_fmutstr_ref(neat_sstr_ref_as_fmutstr_ref(dst), strs, delim);
 }
 
-Neat_String_Error neat_strv_arr_join(Neat_Mut_String_Ref dst, Neat_String_View_Array strs, Neat_String_View delim)
+Neat_Error neat_strv_arr_join(Neat_Mut_String_Ref dst, const Neat_String_View_Array strs, const Neat_String_View delim)
 {
     switch(dst.ty)
     {
@@ -1185,7 +1164,7 @@ Neat_String_Error neat_strv_arr_join(Neat_Mut_String_Ref dst, Neat_String_View_A
     };
 }
 
-Neat_String_Error neat_dstr_replace_range(Neat_DString *dstr, unsigned int begin, unsigned int end, const Neat_String_View replacement)
+Neat_Error neat_dstr_replace_range(Neat_DString *dstr, unsigned int begin, unsigned int end, const Neat_String_View replacement)
 {
     if(begin >= dstr->len)
         return NEAT_INDEX_OUT_OF_BOUNDS;
@@ -1220,7 +1199,7 @@ Neat_String_Error neat_dstr_replace_range(Neat_DString *dstr, unsigned int begin
     return NEAT_OK;
 }
 
-void neat_fmutstr_ref_replace_range_unsafe(Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, Neat_String_View replacement)
+void neat_fmutstr_ref_replace_range_unsafe(Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
 {
     unsigned int len_to_delete = end - begin;
     if(len_to_delete > replacement.len)
@@ -1247,7 +1226,7 @@ void neat_fmutstr_ref_replace_range_unsafe(Fixed_Mut_String_Ref str, unsigned in
 
 Neat_String_View neat_strv_fmutstr_ref2(Fixed_Mut_String_Ref str, unsigned int begin);
 
-Neat_String_Error neat_fmutstr_ref_replace_range(Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, Neat_String_View replacement)
+Neat_Error neat_fmutstr_ref_replace_range(Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
 {
     if(begin >= *str.len)
         return NEAT_INDEX_OUT_OF_BOUNDS;
@@ -1256,28 +1235,28 @@ Neat_String_Error neat_fmutstr_ref_replace_range(Fixed_Mut_String_Ref str, unsig
     if(neat_is_strv_within(neat_strv_fmutstr_ref2(str, 0), replacement))
         return NEAT_ALIASING_NOT_SUPPORTED;
     
-    Neat_String_Error err = (*str.len - (end - begin) + replacement.len) >= str.cap ? NEAT_DST_TOO_SMALL : NEAT_OK;
+    Neat_Error err = (*str.len - (end - begin) + replacement.len) >= str.cap ? NEAT_DST_TOO_SMALL : NEAT_OK;
     neat_fmutstr_ref_replace_range_unsafe(str, begin, end, replacement);
     
     return err;
 }
 
-Neat_String_Error neat_buf_replace_range(Neat_Buffer buf, unsigned int begin, unsigned int end, Neat_String_View replacement)
+Neat_Error neat_buf_replace_range(Neat_Buffer buf, unsigned int begin, unsigned int end, const Neat_String_View replacement)
 {
     return neat_fmutstr_ref_replace_range(neat_buf_as_fmutstr_ref(buf, &(unsigned int){0}), begin, end, replacement);
 }
 
-Neat_String_Error neat_strbuf_replace_range(Neat_String_Buffer *strbuf, unsigned int begin, unsigned int end, Neat_String_View replacement)
+Neat_Error neat_strbuf_replace_range(Neat_String_Buffer *strbuf, unsigned int begin, unsigned int end, const Neat_String_View replacement)
 {
     return neat_fmutstr_ref_replace_range(neat_strbuf_as_fmutstr_ref(strbuf), begin, end, replacement);
 }
 
-Neat_String_Error neat_sstr_ref_replace_range(Neat_SString_Ref sstr_ref, unsigned int begin, unsigned int end, Neat_String_View replacement)
+Neat_Error neat_sstr_ref_replace_range(Neat_SString_Ref sstr_ref, unsigned int begin, unsigned int end, const Neat_String_View replacement)
 {
     return neat_fmutstr_ref_replace_range(neat_sstr_ref_as_fmutstr_ref(sstr_ref), begin, end, replacement);
 }
 
-Neat_String_Error neat_mustr_ref_replace_range(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
+Neat_Error neat_mustr_ref_replace_range(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
 {
     switch(str.ty)
     {
@@ -1289,7 +1268,7 @@ Neat_String_Error neat_mustr_ref_replace_range(Neat_Mut_String_Ref str, unsigned
     };
 }
 
-Neat_String_Error neat_fmutstr_ref_replace(Fixed_Mut_String_Ref str, Neat_String_View target, Neat_String_View replacement)
+Neat_Error neat_fmutstr_ref_replace(Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
 {
     Neat_String_View as_strv = neat_strv_fmutstr_ref2(str, 0);
     if(neat_is_strv_within(as_strv, target) || neat_is_strv_within(as_strv, replacement))
@@ -1297,7 +1276,7 @@ Neat_String_Error neat_fmutstr_ref_replace(Fixed_Mut_String_Ref str, Neat_String
         return NEAT_ALIASING_NOT_SUPPORTED;
     }
     
-    Neat_String_Error err = NEAT_OK;
+    Neat_Error err = NEAT_OK;
     
     if(target.len == 0)
     {
@@ -1392,7 +1371,7 @@ Neat_String_Error neat_fmutstr_ref_replace(Fixed_Mut_String_Ref str, Neat_String
     return err;
 }
 
-Neat_String_Error neat_dstr_replace(Neat_DString *dstr, Neat_String_View target, Neat_String_View replacement)
+Neat_Error neat_dstr_replace(Neat_DString *dstr, const Neat_String_View target, const Neat_String_View replacement)
 {
     Neat_String_View as_strv = neat_strv_dstr_ptr2(dstr, 0);
     if(neat_is_strv_within(as_strv, target) || neat_is_strv_within(as_strv, replacement))
@@ -1400,7 +1379,7 @@ Neat_String_Error neat_dstr_replace(Neat_DString *dstr, Neat_String_View target,
         return NEAT_ALIASING_NOT_SUPPORTED;
     }
     
-    Neat_String_Error err = NEAT_OK;
+    Neat_Error err = NEAT_OK;
     
     if(target.len == 0)
     {
@@ -1485,22 +1464,22 @@ Neat_String_Error neat_dstr_replace(Neat_DString *dstr, Neat_String_View target,
     return err;
 }
 
-Neat_String_Error neat_buf_replace(Neat_Buffer str, Neat_String_View target, Neat_String_View replacement)
+Neat_Error neat_buf_replace(Neat_Buffer str, const Neat_String_View target, const Neat_String_View replacement)
 {
     return neat_fmutstr_ref_replace(neat_buf_as_fmutstr_ref(str, &(unsigned int){0}), target, replacement);
 }
 
-Neat_String_Error neat_strbuf_replace(Neat_String_Buffer *str, Neat_String_View target, Neat_String_View replacement)
+Neat_Error neat_strbuf_replace(Neat_String_Buffer *str, const Neat_String_View target, const Neat_String_View replacement)
 {
     return neat_fmutstr_ref_replace(neat_strbuf_as_fmutstr_ref(str), target, replacement);
 }
 
-Neat_String_Error neat_sstr_ref_replace(Neat_SString_Ref str, Neat_String_View target, Neat_String_View replacement)
+Neat_Error neat_sstr_ref_replace(Neat_SString_Ref str, const Neat_String_View target, const Neat_String_View replacement)
 {
     return neat_fmutstr_ref_replace(neat_sstr_ref_as_fmutstr_ref(str), target, replacement);
 }
 
-Neat_String_Error neat_mutstr_ref_replace(Neat_Mut_String_Ref str, Neat_String_View target, Neat_String_View replacement)
+Neat_Error neat_mutstr_ref_replace(Neat_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
 {
     switch(str.ty)
     {
@@ -1512,9 +1491,9 @@ Neat_String_Error neat_mutstr_ref_replace(Neat_Mut_String_Ref str, Neat_String_V
     };
 }
 
-Neat_String_Error neat_dstr_replace_first(Neat_DString *dstr, Neat_String_View target, Neat_String_View replacement)
+Neat_Error neat_dstr_replace_first(Neat_DString *dstr, const Neat_String_View target, const Neat_String_View replacement)
 {
-    Neat_String_Error err = NEAT_NOT_FOUND;
+    Neat_Error err = NEAT_NOT_FOUND;
     
     Neat_String_View match = neat_strv_memmem(neat_strv_dstr_ptr2(dstr, 0), target);
     if(match.chars != NULL)
@@ -1533,9 +1512,9 @@ Neat_String_Error neat_dstr_replace_first(Neat_DString *dstr, Neat_String_View t
     return err;
 }
 
-Neat_String_Error neat_fmutstr_ref_replace_first(Fixed_Mut_String_Ref str, Neat_String_View target, Neat_String_View replacement)
+Neat_Error neat_fmutstr_ref_replace_first(Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
 {
-    Neat_String_Error err = NEAT_NOT_FOUND;
+    Neat_Error err = NEAT_NOT_FOUND;
     
     Neat_String_View match = neat_strv_memmem(neat_strv_fmutstr_ref2(str, 0), target);
     if(match.chars != NULL)
@@ -1566,22 +1545,22 @@ Neat_String_Error neat_fmutstr_ref_replace_first(Fixed_Mut_String_Ref str, Neat_
     return err;
 }
 
-Neat_String_Error neat_buf_replace_first(Neat_Buffer str, Neat_String_View target, Neat_String_View replacement)
+Neat_Error neat_buf_replace_first(Neat_Buffer str, const Neat_String_View target, const Neat_String_View replacement)
 {
     return neat_fmutstr_ref_replace_first(neat_buf_as_fmutstr_ref(str, &(unsigned int){0}), target, replacement);
 }
 
-Neat_String_Error neat_strbuf_replace_first(Neat_String_Buffer *str, Neat_String_View target, Neat_String_View replacement)
+Neat_Error neat_strbuf_replace_first(Neat_String_Buffer *str, const Neat_String_View target, const Neat_String_View replacement)
 {
     return neat_fmutstr_ref_replace_first(neat_strbuf_as_fmutstr_ref(str), target, replacement);
 }
 
-Neat_String_Error neat_sstr_ref_replace_first(Neat_SString_Ref str, Neat_String_View target, Neat_String_View replacement)
+Neat_Error neat_sstr_ref_replace_first(Neat_SString_Ref str, const Neat_String_View target, const Neat_String_View replacement)
 {
     return neat_fmutstr_ref_replace_first(neat_sstr_ref_as_fmutstr_ref(str), target, replacement);
 }
 
-Neat_String_Error neat_mutstr_ref_replace_first(Neat_Mut_String_Ref str, Neat_String_View target, Neat_String_View replacement)
+Neat_Error neat_mutstr_ref_replace_first(Neat_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
 {
     switch(str.ty)
     {
@@ -1593,7 +1572,7 @@ Neat_String_Error neat_mutstr_ref_replace_first(Neat_Mut_String_Ref str, Neat_St
     };
 }
 
-unsigned int neat_strv_count(Neat_String_View hay, Neat_String_View needle)
+unsigned int neat_strv_count(const Neat_String_View hay, const Neat_String_View needle)
 {
     if(needle.len == 0)
         return 0;
@@ -1610,12 +1589,12 @@ unsigned int neat_strv_count(Neat_String_View hay, Neat_String_View needle)
     return count;
 }
 
-bool neat_strv_starts_with(Neat_String_View hay, Neat_String_View needle)
+bool neat_strv_starts_with(const Neat_String_View hay, const Neat_String_View needle)
 {
     return (needle.len <= hay.len) && (memcmp(hay.chars, needle.chars, needle.len) == 0);
 }
 
-bool neat_strv_ends_with(Neat_String_View hay, Neat_String_View needle)
+bool neat_strv_ends_with(const Neat_String_View hay, const Neat_String_View needle)
 {
     return (needle.len <= hay.len) && (memcmp(hay.chars + hay.len - needle.len, needle.chars, needle.len) == 0);
 }
@@ -1636,8 +1615,7 @@ void neat_chars_toupper(unsigned char *chars, unsigned int len)
     }
 }
 
-// TODO this should return NEAT_UTF8_ERR if invalid utf8
-Neat_String_Error neat_mutstr_ref_toupper(Neat_Mut_String_Ref str)
+Neat_Error neat_mutstr_ref_toupper(Neat_Mut_String_Ref str)
 {
     switch(str.ty)
     {
@@ -1657,7 +1635,7 @@ Neat_String_Error neat_mutstr_ref_toupper(Neat_Mut_String_Ref str)
     return NEAT_OK;
 }
 
-Neat_String_Error neat_mutstr_ref_clear(Neat_Mut_String_Ref str)
+Neat_Error neat_mutstr_ref_clear(Neat_Mut_String_Ref str)
 {
     switch(str.ty)
     {
@@ -1677,7 +1655,7 @@ Neat_String_Error neat_mutstr_ref_clear(Neat_Mut_String_Ref str)
     return NEAT_OK;
 }
 
-Neat_Mut_String_Ref neat_cstr_as_mutstr_ref(char *str)
+Neat_Mut_String_Ref neat_cstr_as_mutstr_ref(const char *str)
 {
     unsigned int len = (unsigned int) strlen(str);
     
@@ -1689,43 +1667,43 @@ Neat_Mut_String_Ref neat_cstr_as_mutstr_ref(char *str)
     return neat_buf_as_mutstr_ref(asbuf);
 }
 
-Neat_Mut_String_Ref neat_ucstr_as_mutstr_ref(unsigned char *str)
+Neat_Mut_String_Ref neat_ucstr_as_mutstr_ref(const unsigned char *str)
 {
     unsigned int len = (unsigned int) strlen((char*) str);
     
     Neat_Buffer asbuf = {
-        .ptr = str,
+        .ptr = (unsigned char*) str,
         .cap = len + 1
     };
     
     return neat_buf_as_mutstr_ref(asbuf);
 }
 
-Neat_Mut_String_Ref neat_buf_as_mutstr_ref(Neat_Buffer str)
+Neat_Mut_String_Ref neat_buf_as_mutstr_ref(const Neat_Buffer str)
 {
     return (Neat_Mut_String_Ref){
         .ty = NEAT_CARR_TY,
-        .str.carr = str
+        .str.carr = *(Neat_Buffer*) &str
     };
 }
 
-Neat_Mut_String_Ref neat_dstr_ptr_as_mutstr_ref(Neat_DString *str)
+Neat_Mut_String_Ref neat_dstr_ptr_as_mutstr_ref(const Neat_DString *str)
 {
     return (Neat_Mut_String_Ref){
         .ty = NEAT_DSTR_TY,
-        .str.dstr = str
+        .str.dstr = (Neat_DString*) str
     };
 }
 
-Neat_Mut_String_Ref neat_strbuf_ptr_as_mutstr_ref(Neat_String_Buffer *str)
+Neat_Mut_String_Ref neat_strbuf_ptr_as_mutstr_ref(const Neat_String_Buffer *str)
 {
     return (Neat_Mut_String_Ref){
         .ty = NEAT_STRBUF_TY,
-        .str.strbuf = str
+        .str.strbuf = (Neat_String_Buffer*) str
     };
 }
 
-Neat_Mut_String_Ref neat_sstr_ref_as_mutstr_ref(Neat_SString_Ref str)
+Neat_Mut_String_Ref neat_sstr_ref_as_mutstr_ref(const Neat_SString_Ref str)
 {
     return (Neat_Mut_String_Ref){
         .ty = NEAT_SSTR_REF_TY,
@@ -1733,12 +1711,12 @@ Neat_Mut_String_Ref neat_sstr_ref_as_mutstr_ref(Neat_SString_Ref str)
     };
 }
 
-Neat_Mut_String_Ref neat_mutstr_ref_as_mutstr_ref(Neat_Mut_String_Ref str)
+Neat_Mut_String_Ref neat_mutstr_ref_as_mutstr_ref(const Neat_Mut_String_Ref str)
 {
     return str;
 }
 
-Neat_String_Buffer neat_strbuf_from_cstr_(char *ptr, unsigned int cap)
+Neat_String_Buffer neat_strbuf_from_cstr_(const char *ptr, unsigned int cap)
 {
     unsigned int len = neat_chars_strlen(ptr, cap);
     
@@ -1749,7 +1727,7 @@ Neat_String_Buffer neat_strbuf_from_cstr_(char *ptr, unsigned int cap)
     };
 }
 
-Neat_String_Buffer neat_strbuf_from_buf_(Neat_Buffer buf)
+Neat_String_Buffer neat_strbuf_from_buf_(const Neat_Buffer buf)
 {
     Neat_String_Buffer ret = {
         .cap = buf.cap,
@@ -1763,7 +1741,7 @@ Neat_String_Buffer neat_strbuf_from_buf_(Neat_Buffer buf)
     return ret;
 }
 
-Neat_String_View neat_strv_cstr2(char *str, unsigned int begin)
+Neat_String_View neat_strv_cstr2(const char *str, unsigned int begin)
 {
     unsigned int len = strlen(str);
     
@@ -1781,7 +1759,7 @@ Neat_String_View neat_strv_cstr2(char *str, unsigned int begin)
     };
 }
 
-Neat_String_View neat_strv_ucstr2(unsigned char *str, unsigned int begin)
+Neat_String_View neat_strv_ucstr2(const unsigned char *str, unsigned int begin)
 {
     unsigned int len = strlen((char*) str);
     
@@ -1795,16 +1773,16 @@ Neat_String_View neat_strv_ucstr2(unsigned char *str, unsigned int begin)
     
     return (Neat_String_View){
         .len   = len - begin,
-        .chars = str + begin
+        .chars = (unsigned char*) str + begin
     };
 }
 
-Neat_String_View neat_strv_dstr2(Neat_DString str, unsigned int begin)
+Neat_String_View neat_strv_dstr2(const Neat_DString str, unsigned int begin)
 {
     return neat_strv_dstr_ptr2(&str, begin);
 }
 
-Neat_String_View neat_strv_dstr_ptr2(Neat_DString *str, unsigned int begin)
+Neat_String_View neat_strv_dstr_ptr2(const Neat_DString *str, unsigned int begin)
 {
     if(begin > str->len)
     {
@@ -1820,7 +1798,7 @@ Neat_String_View neat_strv_dstr_ptr2(Neat_DString *str, unsigned int begin)
     };
 }
 
-Neat_String_View neat_strv_strv_ptr2(Neat_String_View *str, unsigned int begin)
+Neat_String_View neat_strv_strv_ptr2(const Neat_String_View *str, unsigned int begin)
 {
     if(begin > str->len)
     {
@@ -1836,12 +1814,12 @@ Neat_String_View neat_strv_strv_ptr2(Neat_String_View *str, unsigned int begin)
     };
 }
 
-Neat_String_View neat_strv_strv2(Neat_String_View str, unsigned int begin)
+Neat_String_View neat_strv_strv2(const Neat_String_View str, unsigned int begin)
 {
     return neat_strv_strv_ptr2(&str, begin);
 }
 
-Neat_String_View neat_strv_strbuf_ptr2(Neat_String_Buffer *str, unsigned int begin)
+Neat_String_View neat_strv_strbuf_ptr2(const Neat_String_Buffer *str, unsigned int begin)
 {
     if(begin > str->len)
     {
@@ -1857,12 +1835,12 @@ Neat_String_View neat_strv_strbuf_ptr2(Neat_String_Buffer *str, unsigned int beg
     };
 }
 
-Neat_String_View neat_strv_strbuf2(Neat_String_Buffer str, unsigned int begin)
+Neat_String_View neat_strv_strbuf2(const Neat_String_Buffer str, unsigned int begin)
 {
     return neat_strv_strbuf_ptr2(&str, begin);
 }
 
-Neat_String_View neat_strv_sstr_ref2(Neat_SString_Ref str, unsigned int begin)
+Neat_String_View neat_strv_sstr_ref2(const Neat_SString_Ref str, unsigned int begin)
 {
     if(begin > str.sstr->len)
     {
@@ -1878,8 +1856,7 @@ Neat_String_View neat_strv_sstr_ref2(Neat_SString_Ref str, unsigned int begin)
     };
 }
 
-// TODO add strv_buf
-Neat_String_View neat_strv_mutstr_ref2(Neat_Mut_String_Ref str, unsigned int begin)
+Neat_String_View neat_strv_mutstr_ref2(const Neat_Mut_String_Ref str, unsigned int begin)
 {
     switch(str.ty)
     {
@@ -1891,7 +1868,7 @@ Neat_String_View neat_strv_mutstr_ref2(Neat_Mut_String_Ref str, unsigned int beg
     }
 }
 
-Neat_String_View neat_strv_fmutstr_ref2(Fixed_Mut_String_Ref str, unsigned int begin)
+Neat_String_View neat_strv_fmutstr_ref2(const Fixed_Mut_String_Ref str, unsigned int begin)
 {
     unsigned int len = *str.len;
     
@@ -1909,7 +1886,7 @@ Neat_String_View neat_strv_fmutstr_ref2(Fixed_Mut_String_Ref str, unsigned int b
     };
 }
 
-Neat_String_View neat_strv_fmutstr_ref3(Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end)
+Neat_String_View neat_strv_fmutstr_ref3(const Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end)
 {
     unsigned int len = *str.len;
     
@@ -1927,7 +1904,7 @@ Neat_String_View neat_strv_fmutstr_ref3(Fixed_Mut_String_Ref str, unsigned int b
     };
 }
 
-Neat_String_View neat_strv_cstr3(char *str, unsigned int begin, unsigned int end)
+Neat_String_View neat_strv_cstr3(const char *str, unsigned int begin, unsigned int end)
 {
     unsigned int len = strlen(str);
     
@@ -1945,7 +1922,7 @@ Neat_String_View neat_strv_cstr3(char *str, unsigned int begin, unsigned int end
     };
 }
 
-Neat_String_View neat_strv_ucstr3(unsigned char *str, unsigned int begin, unsigned int end)
+Neat_String_View neat_strv_ucstr3(const unsigned char *str, unsigned int begin, unsigned int end)
 {
     unsigned int len = strlen((char*) str);
     
@@ -1959,11 +1936,11 @@ Neat_String_View neat_strv_ucstr3(unsigned char *str, unsigned int begin, unsign
     
     return (Neat_String_View){
         .len   = end - begin,
-        .chars = str + begin
+        .chars = (unsigned char*) str + begin
     };
 }
 
-Neat_String_View neat_strv_dstr_ptr3(Neat_DString *str, unsigned int begin, unsigned int end)
+Neat_String_View neat_strv_dstr_ptr3(const Neat_DString *str, unsigned int begin, unsigned int end)
 {
     if(begin > str->len || end > str->len || begin > end)
     {
@@ -1979,7 +1956,7 @@ Neat_String_View neat_strv_dstr_ptr3(Neat_DString *str, unsigned int begin, unsi
     };
 }
 
-Neat_String_View neat_strv_strv_ptr3(Neat_String_View *str, unsigned int begin, unsigned int end)
+Neat_String_View neat_strv_strv_ptr3(const Neat_String_View *str, unsigned int begin, unsigned int end)
 {
     if(begin > str->len || end > str->len || begin > end)
     {
@@ -1995,7 +1972,7 @@ Neat_String_View neat_strv_strv_ptr3(Neat_String_View *str, unsigned int begin, 
     };
 }
 
-Neat_String_View neat_strv_strbuf_ptr3(Neat_String_Buffer *str, unsigned int begin, unsigned int end)
+Neat_String_View neat_strv_strbuf_ptr3(const Neat_String_Buffer *str, unsigned int begin, unsigned int end)
 {
     if(begin > str->len || end > str->len || begin > end)
     {
@@ -2054,7 +2031,7 @@ Neat_String_View neat_strv_strbuf3(Neat_String_Buffer str, unsigned int begin, u
     return neat_strv_strbuf_ptr3(&str, begin, end);
 }
 
-Neat_String_Error neat_dstr_fread_line_(Neat_DString *dstr, FILE *stream)
+Neat_Error neat_dstr_fread_line_(Neat_DString *dstr, FILE *stream)
 {
     dstr->len = 0;
     if(dstr->cap > 0)
@@ -2065,17 +2042,7 @@ Neat_String_Error neat_dstr_fread_line_(Neat_DString *dstr, FILE *stream)
     return neat_dstr_append_fread_line_(dstr, stream);
 }
 
-Neat_SString_Ref neat_sstr_ref_from_vptr(void *sstr, size_t struct_size)
-{
-    size_t char_arr_size = struct_size - sizeof(unsigned int);
-    Neat_SString_Ref ret = {
-        .cap  = char_arr_size,
-        .sstr = sstr
-    };
-    return ret;
-}
-
-Neat_String_Error neat_dstr_append_fread_line_(Neat_DString *dstr, FILE *stream)
+Neat_Error neat_dstr_append_fread_line_(Neat_DString *dstr, FILE *stream)
 {
     // TODO optimize this
     int c = 0;
@@ -2083,14 +2050,14 @@ Neat_String_Error neat_dstr_append_fread_line_(Neat_DString *dstr, FILE *stream)
     {
         unsigned char as_char = c;
         Neat_String_View as_strv = {.chars = &as_char, .len = 1};
-        Neat_String_Error err = neat_dstr_append_strv(dstr, as_strv);
+        Neat_Error err = neat_dstr_append_strv(dstr, as_strv);
         if(err != NEAT_OK) return err;
     }
     
     return NEAT_OK;
 }
 
-Neat_String_Error neat_fmutstr_ref_fread_line(Fixed_Mut_String_Ref dst, FILE *stream)
+Neat_Error neat_fmutstr_ref_fread_line(Fixed_Mut_String_Ref dst, FILE *stream)
 {
     if(dst.cap == 0)
     {
@@ -2116,7 +2083,7 @@ Neat_String_Error neat_fmutstr_ref_fread_line(Fixed_Mut_String_Ref dst, FILE *st
         return NEAT_OK;
 }
 
-Neat_String_Error neat_mutstr_ref_fread_line(Neat_Mut_String_Ref dst, FILE *stream)
+Neat_Error neat_mutstr_ref_fread_line(Neat_Mut_String_Ref dst, FILE *stream)
 {
     switch(dst.ty)
     {
@@ -2128,7 +2095,7 @@ Neat_String_Error neat_mutstr_ref_fread_line(Neat_Mut_String_Ref dst, FILE *stre
     };
 }
 
-Neat_String_Error neat_fmutstr_ref_append_fread_line(Fixed_Mut_String_Ref dst, FILE *stream)
+Neat_Error neat_fmutstr_ref_append_fread_line(Fixed_Mut_String_Ref dst, FILE *stream)
 {
     if(dst.cap == 0)
         return false;
@@ -2142,7 +2109,7 @@ Neat_String_Error neat_fmutstr_ref_append_fread_line(Fixed_Mut_String_Ref dst, F
     
     right.chars = dst.chars + *dst.len;
     
-    Neat_String_Error err = neat_fmutstr_ref_fread_line(right, stream);
+    Neat_Error err = neat_fmutstr_ref_fread_line(right, stream);
     
     *dst.len += *right.len;
     
@@ -2151,7 +2118,7 @@ Neat_String_Error neat_fmutstr_ref_append_fread_line(Fixed_Mut_String_Ref dst, F
     return err;
 }
 
-Neat_String_Error neat_mutstr_ref_append_fread_line(Neat_Mut_String_Ref dst, FILE *stream)
+Neat_Error neat_mutstr_ref_append_fread_line(Neat_Mut_String_Ref dst, FILE *stream)
 {
     switch(dst.ty)
     {
@@ -2196,7 +2163,7 @@ long       : neat_long_min_into_fmutstr_ref,  \
 long long  : neat_llong_min_into_fmutstr_ref  \
 )
 
-Neat_String_Error neat_schar_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
+Neat_Error neat_schar_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
 {
     if(SCHAR_MIN == -128)
     {
@@ -2212,7 +2179,7 @@ Neat_String_Error neat_schar_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
     }
 }
 
-Neat_String_Error neat_short_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
+Neat_Error neat_short_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
 {
     if(SHRT_MIN == -32768)
     {
@@ -2228,7 +2195,7 @@ Neat_String_Error neat_short_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
     }
 }
 
-Neat_String_Error neat_int_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
+Neat_Error neat_int_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
 {
     if(INT_MIN == -2147483648)
     {
@@ -2244,7 +2211,7 @@ Neat_String_Error neat_int_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
     }
 }
 
-Neat_String_Error neat_long_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
+Neat_Error neat_long_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
 {
     if(LONG_MIN == INT_MIN)
     {
@@ -2264,7 +2231,7 @@ Neat_String_Error neat_long_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
     }
 }
 
-Neat_String_Error neat_llong_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
+Neat_Error neat_llong_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
 {
     if(LLONG_MIN == LONG_MIN)
     {
@@ -2330,7 +2297,7 @@ do { \
 
 #define neat_sinteger_tostr() \
 do { \
-    Neat_String_Error err = NEAT_OK; \
+    Neat_Error err = NEAT_OK; \
     switch(dst.ty) \
     { \
         case NEAT_DSTR_TY: \
@@ -2396,7 +2363,7 @@ do { \
 
 #define neat_uinteger_tostr() \
 do { \
-    Neat_String_Error err = NEAT_OK; \
+    Neat_Error err = NEAT_OK; \
     switch(dst.ty) \
     { \
         case NEAT_DSTR_TY: \
@@ -2426,13 +2393,13 @@ do { \
     } \
 } while(0)
 
-Neat_String_Error neat_bool_tostr(Neat_Mut_String_Ref dst, bool obj)
+Neat_Error neat_bool_tostr(Neat_Mut_String_Ref dst, bool obj)
 {
     char *res = obj ? "true" : "false";
     return neat_cstr_tostr(dst, res);
 }
 
-Neat_String_Error neat_cstr_tostr(Neat_Mut_String_Ref dst, char *obj)
+Neat_Error neat_cstr_tostr(Neat_Mut_String_Ref dst, char *obj)
 {
     return neat_mutstr_ref_copy(
         dst,
@@ -2443,7 +2410,7 @@ Neat_String_Error neat_cstr_tostr(Neat_Mut_String_Ref dst, char *obj)
     );
 }
 
-Neat_String_Error neat_ucstr_tostr(Neat_Mut_String_Ref dst, unsigned char *obj)
+Neat_Error neat_ucstr_tostr(Neat_Mut_String_Ref dst, unsigned char *obj)
 {
     return neat_mutstr_ref_copy(
         dst,
@@ -2454,64 +2421,64 @@ Neat_String_Error neat_ucstr_tostr(Neat_Mut_String_Ref dst, unsigned char *obj)
     );
 }
 
-Neat_String_Error neat_char_tostr(Neat_Mut_String_Ref dst, char obj)
+Neat_Error neat_char_tostr(Neat_Mut_String_Ref dst, char obj)
 {
     neat_mutstr_ref_clear(dst);
     return neat_mutstr_ref_putc(dst, obj);
 }
 
-Neat_String_Error neat_schar_tostr(Neat_Mut_String_Ref dst, signed char obj)
+Neat_Error neat_schar_tostr(Neat_Mut_String_Ref dst, signed char obj)
 {
     neat_sinteger_tostr();
 }
 
-Neat_String_Error neat_uchar_tostr(Neat_Mut_String_Ref dst, unsigned char obj)
+Neat_Error neat_uchar_tostr(Neat_Mut_String_Ref dst, unsigned char obj)
 {
     neat_mutstr_ref_clear(dst);
     return neat_mutstr_ref_putc(dst, obj);
 }
 
-Neat_String_Error neat_short_tostr(Neat_Mut_String_Ref dst, short obj)
+Neat_Error neat_short_tostr(Neat_Mut_String_Ref dst, short obj)
 {
     neat_sinteger_tostr();
 }
 
-Neat_String_Error neat_ushort_tostr(Neat_Mut_String_Ref dst, unsigned short obj)
+Neat_Error neat_ushort_tostr(Neat_Mut_String_Ref dst, unsigned short obj)
 {
     neat_uinteger_tostr();
 }
 
-Neat_String_Error neat_int_tostr(Neat_Mut_String_Ref dst, int obj)
+Neat_Error neat_int_tostr(Neat_Mut_String_Ref dst, int obj)
 {
     neat_sinteger_tostr();
 }
 
-Neat_String_Error neat_uint_tostr(Neat_Mut_String_Ref dst, unsigned int obj)
+Neat_Error neat_uint_tostr(Neat_Mut_String_Ref dst, unsigned int obj)
 {
     neat_uinteger_tostr();
 }
 
-Neat_String_Error neat_long_tostr(Neat_Mut_String_Ref dst, long obj)
+Neat_Error neat_long_tostr(Neat_Mut_String_Ref dst, long obj)
 {
     neat_sinteger_tostr();
 }
 
-Neat_String_Error neat_ulong_tostr(Neat_Mut_String_Ref dst, unsigned long obj)
+Neat_Error neat_ulong_tostr(Neat_Mut_String_Ref dst, unsigned long obj)
 {
     neat_uinteger_tostr();
 }
 
-Neat_String_Error neat_llong_tostr(Neat_Mut_String_Ref dst, long long obj)
+Neat_Error neat_llong_tostr(Neat_Mut_String_Ref dst, long long obj)
 {
     neat_sinteger_tostr();
 }
 
-Neat_String_Error neat_ullong_tostr(Neat_Mut_String_Ref dst, unsigned long long obj)
+Neat_Error neat_ullong_tostr(Neat_Mut_String_Ref dst, unsigned long long obj)
 {
     neat_uinteger_tostr();
 }
 
-Neat_String_Error neat_float_tostr(Neat_Mut_String_Ref dst, float obj)
+Neat_Error neat_float_tostr(Neat_Mut_String_Ref dst, float obj)
 {
     char tmp[32] = { 0 };
     int len = snprintf(tmp, sizeof(tmp), "%g", obj);
@@ -2524,7 +2491,7 @@ Neat_String_Error neat_float_tostr(Neat_Mut_String_Ref dst, float obj)
     );
 }
 
-Neat_String_Error neat_double_tostr(Neat_Mut_String_Ref dst, double obj)
+Neat_Error neat_double_tostr(Neat_Mut_String_Ref dst, double obj)
 {
     char tmp[32] = { 0 };
     int len = snprintf(tmp, sizeof(tmp), "%g", obj);
@@ -2539,42 +2506,42 @@ Neat_String_Error neat_double_tostr(Neat_Mut_String_Ref dst, double obj)
 
 // TODO make all tostr functions take val not ptr
 
-Neat_String_Error neat_dstr_tostr(Neat_Mut_String_Ref dst, Neat_DString obj)
+Neat_Error neat_dstr_tostr(Neat_Mut_String_Ref dst, Neat_DString obj)
 {
     return neat_mutstr_ref_copy(dst, (Neat_String_View){.chars = obj.chars, .len = obj.len});
 }
 
-Neat_String_Error neat_dstr_ptr_tostr(Neat_Mut_String_Ref dst, Neat_DString *obj)
+Neat_Error neat_dstr_ptr_tostr(Neat_Mut_String_Ref dst, Neat_DString *obj)
 {
     return neat_mutstr_ref_copy(dst, (Neat_String_View){.chars = obj->chars, .len = obj->len});
 }
 
-Neat_String_Error neat_strv_tostr(Neat_Mut_String_Ref dst, Neat_String_View obj)
+Neat_Error neat_strv_tostr(Neat_Mut_String_Ref dst, Neat_String_View obj)
 {
     return neat_mutstr_ref_copy(dst, obj);
 }
 
-Neat_String_Error neat_strv_ptr_tostr(Neat_Mut_String_Ref dst, Neat_String_View *obj)
+Neat_Error neat_strv_ptr_tostr(Neat_Mut_String_Ref dst, Neat_String_View *obj)
 {
     return neat_mutstr_ref_copy(dst, *obj);
 }
 
-Neat_String_Error neat_strbuf_tostr(Neat_Mut_String_Ref dst, Neat_String_Buffer obj)
+Neat_Error neat_strbuf_tostr(Neat_Mut_String_Ref dst, Neat_String_Buffer obj)
 {
     return neat_mutstr_ref_copy(dst, (Neat_String_View){.chars = obj.chars, .len = obj.len});
 }
 
-Neat_String_Error neat_strbuf_ptr_tostr(Neat_Mut_String_Ref dst, Neat_String_Buffer *obj)
+Neat_Error neat_strbuf_ptr_tostr(Neat_Mut_String_Ref dst, Neat_String_Buffer *obj)
 {
     return neat_mutstr_ref_copy(dst, (Neat_String_View){.chars = obj->chars, .len = obj->len});
 }
 
-Neat_String_Error neat_sstr_ref_tostr(Neat_Mut_String_Ref dst, Neat_SString_Ref obj)
+Neat_Error neat_sstr_ref_tostr(Neat_Mut_String_Ref dst, Neat_SString_Ref obj)
 {
     return neat_mutstr_ref_copy(dst, (Neat_String_View){.chars = obj.sstr->chars, .len = obj.sstr->len});
 }
 
-Neat_String_Error neat_mutstr_ref_tostr(Neat_Mut_String_Ref dst, Neat_Mut_String_Ref obj)
+Neat_Error neat_mutstr_ref_tostr(Neat_Mut_String_Ref dst, Neat_Mut_String_Ref obj)
 {
     return neat_mutstr_ref_copy(dst, neat_strv_mutstr_ref2(obj, 0));
 }
