@@ -335,7 +335,7 @@ neat_mutstr_ref_set_len(neat_mutstr_ref(any_str), new_len)
 neat_strv_equal(neat_strv(any_str1), neat_strv(any_str2))
 
 #define neat_str_dup(any_str, ...) \
-neat_new_dstr_from(neat_strv(any_str), NEAT_VA_OR(neat_get_default_allocator(), __VA_ARGS__))
+neat_dstr_new_from(neat_strv(any_str), NEAT_VA_OR(neat_get_default_allocator(), __VA_ARGS__))
 
 #define neat_str_copy(any_str_dst, any_str_src) \
 neat_mutstr_ref_copy(neat_mutstr_ref(any_str_dst), neat_strv(any_str_src))
@@ -423,6 +423,14 @@ do \
     ); \
 } while(0);
 
+#define neat_str_print_each_setup(...) \
+__VA_OPT__( \
+    Neat_DString neat_appender_dstr_opt = {0}; \
+    Neat_DString_Append_Allocator neat_appender_dstr_allocator_opt = {0}; \
+    Neat_String_Buffer neat_appender_strbuf_opt = {0}; \
+    NEAT_FOREACH(neat_str_print_each, NEAT_OMIT1(__VA_ARGS__)); \
+)
+
 #define neat_str_print(any_str_dst, ...) \
 do \
 { \
@@ -437,13 +445,10 @@ do \
     auto neat_dst = any_str_dst; \
     Neat_Mut_String_Ref neat_as_mutstr_ref = neat_mutstr_ref(neat_dst); \
     neat_mutstr_ref_clear(neat_as_mutstr_ref); \
-    Neat_DString neat_appender_dstr_opt = {0}; \
-    Neat_DString_Append_Allocator neat_appender_dstr_allocator_opt = {0}; \
-    Neat_String_Buffer neat_appender_strbuf_opt = {0}; \
     __VA_OPT__( \
     \
         neat_tostr(neat_as_mutstr_ref, NEAT_ARG1(__VA_ARGS__)); \
-        NEAT_FOREACH(neat_str_print_each, NEAT_OMIT1(__VA_ARGS__)); \
+        neat_str_print_each_setup(NEAT_OMIT1(__VA_ARGS__)); \
     ) \
 } while(0)
 
@@ -929,6 +934,7 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 #define str_tolower(any_str) neat_str_tolower(any_str)
 #define str_toupper(any_str) neat_str_toupper(any_str)
 #define str_copy(any_str_dst, any_str_src) neat_str_copy(any_str_dst, any_str_src)
+#define str_dup(any_str_src) neat_str_dup(any_str_src)
 #define str_append(cap_str_dst, any_str_src) neat_str_append(cap_str_dst, any_str_src)
 #define str_insert(any_str_dst, any_str_src, idx) neat_str_insert(any_str_dst, any_str_src, idx)
 #define str_prepend(neat_str_dst, neat_str_src) neat_str_prepend(neat_str_dst, neat_str_src)
