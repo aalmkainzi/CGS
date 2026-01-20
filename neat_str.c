@@ -115,6 +115,11 @@ static const unsigned long long neat_ten_pows_ull[] = {
 unsigned int neat_numstr_len(long long num)
 {
     unsigned int len = 1;
+    if(num < 0)
+    {
+        num *= -1;
+        len += 1;
+    }
     for(unsigned int i = 1 ; i < NEAT_CARR_LEN(neat_ten_pows) && num >= neat_ten_pows[i++] ; len++);
     return len;
 }
@@ -2267,7 +2272,7 @@ do { \
         num *= -1; \
         if(fmutstr.cap > 1) \
         { \
-            fmutstr.chars[0] = '-'; \
+            neat_fmutstr_ref_putc(fmutstr, '-'); \
         } \
     } \
     unsigned int numstr_len = neat_numstr_len(num); \
@@ -2280,7 +2285,7 @@ do { \
         fmutstr.chars[isneg + chars_to_copy - (i + 1)] = rem + '0'; \
     } \
     \
-    *fmutstr.len = chars_to_copy; \
+    *fmutstr.len = chars_to_copy + isneg; \
 } while(0)
 
 // TODO: optimize this
