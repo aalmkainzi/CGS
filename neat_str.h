@@ -97,6 +97,21 @@ _Generic(exp, \
     default: fallback \
 )
 
+#define neat_coerce_string_type(exp, fallback) \
+_Generic(exp,                        \
+    char*               : exp,       \
+    unsigned char*      : exp,       \
+    Neat_DString        : exp,       \
+    Neat_DString*       : exp,       \
+    Neat_String_View    : exp,       \
+    Neat_String_View*   : exp,       \
+    Neat_String_Buffer  : exp,       \
+    Neat_String_Buffer* : exp,       \
+    Neat_SString_Ref    : exp,       \
+    Neat_Mut_String_Ref : exp,       \
+    default             : (fallback) \
+)
+
 #define neat_coerce_not(exp, not_ty, fallback_ty) \
 _Generic(exp, \
     not_ty: (fallback_ty){0}, \
@@ -335,7 +350,7 @@ neat_mutstr_ref_set_len(neat_mutstr_ref(any_str), new_len)
 neat_strv_equal(neat_strv(any_str1), neat_strv(any_str2))
 
 #define neat_str_dup(any_str, ...) \
-neat_dstr_new_from(neat_strv(any_str), NEAT_VA_OR(neat_get_default_allocator(), __VA_ARGS__))
+neat_dstr_init_from(neat_strv(any_str), NEAT_VA_OR(neat_get_default_allocator(), __VA_ARGS__))
 
 #define neat_str_copy(any_str_dst, any_str_src) \
 neat_mutstr_ref_copy(neat_mutstr_ref(any_str_dst), neat_strv(any_str_src))
@@ -594,12 +609,12 @@ _Generic(any_str,                                \
 NEAT_CAT(neat_dstr_init0, __VA_OPT__(1))(__VA_ARGS__)
 
 #define neat_dstr_init0() \
-neat_dstr_new(0, neat_get_default_allocator())
+neat_dstr_init_(0, neat_get_default_allocator())
 
 #define neat_dstr_init01(cap, ...)              \
 __VA_OPT__(neat_dstr_init2((cap), __VA_ARGS__)) \
 NEAT_IF_EMPTY(                                  \
-    neat_dstr_new(                              \
+    neat_dstr_init_(                              \
         (cap),                                  \
         neat_get_default_allocator()            \
     )                                           \
@@ -607,7 +622,7 @@ NEAT_IF_EMPTY(                                  \
 )
 
 #define neat_dstr_init2(cap, allocator) \
-neat_dstr_new((cap), (allocator))
+neat_dstr_init_((cap), (allocator))
 
 #define neat_dstr_deinit(dstr) \
 neat_dstr_deinit_(dstr)
@@ -644,27 +659,29 @@ do                                           \
 {                                            \
     FILE *neat_file_stream = f;              \
     (void) neat_file_stream;                 \
+    Neat_DString neat_temp = dstr_init(0, (Neat_Allocator*) &allocator);    \
     NEAT_FOREACH(neat_fprint_, __VA_ARGS__); \
+    dstr_deinit(&neat_temp);                 \
 } while(0)
 
-#define neat_fprint_(x)                                                                                                                                              \
-do                                                                                                                                                                   \
-{                                                                                                                                                                    \
-    Neat_DString neat_temp = dstr_init();                                                                                                                            \
-    _Generic(x,                                                                                                                                                      \
-        char*                         : neat_fprint_strv(neat_file_stream, neat_strv_cstr2(neat_coerce(x, char*), 0)),                                               \
-        unsigned char*                : neat_fprint_strv(neat_file_stream, neat_strv_ucstr2(neat_coerce(x, unsigned char*), 0)),                                     \
-        Neat_DString                  : neat_fprint_strv(neat_file_stream, neat_strv_dstr2(neat_coerce(x, Neat_DString), 0)),                                        \
-        Neat_DString*                 : neat_fprint_strv(neat_file_stream, neat_strv_dstr_ptr2(neat_coerce(x, Neat_DString*), 0)),                                   \
-        Neat_String_View              : neat_fprint_strv(neat_file_stream, neat_coerce(x, Neat_String_View)),                                                        \
-        Neat_String_View*             : neat_fprint_strv(neat_file_stream, *neat_coerce(x, Neat_String_View*)),                                                      \
-        Neat_String_Buffer            : neat_fprint_strv(neat_file_stream, neat_strv_strbuf2(neat_coerce(x, Neat_String_Buffer), 0)),                                \
-        Neat_String_Buffer*           : neat_fprint_strv(neat_file_stream, neat_strv_strbuf_ptr2(neat_coerce(x, Neat_String_Buffer*), 0)),                           \
-        Neat_SString_Ref              : neat_fprint_strv(neat_file_stream, neat_strv_sstr_ref2(neat_coerce(x, Neat_SString_Ref), 0)),                                \
-        Neat_Mut_String_Ref           : neat_fprint_strv(neat_file_stream, neat_strv_mutstr_ref2(neat_coerce(x, Neat_Mut_String_Ref), 0)),                           \
-        default                       : (neat_tostr(&neat_temp, x), neat_fprint_strv(neat_file_stream, neat_strv_dstr2(neat_temp, 0)), neat_dstr_deinit(&neat_temp)) \
-    );                                                                                                                                                               \
-    (void) neat_temp;                                                                                                                                                \
+// TODO a malloc per printed tostr obj is not ideal...
+// idea: re-use the same DString
+#define neat_fprint_(x)                              \
+do                                                   \
+{                                                    \
+    neat_fprint_strv(neat_file_stream, _Generic(x,   \
+        char*               : neat_strv_cstr2,       \
+        unsigned char*      : neat_strv_ucstr2,      \
+        Neat_DString        : neat_strv_dstr2,       \
+        Neat_DString*       : neat_strv_dstr_ptr2,   \
+        Neat_String_View    : neat_strv_strv2,       \
+        Neat_String_View*   : neat_strv_strv_ptr2,   \
+        Neat_String_Buffer  : neat_strv_strbuf2,     \
+        Neat_String_Buffer* : neat_strv_strbuf_ptr2, \
+        Neat_SString_Ref    : neat_strv_sstr_ref2,   \
+        Neat_Mut_String_Ref : neat_strv_mutstr_ref2, \
+        default             : neat_strv_dstr2        \
+    )(neat_coerce_string_type(x, (neat_tostr(&neat_temp, x), neat_temp)), 0)); \
 } while(0);
 
 #define neat_print(...) \
@@ -840,8 +857,8 @@ Neat_Error neat_mutstr_ref_set_len(Neat_Mut_String_Ref str, size_t new_len);
 
 bool neat_is_strv_within(Neat_String_View base, Neat_String_View sub);
 
-NEAT_NODISCARD("discarding a new DString may cause memory leak") Neat_DString neat_dstr_new(unsigned int cap, Neat_Allocator *allocator);
-NEAT_NODISCARD("discarding a new DString will cause memory leak") Neat_DString neat_dstr_new_from(Neat_String_View from, Neat_Allocator *allocator);
+NEAT_NODISCARD("discarding a new DString may cause memory leak") Neat_DString neat_dstr_init_(unsigned int cap, Neat_Allocator *allocator);
+NEAT_NODISCARD("discarding a new DString will cause memory leak") Neat_DString neat_dstr_init_from(Neat_String_View from, Neat_Allocator *allocator);
 void neat_dstr_deinit_(Neat_DString *dstr);
 Neat_Error neat_dstr_append_strv(Neat_DString *dstr, const Neat_String_View str);
 Neat_Error neat_dstr_prepend_strv(Neat_DString *dstr, const Neat_String_View str);
