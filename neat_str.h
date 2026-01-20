@@ -682,6 +682,7 @@ do                                                   \
         Neat_Mut_String_Ref : neat_strv_mutstr_ref2, \
         default             : neat_strv_dstr2        \
     )(neat_coerce_string_type(x, (neat_tostr(&neat_temp, x), neat_temp)), 0)); \
+    neat_temp.len = 0;                               \
 } while(0);
 
 #define neat_print(...) \
