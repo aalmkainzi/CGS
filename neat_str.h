@@ -786,8 +786,9 @@ neat_get_tostr_func(typeof(src))(neat_mutstr_ref(dst), src)
 typedef typeof(NEAT_ARG1(ADD_TOSTR)) neat_tostr_type_##n; \
 static inline Neat_Error neat_tostr_func_##n (Neat_Mut_String_Ref dst, neat_tostr_type_##n obj) \
 { \
-    _Static_assert(neat_has_type(NEAT_ARG2(ADD_TOSTR_INTO), typeof(Neat_Error(*)(Neat_Mut_String_Ref, neat_tostr_type_##n))), "tostr functions must have signature `Neat_Error(Neat_Mut_String_Ref dst, T src)`"); \
-    return NEAT_ARG2(ADD_TOSTR_INTO)(dst, obj); \
+    _Static_assert(neat_has_type(NEAT_ARG2(ADD_TOSTR), typeof(Neat_Error(*)(Neat_Mut_String_Ref, neat_tostr_type_##n))), "tostr functions must have signature `Neat_Error(Neat_Mut_String_Ref dst, T src)`"); \
+    neat_mutstr_ref_clear(dst); \
+    return NEAT_ARG2(ADD_TOSTR)(dst, obj); \
 }
 
 const Neat_String_View neat_error_string(Neat_Error err);

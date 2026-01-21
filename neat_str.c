@@ -1078,6 +1078,8 @@ void neat_fmutstr_ref_replace_range_unsafe(Fixed_Mut_String_Ref str, unsigned in
         memmove(str.chars + begin, replacement.chars, neat_uint_min(replacement.len, len_to_delete + new_space));
         
         *str.len += new_space;
+        
+        str.chars[*str.len] = '\0';
     }
     else
     {
@@ -2277,8 +2279,8 @@ do { \
 
 Neat_Error neat_bool_tostr(Neat_Mut_String_Ref dst, bool obj)
 {
-    char *res = obj ? "true" : "false";
-    return neat_cstr_tostr(dst, res);
+    Neat_String_View res = obj ? neat_strv("true") : neat_strv("false");
+    return neat_strv_tostr(dst, res);
 }
 
 Neat_Error neat_cstr_tostr(Neat_Mut_String_Ref dst, char *obj)
@@ -2287,7 +2289,7 @@ Neat_Error neat_cstr_tostr(Neat_Mut_String_Ref dst, char *obj)
         dst,
         (Neat_String_View){
             .chars = (unsigned char*) obj,
-                                .len = strlen(obj)
+            .len = strlen(obj)
         }
     );
 }
@@ -2368,7 +2370,7 @@ Neat_Error neat_float_tostr(Neat_Mut_String_Ref dst, float obj)
         dst,
         (Neat_String_View){
             .chars = (unsigned char*) tmp,
-                                .len = len
+            .len = len
         }
     );
 }
@@ -2381,12 +2383,10 @@ Neat_Error neat_double_tostr(Neat_Mut_String_Ref dst, double obj)
         dst,
         (Neat_String_View){
             .chars = (unsigned char*) tmp,
-                                .len = len
+            .len = len
         }
     );
 }
-
-// TODO make all tostr functions take val not ptr
 
 Neat_Error neat_dstr_tostr(Neat_Mut_String_Ref dst, Neat_DString obj)
 {
