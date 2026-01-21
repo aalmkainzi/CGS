@@ -217,10 +217,10 @@ typedef struct Neat_Buffer
     unsigned int cap;
 } Neat_Buffer;
 
-// This is a tagged union for all mutable string types (all except String_View)
+// This is a tagged union for all mutable string types (i.e. all except String_View)
 typedef struct Neat_Mut_String_Ref
 {
-    enum Neat_Mut_String_Ref_Type : uint8_t
+    enum Neat_Mut_String_Ref_Type : signed char
     {
         NEAT_DSTR_TY = 1,
         NEAT_STRBUF_TY,
@@ -236,7 +236,8 @@ typedef struct Neat_Mut_String_Ref
     } str;
 } Neat_Mut_String_Ref;
 
-typedef enum Neat_Error : uint8_t {
+typedef enum Neat_Error : signed char
+{
     NEAT_OK = 0,
     NEAT_DST_TOO_SMALL,
     NEAT_ALLOC_ERR,
@@ -443,7 +444,7 @@ __VA_OPT__( \
     Neat_DString neat_appender_dstr_opt = {0}; \
     Neat_DString_Append_Allocator neat_appender_dstr_allocator_opt = {0}; \
     Neat_String_Buffer neat_appender_strbuf_opt = {0}; \
-    NEAT_FOREACH(neat_str_print_each, NEAT_OMIT1(__VA_ARGS__)); \
+    NEAT_FOREACH(neat_str_print_each, __VA_ARGS__); \
 )
 
 #define neat_str_print(any_str_dst, ...) \
@@ -761,7 +762,7 @@ NEAT_IF_DEF(NEAT_TOSTR31)(neat_tostr_type_31: neat_tostr_func_31,) \
 NEAT_IF_DEF(NEAT_TOSTR32)(neat_tostr_type_32: neat_tostr_func_32,) \
 NEAT_DEFAULT_TOSTR_TYPES
 
-struct neat_fail_type;
+struct neat_fail_type { int dummy; };
 typedef void(*neat_tostr_fail)(struct neat_fail_type*);
 
 #define neat_get_tostr_func(ty) \
@@ -789,8 +790,9 @@ static inline Neat_Error neat_tostr_func_##n (Neat_Mut_String_Ref dst, neat_tost
     return NEAT_ARG2(ADD_TOSTR_INTO)(dst, obj); \
 }
 
-// TODO make strv1 versions
+const Neat_String_View neat_error_string(Neat_Error err);
 
+// TODO make strv1 versions
 Neat_String_View neat_strv_cstr2(const char *str, unsigned int begin);
 Neat_String_View neat_strv_ucstr2(const unsigned char *str, unsigned int begin);
 Neat_String_View neat_strv_dstr2(const Neat_DString str, unsigned int begin);
@@ -959,6 +961,7 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 #define str_del(any_str, begin, end) neat_str_del(any_str, begin, end)
 #define str_replace(mut_str, any_str_target, any_str_replacement) neat_str_replace(mut_str, any_str_target, any_str_replacement)
 #define str_replace_first(any_str, any_str_target, any_str_replacement) neat_str_replace_first(any_str, any_str_target, any_str_replacement)
+#define str_replace_range(any_str, begin, end, any_str_replacement) neat_str_replace_range(any_str, begin, end, any_str_replacement)
 #define str_split(any_str, any_str_delim, ...) neat_str_split(any_str, any_str_delim __VA_OPT__(,) __VA_ARGS__)
 #define str_join(mut_str_dst, strv_arr, any_str_delim) neat_str_join(mut_str_dst, strv_arr, any_str_delim)
 #define str_join_new(strv_arr, any_str_delim, ...) neat_str_join_new(strv_arr, any_str_delim __VA_OPT__(,) __VA_ARGS__)
