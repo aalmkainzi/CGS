@@ -1058,7 +1058,7 @@ Neat_Error neat_dstr_replace_range(Neat_DString *dstr, unsigned int begin, unsig
 
 void neat_fmutstr_ref_replace_range_unsafe(Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
 {
-    unsigned int len_to_delete = end - begin + 1;
+    unsigned int len_to_delete = (end - 1) - begin + 1;
     if(len_to_delete > replacement.len)
     {
         // shift left
