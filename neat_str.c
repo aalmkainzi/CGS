@@ -84,12 +84,15 @@ Fixed_Mut_String_Ref neat_dstr_as_fmutstr_ref(Neat_DString *dstr)
     return ret;
 }
 
-void *neat_default_allocator_alloc(Neat_Allocator *ctx, size_t alignment, size_t n, size_t *actual)
+Neat_Allocation neat_default_allocator_alloc(Neat_Allocator *ctx, size_t alignment, size_t n)
 {
     (void) alignment;
     (void) ctx;
-    if(actual) *actual = n;
-    return malloc(n);
+    void *mem = malloc(n);
+    return (Neat_Allocation){
+        .ptr = mem,
+        .n = n
+    };
 }
 
 void neat_default_allocator_dealloc(Neat_Allocator *ctx, void *ptr, size_t n)
@@ -99,50 +102,25 @@ void neat_default_allocator_dealloc(Neat_Allocator *ctx, void *ptr, size_t n)
     free(ptr);
 }
 
-void *neat_default_allocator_realloc(Neat_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual)
+Neat_Allocation neat_default_allocator_realloc(Neat_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size)
 {
     (void) ctx;
     (void) alignment;
     (void) old_size;
-    if(actual) *actual = new_size;
-    return realloc(ptr, new_size);
+    void *mem = realloc(ptr, new_size);
+    return (Neat_Allocation){
+        .ptr = mem,
+        .n = new_size
+    };
 }
 
-void *neat_noop_allocator_alloc(Neat_Allocator *ctx, size_t alignment, size_t n, size_t *actual)
-{
-    (void) ctx;
-    (void) alignment;
-    (void) n;
-    (void) actual;
-    return NULL;
-}
-
-void neat_noop_allocator_dealloc(Neat_Allocator *ctx, void *ptr, size_t n)
-{
-    (void) ctx;
-    (void) ptr;
-    (void) n;
-}
-
-void *neat_noop_allocator_realloc(Neat_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual)
-{
-    (void) ctx;
-    (void) ptr;
-    (void) alignment;
-    (void) old_size;
-    (void) new_size;
-    (void) actual;
-    return NULL;
-}
-
-void *neat_dstr_append_allocator_alloc(Neat_Allocator *allocator, size_t alignment, size_t n, size_t *actual)
+Neat_Allocation neat_dstr_append_allocator_alloc(Neat_Allocator *allocator, size_t alignment, size_t n)
 {
     assert(0); // this should never get called
     (void) allocator;
     (void) alignment;
     (void) n;
-    (void) actual;
-    return NULL;
+    return (Neat_Allocation){0};
 }
 
 void neat_dstr_append_allocator_dealloc(Neat_Allocator *allocator, void *ptr, size_t n)
@@ -153,7 +131,7 @@ void neat_dstr_append_allocator_dealloc(Neat_Allocator *allocator, void *ptr, si
     (void) n;
 }
 
-void *neat_dstr_append_allocator_realloc(Neat_Allocator *allocator, void *ptr, size_t alignment, size_t old_size, size_t new_size, size_t *actual)
+Neat_Allocation neat_dstr_append_allocator_realloc(Neat_Allocator *allocator, void *ptr, size_t alignment, size_t old_size, size_t new_size)
 {
     (void) alignment;
     
@@ -165,13 +143,15 @@ void *neat_dstr_append_allocator_realloc(Neat_Allocator *allocator, void *ptr, s
     assert(((unsigned char*)ptr - owner->chars) == owner->len);
     
     neat_dstr_ensure_cap(owner, owner->cap + (new_size - old_size));
-    *actual = owner->cap - owner->len;
-    return owner->chars + owner->len;
+    return (Neat_Allocation){
+        .ptr = owner->chars + owner->len,
+        .n = owner->cap - owner->len
+    };
 }
 
-void *neat_allocator_invoke_alloc(Neat_Allocator *allocator, size_t alignment, size_t obj_size, size_t nb, size_t *actual)
+Neat_Allocation neat_allocator_invoke_alloc(Neat_Allocator *allocator, size_t alignment, size_t obj_size, size_t nb)
 {
-    return allocator->alloc(allocator, alignment, nb * obj_size, actual);
+    return allocator->alloc(allocator, alignment, nb * obj_size);
 }
 
 void neat_allocator_invoke_dealloc(Neat_Allocator *allocator, void *ptr, size_t obj_size, size_t nb)
@@ -179,9 +159,9 @@ void neat_allocator_invoke_dealloc(Neat_Allocator *allocator, void *ptr, size_t 
     allocator->dealloc(allocator, ptr, nb * obj_size);
 }
 
-void *neat_allocator_invoke_realloc(Neat_Allocator *allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb, size_t *actual)
+Neat_Allocation neat_allocator_invoke_realloc(Neat_Allocator *allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb)
 {
-    return allocator->realloc(allocator, ptr, alignment, old_nb * obj_size, new_nb * obj_size, actual);
+    return allocator->realloc(allocator, ptr, alignment, old_nb * obj_size, new_nb * obj_size);
 }
 
 Neat_Allocator neat_default_allocator = {
@@ -195,16 +175,6 @@ Neat_Allocator *neat_get_default_allocator()
     return &neat_default_allocator;
 }
 
-Neat_Allocator neat_noop_allocator = {
-    .alloc   = neat_noop_allocator_alloc,
-    .dealloc = neat_noop_allocator_dealloc,
-    .realloc = neat_noop_allocator_realloc,
-};
-
-Neat_Allocator *neat_get_noop_allocator()
-{
-    return &neat_noop_allocator;
-}
 
 void neat_make_dstr_append_allocator(Neat_DString *dstr, Neat_DString_Append_Allocator *out)
 {
@@ -301,7 +271,11 @@ NEAT_NODISCARD("discarding a new DString may cause memory leak") Neat_DString ne
     size_t actual_allocated_cap = 0;
     
     if(cap > 0)
-        ret.chars = neat_alloc(allocator, unsigned char, cap + 1, &actual_allocated_cap);
+    {
+        Neat_Allocation allocation = neat_alloc(allocator, unsigned char, cap + 1);
+        ret.chars = allocation.ptr;
+        actual_allocated_cap = allocation.n;
+    }
     ret.cap = actual_allocated_cap;
     
     if(ret.chars != NULL && ret.cap > 0)
@@ -331,9 +305,9 @@ void neat_dstr_deinit_(Neat_DString *dstr)
 
 void neat_dstr_shrink_to_fit_(Neat_DString *dstr)
 {
-    size_t actual_new_cap;
-    dstr->chars = neat_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, dstr->len + 1, &actual_new_cap);
-    dstr->cap = actual_new_cap;
+    Neat_Allocation allocation = neat_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, dstr->len + 1);
+    dstr->chars = allocation.ptr;
+    dstr->cap = allocation.n;
 }
 
 Neat_Error neat_dstr_maybe_grow(Neat_DString *dstr, unsigned int len_to_append)
@@ -343,9 +317,9 @@ Neat_Error neat_dstr_maybe_grow(Neat_DString *dstr, unsigned int len_to_append)
         // grow
         unsigned int new_cap = neat_uint_max(dstr->cap * 2, dstr->cap + len_to_append);
         
-        size_t actual_allocated_cap;
-        dstr->chars = neat_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, new_cap, &actual_allocated_cap);
-        dstr->cap = actual_allocated_cap;
+        Neat_Allocation allocation = neat_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, new_cap);
+        dstr->chars = allocation.ptr;
+        dstr->cap = allocation.n;
         
         if(dstr->chars == NULL || dstr->cap < new_cap)
         {
@@ -454,7 +428,8 @@ Neat_Error neat_dstr_ensure_cap_(Neat_DString *dstr, unsigned int at_least)
     {
         size_t actual_allocated_cap;
         unsigned char *save = dstr->chars;
-        dstr->chars = neat_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, at_least, &actual_allocated_cap);
+        Neat_Allocation allocation = neat_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, at_least);
+        dstr->chars = allocation.ptr;
         dstr->cap = actual_allocated_cap;
         
         if(dstr->chars == NULL)
@@ -868,9 +843,9 @@ NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array
 {
     if(delim.len > str.len)
     {
-        size_t alloced_size;
-        Neat_String_View *entire_str = neat_alloc(allocator, Neat_String_View, 1, &alloced_size);
-        if(alloced_size < sizeof(Neat_String_View) || entire_str == NULL)
+        Neat_Allocation allocation = neat_alloc(allocator, Neat_String_View, 1);
+        Neat_String_View *entire_str = allocation.ptr;
+        if(allocation.n < sizeof(Neat_String_View) || entire_str == NULL)
         {
             return (Neat_String_View_Array){
                 .cap  = 0,
@@ -882,7 +857,7 @@ NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array
         {
             *entire_str = str;
             return (Neat_String_View_Array){
-                .cap  = (unsigned int) alloced_size,
+                .cap  = (unsigned int) allocation.n,
                 .len  = 1,
                 .strs = entire_str
             };
@@ -890,10 +865,10 @@ NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array
     }
     else if(delim.len == 0)
     {
-        size_t alloced_size;
-        Neat_String_View *strs = neat_alloc(allocator, Neat_String_View, str.len, &alloced_size);
+        Neat_Allocation allocation = neat_alloc(allocator, Neat_String_View, str.len);
+        Neat_String_View *strs = allocation.ptr;
         
-        if(alloced_size < (str.len * sizeof(Neat_String_View)) || strs == NULL)
+        if(allocation.n < (str.len * sizeof(Neat_String_View)) || strs == NULL)
         {
             return (Neat_String_View_Array){
                 .cap  = 0,
@@ -904,7 +879,7 @@ NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array
         else
         {
             Neat_String_View_Array ret = {
-                .cap  = (unsigned int) alloced_size,
+                .cap  = (unsigned int) allocation.n,
                 .len   = str.len,
                 .strs = strs
             };
@@ -940,10 +915,10 @@ NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array
         
         delim_idx[nb_delim] = str.len;
         
-        size_t alloced_size;
-        Neat_String_View *strs = neat_alloc(allocator, Neat_String_View, nb_delim + 1, &alloced_size);
+        Neat_Allocation allocation = neat_alloc(allocator, Neat_String_View, nb_delim + 1);
+        Neat_String_View *strs = allocation.ptr;
         
-        if(alloced_size < ((nb_delim + 1) * sizeof(Neat_String_View))  || strs == NULL)
+        if(allocation.n < ((nb_delim + 1) * sizeof(Neat_String_View))  || strs == NULL)
         {
             free(delim_idx);
             
@@ -956,7 +931,7 @@ NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array
         else
         {
             Neat_String_View_Array ret = {
-                .cap = (unsigned int) alloced_size,
+                .cap = (unsigned int) allocation.n,
                 .len  = nb_delim + 1,
                 .strs = strs
             };
@@ -1028,24 +1003,22 @@ Neat_Error neat_dstr_replace_range(Neat_DString *dstr, unsigned int begin, unsig
     if(neat_is_strv_within(neat_strv_dstr_ptr2(dstr, 0), replacement))
         return NEAT_ALIASING_NOT_SUPPORTED;
     
-    neat_dstr_ensure_cap_(dstr, dstr->len - (end - begin) + replacement.len + 1);
     unsigned int len_to_delete = end - begin;
     if(len_to_delete > replacement.len)
     {
         // shift left
-        memmove(dstr->chars + begin + replacement.len, dstr->chars + end, dstr->len - end);
+        memmove(dstr->chars + begin + replacement.len, dstr->chars + end, dstr->len - end + 1);
         // insert the replacement
         memmove(dstr->chars + begin, replacement.chars, replacement.len);
     }
     else if(len_to_delete < replacement.len)
     {
         neat_dstr_ensure_cap_(dstr, dstr->len + replacement.len - len_to_delete + 1);
-        unsigned int shift_by = replacement.len - len_to_delete;
         
         // shift right
-        memmove(dstr->chars + end + shift_by, dstr->chars + end, shift_by);
+        memmove(dstr->chars + end + (replacement.len - len_to_delete), dstr->chars + end, dstr->len - end + 1);
         // insert the replacement
-        memmove(dstr->chars + begin, replacement.chars, len_to_delete + shift_by);
+        memmove(dstr->chars + begin, replacement.chars, replacement.len);
     }
     else
     {
