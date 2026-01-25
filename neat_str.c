@@ -25,6 +25,51 @@ const Neat_String_View neat_error_to_string[] = {
     [NEAT_INCORRECT_TYPE]         = {.len = sizeof(u8"INCORRECT_TYPE")         - 1, .chars = u8"INCORRECT_TYPE"},
 };
 
+static const long long neat_ten_pows[] = {
+    1,
+    10,
+    100,
+    1000,
+    10000,
+    100000,
+    1000000,
+    10000000,
+    100000000,
+    1000000000,
+    10000000000,
+    100000000000,
+    1000000000000,
+    10000000000000,
+    100000000000000,
+    1000000000000000,
+    10000000000000000,
+    100000000000000000,
+    1000000000000000000,
+};
+
+static const unsigned long long neat_ten_pows_ull[] = {
+    1ull,
+    10ull,
+    100ull,
+    1000ull,
+    10000ull,
+    100000ull,
+    1000000ull,
+    10000000ull,
+    100000000ull,
+    1000000000ull,
+    10000000000ull,
+    100000000000ull,
+    1000000000000ull,
+    10000000000000ull,
+    100000000000000ull,
+    1000000000000000ull,
+    10000000000000000ull,
+    100000000000000000ull,
+    1000000000000000000ull,
+    10000000000000000000ull,
+};
+
 typedef struct Fixed_Mut_String_Ref
 {
     unsigned char *chars;
@@ -839,72 +884,30 @@ Neat_String_View_Array neat_strv_arr_from_carr(const Neat_String_View *carr, uns
     };
 }
 
-NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array neat_strv_split(const Neat_String_View str, const Neat_String_View delim, Neat_Allocator *allocator)
+Neat_Error neat_strv_split_callback(const Neat_String_View str, const Neat_String_View delim, bool(*cb)(Neat_String_View found, void *ctx), void *ctx)
 {
     if(delim.len > str.len)
     {
-        Neat_Allocation allocation = neat_alloc(allocator, Neat_String_View, 1);
-        Neat_String_View *entire_str = allocation.ptr;
-        if(allocation.n < sizeof(Neat_String_View) || entire_str == NULL)
-        {
-            return (Neat_String_View_Array){
-                .cap  = 0,
-                .len  = 0,
-                .strs = NULL
-            };
-        }
-        else
-        {
-            *entire_str = str;
-            return (Neat_String_View_Array){
-                .cap  = (unsigned int) allocation.n,
-                .len  = 1,
-                .strs = entire_str
-            };
-        }
+        cb(str, ctx);
     }
     else if(delim.len == 0)
     {
-        Neat_Allocation allocation = neat_alloc(allocator, Neat_String_View, str.len);
-        Neat_String_View *strs = allocation.ptr;
-        
-        if(allocation.n < (str.len * sizeof(Neat_String_View)) || strs == NULL)
+        for(unsigned int i = 0 ; i < str.len ; i++)
         {
-            return (Neat_String_View_Array){
-                .cap  = 0,
-                .len   = 0,
-                .strs = NULL
-            };
-        }
-        else
-        {
-            Neat_String_View_Array ret = {
-                .cap  = (unsigned int) allocation.n,
-                .len   = str.len,
-                .strs = strs
-            };
-            
-            for(unsigned int i = 0 ; i < ret.len ; i++)
-            {
-                ret.strs[i] = neat_strv_strv3(str, i, i + 1);
-            }
-            
-            return ret;
+            cb(neat_strv_strv3(str, i, i + 1), ctx);
         }
     }
     else
     {
-        // TODO no need for this actually... can just add splitted strings as we find them
-        unsigned int nb_delim = 0;
-        unsigned int *delim_idx = (unsigned int*) calloc(str.len, sizeof(unsigned int));
-        
         for(unsigned int i = 0 ; i <= str.len - delim.len ; )
         {
             Neat_String_View sub = neat_strv_strv3(str, i, i + delim.len);
             if(neat_strv_equal(sub, delim))
             {
-                delim_idx[nb_delim] = i;
-                nb_delim += 1;
+                if(!cb(sub, ctx))
+                {
+                    return NEAT_CALLBACK_EXIT;
+                }
                 i += delim.len;
             }
             else
@@ -912,42 +915,43 @@ NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array
                 i += 1;
             }
         }
-        
-        delim_idx[nb_delim] = str.len;
-        
-        Neat_Allocation allocation = neat_alloc(allocator, Neat_String_View, nb_delim + 1);
-        Neat_String_View *strs = allocation.ptr;
-        
-        if(allocation.n < ((nb_delim + 1) * sizeof(Neat_String_View))  || strs == NULL)
-        {
-            free(delim_idx);
-            
-            return (Neat_String_View_Array){
-                .cap  = 0,
-                .len   = 0,
-                .strs = NULL
-            };
-        }
-        else
-        {
-            Neat_String_View_Array ret = {
-                .cap = (unsigned int) allocation.n,
-                .len  = nb_delim + 1,
-                .strs = strs
-            };
-            
-            ret.strs[0] = neat_strv_strv_ptr3(&str, 0, delim_idx[0]);
-            for(unsigned int i = 0 ; i < nb_delim ; i++)
-            {
-                // TODO test
-                // ret.strs[i] = neat_strv_strv_ptr3(&str, delim_idx[i] + delim.len, delim_idx[i + 1]);
-                ret.strs[i] = neat_strv_strv_ptr3(&str, delim_idx[i], delim_idx[i] + delim.len);
-            }
-            
-            free(delim_idx);
-            return ret;
-        }
     }
+    
+    return NEAT_OK;
+}
+
+static bool str_split_combine_cb(Neat_String_View str, void *ctx)
+{
+    struct {
+        Neat_Allocator *allocator;
+        Neat_String_View_Array array;
+    } *tctx = ctx;
+    
+    Neat_String_View_Array *array = &tctx->array;
+    Neat_Allocator *allocator = tctx->allocator;
+    
+    if(array->cap <= array->len)
+    {
+        Neat_Allocation allocation = allocator->realloc(allocator, array->strs, _Alignof(Neat_String_View), array->cap * sizeof(Neat_String_View), (array->len + 1) * 2);
+        array->strs = allocation.ptr;
+        array->cap = allocation.n / sizeof(Neat_String_View);
+    }
+    
+    return true;
+}
+
+NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array neat_strv_split(const Neat_String_View str, const Neat_String_View delim, Neat_Allocator *allocator)
+{
+    struct {
+        Neat_Allocator *allocator;
+        Neat_String_View_Array array;
+    } ctx = {
+        .allocator = allocator
+    };
+    
+    neat_strv_split_callback(str, delim, str_split_combine_cb, &ctx);
+    
+    return ctx.array;
 }
 
 Neat_Error neat_strv_arr_join_into_dstr(Neat_DString *dstr, const Neat_String_View_Array strs, const Neat_String_View delim)
@@ -1374,7 +1378,7 @@ unsigned int neat_strv_count(const Neat_String_View hay, const Neat_String_View 
     while(found.chars != NULL)
     {
         count += 1;
-        found = neat_strv_memmem(neat_strv_strv2(hay, (found.chars - hay.chars) + 1), needle);
+        found = neat_strv_memmem(neat__strv_strv2(hay, (found.chars - hay.chars) + 1), needle);
     }
     
     return count;
@@ -1605,7 +1609,7 @@ Neat_String_View neat_strv_strv_ptr2(const Neat_String_View *str, unsigned int b
     };
 }
 
-Neat_String_View neat_strv_strv2(const Neat_String_View str, unsigned int begin)
+Neat_String_View neat__strv_strv2(const Neat_String_View str, unsigned int begin)
 {
     return neat_strv_strv_ptr2(&str, begin);
 }
@@ -1937,51 +1941,6 @@ unsigned int neat_fprintln_strv(FILE *stream, Neat_String_View str)
     else
         return written + 1;
 }
-
-static const long long neat_ten_pows[] = {
-    1,
-    10,
-    100,
-    1000,
-    10000,
-    100000,
-    1000000,
-    10000000,
-    100000000,
-    1000000000,
-    10000000000,
-    100000000000,
-    1000000000000,
-    10000000000000,
-    100000000000000,
-    1000000000000000,
-    10000000000000000,
-    100000000000000000,
-    1000000000000000000,
-};
-
-static const unsigned long long neat_ten_pows_ull[] = {
-    1ull,
-    10ull,
-    100ull,
-    1000ull,
-    10000ull,
-    100000ull,
-    1000000ull,
-    10000000ull,
-    100000000ull,
-    1000000000ull,
-    10000000000ull,
-    100000000000ull,
-    1000000000000ull,
-    10000000000000ull,
-    100000000000000ull,
-    1000000000000000ull,
-    10000000000000000ull,
-    100000000000000000ull,
-    1000000000000000000ull,
-    10000000000000000000ull,
-};
 
 unsigned int neat_numstr_len(long long num)
 {
