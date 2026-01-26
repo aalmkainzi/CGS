@@ -640,7 +640,7 @@ do                                           \
 {                                            \
     FILE *neat_file_stream = f;              \
     (void) neat_file_stream;                 \
-    Neat_DString neat_temp = dstr_init(0, (Neat_Allocator*) &allocator);    \
+    Neat_DString neat_temp = dstr_init(0);   \
     NEAT__FOREACH(neat__fprint_each, __VA_ARGS__); \
     dstr_deinit(&neat_temp);                 \
 } while(0)
@@ -965,7 +965,7 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 
 #define strbuf_init_from_cstr(str_or_cap, ...) neat_strbuf_init_from_cstr(str_or_cap __VA_OPT__(,) __VA_ARGS__)
 #define strbuf_init_from_buf(buf_or_carr) neat_strbuf_init_from_buf(buf_or_carr)
-#define sstr_ref(sstr_ptr) neat_sstr_ref_init(sstr_ptr)
+#define sstr_ref_init(sstr_ptr) neat_sstr_ref_init(sstr_ptr)
 #define strv_init(...) neat_strv_init(__VA_ARGS__)
 #define mutstr_ref(any_str, ...) neat_mutstr_ref(any_str __VA_OPT__(,) __VA_ARGS__)
 #define strv_arr(...) neat_strv_arr(__VA_ARGS__)
