@@ -254,7 +254,7 @@ typedef enum Neat_Error : signed char
     #define Neat_SString(cap) \
     struct Neat_SString_##cap \
     { \
-        _Static_assert((1##cap##1ul || cap##8ul || 1) && (cap > 0), "argument must be positive decimal integer literal"); /* the first term is to make sure cap is an integer literal */ \
+        _Static_assert((1##cap##1ull || cap##8ull || 1) && (cap > 0), "argument must be positive decimal integer literal"); /* the first term is to make sure cap is an integer literal */ \
         unsigned int len; \
         unsigned char chars[ cap ]; \
     }
@@ -308,7 +308,7 @@ _Generic(any_str,                                   \
 )((any_str), idx)
 
 #define neat_str_len(any_str) \
-((void)0, neat_strv_init(any_str).len)
+((void)0, neat_str_view(any_str).len)
 
 #define neat_str_cap(any_str)                                         \
 _Generic((typeof(any_str)*){0},                                       \
@@ -344,40 +344,40 @@ _Generic(any_str,                                  \
 neat__mutstr_ref_set_len(neat_mutstr_ref(any_str), new_len)
 
 #define neat_str_equal(any_str1, any_str2) \
-neat__strv_equal(neat_strv_init(any_str1), neat_strv_init(any_str2))
+neat__strv_equal(neat_str_view(any_str1), neat_str_view(any_str2))
 
 #define neat_str_dup(any_str, ...) \
-neat__dstr_init_from(neat_strv_init(any_str), NEAT__VA_OR(neat_get_default_allocator(), __VA_ARGS__))
+neat__dstr_init_from(neat_str_view(any_str), NEAT__VA_OR(neat_get_default_allocator(), __VA_ARGS__))
 
 #define neat_str_copy(any_str_dst, any_str_src) \
-neat__mutstr_ref_copy(neat_mutstr_ref(any_str_dst), neat_strv_init(any_str_src))
+neat__mutstr_ref_copy(neat_mutstr_ref(any_str_dst), neat_str_view(any_str_src))
 
 #define neat_str_putc(any_str_dst, c) \
 neat_mutstr_ref_putc(neat_mutstr_ref(any_str_dst), c)
 
 #define neat_str_append(any_str_dst, any_str_src) \
-neat__mutstr_ref_append(neat_mutstr_ref(any_str_dst), neat_strv_init(any_str_src))
+neat__mutstr_ref_append(neat_mutstr_ref(any_str_dst), neat_str_view(any_str_src))
 
 #define neat_str_insert(any_str_dst, any_str_src, idx) \
-neat__mutstr_ref_insert(neat_mutstr_ref(any_str_dst), neat_strv_init(any_str_src), (idx))
+neat__mutstr_ref_insert(neat_mutstr_ref(any_str_dst), neat_str_view(any_str_src), (idx))
 
 #define neat_str_prepend(neat_str_dst, neat_str_src) \
 neat_str_insert(neat_str_dst, neat_str_src, 0)
 
 #define neat_str_find(any_str_hay, any_str_needle) \
-neat__strv_find(neat_strv_init(any_str_hay), neat_strv_init(any_str_needle))
+neat__strv_find(neat_str_view(any_str_hay), neat_str_view(any_str_needle))
 
 #define neat_str_count(any_str_hay, any_str_needle) \
-neat__strv_count(neat_strv_init(any_str_hay), neat_strv_init(any_str_needle))
+neat__strv_count(neat_str_view(any_str_hay), neat_str_view(any_str_needle))
 
 #define neat_str_clear(any_str) \
 neat__mutstr_ref_clear(neat_mutstr_ref(any_str))
 
 #define neat_str_starts_with(any_str_hay, any_str_needle) \
-neat__strv_starts_with(neat_strv_init(any_str_hay), neat_strv_init(any_str_needle))
+neat__strv_starts_with(neat_str_view(any_str_hay), neat_str_view(any_str_needle))
 
 #define neat_str_ends_with(any_str_hay, any_str_needle) \
-neat__strv_ends_with(neat_strv_init(any_str_hay), neat_strv_init(any_str_needle))
+neat__strv_ends_with(neat_str_view(any_str_hay), neat_str_view(any_str_needle))
 
 #define neat_str_tolower(any_str) \
 neat__mutstr_ref_tolower(neat_mutstr_ref(any_str))
@@ -386,19 +386,19 @@ neat__mutstr_ref_tolower(neat_mutstr_ref(any_str))
 neat__mutstr_ref_toupper(neat_mutstr_ref(any_str))
 
 #define neat_str_replace(any_str, any_str_target, any_str_replacement) \
-neat__mutstr_ref_replace(neat_mutstr_ref(any_str), neat_strv_init(any_str_target), neat_strv_init(any_str_replacement))
+neat__mutstr_ref_replace(neat_mutstr_ref(any_str), neat_str_view(any_str_target), neat_str_view(any_str_replacement))
 
 #define neat_str_replace_first(any_str, any_str_target, any_str_replacement) \
-neat__mutstr_ref_replace_first(neat_mutstr_ref(any_str), neat_strv_init(any_str_target), neat_strv_init(any_str_replacement))
+neat__mutstr_ref_replace_first(neat_mutstr_ref(any_str), neat_str_view(any_str_target), neat_str_view(any_str_replacement))
 
 #define neat_str_replace_range(any_str, begin, end, any_str_replacement) \
-neat__mustr_ref_replace_range(neat_mutstr_ref(any_str), begin, end, neat_strv_init(any_str_replacement))
+neat__mustr_ref_replace_range(neat_mutstr_ref(any_str), begin, end, neat_str_view(any_str_replacement))
 
 #define neat_str_split(any_str, any_str_delim, ...) \
-neat__strv_split(neat_strv_init(any_str), neat_strv_init(any_str_delim), NEAT__VA_OR(neat_get_default_allocator(), __VA_ARGS__))
+neat__strv_split(neat_str_view(any_str), neat_str_view(any_str_delim), NEAT__VA_OR(neat_get_default_allocator(), __VA_ARGS__))
 
 #define neat_str_join(any_str_dst, strv_arr, any_str_delim) \
-neat__strv_arr_join(neat_mutstr_ref(any_str_dst), strv_arr, neat_strv_init(any_str_delim))
+neat__strv_arr_join(neat_mutstr_ref(any_str_dst), strv_arr, neat_str_view(any_str_delim))
 
 #define neat_str_del(any_str, begin, end) \
 neat__mutstr_ref_delete_range(neat_mutstr_ref(any_str), begin, end)
@@ -465,7 +465,7 @@ do \
 neat__strv_arr_from_carr(strv_carr, NEAT__VA_OR(NEAT__CARR_LEN(strv_carr), __VA_ARGS__))
 
 #define NEAT__STRV_COMMA(any_str) \
-neat_strv_init(any_str),
+neat_str_view(any_str),
 
 #define neat_strv_arr(...)                                                                        \
 (                                                                                                 \
@@ -542,13 +542,13 @@ default                                  : neat__sstr_ref_as_mutstr_ref    \
 #define neat__mutstr_ref2(carr_or_ptr, cap_) \
 (Neat_Mut_String_Ref){.ty = NEAT__BUF_TY, .str.carr = neat_cstr_to_buf(carr_or_ptr, cap_)} \
 
-#define neat_sstr_ref_init(sstr_ptr) \
+#define neat_sstr_ref(sstr_ptr) \
 ( \
     neat__static_assertx(NEAT__IS_SSTRING_PTR(sstr_ptr), "Must pass SString(N)*"), \
     (Neat_SString_Ref){.cap = sizeof((sstr_ptr)->chars), .sstr = (void*) sstr_ptr} \
 )
 
-#define neat_strv_init(any_str, ...) \
+#define neat_str_view(any_str, ...) \
 __VA_OPT__(neat__strv2(any_str, __VA_ARGS__)) \
 NEAT__IF_EMPTY(neat__strv1(any_str), __VA_ARGS__)
 
@@ -603,19 +603,19 @@ NEAT__IF_EMPTY(                                  \
 neat__dstr_init((cap), (allocator))
 
 #define neat_dstr_init_from(str, ...) \
-neat__dstr_init_from(neat_strv_init(str), NEAT__VA_OR(neat_get_default_allocator(), __VA_ARGS__))
+neat__dstr_init_from(neat_str_view(str), NEAT__VA_OR(neat_get_default_allocator(), __VA_ARGS__))
 
 #define neat_dstr_deinit(dstr) \
 neat__dstr_deinit(dstr)
 
 #define neat_dstr_append(dstr, any_str) \
-neat__dstr_append_strv(dstr, neat_strv_init(any_str))
+neat__dstr_append_strv(dstr, neat_str_view(any_str))
 
 #define neat_dstr_prepend(dstr, any_str) \
-neat__dstr_prepend_strv(dstr, neat_strv_init(any_str))
+neat__dstr_prepend_strv(dstr, neat_str_view(any_str))
 
 #define neat_dstr_insert(dstr, any_str, idx) \
-neat__dstr_insert_strv(dstr, neat_strv_init(any_str), idx)
+neat__dstr_insert_strv(dstr, neat_str_view(any_str), idx)
 
 #define neat_dstr_fread_line(dstr, stream) \
 neat__dstr_fread_line(dstr, stream)
@@ -965,8 +965,8 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 
 #define strbuf_init_from_cstr(str_or_cap, ...) neat_strbuf_init_from_cstr(str_or_cap __VA_OPT__(,) __VA_ARGS__)
 #define strbuf_init_from_buf(buf_or_carr) neat_strbuf_init_from_buf(buf_or_carr)
-#define sstr_ref_init(sstr_ptr) neat_sstr_ref_init(sstr_ptr)
-#define strv_init(...) neat_strv_init(__VA_ARGS__)
+#define sstr_ref(sstr_ptr) neat_sstr_ref(sstr_ptr)
+#define str_view(...) neat_str_view(__VA_ARGS__)
 #define mutstr_ref(any_str, ...) neat_mutstr_ref(any_str __VA_OPT__(,) __VA_ARGS__)
 #define strv_arr(...) neat_strv_arr(__VA_ARGS__)
 #define strv_arr_carr(strv_carr, ...) neat_strv_arr_carr(strv_carr __VA_OPT__(,) __VA_ARGS__)
