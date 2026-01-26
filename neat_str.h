@@ -59,21 +59,17 @@ neat__allocator_invoke_dealloc((allocator), (ptr), 1, (n))
 #define neat_realloc_bytes(allocator, ptr, old_n, new_n, actual) \
 neat__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old_n), (new_n))
 
-#ifdef _MSC_VER
+#if __STDC_VERSION__ >= 202311L
 
-    #define NEAT_NODISCARD(...) _Check_return_
-
-#elif __STDC_VERSION__ >= 202311L
-
-    #define NEAT_NODISCARD(...) [[nodiscard (__VA_ARGS__)]]
+    #define NEAT__NODISCARD(...) [[nodiscard (__VA_ARGS__)]]
 
 #elif defined(__GNUC__)
 
-    #define NEAT_NODISCARD(...) __attribute__((warn_unused_result))
+    #define NEAT__NODISCARD(...) __attribute__((warn_unused_result))
 
 #else
 
-    #define NEAT_NODISCARD(...)
+    #define NEAT__NODISCARD(...)
 
 #endif
 
@@ -223,17 +219,17 @@ typedef struct Neat_Mut_String_Ref
 {
     enum Neat_Mut_String_Ref_Type : signed char
     {
-        NEAT_DSTR_TY = 1,
-        NEAT_STRBUF_TY,
-        NEAT_SSTR_REF_TY,
-        NEAT_CARR_TY
+        NEAT__DSTR_TY = 1,
+        NEAT__STRBUF_TY,
+        NEAT__SSTR_REF_TY,
+        NEAT__BUF_TY
     } ty;
     union
     {
         Neat_DString *dstr;
         Neat_String_Buffer *strbuf;
         Neat_SString_Ref sstr_ref;
-        Neat_Buffer carr;
+        Neat_Buffer buf;
     } str;
 } Neat_Mut_String_Ref;
 
@@ -425,7 +421,7 @@ neat__mutstr_ref_append_fread_line(neat_mutstr_ref(any_str), stdin)
 #define neat__str_print_each(x) \
 do \
 { \
-    Neat_Mut_String_Ref neat_appender_mutstr_ref = neat_make_appender_mutstr_ref( \
+    Neat_Mut_String_Ref neat_appender_mutstr_ref = neat__make_appender_mutstr_ref( \
         neat_as_mutstr_ref, \
         &neat_appender_dstr_opt, \
         &neat_appender_dstr_allocator_opt, \
@@ -455,7 +451,7 @@ do \
         struct Neat_DString *owner; \
     } Neat_DString_Append_Allocator; \
     \
-    Neat_Mut_String_Ref neat_make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, Neat_DString_Append_Allocator *appender_dstr_allocator_opt, Neat_String_Buffer *appender_strbuf_opt); \
+    Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, Neat_DString_Append_Allocator *appender_dstr_allocator_opt, Neat_String_Buffer *appender_strbuf_opt); \
     \
     auto neat_dst = any_str_dst; \
     Neat_Mut_String_Ref neat_as_mutstr_ref = neat_mutstr_ref(neat_dst); \
@@ -473,14 +469,13 @@ neat__strv_arr_from_carr(strv_carr, NEAT__VA_OR(NEAT__CARR_LEN(strv_carr), __VA_
 #define NEAT_STRV_COMMA(any_str) \
 neat_strv(any_str),
 
-#define neat_strv_arr(...)                                                                      \
-(                                                                                               \
-neat__static_assertx(!neat__is_array_of(NEAT__ARG1(__VA_ARGS__), Neat_String_View), "strv_arr accepts variadic arguments of strings, not String_View[], call strv_arr_carr instead"), \
-(Neat_String_View_Array) {                                                                      \
+#define neat_strv_arr(...)                                                                       \
+(                                                                                                \
+(Neat_String_View_Array) {                                                                       \
     .len  = NEAT__CARR_LEN(((Neat_String_View[]){NEAT__FOREACH(NEAT_STRV_COMMA, __VA_ARGS__)})), \
-    .cap  = NEAT__CARR_LEN(((Neat_String_View[]){NEAT__FOREACH(NEAT_STRV_COMMA, __VA_ARGS__)})),  \
+    .cap  = NEAT__CARR_LEN(((Neat_String_View[]){NEAT__FOREACH(NEAT_STRV_COMMA, __VA_ARGS__)})), \
     .strs = (Neat_String_View[]){NEAT__FOREACH(NEAT_STRV_COMMA, __VA_ARGS__)}                    \
-}                                                                                               \
+}                                                                                                \
 )
 
 // Calls strlen on the cstr to determine its length
@@ -547,7 +542,7 @@ default                                  : neat__sstr_ref_as_mutstr_ref    \
 ))
 
 #define neat__mutstr_ref2(carr_or_ptr, cap_) \
-(Neat_Mut_String_Ref){.ty = NEAT_CARR_TY, .str.carr = neat_cstr_to_buf(carr_or_ptr, cap_)} \
+(Neat_Mut_String_Ref){.ty = NEAT__BUF_TY, .str.carr = neat_cstr_to_buf(carr_or_ptr, cap_)} \
 
 #define neat_sstr_ref(sstr_ptr) \
 ( \
@@ -769,13 +764,15 @@ neat__get_tostr_func(typeof(src))(neat_mutstr_ref(dst), (src))
 #define neat_has_tostr(ty) \
 (!neat__has_type(neat__get_tostr_func_ft(ty), neat__tostr_fail))
 
+#define NEAT__MCALL(macro, arglist) macro arglist
+
 #define NEAT__DECL_TOSTR_FUNC(n) \
-typedef typeof(NEAT__ARG1(ADD_TOSTR)) neat__tostr_type_##n; \
+typedef typeof(NEAT__MCALL(NEAT__ARG1, ADD_TOSTR)) neat__tostr_type_##n; \
 static inline Neat_Error neat__tostr_func_##n (Neat_Mut_String_Ref dst, neat__tostr_type_##n obj) \
 { \
-    _Static_assert(neat__has_type(NEAT__ARG2(ADD_TOSTR), typeof(Neat_Error(*)(Neat_Mut_String_Ref, neat__tostr_type_##n))), "tostr functions must have signature `Neat_Error(Neat_Mut_String_Ref dst, T src)`"); \
+    _Static_assert(neat__has_type(NEAT__MCALL(NEAT__ARG2, ADD_TOSTR), typeof(Neat_Error(*)(Neat_Mut_String_Ref, neat__tostr_type_##n))), "tostr functions must have signature `Neat_Error(Neat_Mut_String_Ref dst, T src)`"); \
     neat__mutstr_ref_clear(dst); \
-    return NEAT__ARG2(ADD_TOSTR)(dst, obj); \
+    return NEAT__MCALL(NEAT__ARG2, ADD_TOSTR) (dst, obj); \
 }
 
 const Neat_String_View neat_error_string(Neat_Error err);
@@ -830,8 +827,8 @@ unsigned int neat__dstr_ptr_cap(const Neat_DString *str);
 unsigned int neat__strbuf_cap(const Neat_String_Buffer str);
 unsigned int neat__strbuf_ptr_cap(const Neat_String_Buffer *str);
 unsigned int neat__sstr_ref_cap(const Neat_SString_Ref str);
-unsigned int neat__mutstr_ref_cap(const Neat_Mut_String_Ref str);
 unsigned int neat__buf_cap(const Neat_Buffer buf);
+unsigned int neat__mutstr_ref_cap(const Neat_Mut_String_Ref str);
 
 unsigned char neat__cstr_char_at(const char *str, unsigned int idx);
 unsigned char neat__ucstr_char_at(const unsigned char *str, unsigned int idx);
@@ -848,8 +845,10 @@ Neat_Error neat__mutstr_ref_set_len(Neat_Mut_String_Ref str, size_t new_len);
 
 bool neat__is_strv_within(Neat_String_View base, Neat_String_View sub);
 
-NEAT_NODISCARD("discarding a new DString may cause memory leak") Neat_DString neat__dstr_init(unsigned int cap, Neat_Allocator *allocator);
-NEAT_NODISCARD("discarding a new DString will cause memory leak") Neat_DString neat__dstr_init_from(Neat_String_View from, Neat_Allocator *allocator);
+NEAT__NODISCARD("discarding a new DString may cause a memory leak")
+Neat_DString neat__dstr_init(unsigned int cap, Neat_Allocator *allocator);
+NEAT__NODISCARD("discarding a new DString may cause a memory leak")
+Neat_DString neat__dstr_init_from(Neat_String_View from, Neat_Allocator *allocator);
 void neat__dstr_deinit(Neat_DString *dstr);
 Neat_Error neat__dstr_append_strv(Neat_DString *dstr, const Neat_String_View str);
 Neat_Error neat__dstr_prepend_strv(Neat_DString *dstr, const Neat_String_View str);
@@ -870,7 +869,8 @@ Neat_Error neat__mutstr_ref_clear(Neat_Mut_String_Ref str);
 
 Neat_Error neat__dstr_copy(Neat_DString *dstr, const Neat_String_View src);
 
-NEAT_NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array neat__strv_split(const Neat_String_View str, const Neat_String_View delim, Neat_Allocator* allocator);
+NEAT__NODISCARD("str_split returns new String_View_Array")
+Neat_String_View_Array neat__strv_split(const Neat_String_View str, const Neat_String_View delim, Neat_Allocator* allocator);
 Neat_Error neat__strv_split_callback(const Neat_String_View str, const Neat_String_View delim, bool(*cb)(Neat_String_View found, void *ctx), void *ctx);
 Neat_Error neat__strv_arr_join(Neat_Mut_String_Ref dst, Neat_String_View_Array strs, Neat_String_View delim);
 
@@ -919,7 +919,7 @@ Neat_Error neat__mutstr_ref_tostr(Neat_Mut_String_Ref dst, Neat_Mut_String_Ref o
 
 #endif /* NEAT_STR_H */
 
-#ifndef NEAT_STR_PREFIX
+#ifdef NEAT_STR_SHORT_NAMES
 
 typedef Neat_Allocator          Allocator;
 typedef Neat_DString            DString;
