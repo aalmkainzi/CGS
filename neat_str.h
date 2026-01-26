@@ -80,7 +80,7 @@ neat__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (ol
 _Generic(exp, t: 1, default: 0)
 
 #define neat__is_array_of(exp, ty) \
-neat__has_type((typeof(exp)*){0}, typeof(ty)(*)[sizeof(exp)/sizeof(ty)])
+neat__has_type((__typeof__(exp)*){0}, __typeof__(ty)(*)[sizeof(exp)/sizeof(ty)])
 
 #define NEAT__CAT(a, ...) NEAT__PRIMITIVE_CAT(a, __VA_ARGS__)
 #define NEAT__PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
@@ -158,7 +158,7 @@ NEAT__CAT(NEAT__IF_EMPTY_, __VA_OPT__(0))(then)
 #define NEAT__IF_NEMPTY(then, ...) __VA_OPT__(then)
 
 #define NEAT__TYPEOF_ARG(arg) \
-,typeof(arg)
+,__typeof__(arg)
 
 #define NEAT__TYPEOF_ARGS(...) \
 __VA_OPT__( \
@@ -290,8 +290,8 @@ NEAT__SSTRING_NTAG(sizeof((sstr)->chars))
 #define NEAT__IS_SSTRING_PTR(s) \
 (                                                                   \
 sizeof(*(s)) == sizeof(NEAT__TYPEOF_SSTR(s)) &&                      \
-_Alignof(typeof(*(s))) == _Alignof(NEAT__TYPEOF_SSTR(s)) &&          \
-neat__has_type(&(s)->chars, typeof(&(NEAT__TYPEOF_SSTR(s)){0}.chars)) \
+_Alignof(__typeof__(*(s))) == _Alignof(NEAT__TYPEOF_SSTR(s)) &&          \
+neat__has_type(&(s)->chars, __typeof__(&(NEAT__TYPEOF_SSTR(s)){0}.chars)) \
 )
 
 #define neat_str_at(any_str, idx)                   \
@@ -311,18 +311,18 @@ _Generic(any_str,                                   \
 ((void)0, neat_str_view(any_str).len)
 
 #define neat_str_cap(any_str)                                         \
-_Generic((typeof(any_str)*){0},                                       \
-    char(*)[sizeof(typeof(any_str))]          : neat__buf_cap,        \
-    unsigned char(*)[sizeof(typeof(any_str))] : neat__buf_cap,        \
+_Generic((__typeof__(any_str)*){0},                                       \
+    char(*)[sizeof(__typeof__(any_str))]          : neat__buf_cap,        \
+    unsigned char(*)[sizeof(__typeof__(any_str))] : neat__buf_cap,        \
     Neat_DString*                             : neat__dstr_cap,       \
     Neat_DString**                            : neat__dstr_ptr_cap,   \
     Neat_String_Buffer*                       : neat__strbuf_cap,     \
     Neat_String_Buffer**                      : neat__strbuf_ptr_cap, \
     Neat_SString_Ref*                         : neat__sstr_ref_cap,   \
     Neat_Mut_String_Ref*                      : neat__mutstr_ref_cap  \
-)(_Generic((typeof(any_str)*){0},                                     \
-    char(*)[sizeof(typeof(any_str))]: (Neat_Buffer){.ptr = (unsigned char*) neat__coerce(any_str, char*), .cap = sizeof(typeof(any_str))},  \
-    unsigned char(*)[sizeof(typeof(any_str))]: (Neat_Buffer){.ptr = neat__coerce(any_str, unsigned char*), .cap = sizeof(typeof(any_str))}, \
+)(_Generic((__typeof__(any_str)*){0},                                     \
+    char(*)[sizeof(__typeof__(any_str))]: (Neat_Buffer){.ptr = (unsigned char*) neat__coerce(any_str, char*), .cap = sizeof(__typeof__(any_str))},  \
+    unsigned char(*)[sizeof(__typeof__(any_str))]: (Neat_Buffer){.ptr = neat__coerce(any_str, unsigned char*), .cap = sizeof(__typeof__(any_str))}, \
     default: (any_str) \
 ))
 
@@ -449,9 +449,11 @@ do \
         struct Neat_DString *owner; \
     } Neat_DString_Append_Allocator; \
     \
-    Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, Neat_DString_Append_Allocator *appender_dstr_allocator_opt, Neat_String_Buffer *appender_strbuf_opt); \
+    Neat_DString_Append_Allocator neat__unused = {0}; \
+    (void) neat__unused; \
+    Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, void *appender_dstr_allocator_opt, Neat_String_Buffer *appender_strbuf_opt); \
     \
-    auto neat_dst = any_str_dst; \
+    __typeof__(any_str_dst) neat_dst = any_str_dst; \
     Neat_Mut_String_Ref neat_as_mutstr_ref = neat_mutstr_ref(neat_dst); \
     neat__mutstr_ref_clear(neat_as_mutstr_ref); \
     __VA_OPT__( \
@@ -481,9 +483,9 @@ neat_str_view(any_str),
 // if char* is passed, the capacity is length+1
 #define neat_strbuf_init_from_cstr(cstr) \
 neat__strbuf_from_cstr(cstr,                                          \
-_Generic(&(typeof(cstr)){0},                                          \
-    char(*)[sizeof(typeof(cstr))]         : sizeof(typeof(cstr)),     \
-    unsigned char(*)[sizeof(typeof(cstr))]: sizeof(typeof(cstr)),     \
+_Generic(&(__typeof__(cstr)){0},                                          \
+    char(*)[sizeof(__typeof__(cstr))]         : sizeof(__typeof__(cstr)),     \
+    unsigned char(*)[sizeof(__typeof__(cstr))]: sizeof(__typeof__(cstr)),     \
     char**                                : strlen((char*) cstr) + 1, \
     unsigned char**                       : strlen((char*) cstr) + 1  \
 ))
@@ -492,18 +494,18 @@ _Generic(&(typeof(cstr)){0},                                          \
 // Sets the first byte to '\0'
 #define neat_strbuf_init_from_buf(buf) \
 neat__strbuf_from_buf( \
-_Generic(&(typeof(buf)){0}, \
-    char(*)[sizeof(typeof(buf))]: (Neat_Buffer){.ptr = (unsigned char*) (buf), .cap = sizeof(buf)}, \
-    unsigned char(*)[sizeof(typeof(buf))]: (Neat_Buffer){.ptr = (unsigned char*) (buf), .cap = sizeof(buf)}, \
+_Generic(&(__typeof__(buf)){0}, \
+    char(*)[sizeof(__typeof__(buf))]: (Neat_Buffer){.ptr = (unsigned char*) (buf), .cap = sizeof(buf)}, \
+    unsigned char(*)[sizeof(__typeof__(buf))]: (Neat_Buffer){.ptr = (unsigned char*) (buf), .cap = sizeof(buf)}, \
     Neat_Buffer*: buf \
 ))
 
 #define neat_cstr_to_buf(carr, ...) \
 ( \
 NEAT__IF_EMPTY( \
-    _Generic((typeof(carr)*){0}, \
-        char(*)[sizeof(typeof(carr))]: (Neat_Buffer){.ptr = (unsigned char*) (carr), .cap = sizeof(carr)}, \
-        unsigned char(*)[sizeof(typeof(any_str))]: (Neat_Buffer){.ptr = (unsigned char*) (carr), .cap = sizeof(carr)} \
+    _Generic((__typeof__(carr)*){0}, \
+        char(*)[sizeof(__typeof__(carr))]: (Neat_Buffer){.ptr = (unsigned char*) (carr), .cap = sizeof(carr)}, \
+        unsigned char(*)[sizeof(__typeof__(any_str))]: (Neat_Buffer){.ptr = (unsigned char*) (carr), .cap = sizeof(carr)} \
     ), \
     __VA_ARGS__ \
 ) \
@@ -512,8 +514,8 @@ __VA_OPT__(neat__cstr_to_buf2((carr), __VA_ARGS__)) \
 
 #define neat__cstr_to_buf2(carr_or_ptr, cap_) \
 ((void)_Generic(carr_or_ptr, \
-char(*)[sizeof(typeof(carr_or_ptr))]: 0, \
-unsigned char(*)[sizeof(typeof(carr_or_ptr))]: 0, \
+char(*)[sizeof(__typeof__(carr_or_ptr))]: 0, \
+unsigned char(*)[sizeof(__typeof__(carr_or_ptr))]: 0, \
 char*: 0, \
 unsigned char*: 0 \
 ), \
@@ -523,19 +525,19 @@ unsigned char*: 0 \
 NEAT__CAT(neat__mutstr_ref, __VA_OPT__(2))((any_str) __VA_OPT__(,) __VA_ARGS__)
 
 #define neat__mutstr_ref(any_str)                                          \
-_Generic((typeof(any_str)*){0},                                            \
+_Generic((__typeof__(any_str)*){0},                                            \
 char**                                   : neat__cstr_as_mutstr_ref,       \
 unsigned char**                          : neat__ucstr_as_mutstr_ref,      \
 Neat_DString**                           : neat__dstr_ptr_as_mutstr_ref,   \
 Neat_String_Buffer**                     : neat__strbuf_ptr_as_mutstr_ref, \
 Neat_SString_Ref*                        : neat__sstr_ref_as_mutstr_ref,   \
 Neat_Mut_String_Ref*                     : neat__mutstr_ref_as_mutstr_ref, \
-char(*)[sizeof(typeof(any_str))]         : neat__buf_as_mutstr_ref,        \
-unsigned char(*)[sizeof(typeof(any_str))]: neat__buf_as_mutstr_ref,        \
+char(*)[sizeof(__typeof__(any_str))]         : neat__buf_as_mutstr_ref,        \
+unsigned char(*)[sizeof(__typeof__(any_str))]: neat__buf_as_mutstr_ref,        \
 default                                  : neat__sstr_ref_as_mutstr_ref    \
-)(_Generic((typeof(any_str)*){0},                                          \
-    char(*)[sizeof(typeof(any_str))]: (Neat_Buffer){.ptr = (unsigned char*) neat__coerce(any_str, char*), .cap = sizeof(typeof(any_str))}, \
-    unsigned char(*)[sizeof(typeof(any_str))]: (Neat_Buffer){.ptr = neat__coerce(any_str, unsigned char*), .cap = sizeof(typeof(any_str))}, \
+)(_Generic((__typeof__(any_str)*){0},                                          \
+    char(*)[sizeof(__typeof__(any_str))]: (Neat_Buffer){.ptr = (unsigned char*) neat__coerce(any_str, char*), .cap = sizeof(__typeof__(any_str))}, \
+    unsigned char(*)[sizeof(__typeof__(any_str))]: (Neat_Buffer){.ptr = neat__coerce(any_str, unsigned char*), .cap = sizeof(__typeof__(any_str))}, \
     default: (any_str) \
 ))
 
@@ -753,7 +755,7 @@ _Generic((ty){0}, \
 )
 
 #define neat_tostr(dst, src) \
-neat__get_tostr_func(typeof(src))(neat_mutstr_ref(dst), (src))
+neat__get_tostr_func(__typeof__(src))(neat_mutstr_ref(dst), (src))
 
 #define neat_has_tostr(ty) \
 (!neat__has_type(neat__get_tostr_func_ft(ty), neat__tostr_fail))
@@ -761,10 +763,10 @@ neat__get_tostr_func(typeof(src))(neat_mutstr_ref(dst), (src))
 #define NEAT__MCALL(macro, arglist) macro arglist
 
 #define NEAT__DECL_TOSTR_FUNC(n) \
-typedef typeof(NEAT__MCALL(NEAT__ARG1, ADD_TOSTR)) neat__tostr_type_##n; \
+typedef __typeof__(NEAT__MCALL(NEAT__ARG1, ADD_TOSTR)) neat__tostr_type_##n; \
 static inline Neat_Error neat__tostr_func_##n (Neat_Mut_String_Ref dst, neat__tostr_type_##n obj) \
 { \
-    _Static_assert(neat__has_type(NEAT__MCALL(NEAT__ARG2, ADD_TOSTR), typeof(Neat_Error(*)(Neat_Mut_String_Ref, neat__tostr_type_##n))), "tostr functions must have signature `Neat_Error(Neat_Mut_String_Ref dst, T src)`"); \
+    _Static_assert(neat__has_type(NEAT__MCALL(NEAT__ARG2, ADD_TOSTR), __typeof__(Neat_Error(*)(Neat_Mut_String_Ref, neat__tostr_type_##n))), "tostr functions must have signature `Neat_Error(Neat_Mut_String_Ref dst, T src)`"); \
     neat__mutstr_ref_clear(dst); \
     return NEAT__MCALL(NEAT__ARG2, ADD_TOSTR) (dst, obj); \
 }
