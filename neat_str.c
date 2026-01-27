@@ -1345,7 +1345,7 @@ Neat_Error neat__fmutstr_ref_delete_range(Neat__Fixed_Mut_String_Ref str, unsign
 {
     unsigned int len = *str.len;
     
-    if(end > len || begin > end)
+    if(end > len || begin >= end)
     {
         return NEAT_BAD_RANGE;
     }
@@ -1507,7 +1507,7 @@ Neat_Error neat__dstr_replace_range(Neat_DString *dstr, unsigned int begin, unsi
 {
     if(begin >= dstr->len)
         return NEAT_INDEX_OUT_OF_BOUNDS;
-    if(begin > end || end > dstr->len)
+    if(begin >= end || end > dstr->len)
         return NEAT_BAD_RANGE;
     if(neat__is_strv_within(neat__strv_dstr_ptr2(dstr, 0), replacement))
         return NEAT_ALIASING_NOT_SUPPORTED;
@@ -1575,7 +1575,7 @@ Neat_Error neat__fmutstr_ref_replace_range(Neat__Fixed_Mut_String_Ref str, unsig
 {
     if(begin >= *str.len)
         return NEAT_INDEX_OUT_OF_BOUNDS;
-    if(begin > end || end > *str.len)
+    if(begin >= end || end > *str.len)
         return NEAT_BAD_RANGE;
     if(neat__is_strv_within(neat__strv_fmutstr_ref2(str, 0), replacement))
         return NEAT_ALIASING_NOT_SUPPORTED;

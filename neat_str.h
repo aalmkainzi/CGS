@@ -438,7 +438,11 @@ neat__strv_split(neat_str_view(any_str), neat_str_view(any_str_delim), NEAT__VA_
 neat__strv_arr_join(neat_mutstr_ref(any_str_dst), strv_arr, neat_str_view(any_str_delim))
 
 #define neat_str_del(any_str, begin, end) \
-neat__mutstr_ref_delete_range(neat_mutstr_ref(any_str), begin, end)
+_Generic(any_str, \
+    Neat_Mut_String_Ref : neat__mutstr_ref_delete_range(neat__coerce(any_str, Neat_Mut_String_Ref), begin, end), \
+    Neat_DString*       : neat__mutstr_ref_delete_range(neat__dstr_ptr_as_mutstr_ref(neat__coerce(any_str, Neat_DString*)), begin, end), \
+    default             : neat__fmutstr_ref_delete_range(neat__fmutstr_ref(neat__coerce_not(any_str, Neat_Mut_String_Ref, Neat_String_Buffer*)), begin, end) \
+)
 
 #define neat_str_fread_line(any_str, stream) \
 neat__mutstr_ref_fread_line(neat_mutstr_ref(any_str), stream)
