@@ -1932,6 +1932,7 @@ Neat_Error neat__mutstr_ref_toupper(Neat_Mut_String_Ref str)
             neat__chars_toupper(str.str.buf.ptr, strlen((char*) str.str.buf.ptr));
             break;
     }
+    
     return NEAT_OK;
 }
 

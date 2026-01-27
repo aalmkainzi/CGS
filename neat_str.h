@@ -389,7 +389,11 @@ _Generic(any_str_dst, \
 )
 
 #define neat_str_append(any_str_dst, any_str_src) \
-neat__mutstr_ref_append(neat_mutstr_ref(any_str_dst), neat_str_view(any_str_src))
+_Generic(any_str_dst, \
+    Neat_Mut_String_Ref : neat__mutstr_ref_append(neat__coerce(any_str_dst, Neat_Mut_String_Ref), neat_str_view(any_str_src)), \
+    Neat_DString*       : neat__dstr_append_strv(neat__coerce(any_str_dst, Neat_DString*), neat_str_view(any_str_src)), \
+    default             : neat__fmutstr_ref_append_strv(neat__fmutstr_ref(neat__coerce_not(any_str_dst, Neat_Mut_String_Ref, Neat_String_Buffer*)), neat_str_view(any_str_src)) \
+)
 
 #define neat_str_insert(any_str_dst, any_str_src, idx) \
 neat__mutstr_ref_insert(neat_mutstr_ref(any_str_dst), neat_str_view(any_str_src), (idx))
@@ -490,7 +494,6 @@ do \
     __typeof__(any_str_dst) neat__dst = any_str_dst; \
     Neat_Mut_String_Ref neat__as_mutstr_ref = neat_mutstr_ref(neat__dst); \
     __VA_OPT__( \
-    \
         neat__str_print_each_setup(__VA_ARGS__); \
     ) \
 } while(0)
@@ -922,7 +925,7 @@ Neat_Error neat__mutstr_ref_clear(Neat_Mut_String_Ref str);
 
 Neat_Error neat__fmutstr_ref_putc(Neat__Fixed_Mut_String_Ref dst, unsigned char c);
 Neat_Error neat__fmutstr_ref_copy(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src);
-Neat_Error neat__fmutstr_ref_append(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src);
+Neat_Error neat__fmutstr_ref_append_strv(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src);
 Neat_Error neat__fmutstr_ref_delete_range(Neat__Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end);
 Neat_Error neat__fmutstr_ref_insert(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src, unsigned int idx);
 Neat_Error neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement);
