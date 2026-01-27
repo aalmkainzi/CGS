@@ -254,7 +254,7 @@ typedef enum Neat_Error : signed char
     #define Neat_SString(cap) \
     struct Neat_SString_##cap \
     { \
-        _Static_assert((1##cap##1ull || cap##8ull || 1) && (cap > 0), "argument must be positive decimal integer literal"); /* the first term is to make sure cap is an integer literal */ \
+        _Static_assert((1##cap##1ull || cap##8ull || 1) && (cap > 0), "capacity must be a positive decimal integer literal"); \
         unsigned int len; \
         unsigned char chars[ cap ]; \
     }
@@ -555,7 +555,17 @@ __VA_OPT__(neat__strv2(any_str, __VA_ARGS__)) \
 NEAT__IF_EMPTY(neat__strv1(any_str), __VA_ARGS__)
 
 #define neat__strv1(any_str) \
-neat__strv2(any_str, 0)
+_Generic(any_str,                                 \
+    char*               : neat__strv_cstr1,       \
+    unsigned char*      : neat__strv_ucstr1,      \
+    Neat_DString        : neat__strv_dstr1,       \
+    Neat_DString*       : neat__strv_dstr_ptr1,   \
+    Neat_String_View    : neat__strv_strv1,       \
+    Neat_String_Buffer  : neat__strv_strbuf1,     \
+    Neat_String_Buffer* : neat__strv_strbuf_ptr1, \
+    Neat_SString_Ref    : neat__strv_sstr_ref1,   \
+    Neat_Mut_String_Ref : neat__strv_mutstr_ref1  \
+)(any_str)
 
 #define neat__strv2(any_str, begin, ...)             \
 __VA_OPT__(neat__strv3(any_str, begin, __VA_ARGS__)) \
@@ -773,7 +783,16 @@ static inline Neat_Error neat__tostr_func_##n (Neat_Mut_String_Ref dst, neat__to
 
 Neat_String_View neat_error_string(Neat_Error err);
 
-// TODO make strv1 versions
+Neat_String_View neat__strv_cstr1(const char *str);
+Neat_String_View neat__strv_ucstr1(const unsigned char *str);
+Neat_String_View neat__strv_dstr1(const Neat_DString str);
+Neat_String_View neat__strv_dstr_ptr1(const Neat_DString *str);
+Neat_String_View neat__strv_strv1(const Neat_String_View str);
+Neat_String_View neat__strv_strbuf1(const Neat_String_Buffer str);
+Neat_String_View neat__strv_strbuf_ptr1(const Neat_String_Buffer *str);
+Neat_String_View neat__strv_sstr_ref1(const Neat_SString_Ref str);
+Neat_String_View neat__strv_mutstr_ref1(const Neat_Mut_String_Ref str);
+
 Neat_String_View neat__strv_cstr2(const char *str, unsigned int begin);
 Neat_String_View neat__strv_ucstr2(const unsigned char *str, unsigned int begin);
 Neat_String_View neat__strv_dstr2(const Neat_DString str, unsigned int begin);

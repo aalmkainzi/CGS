@@ -1537,6 +1537,80 @@ Neat_String_Buffer neat__strbuf_from_buf(const Neat_Buffer buf)
     return ret;
 }
 
+Neat_String_View neat__strv_cstr1(const char *str)
+{
+    return (Neat_String_View){
+        .chars = (unsigned char*) str,
+        .len = strlen(str)
+    };
+}
+
+Neat_String_View neat__strv_ucstr1(const unsigned char *str)
+{
+    return (Neat_String_View){
+        .chars = (unsigned char*) str,
+        .len = strlen((char*)str)
+    };
+}
+
+Neat_String_View neat__strv_dstr1(const Neat_DString str)
+{
+    return (Neat_String_View){
+        .chars = str.chars,
+        .len = str.len
+    };
+}
+
+Neat_String_View neat__strv_dstr_ptr1(const Neat_DString *str)
+{
+    return (Neat_String_View){
+        .chars = str->chars,
+        .len = str->len
+    };
+}
+
+Neat_String_View neat__strv_strv1(const Neat_String_View str)
+{
+    return (Neat_String_View){
+        .chars = str.chars,
+        .len = str.len
+    };
+}
+Neat_String_View neat__strv_strbuf1(const Neat_String_Buffer str)
+{
+    return (Neat_String_View){
+        .chars = str.chars,
+        .len = str.len
+    };
+}
+Neat_String_View neat__strv_strbuf_ptr1(const Neat_String_Buffer *str)
+{
+    return (Neat_String_View){
+        .chars = str->chars,
+        .len = str->len
+    };
+}
+
+Neat_String_View neat__strv_sstr_ref1(const Neat_SString_Ref str)
+{
+    return (Neat_String_View){
+        .chars = str.sstr->chars,
+        .len = str.sstr->len
+    };
+}
+
+Neat_String_View neat__strv_mutstr_ref1(const Neat_Mut_String_Ref str)
+{
+    switch(str.ty)
+    {
+        case NEAT__DSTR_TY     : return neat__strv_dstr_ptr1(str.str.dstr);
+        case NEAT__STRBUF_TY   : return neat__strv_strbuf_ptr1(str.str.strbuf);
+        case NEAT__SSTR_REF_TY : return neat__strv_sstr_ref1(str.str.sstr_ref);
+        case NEAT__BUF_TY      : return neat__strv_ucstr1(str.str.buf.ptr);
+        default                : unreachable();
+    }
+}
+
 Neat_String_View neat__strv_cstr2(const char *str, unsigned int begin)
 {
     unsigned int len = strlen(str);
