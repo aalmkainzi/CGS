@@ -12,14 +12,6 @@
     #endif
 #endif
 
-#define fmutstr_ref(s, ...)                                                                  \
-_Generic(s,                                                                                  \
-    Neat_DString*       : neat__dstr_as_fmutstr_ref(neat__coerce(s, Neat_DString*)),         \
-    Neat_Buffer         : neat__buf_as_fmutstr_ref(neat__coerce(s, Neat_Buffer), NEAT__VA_OR(&(unsigned int){0}, __VA_ARGS__)), \
-    Neat_String_Buffer* : neat__strbuf_as_fmutstr_ref(neat__coerce(s, Neat_String_Buffer*)), \
-    Neat_SString_Ref    : neat__sstr_ref_as_fmutstr_ref(neat__coerce(s, Neat_SString_Ref))   \
-)
-
 static const Neat_String_View error_to_string[] = {
     [NEAT_OK]                     = {.len = sizeof("OK")                     - 1, .chars = (unsigned char*) "OK"},
     [NEAT_DST_TOO_SMALL]          = {.len = sizeof("DST_TOO_SMALL")          - 1, .chars = (unsigned char*) "DST_TOO_SMALL"},
@@ -77,13 +69,525 @@ static const unsigned long long ten_pows_ull[] = {
     10000000000000000000ull,
 };
 
-// TODO IDEA: for optimization reasons, maybe have this type in the header (but Neat__ prefix), and in the _Generic macros, turn non-DStrings into fmutstr_refs and call the fmutstr_ref functions
-typedef struct Fixed_Mut_String_Ref
-{
-    unsigned char *chars;
-    unsigned int *len;
-    unsigned int cap;
-} Fixed_Mut_String_Ref;
+static const Neat_String_View uc_to_string[256] = {
+    {.chars = (unsigned char*) "0", .len = 1},
+    {.chars = (unsigned char*) "1", .len = 1},
+    {.chars = (unsigned char*) "2", .len = 1},
+    {.chars = (unsigned char*) "3", .len = 1},
+    {.chars = (unsigned char*) "4", .len = 1},
+    {.chars = (unsigned char*) "5", .len = 1},
+    {.chars = (unsigned char*) "6", .len = 1},
+    {.chars = (unsigned char*) "7", .len = 1},
+    {.chars = (unsigned char*) "8", .len = 1},
+    {.chars = (unsigned char*) "9", .len = 1},
+    {.chars = (unsigned char*) "10", .len = 2},
+    {.chars = (unsigned char*) "11", .len = 2},
+    {.chars = (unsigned char*) "12", .len = 2},
+    {.chars = (unsigned char*) "13", .len = 2},
+    {.chars = (unsigned char*) "14", .len = 2},
+    {.chars = (unsigned char*) "15", .len = 2},
+    {.chars = (unsigned char*) "16", .len = 2},
+    {.chars = (unsigned char*) "17", .len = 2},
+    {.chars = (unsigned char*) "18", .len = 2},
+    {.chars = (unsigned char*) "19", .len = 2},
+    {.chars = (unsigned char*) "20", .len = 2},
+    {.chars = (unsigned char*) "21", .len = 2},
+    {.chars = (unsigned char*) "22", .len = 2},
+    {.chars = (unsigned char*) "23", .len = 2},
+    {.chars = (unsigned char*) "24", .len = 2},
+    {.chars = (unsigned char*) "25", .len = 2},
+    {.chars = (unsigned char*) "26", .len = 2},
+    {.chars = (unsigned char*) "27", .len = 2},
+    {.chars = (unsigned char*) "28", .len = 2},
+    {.chars = (unsigned char*) "29", .len = 2},
+    {.chars = (unsigned char*) "30", .len = 2},
+    {.chars = (unsigned char*) "31", .len = 2},
+    {.chars = (unsigned char*) "32", .len = 2},
+    {.chars = (unsigned char*) "33", .len = 2},
+    {.chars = (unsigned char*) "34", .len = 2},
+    {.chars = (unsigned char*) "35", .len = 2},
+    {.chars = (unsigned char*) "36", .len = 2},
+    {.chars = (unsigned char*) "37", .len = 2},
+    {.chars = (unsigned char*) "38", .len = 2},
+    {.chars = (unsigned char*) "39", .len = 2},
+    {.chars = (unsigned char*) "40", .len = 2},
+    {.chars = (unsigned char*) "41", .len = 2},
+    {.chars = (unsigned char*) "42", .len = 2},
+    {.chars = (unsigned char*) "43", .len = 2},
+    {.chars = (unsigned char*) "44", .len = 2},
+    {.chars = (unsigned char*) "45", .len = 2},
+    {.chars = (unsigned char*) "46", .len = 2},
+    {.chars = (unsigned char*) "47", .len = 2},
+    {.chars = (unsigned char*) "48", .len = 2},
+    {.chars = (unsigned char*) "49", .len = 2},
+    {.chars = (unsigned char*) "50", .len = 2},
+    {.chars = (unsigned char*) "51", .len = 2},
+    {.chars = (unsigned char*) "52", .len = 2},
+    {.chars = (unsigned char*) "53", .len = 2},
+    {.chars = (unsigned char*) "54", .len = 2},
+    {.chars = (unsigned char*) "55", .len = 2},
+    {.chars = (unsigned char*) "56", .len = 2},
+    {.chars = (unsigned char*) "57", .len = 2},
+    {.chars = (unsigned char*) "58", .len = 2},
+    {.chars = (unsigned char*) "59", .len = 2},
+    {.chars = (unsigned char*) "60", .len = 2},
+    {.chars = (unsigned char*) "61", .len = 2},
+    {.chars = (unsigned char*) "62", .len = 2},
+    {.chars = (unsigned char*) "63", .len = 2},
+    {.chars = (unsigned char*) "64", .len = 2},
+    {.chars = (unsigned char*) "65", .len = 2},
+    {.chars = (unsigned char*) "66", .len = 2},
+    {.chars = (unsigned char*) "67", .len = 2},
+    {.chars = (unsigned char*) "68", .len = 2},
+    {.chars = (unsigned char*) "69", .len = 2},
+    {.chars = (unsigned char*) "70", .len = 2},
+    {.chars = (unsigned char*) "71", .len = 2},
+    {.chars = (unsigned char*) "72", .len = 2},
+    {.chars = (unsigned char*) "73", .len = 2},
+    {.chars = (unsigned char*) "74", .len = 2},
+    {.chars = (unsigned char*) "75", .len = 2},
+    {.chars = (unsigned char*) "76", .len = 2},
+    {.chars = (unsigned char*) "77", .len = 2},
+    {.chars = (unsigned char*) "78", .len = 2},
+    {.chars = (unsigned char*) "79", .len = 2},
+    {.chars = (unsigned char*) "80", .len = 2},
+    {.chars = (unsigned char*) "81", .len = 2},
+    {.chars = (unsigned char*) "82", .len = 2},
+    {.chars = (unsigned char*) "83", .len = 2},
+    {.chars = (unsigned char*) "84", .len = 2},
+    {.chars = (unsigned char*) "85", .len = 2},
+    {.chars = (unsigned char*) "86", .len = 2},
+    {.chars = (unsigned char*) "87", .len = 2},
+    {.chars = (unsigned char*) "88", .len = 2},
+    {.chars = (unsigned char*) "89", .len = 2},
+    {.chars = (unsigned char*) "90", .len = 2},
+    {.chars = (unsigned char*) "91", .len = 2},
+    {.chars = (unsigned char*) "92", .len = 2},
+    {.chars = (unsigned char*) "93", .len = 2},
+    {.chars = (unsigned char*) "94", .len = 2},
+    {.chars = (unsigned char*) "95", .len = 2},
+    {.chars = (unsigned char*) "96", .len = 2},
+    {.chars = (unsigned char*) "97", .len = 2},
+    {.chars = (unsigned char*) "98", .len = 2},
+    {.chars = (unsigned char*) "99", .len = 2},
+    {.chars = (unsigned char*) "100", .len = 3},
+    {.chars = (unsigned char*) "101", .len = 3},
+    {.chars = (unsigned char*) "102", .len = 3},
+    {.chars = (unsigned char*) "103", .len = 3},
+    {.chars = (unsigned char*) "104", .len = 3},
+    {.chars = (unsigned char*) "105", .len = 3},
+    {.chars = (unsigned char*) "106", .len = 3},
+    {.chars = (unsigned char*) "107", .len = 3},
+    {.chars = (unsigned char*) "108", .len = 3},
+    {.chars = (unsigned char*) "109", .len = 3},
+    {.chars = (unsigned char*) "110", .len = 3},
+    {.chars = (unsigned char*) "111", .len = 3},
+    {.chars = (unsigned char*) "112", .len = 3},
+    {.chars = (unsigned char*) "113", .len = 3},
+    {.chars = (unsigned char*) "114", .len = 3},
+    {.chars = (unsigned char*) "115", .len = 3},
+    {.chars = (unsigned char*) "116", .len = 3},
+    {.chars = (unsigned char*) "117", .len = 3},
+    {.chars = (unsigned char*) "118", .len = 3},
+    {.chars = (unsigned char*) "119", .len = 3},
+    {.chars = (unsigned char*) "120", .len = 3},
+    {.chars = (unsigned char*) "121", .len = 3},
+    {.chars = (unsigned char*) "122", .len = 3},
+    {.chars = (unsigned char*) "123", .len = 3},
+    {.chars = (unsigned char*) "124", .len = 3},
+    {.chars = (unsigned char*) "125", .len = 3},
+    {.chars = (unsigned char*) "126", .len = 3},
+    {.chars = (unsigned char*) "127", .len = 3},
+    {.chars = (unsigned char*) "128", .len = 3},
+    {.chars = (unsigned char*) "129", .len = 3},
+    {.chars = (unsigned char*) "130", .len = 3},
+    {.chars = (unsigned char*) "131", .len = 3},
+    {.chars = (unsigned char*) "132", .len = 3},
+    {.chars = (unsigned char*) "133", .len = 3},
+    {.chars = (unsigned char*) "134", .len = 3},
+    {.chars = (unsigned char*) "135", .len = 3},
+    {.chars = (unsigned char*) "136", .len = 3},
+    {.chars = (unsigned char*) "137", .len = 3},
+    {.chars = (unsigned char*) "138", .len = 3},
+    {.chars = (unsigned char*) "139", .len = 3},
+    {.chars = (unsigned char*) "140", .len = 3},
+    {.chars = (unsigned char*) "141", .len = 3},
+    {.chars = (unsigned char*) "142", .len = 3},
+    {.chars = (unsigned char*) "143", .len = 3},
+    {.chars = (unsigned char*) "144", .len = 3},
+    {.chars = (unsigned char*) "145", .len = 3},
+    {.chars = (unsigned char*) "146", .len = 3},
+    {.chars = (unsigned char*) "147", .len = 3},
+    {.chars = (unsigned char*) "148", .len = 3},
+    {.chars = (unsigned char*) "149", .len = 3},
+    {.chars = (unsigned char*) "150", .len = 3},
+    {.chars = (unsigned char*) "151", .len = 3},
+    {.chars = (unsigned char*) "152", .len = 3},
+    {.chars = (unsigned char*) "153", .len = 3},
+    {.chars = (unsigned char*) "154", .len = 3},
+    {.chars = (unsigned char*) "155", .len = 3},
+    {.chars = (unsigned char*) "156", .len = 3},
+    {.chars = (unsigned char*) "157", .len = 3},
+    {.chars = (unsigned char*) "158", .len = 3},
+    {.chars = (unsigned char*) "159", .len = 3},
+    {.chars = (unsigned char*) "160", .len = 3},
+    {.chars = (unsigned char*) "161", .len = 3},
+    {.chars = (unsigned char*) "162", .len = 3},
+    {.chars = (unsigned char*) "163", .len = 3},
+    {.chars = (unsigned char*) "164", .len = 3},
+    {.chars = (unsigned char*) "165", .len = 3},
+    {.chars = (unsigned char*) "166", .len = 3},
+    {.chars = (unsigned char*) "167", .len = 3},
+    {.chars = (unsigned char*) "168", .len = 3},
+    {.chars = (unsigned char*) "169", .len = 3},
+    {.chars = (unsigned char*) "170", .len = 3},
+    {.chars = (unsigned char*) "171", .len = 3},
+    {.chars = (unsigned char*) "172", .len = 3},
+    {.chars = (unsigned char*) "173", .len = 3},
+    {.chars = (unsigned char*) "174", .len = 3},
+    {.chars = (unsigned char*) "175", .len = 3},
+    {.chars = (unsigned char*) "176", .len = 3},
+    {.chars = (unsigned char*) "177", .len = 3},
+    {.chars = (unsigned char*) "178", .len = 3},
+    {.chars = (unsigned char*) "179", .len = 3},
+    {.chars = (unsigned char*) "180", .len = 3},
+    {.chars = (unsigned char*) "181", .len = 3},
+    {.chars = (unsigned char*) "182", .len = 3},
+    {.chars = (unsigned char*) "183", .len = 3},
+    {.chars = (unsigned char*) "184", .len = 3},
+    {.chars = (unsigned char*) "185", .len = 3},
+    {.chars = (unsigned char*) "186", .len = 3},
+    {.chars = (unsigned char*) "187", .len = 3},
+    {.chars = (unsigned char*) "188", .len = 3},
+    {.chars = (unsigned char*) "189", .len = 3},
+    {.chars = (unsigned char*) "190", .len = 3},
+    {.chars = (unsigned char*) "191", .len = 3},
+    {.chars = (unsigned char*) "192", .len = 3},
+    {.chars = (unsigned char*) "193", .len = 3},
+    {.chars = (unsigned char*) "194", .len = 3},
+    {.chars = (unsigned char*) "195", .len = 3},
+    {.chars = (unsigned char*) "196", .len = 3},
+    {.chars = (unsigned char*) "197", .len = 3},
+    {.chars = (unsigned char*) "198", .len = 3},
+    {.chars = (unsigned char*) "199", .len = 3},
+    {.chars = (unsigned char*) "200", .len = 3},
+    {.chars = (unsigned char*) "201", .len = 3},
+    {.chars = (unsigned char*) "202", .len = 3},
+    {.chars = (unsigned char*) "203", .len = 3},
+    {.chars = (unsigned char*) "204", .len = 3},
+    {.chars = (unsigned char*) "205", .len = 3},
+    {.chars = (unsigned char*) "206", .len = 3},
+    {.chars = (unsigned char*) "207", .len = 3},
+    {.chars = (unsigned char*) "208", .len = 3},
+    {.chars = (unsigned char*) "209", .len = 3},
+    {.chars = (unsigned char*) "210", .len = 3},
+    {.chars = (unsigned char*) "211", .len = 3},
+    {.chars = (unsigned char*) "212", .len = 3},
+    {.chars = (unsigned char*) "213", .len = 3},
+    {.chars = (unsigned char*) "214", .len = 3},
+    {.chars = (unsigned char*) "215", .len = 3},
+    {.chars = (unsigned char*) "216", .len = 3},
+    {.chars = (unsigned char*) "217", .len = 3},
+    {.chars = (unsigned char*) "218", .len = 3},
+    {.chars = (unsigned char*) "219", .len = 3},
+    {.chars = (unsigned char*) "220", .len = 3},
+    {.chars = (unsigned char*) "221", .len = 3},
+    {.chars = (unsigned char*) "222", .len = 3},
+    {.chars = (unsigned char*) "223", .len = 3},
+    {.chars = (unsigned char*) "224", .len = 3},
+    {.chars = (unsigned char*) "225", .len = 3},
+    {.chars = (unsigned char*) "226", .len = 3},
+    {.chars = (unsigned char*) "227", .len = 3},
+    {.chars = (unsigned char*) "228", .len = 3},
+    {.chars = (unsigned char*) "229", .len = 3},
+    {.chars = (unsigned char*) "230", .len = 3},
+    {.chars = (unsigned char*) "231", .len = 3},
+    {.chars = (unsigned char*) "232", .len = 3},
+    {.chars = (unsigned char*) "233", .len = 3},
+    {.chars = (unsigned char*) "234", .len = 3},
+    {.chars = (unsigned char*) "235", .len = 3},
+    {.chars = (unsigned char*) "236", .len = 3},
+    {.chars = (unsigned char*) "237", .len = 3},
+    {.chars = (unsigned char*) "238", .len = 3},
+    {.chars = (unsigned char*) "239", .len = 3},
+    {.chars = (unsigned char*) "240", .len = 3},
+    {.chars = (unsigned char*) "241", .len = 3},
+    {.chars = (unsigned char*) "242", .len = 3},
+    {.chars = (unsigned char*) "243", .len = 3},
+    {.chars = (unsigned char*) "244", .len = 3},
+    {.chars = (unsigned char*) "245", .len = 3},
+    {.chars = (unsigned char*) "246", .len = 3},
+    {.chars = (unsigned char*) "247", .len = 3},
+    {.chars = (unsigned char*) "248", .len = 3},
+    {.chars = (unsigned char*) "249", .len = 3},
+    {.chars = (unsigned char*) "250", .len = 3},
+    {.chars = (unsigned char*) "251", .len = 3},
+    {.chars = (unsigned char*) "252", .len = 3},
+    {.chars = (unsigned char*) "253", .len = 3},
+    {.chars = (unsigned char*) "254", .len = 3},
+    {.chars = (unsigned char*) "255", .len = 3},
+};
+
+static const Neat_String_View sc_to_string[] = {
+    {.chars = (unsigned char*) "0", .len = 1},
+    {.chars = (unsigned char*) "1", .len = 1},
+    {.chars = (unsigned char*) "2", .len = 1},
+    {.chars = (unsigned char*) "3", .len = 1},
+    {.chars = (unsigned char*) "4", .len = 1},
+    {.chars = (unsigned char*) "5", .len = 1},
+    {.chars = (unsigned char*) "6", .len = 1},
+    {.chars = (unsigned char*) "7", .len = 1},
+    {.chars = (unsigned char*) "8", .len = 1},
+    {.chars = (unsigned char*) "9", .len = 1},
+    {.chars = (unsigned char*) "10", .len = 2},
+    {.chars = (unsigned char*) "11", .len = 2},
+    {.chars = (unsigned char*) "12", .len = 2},
+    {.chars = (unsigned char*) "13", .len = 2},
+    {.chars = (unsigned char*) "14", .len = 2},
+    {.chars = (unsigned char*) "15", .len = 2},
+    {.chars = (unsigned char*) "16", .len = 2},
+    {.chars = (unsigned char*) "17", .len = 2},
+    {.chars = (unsigned char*) "18", .len = 2},
+    {.chars = (unsigned char*) "19", .len = 2},
+    {.chars = (unsigned char*) "20", .len = 2},
+    {.chars = (unsigned char*) "21", .len = 2},
+    {.chars = (unsigned char*) "22", .len = 2},
+    {.chars = (unsigned char*) "23", .len = 2},
+    {.chars = (unsigned char*) "24", .len = 2},
+    {.chars = (unsigned char*) "25", .len = 2},
+    {.chars = (unsigned char*) "26", .len = 2},
+    {.chars = (unsigned char*) "27", .len = 2},
+    {.chars = (unsigned char*) "28", .len = 2},
+    {.chars = (unsigned char*) "29", .len = 2},
+    {.chars = (unsigned char*) "30", .len = 2},
+    {.chars = (unsigned char*) "31", .len = 2},
+    {.chars = (unsigned char*) "32", .len = 2},
+    {.chars = (unsigned char*) "33", .len = 2},
+    {.chars = (unsigned char*) "34", .len = 2},
+    {.chars = (unsigned char*) "35", .len = 2},
+    {.chars = (unsigned char*) "36", .len = 2},
+    {.chars = (unsigned char*) "37", .len = 2},
+    {.chars = (unsigned char*) "38", .len = 2},
+    {.chars = (unsigned char*) "39", .len = 2},
+    {.chars = (unsigned char*) "40", .len = 2},
+    {.chars = (unsigned char*) "41", .len = 2},
+    {.chars = (unsigned char*) "42", .len = 2},
+    {.chars = (unsigned char*) "43", .len = 2},
+    {.chars = (unsigned char*) "44", .len = 2},
+    {.chars = (unsigned char*) "45", .len = 2},
+    {.chars = (unsigned char*) "46", .len = 2},
+    {.chars = (unsigned char*) "47", .len = 2},
+    {.chars = (unsigned char*) "48", .len = 2},
+    {.chars = (unsigned char*) "49", .len = 2},
+    {.chars = (unsigned char*) "50", .len = 2},
+    {.chars = (unsigned char*) "51", .len = 2},
+    {.chars = (unsigned char*) "52", .len = 2},
+    {.chars = (unsigned char*) "53", .len = 2},
+    {.chars = (unsigned char*) "54", .len = 2},
+    {.chars = (unsigned char*) "55", .len = 2},
+    {.chars = (unsigned char*) "56", .len = 2},
+    {.chars = (unsigned char*) "57", .len = 2},
+    {.chars = (unsigned char*) "58", .len = 2},
+    {.chars = (unsigned char*) "59", .len = 2},
+    {.chars = (unsigned char*) "60", .len = 2},
+    {.chars = (unsigned char*) "61", .len = 2},
+    {.chars = (unsigned char*) "62", .len = 2},
+    {.chars = (unsigned char*) "63", .len = 2},
+    {.chars = (unsigned char*) "64", .len = 2},
+    {.chars = (unsigned char*) "65", .len = 2},
+    {.chars = (unsigned char*) "66", .len = 2},
+    {.chars = (unsigned char*) "67", .len = 2},
+    {.chars = (unsigned char*) "68", .len = 2},
+    {.chars = (unsigned char*) "69", .len = 2},
+    {.chars = (unsigned char*) "70", .len = 2},
+    {.chars = (unsigned char*) "71", .len = 2},
+    {.chars = (unsigned char*) "72", .len = 2},
+    {.chars = (unsigned char*) "73", .len = 2},
+    {.chars = (unsigned char*) "74", .len = 2},
+    {.chars = (unsigned char*) "75", .len = 2},
+    {.chars = (unsigned char*) "76", .len = 2},
+    {.chars = (unsigned char*) "77", .len = 2},
+    {.chars = (unsigned char*) "78", .len = 2},
+    {.chars = (unsigned char*) "79", .len = 2},
+    {.chars = (unsigned char*) "80", .len = 2},
+    {.chars = (unsigned char*) "81", .len = 2},
+    {.chars = (unsigned char*) "82", .len = 2},
+    {.chars = (unsigned char*) "83", .len = 2},
+    {.chars = (unsigned char*) "84", .len = 2},
+    {.chars = (unsigned char*) "85", .len = 2},
+    {.chars = (unsigned char*) "86", .len = 2},
+    {.chars = (unsigned char*) "87", .len = 2},
+    {.chars = (unsigned char*) "88", .len = 2},
+    {.chars = (unsigned char*) "89", .len = 2},
+    {.chars = (unsigned char*) "90", .len = 2},
+    {.chars = (unsigned char*) "91", .len = 2},
+    {.chars = (unsigned char*) "92", .len = 2},
+    {.chars = (unsigned char*) "93", .len = 2},
+    {.chars = (unsigned char*) "94", .len = 2},
+    {.chars = (unsigned char*) "95", .len = 2},
+    {.chars = (unsigned char*) "96", .len = 2},
+    {.chars = (unsigned char*) "97", .len = 2},
+    {.chars = (unsigned char*) "98", .len = 2},
+    {.chars = (unsigned char*) "99", .len = 2},
+    {.chars = (unsigned char*) "100", .len = 3},
+    {.chars = (unsigned char*) "101", .len = 3},
+    {.chars = (unsigned char*) "102", .len = 3},
+    {.chars = (unsigned char*) "103", .len = 3},
+    {.chars = (unsigned char*) "104", .len = 3},
+    {.chars = (unsigned char*) "105", .len = 3},
+    {.chars = (unsigned char*) "106", .len = 3},
+    {.chars = (unsigned char*) "107", .len = 3},
+    {.chars = (unsigned char*) "108", .len = 3},
+    {.chars = (unsigned char*) "109", .len = 3},
+    {.chars = (unsigned char*) "110", .len = 3},
+    {.chars = (unsigned char*) "111", .len = 3},
+    {.chars = (unsigned char*) "112", .len = 3},
+    {.chars = (unsigned char*) "113", .len = 3},
+    {.chars = (unsigned char*) "114", .len = 3},
+    {.chars = (unsigned char*) "115", .len = 3},
+    {.chars = (unsigned char*) "116", .len = 3},
+    {.chars = (unsigned char*) "117", .len = 3},
+    {.chars = (unsigned char*) "118", .len = 3},
+    {.chars = (unsigned char*) "119", .len = 3},
+    {.chars = (unsigned char*) "120", .len = 3},
+    {.chars = (unsigned char*) "121", .len = 3},
+    {.chars = (unsigned char*) "122", .len = 3},
+    {.chars = (unsigned char*) "123", .len = 3},
+    {.chars = (unsigned char*) "124", .len = 3},
+    {.chars = (unsigned char*) "125", .len = 3},
+    {.chars = (unsigned char*) "126", .len = 3},
+    {.chars = (unsigned char*) "127", .len = 3},
+    {.chars = (unsigned char*) "-128", .len = 4},
+    {.chars = (unsigned char*) "-127", .len = 4},
+    {.chars = (unsigned char*) "-126", .len = 4},
+    {.chars = (unsigned char*) "-125", .len = 4},
+    {.chars = (unsigned char*) "-124", .len = 4},
+    {.chars = (unsigned char*) "-123", .len = 4},
+    {.chars = (unsigned char*) "-122", .len = 4},
+    {.chars = (unsigned char*) "-121", .len = 4},
+    {.chars = (unsigned char*) "-120", .len = 4},
+    {.chars = (unsigned char*) "-119", .len = 4},
+    {.chars = (unsigned char*) "-118", .len = 4},
+    {.chars = (unsigned char*) "-117", .len = 4},
+    {.chars = (unsigned char*) "-116", .len = 4},
+    {.chars = (unsigned char*) "-115", .len = 4},
+    {.chars = (unsigned char*) "-114", .len = 4},
+    {.chars = (unsigned char*) "-113", .len = 4},
+    {.chars = (unsigned char*) "-112", .len = 4},
+    {.chars = (unsigned char*) "-111", .len = 4},
+    {.chars = (unsigned char*) "-110", .len = 4},
+    {.chars = (unsigned char*) "-109", .len = 4},
+    {.chars = (unsigned char*) "-108", .len = 4},
+    {.chars = (unsigned char*) "-107", .len = 4},
+    {.chars = (unsigned char*) "-106", .len = 4},
+    {.chars = (unsigned char*) "-105", .len = 4},
+    {.chars = (unsigned char*) "-104", .len = 4},
+    {.chars = (unsigned char*) "-103", .len = 4},
+    {.chars = (unsigned char*) "-102", .len = 4},
+    {.chars = (unsigned char*) "-101", .len = 4},
+    {.chars = (unsigned char*) "-100", .len = 4},
+    {.chars = (unsigned char*) "-99", .len = 3},
+    {.chars = (unsigned char*) "-98", .len = 3},
+    {.chars = (unsigned char*) "-97", .len = 3},
+    {.chars = (unsigned char*) "-96", .len = 3},
+    {.chars = (unsigned char*) "-95", .len = 3},
+    {.chars = (unsigned char*) "-94", .len = 3},
+    {.chars = (unsigned char*) "-93", .len = 3},
+    {.chars = (unsigned char*) "-92", .len = 3},
+    {.chars = (unsigned char*) "-91", .len = 3},
+    {.chars = (unsigned char*) "-90", .len = 3},
+    {.chars = (unsigned char*) "-89", .len = 3},
+    {.chars = (unsigned char*) "-88", .len = 3},
+    {.chars = (unsigned char*) "-87", .len = 3},
+    {.chars = (unsigned char*) "-86", .len = 3},
+    {.chars = (unsigned char*) "-85", .len = 3},
+    {.chars = (unsigned char*) "-84", .len = 3},
+    {.chars = (unsigned char*) "-83", .len = 3},
+    {.chars = (unsigned char*) "-82", .len = 3},
+    {.chars = (unsigned char*) "-81", .len = 3},
+    {.chars = (unsigned char*) "-80", .len = 3},
+    {.chars = (unsigned char*) "-79", .len = 3},
+    {.chars = (unsigned char*) "-78", .len = 3},
+    {.chars = (unsigned char*) "-77", .len = 3},
+    {.chars = (unsigned char*) "-76", .len = 3},
+    {.chars = (unsigned char*) "-75", .len = 3},
+    {.chars = (unsigned char*) "-74", .len = 3},
+    {.chars = (unsigned char*) "-73", .len = 3},
+    {.chars = (unsigned char*) "-72", .len = 3},
+    {.chars = (unsigned char*) "-71", .len = 3},
+    {.chars = (unsigned char*) "-70", .len = 3},
+    {.chars = (unsigned char*) "-69", .len = 3},
+    {.chars = (unsigned char*) "-68", .len = 3},
+    {.chars = (unsigned char*) "-67", .len = 3},
+    {.chars = (unsigned char*) "-66", .len = 3},
+    {.chars = (unsigned char*) "-65", .len = 3},
+    {.chars = (unsigned char*) "-64", .len = 3},
+    {.chars = (unsigned char*) "-63", .len = 3},
+    {.chars = (unsigned char*) "-62", .len = 3},
+    {.chars = (unsigned char*) "-61", .len = 3},
+    {.chars = (unsigned char*) "-60", .len = 3},
+    {.chars = (unsigned char*) "-59", .len = 3},
+    {.chars = (unsigned char*) "-58", .len = 3},
+    {.chars = (unsigned char*) "-57", .len = 3},
+    {.chars = (unsigned char*) "-56", .len = 3},
+    {.chars = (unsigned char*) "-55", .len = 3},
+    {.chars = (unsigned char*) "-54", .len = 3},
+    {.chars = (unsigned char*) "-53", .len = 3},
+    {.chars = (unsigned char*) "-52", .len = 3},
+    {.chars = (unsigned char*) "-51", .len = 3},
+    {.chars = (unsigned char*) "-50", .len = 3},
+    {.chars = (unsigned char*) "-49", .len = 3},
+    {.chars = (unsigned char*) "-48", .len = 3},
+    {.chars = (unsigned char*) "-47", .len = 3},
+    {.chars = (unsigned char*) "-46", .len = 3},
+    {.chars = (unsigned char*) "-45", .len = 3},
+    {.chars = (unsigned char*) "-44", .len = 3},
+    {.chars = (unsigned char*) "-43", .len = 3},
+    {.chars = (unsigned char*) "-42", .len = 3},
+    {.chars = (unsigned char*) "-41", .len = 3},
+    {.chars = (unsigned char*) "-40", .len = 3},
+    {.chars = (unsigned char*) "-39", .len = 3},
+    {.chars = (unsigned char*) "-38", .len = 3},
+    {.chars = (unsigned char*) "-37", .len = 3},
+    {.chars = (unsigned char*) "-36", .len = 3},
+    {.chars = (unsigned char*) "-35", .len = 3},
+    {.chars = (unsigned char*) "-34", .len = 3},
+    {.chars = (unsigned char*) "-33", .len = 3},
+    {.chars = (unsigned char*) "-32", .len = 3},
+    {.chars = (unsigned char*) "-31", .len = 3},
+    {.chars = (unsigned char*) "-30", .len = 3},
+    {.chars = (unsigned char*) "-29", .len = 3},
+    {.chars = (unsigned char*) "-28", .len = 3},
+    {.chars = (unsigned char*) "-27", .len = 3},
+    {.chars = (unsigned char*) "-26", .len = 3},
+    {.chars = (unsigned char*) "-25", .len = 3},
+    {.chars = (unsigned char*) "-24", .len = 3},
+    {.chars = (unsigned char*) "-23", .len = 3},
+    {.chars = (unsigned char*) "-22", .len = 3},
+    {.chars = (unsigned char*) "-21", .len = 3},
+    {.chars = (unsigned char*) "-20", .len = 3},
+    {.chars = (unsigned char*) "-19", .len = 3},
+    {.chars = (unsigned char*) "-18", .len = 3},
+    {.chars = (unsigned char*) "-17", .len = 3},
+    {.chars = (unsigned char*) "-16", .len = 3},
+    {.chars = (unsigned char*) "-15", .len = 3},
+    {.chars = (unsigned char*) "-14", .len = 3},
+    {.chars = (unsigned char*) "-13", .len = 3},
+    {.chars = (unsigned char*) "-12", .len = 3},
+    {.chars = (unsigned char*) "-11", .len = 3},
+    {.chars = (unsigned char*) "-10", .len = 3},
+    {.chars = (unsigned char*) "-9", .len = 2},
+    {.chars = (unsigned char*) "-8", .len = 2},
+    {.chars = (unsigned char*) "-7", .len = 2},
+    {.chars = (unsigned char*) "-6", .len = 2},
+    {.chars = (unsigned char*) "-5", .len = 2},
+    {.chars = (unsigned char*) "-4", .len = 2},
+    {.chars = (unsigned char*) "-3", .len = 2},
+    {.chars = (unsigned char*) "-2", .len = 2},
+    {.chars = (unsigned char*) "-1", .len = 2}
+};
+
+// TODO IDEA: for optimization reasons, maybe have this type in the header (but Neat__ prefix), and in the _Generic macros, turn non-DStrings into fmutstr_refs and call the neat__fmutstr_ref functions
 
 typedef struct Neat_DString_Append_Allocator
 {
@@ -96,10 +600,10 @@ Neat_String_View neat_error_string(Neat_Error err)
     return error_to_string[err];
 }
 
-Fixed_Mut_String_Ref neat__buf_as_fmutstr_ref(Neat_Buffer buf, unsigned int *len_ptr)
+Neat__Fixed_Mut_String_Ref neat__buf_as_fmutstr_ref(Neat_Buffer buf, unsigned int *len_ptr)
 {
     *len_ptr = strlen((char*) buf.ptr);
-    Fixed_Mut_String_Ref ret = {
+    Neat__Fixed_Mut_String_Ref ret = {
         .chars = buf.ptr,
         .cap = buf.cap,
         .len = len_ptr
@@ -107,9 +611,9 @@ Fixed_Mut_String_Ref neat__buf_as_fmutstr_ref(Neat_Buffer buf, unsigned int *len
     return ret;
 }
 
-Fixed_Mut_String_Ref neat__sstr_ref_as_fmutstr_ref(Neat_SString_Ref sstr_ref)
+Neat__Fixed_Mut_String_Ref neat__sstr_ref_as_fmutstr_ref(Neat_SString_Ref sstr_ref)
 {
-    Fixed_Mut_String_Ref ret = {
+    Neat__Fixed_Mut_String_Ref ret = {
         .chars = sstr_ref.sstr->chars,
         .cap = sstr_ref.cap,
         .len = &sstr_ref.sstr->len
@@ -117,9 +621,9 @@ Fixed_Mut_String_Ref neat__sstr_ref_as_fmutstr_ref(Neat_SString_Ref sstr_ref)
     return ret;
 }
 
-Fixed_Mut_String_Ref neat__strbuf_as_fmutstr_ref(Neat_String_Buffer *strbuf)
+Neat__Fixed_Mut_String_Ref neat__strbuf_as_fmutstr_ref(Neat_String_Buffer *strbuf)
 {
-    Fixed_Mut_String_Ref ret = {
+    Neat__Fixed_Mut_String_Ref ret = {
         .chars = strbuf->chars,
         .cap = strbuf->cap,
         .len = &strbuf->len
@@ -127,9 +631,9 @@ Fixed_Mut_String_Ref neat__strbuf_as_fmutstr_ref(Neat_String_Buffer *strbuf)
     return ret;
 }
 
-Fixed_Mut_String_Ref neat__dstr_as_fmutstr_ref(Neat_DString *dstr)
+Neat__Fixed_Mut_String_Ref neat__dstr_ptr_as_fmutstr_ref(Neat_DString *dstr)
 {
-    Fixed_Mut_String_Ref ret = {
+    Neat__Fixed_Mut_String_Ref ret = {
         .chars = dstr->chars,
         .cap = dstr->cap,
         .len = &dstr->len
@@ -597,7 +1101,7 @@ unsigned char neat__mutstr_ref_char_at(const Neat_Mut_String_Ref str, unsigned i
     return neat__mutstr_ref_as_cstr(str)[idx];
 }
 
-Neat_Error neat__mutstr_ref_set_len(Neat_Mut_String_Ref str, size_t new_len)
+Neat_Error neat__mutstr_ref_set_len(Neat_Mut_String_Ref str, unsigned int new_len)
 {
     switch(str.ty)
     {
@@ -659,11 +1163,11 @@ unsigned int neat__mutstr_ref_cap(const Neat_Mut_String_Ref str)
         case NEAT__STRBUF_TY   : return str.str.strbuf->cap;
         case NEAT__SSTR_REF_TY : return str.str.sstr_ref.cap;
         case NEAT__BUF_TY      : return str.str.buf.cap;
-        default               : unreachable();
+        default                : unreachable();
     };
 }
 
-Neat_Error neat__fmutstr_ref_insert(Fixed_Mut_String_Ref dst, const Neat_String_View src, unsigned int idx)
+Neat_Error neat__fmutstr_ref_insert(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src, unsigned int idx)
 {
     unsigned int len = *dst.len;
     if(idx > len)
@@ -691,10 +1195,10 @@ Neat_Error neat__mutstr_ref_insert(Neat_Mut_String_Ref dst, const Neat_String_Vi
     switch(dst.ty)
     {
         case NEAT__DSTR_TY     : return neat__dstr_insert_strv(dst.str.dstr, src, idx);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_insert(fmutstr_ref(dst.str.strbuf), src, idx);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_insert(fmutstr_ref(dst.str.sstr_ref), src, idx);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_insert(fmutstr_ref(dst.str.buf, &(unsigned int){0}), src, idx);
-        default               : unreachable();
+        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_insert(neat__fmutstr_ref(dst.str.strbuf), src, idx);
+        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_insert(neat__fmutstr_ref(dst.str.sstr_ref), src, idx);
+        case NEAT__BUF_TY      : return neat__fmutstr_ref_insert(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src, idx);
+        default                : unreachable();
     };
 }
 
@@ -727,7 +1231,7 @@ Neat_String_View neat__strv_find(const Neat_String_View hay, const Neat_String_V
     return (Neat_String_View){.chars = NULL, .len = 0};
 }
 
-Neat_Error neat__fmutstr_ref_copy(Fixed_Mut_String_Ref dst, const Neat_String_View src)
+Neat_Error neat__fmutstr_ref_copy(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src)
 {
     unsigned int chars_to_copy = neat__uint_min(src.len, dst.cap - 1);
     
@@ -759,10 +1263,10 @@ Neat_Error neat__mutstr_ref_copy(Neat_Mut_String_Ref dst, const Neat_String_View
     switch(dst.ty)
     {
         case NEAT__DSTR_TY     : return neat__dstr_copy(dst.str.dstr, src);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_copy(fmutstr_ref(dst.str.strbuf), src);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_copy(fmutstr_ref(dst.str.sstr_ref), src);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_copy(fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
-        default               : unreachable();
+        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_copy(neat__fmutstr_ref(dst.str.strbuf), src);
+        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_copy(neat__fmutstr_ref(dst.str.sstr_ref), src);
+        case NEAT__BUF_TY      : return neat__fmutstr_ref_copy(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
+        default                : unreachable();
     };
 }
 
@@ -779,7 +1283,7 @@ Neat_Error neat__dstr_putc(Neat_DString *dst, unsigned char c)
     return NEAT_OK;
 }
 
-Neat_Error neat__fmutstr_ref_putc(Fixed_Mut_String_Ref dst, unsigned char c)
+Neat_Error neat__fmutstr_ref_putc(Neat__Fixed_Mut_String_Ref dst, unsigned char c)
 {
     if(dst.cap - *dst.len <= 1)
     {
@@ -798,14 +1302,14 @@ Neat_Error neat__mutstr_ref_putc(Neat_Mut_String_Ref dst, unsigned char c)
     switch(dst.ty)
     {
         case NEAT__DSTR_TY     : return neat__dstr_putc(dst.str.dstr, c);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_putc(fmutstr_ref(dst.str.strbuf), c);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_putc(fmutstr_ref(dst.str.sstr_ref), c);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_putc(fmutstr_ref(dst.str.buf, &(unsigned int){0}), c);
+        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_putc(neat__fmutstr_ref(dst.str.strbuf), c);
+        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_putc(neat__fmutstr_ref(dst.str.sstr_ref), c);
+        case NEAT__BUF_TY      : return neat__fmutstr_ref_putc(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), c);
         default                : unreachable();
     }
 }
 
-Neat_Error neat__fmutstr_ref_append_strv(Fixed_Mut_String_Ref dst, const Neat_String_View src)
+Neat_Error neat__fmutstr_ref_append_strv(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src)
 {
     unsigned int dst_len = *dst.len;
     
@@ -830,14 +1334,14 @@ Neat_Error neat__mutstr_ref_append(Neat_Mut_String_Ref dst, const Neat_String_Vi
     switch(dst.ty)
     {
         case NEAT__DSTR_TY     : return neat__dstr_append_strv(dst.str.dstr, src);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_append_strv(fmutstr_ref(dst.str.strbuf), src);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_append_strv(fmutstr_ref(dst.str.sstr_ref), src);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_append_strv(fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
+        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_append_strv(neat__fmutstr_ref(dst.str.strbuf), src);
+        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_append_strv(neat__fmutstr_ref(dst.str.sstr_ref), src);
+        case NEAT__BUF_TY      : return neat__fmutstr_ref_append_strv(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
         default                : unreachable();
     };
 }
 
-Neat_Error neat__fmutstr_ref_delete_range(Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end)
+Neat_Error neat__fmutstr_ref_delete_range(Neat__Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end)
 {
     unsigned int len = *str.len;
     
@@ -866,10 +1370,10 @@ Neat_Error neat__mutstr_ref_delete_range(Neat_Mut_String_Ref str, unsigned int b
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY     : return neat__fmutstr_ref_delete_range(fmutstr_ref(str.str.dstr), begin, end);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_delete_range(fmutstr_ref(str.str.strbuf), begin, end);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_delete_range(fmutstr_ref(str.str.sstr_ref), begin, end);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_delete_range(fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
+        case NEAT__DSTR_TY     : return neat__fmutstr_ref_delete_range(neat__fmutstr_ref(str.str.dstr), begin, end);
+        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_delete_range(neat__fmutstr_ref(str.str.strbuf), begin, end);
+        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_delete_range(neat__fmutstr_ref(str.str.sstr_ref), begin, end);
+        case NEAT__BUF_TY      : return neat__fmutstr_ref_delete_range(neat__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
         default                : unreachable();
     };
 }
@@ -971,7 +1475,7 @@ Neat_Error neat__strv_arr_join_into_dstr(Neat_DString *dstr, const Neat_String_V
     return err;
 }
 
-Neat_Error neat__strv_arr_join_into_fmutstr_ref(Fixed_Mut_String_Ref dst, const Neat_String_View_Array strs, const Neat_String_View delim)
+Neat_Error neat__strv_arr_join_into_fmutstr_ref(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View_Array strs, const Neat_String_View delim)
 {
     Neat_Error err = NEAT_OK;
     
@@ -992,9 +1496,9 @@ Neat_Error neat__strv_arr_join(Neat_Mut_String_Ref dst, const Neat_String_View_A
     switch(dst.ty)
     {
         case NEAT__DSTR_TY     : return neat__strv_arr_join_into_dstr(dst.str.dstr, strs, delim);
-        case NEAT__STRBUF_TY   : return neat__strv_arr_join_into_fmutstr_ref(fmutstr_ref(dst.str.strbuf), strs, delim);
-        case NEAT__SSTR_REF_TY : return neat__strv_arr_join_into_fmutstr_ref(fmutstr_ref(dst.str.sstr_ref), strs, delim);
-        case NEAT__BUF_TY      : return neat__strv_arr_join_into_fmutstr_ref(fmutstr_ref(dst.str.buf, &(unsigned int){0}), strs, delim);
+        case NEAT__STRBUF_TY   : return neat__strv_arr_join_into_fmutstr_ref(neat__fmutstr_ref(dst.str.strbuf), strs, delim);
+        case NEAT__SSTR_REF_TY : return neat__strv_arr_join_into_fmutstr_ref(neat__fmutstr_ref(dst.str.sstr_ref), strs, delim);
+        case NEAT__BUF_TY      : return neat__strv_arr_join_into_fmutstr_ref(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), strs, delim);
         default                : unreachable();
     };
 }
@@ -1034,7 +1538,7 @@ Neat_Error neat__dstr_replace_range(Neat_DString *dstr, unsigned int begin, unsi
     return NEAT_OK;
 }
 
-void neat__fmutstr_ref_replace_range_unsafe(Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
+void neat__fmutstr_ref_replace_range_unsafe(Neat__Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
 {
     unsigned int len_to_delete = end - begin;
     if(len_to_delete > replacement.len)
@@ -1065,9 +1569,9 @@ void neat__fmutstr_ref_replace_range_unsafe(Fixed_Mut_String_Ref str, unsigned i
     }
 }
 
-Neat_String_View neat__strv_fmutstr_ref2(Fixed_Mut_String_Ref str, unsigned int begin);
+Neat_String_View neat__strv_fmutstr_ref2(Neat__Fixed_Mut_String_Ref str, unsigned int begin);
 
-Neat_Error neat__fmutstr_ref_replace_range(Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
+Neat_Error neat__fmutstr_ref_replace_range(Neat__Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
 {
     if(begin >= *str.len)
         return NEAT_INDEX_OUT_OF_BOUNDS;
@@ -1087,14 +1591,14 @@ Neat_Error neat__mustr_ref_replace_range(Neat_Mut_String_Ref str, unsigned int b
     switch(str.ty)
     {
         case NEAT__DSTR_TY     : return neat__dstr_replace_range(str.str.dstr, begin, end, replacement);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_replace_range(fmutstr_ref(str.str.strbuf), begin, end, replacement);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_replace_range(fmutstr_ref(str.str.sstr_ref), begin, end, replacement);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_replace_range(fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end, replacement);
+        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_replace_range(neat__fmutstr_ref(str.str.strbuf), begin, end, replacement);
+        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_replace_range(neat__fmutstr_ref(str.str.sstr_ref), begin, end, replacement);
+        case NEAT__BUF_TY      : return neat__fmutstr_ref_replace_range(neat__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end, replacement);
         default                : unreachable();
     };
 }
 
-Neat_Error neat__fmutstr_ref_replace(Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
+Neat_Error neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
 {
     Neat_String_View as_strv = neat__strv_fmutstr_ref2(str, 0);
     if(neat__is_strv_within(as_strv, target) || neat__is_strv_within(as_strv, replacement))
@@ -1295,9 +1799,9 @@ Neat_Error neat__mutstr_ref_replace(Neat_Mut_String_Ref str, const Neat_String_V
     switch(str.ty)
     {
         case NEAT__DSTR_TY     : return neat__dstr_replace(str.str.dstr, target, replacement);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_replace(fmutstr_ref(str.str.strbuf), target, replacement);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_replace(fmutstr_ref(str.str.sstr_ref), target, replacement);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_replace(fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
+        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_replace(neat__fmutstr_ref(str.str.strbuf), target, replacement);
+        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_replace(neat__fmutstr_ref(str.str.sstr_ref), target, replacement);
+        case NEAT__BUF_TY      : return neat__fmutstr_ref_replace(neat__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
         default                : unreachable();
     };
 }
@@ -1323,7 +1827,7 @@ Neat_Error neat__dstr_replace_first(Neat_DString *dstr, const Neat_String_View t
     return err;
 }
 
-Neat_Error neat__fmutstr_ref_replace_first(Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
+Neat_Error neat__fmutstr_ref_replace_first(Neat__Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
 {
     Neat_Error err = NEAT_NOT_FOUND;
     
@@ -1361,9 +1865,9 @@ Neat_Error neat__mutstr_ref_replace_first(Neat_Mut_String_Ref str, const Neat_St
     switch(str.ty)
     {
         case NEAT__DSTR_TY     : return neat__dstr_replace_first(str.str.dstr, target, replacement);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_replace_first(fmutstr_ref(str.str.strbuf), target, replacement);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_replace_first(fmutstr_ref(str.str.sstr_ref), target, replacement);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_replace_first(fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
+        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_replace_first(neat__fmutstr_ref(str.str.strbuf), target, replacement);
+        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_replace_first(neat__fmutstr_ref(str.str.sstr_ref), target, replacement);
+        case NEAT__BUF_TY      : return neat__fmutstr_ref_replace_first(neat__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
         default                : unreachable();
     };
 }
@@ -1535,6 +2039,38 @@ Neat_String_Buffer neat__strbuf_from_buf(const Neat_Buffer buf)
         ret.chars[0] = '\0';
     
     return ret;
+}
+
+Neat_Buffer neat__buf_from_cstr(const char *str)
+{
+    return (Neat_Buffer){
+        .ptr = (unsigned char*) str,
+        .cap = strlen(str) + 1
+    };
+}
+
+Neat_Buffer neat__buf_from_ucstr(const unsigned char *str)
+{
+    return (Neat_Buffer){
+        .ptr = (unsigned char*) str,
+        .cap = strlen((char*) str) + 1
+    };
+}
+
+Neat_Buffer neat__buf_from_carr(const char *str, size_t cap)
+{
+    return (Neat_Buffer){
+        .ptr = (unsigned char*) str,
+        .cap = cap
+    };
+}
+
+Neat_Buffer neat__buf_from_ucarr(const unsigned char *str, size_t cap)
+{
+    return (Neat_Buffer){
+        .ptr = (unsigned char*) str,
+        .cap = cap
+    };
 }
 
 Neat_String_View neat__strv_cstr1(const char *str)
@@ -1733,7 +2269,7 @@ Neat_String_View neat__strv_mutstr_ref2(const Neat_Mut_String_Ref str, unsigned 
     }
 }
 
-Neat_String_View neat__strv_fmutstr_ref2(const Fixed_Mut_String_Ref str, unsigned int begin)
+Neat_String_View neat__strv_fmutstr_ref2(const Neat__Fixed_Mut_String_Ref str, unsigned int begin)
 {
     unsigned int len = *str.len;
     
@@ -1751,7 +2287,7 @@ Neat_String_View neat__strv_fmutstr_ref2(const Fixed_Mut_String_Ref str, unsigne
     };
 }
 
-Neat_String_View neat__strv_fmutstr_ref3(const Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end)
+Neat_String_View neat__strv_fmutstr_ref3(const Neat__Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end)
 {
     unsigned int len = *str.len;
     
@@ -1919,7 +2455,7 @@ Neat_Error neat__dstr_append_fread_line(Neat_DString *dstr, FILE *stream)
     return NEAT_OK;
 }
 
-Neat_Error neat__fmutstr_ref_fread_line(Fixed_Mut_String_Ref dst, FILE *stream)
+Neat_Error neat__fmutstr_ref_fread_line(Neat__Fixed_Mut_String_Ref dst, FILE *stream)
 {
     if(dst.cap == 0)
     {
@@ -1957,14 +2493,14 @@ Neat_Error neat__mutstr_ref_fread_line(Neat_Mut_String_Ref dst, FILE *stream)
     };
 }
 
-Neat_Error neat__fmutstr_ref_append_fread_line(Fixed_Mut_String_Ref dst, FILE *stream)
+Neat_Error neat__fmutstr_ref_append_fread_line(Neat__Fixed_Mut_String_Ref dst, FILE *stream)
 {
     if(dst.cap == 0)
         return false;
     
     unsigned int appended_len = 0;
     
-    Fixed_Mut_String_Ref right = {
+    Neat__Fixed_Mut_String_Ref right = {
         .cap = dst.cap - *dst.len,
         .len = &appended_len
     };
@@ -1994,7 +2530,12 @@ Neat_Error neat__mutstr_ref_append_fread_line(Neat_Mut_String_Ref dst, FILE *str
 
 unsigned int neat__fprint_strv(FILE *stream, Neat_String_View str)
 {
-    return fwrite(str.chars, sizeof(unsigned char), str.len, stream);
+#ifndef NDEBUG
+    if(str.chars == NULL)
+        return (fputs("(NULL)", stream), sizeof("(NULL)") - 1);
+    else
+#endif
+        return fwrite(str.chars, sizeof(unsigned char), str.len, stream);
 }
 
 unsigned int neat__fprintln_strv(FILE *stream, Neat_String_View str)
@@ -2044,7 +2585,7 @@ long       : neat__long_min_into_fmutstr_ref,  \
 long long  : neat__llong_min_into_fmutstr_ref  \
 )
 
-Neat_Error neat__schar_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
+Neat_Error neat__schar_min_into_fmutstr_ref(Neat__Fixed_Mut_String_Ref dst)
 {
     if(SCHAR_MIN == -128)
     {
@@ -2060,7 +2601,7 @@ Neat_Error neat__schar_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
     }
 }
 
-Neat_Error neat__short_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
+Neat_Error neat__short_min_into_fmutstr_ref(Neat__Fixed_Mut_String_Ref dst)
 {
     if(SHRT_MIN == -32768)
     {
@@ -2076,7 +2617,7 @@ Neat_Error neat__short_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
     }
 }
 
-Neat_Error neat__int_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
+Neat_Error neat__int_min_into_fmutstr_ref(Neat__Fixed_Mut_String_Ref dst)
 {
     if(INT_MIN == -2147483648)
     {
@@ -2092,7 +2633,7 @@ Neat_Error neat__int_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
     }
 }
 
-Neat_Error neat__long_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
+Neat_Error neat__long_min_into_fmutstr_ref(Neat__Fixed_Mut_String_Ref dst)
 {
     if(LONG_MIN == INT_MIN)
     {
@@ -2112,7 +2653,7 @@ Neat_Error neat__long_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
     }
 }
 
-Neat_Error neat__llong_min_into_fmutstr_ref(Fixed_Mut_String_Ref dst)
+Neat_Error neat__llong_min_into_fmutstr_ref(Neat__Fixed_Mut_String_Ref dst)
 {
     if(LLONG_MIN == LONG_MIN)
     {
@@ -2172,7 +2713,7 @@ do { \
     if(err != NEAT_OK) \
         return err; \
     \
-    Fixed_Mut_String_Ref as_fixed = neat__dstr_as_fmutstr_ref(dstr); \
+    Neat__Fixed_Mut_String_Ref as_fixed = neat__dstr_ptr_as_fmutstr_ref(dstr); \
     neat__sintger_tostr_fmutstr_ref(as_fixed); \
 } while(0)
 
@@ -2188,19 +2729,19 @@ do { \
         } \
         case NEAT__STRBUF_TY: \
         { \
-            Fixed_Mut_String_Ref strbuf_as_fixed = neat__strbuf_as_fmutstr_ref(dst.str.strbuf); \
+            Neat__Fixed_Mut_String_Ref strbuf_as_fixed = neat__strbuf_as_fmutstr_ref(dst.str.strbuf); \
             neat__sintger_tostr_fmutstr_ref(strbuf_as_fixed); \
             return err; \
         } \
         case NEAT__SSTR_REF_TY: \
         { \
-            Fixed_Mut_String_Ref sstr_ref_as_fixed = neat__sstr_ref_as_fmutstr_ref(dst.str.sstr_ref); \
+            Neat__Fixed_Mut_String_Ref sstr_ref_as_fixed = neat__sstr_ref_as_fmutstr_ref(dst.str.sstr_ref); \
             neat__sintger_tostr_fmutstr_ref(sstr_ref_as_fixed); \
             return err; \
         } \
         case NEAT__BUF_TY: \
         { \
-            Fixed_Mut_String_Ref buf_as_fixed = neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}); \
+            Neat__Fixed_Mut_String_Ref buf_as_fixed = neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}); \
             neat__sintger_tostr_fmutstr_ref(buf_as_fixed); \
             return err; \
         } \
@@ -2216,7 +2757,7 @@ do { \
     if(err != NEAT_OK) \
         return err; \
     \
-    Fixed_Mut_String_Ref as_fixed = { \
+    Neat__Fixed_Mut_String_Ref as_fixed = { \
         .chars = dstr->chars, \
         .len = &dstr->len, \
         .cap = dstr->cap \
@@ -2254,19 +2795,19 @@ do { \
         } \
         case NEAT__STRBUF_TY: \
         { \
-            Fixed_Mut_String_Ref strbuf_as_fixed = neat__strbuf_as_fmutstr_ref(dst.str.strbuf); \
+            Neat__Fixed_Mut_String_Ref strbuf_as_fixed = neat__strbuf_as_fmutstr_ref(dst.str.strbuf); \
             neat__uintger_tostr_fmutstr_ref(strbuf_as_fixed); \
             return err; \
         } \
         case NEAT__SSTR_REF_TY: \
         { \
-            Fixed_Mut_String_Ref sstr_ref_as_fixed = neat__sstr_ref_as_fmutstr_ref(dst.str.sstr_ref); \
+            Neat__Fixed_Mut_String_Ref sstr_ref_as_fixed = neat__sstr_ref_as_fmutstr_ref(dst.str.sstr_ref); \
             neat__uintger_tostr_fmutstr_ref(sstr_ref_as_fixed); \
             return err; \
         } \
         case NEAT__BUF_TY: \
         { \
-            Fixed_Mut_String_Ref buf_as_fixed = neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}); \
+            Neat__Fixed_Mut_String_Ref buf_as_fixed = neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}); \
             neat__uintger_tostr_fmutstr_ref(buf_as_fixed); \
             return err; \
         } \
@@ -2276,8 +2817,8 @@ do { \
 
 Neat_Error neat__bool_tostr(Neat_Mut_String_Ref dst, bool obj)
 {
-    Neat_String_View res = obj ? neat__strv_cstr2("true", 0) : neat__strv_cstr2("false", 0);
-    return neat__strv_tostr(dst, res);
+    Neat_String_View res = obj ? neat__strv_cstr1("true") : neat__strv_cstr1("false");
+    return neat__mutstr_ref_copy(dst, res);
 }
 
 Neat_Error neat__cstr_tostr(Neat_Mut_String_Ref dst, char *obj)
@@ -2310,7 +2851,7 @@ Neat_Error neat__char_tostr(Neat_Mut_String_Ref dst, char obj)
 
 Neat_Error neat__schar_tostr(Neat_Mut_String_Ref dst, signed char obj)
 {
-    neat__sinteger_tostr();
+    return neat__mutstr_ref_copy(dst, sc_to_string[obj]);
 }
 
 Neat_Error neat__uchar_tostr(Neat_Mut_String_Ref dst, unsigned char obj)
