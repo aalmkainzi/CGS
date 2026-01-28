@@ -587,8 +587,6 @@ static const Neat_String_View sc_to_string[] = {
     {.chars = (unsigned char*) "-1", .len = 2}
 };
 
-// TODO IDEA: for optimization reasons, maybe have this type in the header (but Neat__ prefix), and in the _Generic macros, turn non-DStrings into fmutstr_refs and call the neat__fmutstr_ref functions
-
 typedef struct Neat_DString_Append_Allocator
 {
     Neat_Allocator funcs;
@@ -870,23 +868,7 @@ void neat__dstr_shrink_to_fit(Neat_DString *dstr)
 
 Neat_Error neat__dstr_maybe_grow(Neat_DString *dstr, unsigned int len_to_append)
 {
-    // cap = 1, len = 0
-    if(dstr->cap - dstr->len - 1 <= len_to_append)
-    {
-        // grow
-        unsigned int new_cap = neat__uint_max(dstr->cap * 2, dstr->cap + len_to_append);
-        
-        Neat_Allocation allocation = neat_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, new_cap);
-        dstr->chars = allocation.ptr;
-        dstr->cap = allocation.n;
-        
-        if(dstr->chars == NULL || dstr->cap < new_cap)
-        {
-            return NEAT_ALLOC_ERR;
-        }
-    }
-    
-    return NEAT_OK;
+    return neat__dstr_ensure_cap(dstr, dstr->len + len_to_append + 1);
 }
 
 Neat_Error neat__dstr_append_strv(Neat_DString *dstr, const Neat_String_View src)
@@ -986,7 +968,8 @@ Neat_Error neat__dstr_ensure_cap(Neat_DString *dstr, unsigned int at_least)
     if(dstr->cap < at_least)
     {
         unsigned char *save = dstr->chars;
-        Neat_Allocation allocation = neat_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, at_least);
+        size_t new_cap = neat__uint_max(at_least, dstr->cap * 2);
+        Neat_Allocation allocation = neat_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, new_cap);
         dstr->chars = allocation.ptr;
         dstr->cap = allocation.n;
         
@@ -995,7 +978,7 @@ Neat_Error neat__dstr_ensure_cap(Neat_DString *dstr, unsigned int at_least)
             dstr->chars = save;
             return NEAT_ALLOC_ERR;
         }
-        if(dstr->cap < at_least)
+        if(dstr->cap < new_cap)
         {
             return NEAT_ALLOC_ERR;
         }

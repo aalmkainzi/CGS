@@ -396,7 +396,11 @@ _Generic(any_str_dst, \
 )
 
 #define neat_str_insert(any_str_dst, any_str_src, idx) \
-neat__mutstr_ref_insert(neat_mutstr_ref(any_str_dst), neat_str_view(any_str_src), (idx))
+_Generic(any_str_dst, \
+    Neat_Mut_String_Ref : neat__mutstr_ref_insert(neat__coerce(any_str_dst, Neat_Mut_String_Ref), neat_str_view(any_str_src), idx), \
+    Neat_DString*       : neat__dstr_insert_strv(neat__coerce(any_str_dst, Neat_DString*), neat_str_view(any_str_src), idx), \
+    default             : neat__fmutstr_ref_insert(neat__fmutstr_ref(neat__coerce_not(any_str_dst, Neat_Mut_String_Ref, Neat_String_Buffer*)), neat_str_view(any_str_src), idx) \
+)
 
 #define neat_str_prepend(neat_str_dst, neat_str_src) \
 neat_str_insert(neat_str_dst, neat_str_src, 0)
