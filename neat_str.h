@@ -471,22 +471,22 @@ neat__mutstr_ref_append_fread_line(neat_mutstr_ref(any_str), stdin)
 #define neat__str_print_each(x) \
 do \
 { \
-    Neat_Mut_String_Ref neat_appender_mutstr_ref = neat__make_appender_mutstr_ref( \
+    Neat_Mut_String_Ref neat__appender_mutstr_ref = neat__make_appender_mutstr_ref( \
         neat__as_mutstr_ref, \
-        &neat_appender_dstr_opt, \
+        &neat__appender_dstr_opt, \
         &neat_appender_dstr_allocator_opt, \
         &neat_appender_strbuf_opt \
     ); \
-    neat_tostr(neat_appender_mutstr_ref, x); \
+    neat_tostr(neat__appender_mutstr_ref, x); \
     neat__mutstr_ref_set_len( \
         neat__as_mutstr_ref, \
-        neat_str_len(neat__as_mutstr_ref) + neat_str_len(neat_appender_mutstr_ref) \
+        neat_str_len(neat__as_mutstr_ref) + neat_str_len(neat__appender_mutstr_ref) \
     ); \
 } while(0);
 
 #define neat__str_print_each_setup(...) \
 __VA_OPT__( \
-    Neat_DString neat_appender_dstr_opt = {0}; \
+    Neat_DString neat__appender_dstr_opt = {0}; \
     Neat_DString_Append_Allocator neat_appender_dstr_allocator_opt = {0}; \
     Neat_String_Buffer neat_appender_strbuf_opt = {0}; \
     NEAT__FOREACH(neat__str_print_each, __VA_ARGS__); \
@@ -585,10 +585,10 @@ __VA_OPT__(neat__cstr_to_buf2((carr), __VA_ARGS__)) \
 
 #define neat__cstr_to_buf2(carr_or_ptr, cap_) \
 ((void)_Generic(carr_or_ptr, \
-char(*)[sizeof(__typeof__(carr_or_ptr))]: 0, \
-unsigned char(*)[sizeof(__typeof__(carr_or_ptr))]: 0, \
-char*: 0, \
-unsigned char*: 0 \
+    char(*)[sizeof(__typeof__(carr_or_ptr))]: 0, \
+    unsigned char(*)[sizeof(__typeof__(carr_or_ptr))]: 0, \
+    char*: 0, \
+    unsigned char*: 0 \
 ), \
 (Neat_Buffer){.ptr = (unsigned char*) (carr_or_ptr), .cap = (cap_)})
 
@@ -717,20 +717,14 @@ neat__dstr_shrink_to_fit(dstr)
 #define neat_dstr_ensure_cap(dstr, new_cap) \
 neat__dstr_ensure_cap(dstr, new_cap)
 
-// TODO optimization idea:
-// instead of using a DString that mallocs,
-// have some pre-allocated buffer that is
-// flushed after it fills.
-// But what happens if a single tostr
-// writes more than the buffer size...
 #define neat_fprint(f, ...)                  \
 do                                           \
 {                                            \
     FILE *neat_file_stream = f;              \
     (void) neat_file_stream;                 \
-    Neat_DString neat_temp = dstr_init(0);   \
+    Neat_DString neat__tmp = dstr_init(0);   \
     NEAT__FOREACH(neat__fprint_each, __VA_ARGS__); \
-    dstr_deinit(&neat_temp);                 \
+    dstr_deinit(&neat__tmp);                 \
 } while(0)
 
 #define neat__fprint_each(x)                          \
@@ -747,20 +741,20 @@ do                                                    \
         Neat_SString_Ref    : neat__strv_sstr_ref2,   \
         Neat_Mut_String_Ref : neat__strv_mutstr_ref2, \
         default             : neat__strv_dstr2        \
-    )(neat__coerce_string_type(x, (neat_tostr(&neat_temp, x), neat_temp)), 0)); \
-    neat_temp.len = 0;                               \
+    )(neat__coerce_string_type(x, (neat_tostr(&neat__tmp, x), neat__tmp)), 0)); \
+    neat__tmp.len = 0;                                \
 } while(0);
 
 #define neat_print(...) \
 neat_fprint(stdout, __VA_ARGS__)
 
-#define neat_fprintln(f, ...)              \
-do                                         \
-{                                          \
-    FILE *neat__temp_f = f;                 \
-    (void) neat__temp_f;                    \
-    neat_fprint(neat__temp_f, __VA_ARGS__); \
-    fputc('\n', neat__temp_f);              \
+#define neat_fprintln(f, ...)                 \
+do                                            \
+{                                             \
+    FILE *neat__tmp_file = f;                 \
+    (void) neat__tmp_file;                    \
+    neat_fprint(neat__tmp_file, __VA_ARGS__); \
+    fputc('\n', neat__tmp_file);              \
 } while(0)
 
 #define neat_println(...) \
