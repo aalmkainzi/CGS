@@ -12,7 +12,13 @@
     #endif
 #endif
 
-static const Neat_String_View error_to_string[] = {
+static Neat_Allocator neat__default_allocator = {
+    .alloc   = neat__default_allocator_alloc,
+    .dealloc = neat__default_allocator_dealloc,
+    .realloc = neat__default_allocator_realloc,
+};
+
+static const Neat_String_View neat__error_to_string[] = {
     [NEAT_OK]                     = {.len = sizeof("OK")                     - 1, .chars = (unsigned char*) "OK"},
     [NEAT_DST_TOO_SMALL]          = {.len = sizeof("DST_TOO_SMALL")          - 1, .chars = (unsigned char*) "DST_TOO_SMALL"},
     [NEAT_ALLOC_ERR]              = {.len = sizeof("ALLOC_ERR")              - 1, .chars = (unsigned char*) "ALLOC_ERR"},
@@ -24,7 +30,7 @@ static const Neat_String_View error_to_string[] = {
     [NEAT_INCORRECT_TYPE]         = {.len = sizeof("INCORRECT_TYPE")         - 1, .chars = (unsigned char*) "INCORRECT_TYPE"},
 };
 
-static const long long ten_pows[] = {
+static const long long neat__ten_pows[] = {
     1,
     10,
     100,
@@ -46,7 +52,7 @@ static const long long ten_pows[] = {
     1000000000000000000,
 };
 
-static const unsigned long long ten_pows_ull[] = {
+static const unsigned long long neat__ten_pows_ull[] = {
     1ull,
     10ull,
     100ull,
@@ -69,7 +75,7 @@ static const unsigned long long ten_pows_ull[] = {
     10000000000000000000ull,
 };
 
-static const Neat_String_View uc_to_string[256] = {
+static const Neat_String_View neat__uc_to_string[256] = {
     {.chars = (unsigned char*) "0", .len = 1},
     {.chars = (unsigned char*) "1", .len = 1},
     {.chars = (unsigned char*) "2", .len = 1},
@@ -328,7 +334,7 @@ static const Neat_String_View uc_to_string[256] = {
     {.chars = (unsigned char*) "255", .len = 3},
 };
 
-static const Neat_String_View sc_to_string[] = {
+static const Neat_String_View neat__sc_to_string[] = {
     {.chars = (unsigned char*) "0", .len = 1},
     {.chars = (unsigned char*) "1", .len = 1},
     {.chars = (unsigned char*) "2", .len = 1},
@@ -587,11 +593,11 @@ static const Neat_String_View sc_to_string[] = {
     {.chars = (unsigned char*) "-1", .len = 2}
 };
 
-typedef struct Neat_DString_Append_Allocator
+typedef struct Neat__DString_Append_Allocator
 {
-    Neat_Allocator funcs;
+    Neat_Allocator base;
     struct Neat_DString *owner;
-} Neat_DString_Append_Allocator;
+} Neat__DString_Append_Allocator;
 
 Neat__Fixed_Mut_String_Ref neat__buf_as_fmutstr_ref(Neat_Buffer buf, unsigned int *len_ptr)
 {
@@ -685,7 +691,7 @@ Neat_Allocation neat__dstr_append_allocator_realloc(Neat_Allocator *allocator, v
 {
     (void) alignment;
     
-    Neat_DString_Append_Allocator *dstr_append_allocator = (__typeof__(dstr_append_allocator)) allocator;
+    Neat__DString_Append_Allocator *dstr_append_allocator = (__typeof__(dstr_append_allocator)) allocator;
     
     Neat_DString *owner = dstr_append_allocator->owner;
     
@@ -714,22 +720,15 @@ Neat_Allocation neat__allocator_invoke_realloc(Neat_Allocator *allocator, void *
     return allocator->realloc(allocator, ptr, alignment, old_nb * obj_size, new_nb * obj_size);
 }
 
-static Neat_Allocator default_allocator = {
-    .alloc   = neat__default_allocator_alloc,
-    .dealloc = neat__default_allocator_dealloc,
-    .realloc = neat__default_allocator_realloc,
-};
-
 Neat_Allocator *neat_get_default_allocator()
 {
-    return &default_allocator;
+    return &neat__default_allocator;
 }
 
-
-void neat__make_dstr_append_allocator(Neat_DString *dstr, Neat_DString_Append_Allocator *out)
+void neat__make_dstr_append_allocator(Neat_DString *dstr, Neat__DString_Append_Allocator *out)
 {
-    *out = (Neat_DString_Append_Allocator){
-        .funcs = {
+    *out = (Neat__DString_Append_Allocator){
+        .base = {
             .alloc   = neat__dstr_append_allocator_alloc,
             .dealloc = neat__dstr_append_allocator_dealloc,
             .realloc = neat__dstr_append_allocator_realloc,
@@ -738,7 +737,7 @@ void neat__make_dstr_append_allocator(Neat_DString *dstr, Neat_DString_Append_Al
     };
 }
 
-static Neat_DString neat__make_appender_dstr(Neat_DString *owner, Neat_DString_Append_Allocator *allocator)
+static Neat_DString neat__make_appender_dstr(Neat_DString *owner, Neat__DString_Append_Allocator *allocator)
 {
     neat__make_dstr_append_allocator(owner, allocator);
     return (Neat_DString){
@@ -758,12 +757,12 @@ Neat_String_Buffer neat__make_appender_strbuf(Neat_Mut_String_Ref owner)
     };
 }
 
-Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, Neat_DString_Append_Allocator *appender_dstr_allocator_opt, Neat_String_Buffer *appender_strbuf_opt)
+Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, Neat__DString_Append_Allocator *dstr_appender_allocator_opt, Neat_String_Buffer *appender_strbuf_opt)
 {
     switch(owner.ty)
     {
         case NEAT__DSTR_TY    :
-            *appender_dstr_opt = neat__make_appender_dstr(owner.str.dstr, appender_dstr_allocator_opt);
+            *appender_dstr_opt = neat__make_appender_dstr(owner.str.dstr, dstr_appender_allocator_opt);
             return neat_mutstr_ref(appender_dstr_opt);
         case NEAT__STRBUF_TY  :
         case NEAT__SSTR_REF_TY:
@@ -2562,14 +2561,14 @@ static unsigned int neat__numstr_len(long long num)
         num *= -1;
         len += 1;
     }
-    for(unsigned int i = 1 ; i < NEAT__CARR_LEN(ten_pows) && num >= ten_pows[i++] ; len++);
+    for(unsigned int i = 1 ; i < NEAT__CARR_LEN(neat__ten_pows) && num >= neat__ten_pows[i++] ; len++);
     return len;
 }
 
 unsigned int neat_numstr_len_ull(unsigned long long num)
 {
     unsigned int len = 1;
-    for(unsigned int i = 1 ; i < NEAT__CARR_LEN(ten_pows_ull) && num >= ten_pows_ull[i++] ; len++);
+    for(unsigned int i = 1 ; i < NEAT__CARR_LEN(neat__ten_pows_ull) && num >= neat__ten_pows_ull[i++] ; len++);
     return len;
 }
 
@@ -2700,7 +2699,7 @@ do { \
     } \
     unsigned int numstr_len = neat__numstr_len(num); \
     unsigned int chars_to_copy = neat__uint_min(fmutstr.cap - (1 + isneg), numstr_len); \
-    num /= ten_pows[numstr_len - chars_to_copy]; \
+    num /= neat__ten_pows[numstr_len - chars_to_copy]; \
     for (unsigned int i = 0; i < chars_to_copy ; i++) \
     { \
         unsigned int rem = num % 10; \
@@ -2778,7 +2777,7 @@ do { \
     __typeof__(obj) num = obj; \
     unsigned int numstr_len = neat_numstr_len_ull(num); \
     unsigned int chars_to_copy = neat__uint_min(fmutstr.cap - 1, numstr_len); \
-    num /= ten_pows[numstr_len - chars_to_copy]; \
+    num /= neat__ten_pows[numstr_len - chars_to_copy]; \
     for (unsigned int i = 0; i < chars_to_copy ; i++) \
     { \
         unsigned int rem = num % 10; \
@@ -2857,7 +2856,7 @@ Neat_Error neat__char_tostr(Neat_Mut_String_Ref dst, char obj)
 
 Neat_Error neat__schar_tostr(Neat_Mut_String_Ref dst, signed char obj)
 {
-    return neat__mutstr_ref_copy(dst, sc_to_string[obj]);
+    return neat__mutstr_ref_copy(dst, neat__sc_to_string[obj]);
 }
 
 Neat_Error neat__uchar_tostr(Neat_Mut_String_Ref dst, unsigned char obj)
@@ -2934,7 +2933,7 @@ Neat_Error neat__double_tostr(Neat_Mut_String_Ref dst, double obj)
 
 Neat_Error neat__error_tostr(Neat_Mut_String_Ref dst, Neat_Error obj)
 {
-    return neat__mutstr_ref_copy(dst, error_to_string[obj.ec]);
+    return neat__mutstr_ref_copy(dst, neat__error_to_string[obj.ec]);
 }
 
 Neat_Error neat__dstr_tostr(Neat_Mut_String_Ref dst, Neat_DString obj)

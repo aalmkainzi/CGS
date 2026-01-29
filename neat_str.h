@@ -506,7 +506,7 @@ do \
 #define neat__str_print_each_setup(...) \
 __VA_OPT__( \
     Neat_DString neat__appender_dstr_opt = {0}; \
-    Neat_DString_Append_Allocator neat__appender_dstr_allocator_opt = {0}; \
+    Neat__DString_Append_Allocator neat__appender_dstr_allocator_opt = {0}; \
     Neat_String_Buffer neat__appender_strbuf_opt = {0}; \
     NEAT__FOREACH(neat__str_print_each, __VA_ARGS__); \
 )
@@ -515,13 +515,13 @@ __VA_OPT__( \
 __VA_OPT__( \
 do \
 { \
-    typedef struct Neat_DString_Append_Allocator \
+    typedef struct Neat__DString_Append_Allocator \
     { \
         Neat_Allocator funcs; \
         struct Neat_DString *owner; \
-    } Neat_DString_Append_Allocator; \
+    } Neat__DString_Append_Allocator; \
     \
-    Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, void *appender_dstr_allocator_opt, Neat_String_Buffer *appender_strbuf_opt); \
+    Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, void *dstr_appender_allocator, Neat_String_Buffer *appender_strbuf_opt); \
     Neat_Error neat__mutstr_ref_set_len(Neat_Mut_String_Ref str, unsigned int new_len); \
     \
     Neat_Mut_String_Ref neat__as_mutstr_ref = neat_mutstr_ref(neat__dst); \
