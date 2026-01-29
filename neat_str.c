@@ -1363,11 +1363,11 @@ Neat_String_View_Array neat__strv_arr_from_carr(const Neat_String_View *carr, un
     };
 }
 
-Neat_Error neat__strv_split_callback(const Neat_String_View str, const Neat_String_View delim, bool(*cb)(Neat_String_View found, void *ctx), void *ctx)
+Neat_Error neat__strv_split_iter(const Neat_String_View str, const Neat_String_View delim, bool(*cb)(Neat_String_View found, void *ctx), void *ctx)
 {
     if(delim.len > str.len)
     {
-        cb(str, ctx);
+        return !cb(str, ctx) ? (Neat_Error){NEAT_CALLBACK_EXIT} : (Neat_Error){NEAT_OK};
     }
     else if(delim.len == 0)
     {
@@ -1378,28 +1378,35 @@ Neat_Error neat__strv_split_callback(const Neat_String_View str, const Neat_Stri
     }
     else
     {
+        unsigned int prev = 0;
         for(unsigned int i = 0 ; i <= str.len - delim.len ; )
         {
-            Neat_String_View sub = neat__strv_strv3(str, i, i + delim.len);
-            if(neat__strv_equal(sub, delim))
+            Neat_String_View rem = neat__strv_strv2(str, i);
+            if(neat__strv_starts_with(rem, delim))
             {
+                Neat_String_View sub = neat__strv_strv3(str, prev, i);
                 if(!cb(sub, ctx))
                 {
                     return (Neat_Error){NEAT_CALLBACK_EXIT};
                 }
                 i += delim.len;
+                prev = i;
             }
             else
             {
                 i += 1;
             }
         }
+        if(!cb(neat__strv_strv3(str, prev, str.len), ctx))
+        {
+            return (Neat_Error){NEAT_CALLBACK_EXIT};
+        }
     }
     
     return (Neat_Error){NEAT_OK};
 }
 
-static bool neat__str_split_combine_cb(Neat_String_View str, void *ctx)
+static bool neat__combine_views_into_array(Neat_String_View str, void *ctx)
 {
     struct {
         Neat_Allocator *allocator;
@@ -1421,7 +1428,8 @@ static bool neat__str_split_combine_cb(Neat_String_View str, void *ctx)
     return true;
 }
 
-NEAT__NODISCARD("str_split returns new String_View_Array") Neat_String_View_Array neat__strv_split(const Neat_String_View str, const Neat_String_View delim, Neat_Allocator *allocator)
+NEAT__NODISCARD("str_split returns new String_View_Array")
+Neat_String_View_Array neat__strv_split(const Neat_String_View str, const Neat_String_View delim, Neat_Allocator *allocator)
 {
     struct {
         Neat_Allocator *allocator;
@@ -1430,7 +1438,7 @@ NEAT__NODISCARD("str_split returns new String_View_Array") Neat_String_View_Arra
         .allocator = allocator
     };
     
-    neat__strv_split_callback(str, delim, neat__str_split_combine_cb, &ctx);
+    neat__strv_split_iter(str, delim, neat__combine_views_into_array, &ctx);
     
     return ctx.array;
 }
@@ -1562,7 +1570,7 @@ Neat_Error neat__fmutstr_ref_replace_range(Neat__Fixed_Mut_String_Ref str, unsig
     return err;
 }
 
-Neat_Error neat__mustr_ref_replace_range(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
+Neat_Error neat__mutstr_ref_replace_range(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
 {
     switch(str.ty)
     {
@@ -1918,15 +1926,28 @@ Neat_Error neat__mutstr_ref_clear(Neat_Mut_String_Ref str)
     {
         case NEAT__DSTR_TY:
             str.str.dstr->len = 0;
+            if(str.str.dstr->cap > 0)
+            {
+                str.str.dstr->chars[0] = '\0';
+            }
             break;
         case NEAT__STRBUF_TY:
             str.str.strbuf->len = 0;
+            if(str.str.strbuf->cap > 0)
+            {
+                str.str.strbuf->chars[0] = '\0';
+            }
             break;
         case NEAT__SSTR_REF_TY:
             str.str.sstr_ref.sstr->len = 0;
+            if(str.str.sstr_ref.cap > 0)
+            {
+                str.str.sstr_ref.sstr->chars[0] = '\0';
+            }
             break;
         case NEAT__BUF_TY:
-            str.str.buf.ptr[0] = '\0';
+            if(str.str.buf.cap > 0)
+                str.str.buf.ptr[0] = '\0';
             break;
     }
     return (Neat_Error){NEAT_OK};
@@ -2432,6 +2453,7 @@ Neat_Error neat__dstr_append_fread_line(Neat_DString *dstr, FILE *stream)
     return (Neat_Error){NEAT_OK};
 }
 
+// TODO why not just clear and append_fread_line
 Neat_Error neat__fmutstr_ref_fread_line(Neat__Fixed_Mut_String_Ref dst, FILE *stream)
 {
     if(dst.cap == 0)
