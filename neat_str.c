@@ -1373,8 +1373,13 @@ Neat_Error neat__strv_split_iter(const Neat_String_View str, const Neat_String_V
     {
         for(unsigned int i = 0 ; i < str.len ; i++)
         {
-            cb(neat__strv_strv3(str, i, i + 1), ctx);
+            if(!cb(neat__strv_strv3(str, i, i + 1), ctx))
+            {
+                return (Neat_Error){NEAT_CALLBACK_EXIT};
+            }
         }
+        
+        return (Neat_Error){NEAT_OK};
     }
     else
     {
@@ -1397,13 +1402,16 @@ Neat_Error neat__strv_split_iter(const Neat_String_View str, const Neat_String_V
                 i += 1;
             }
         }
+        
         if(!cb(neat__strv_strv3(str, prev, str.len), ctx))
         {
             return (Neat_Error){NEAT_CALLBACK_EXIT};
         }
+        else
+        {
+            return (Neat_Error){NEAT_OK};
+        }
     }
-    
-    return (Neat_Error){NEAT_OK};
 }
 
 static bool neat__combine_views_into_array(Neat_String_View str, void *ctx)

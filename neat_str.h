@@ -445,9 +445,9 @@ _Generic(any_str, \
 
 #define neat_str_replace_range(any_str, begin, end, any_str_replacement) \
 _Generic(any_str, \
-     Neat_Mut_String_Ref : neat__mutstr_ref_replace_range(neat__coerce(any_str, Neat_Mut_String_Ref), begin, end, neat_str_view(any_str_replacement)), \
-     Neat_DString*       : neat__mutstr_ref_replace_range(neat_mutstr_ref(any_str), begin, end, neat_str_view(any_str_replacement)) \
-    default             : neat__fmutstr_ref_replace_range(neat__fmutstr_ref(neat__coerce_not(any_str, Neat_Mut_String_Ref, Neat_String_Buffer*), begin, end, neat_str_view(any_str_replacement))) \
+    Neat_Mut_String_Ref : neat__mutstr_ref_replace_range(neat__coerce(any_str, Neat_Mut_String_Ref), begin, end, neat_str_view(any_str_replacement)), \
+    Neat_DString*       : neat__mutstr_ref_replace_range(neat_mutstr_ref(any_str), begin, end, neat_str_view(any_str_replacement)) \
+    default              : neat__fmutstr_ref_replace_range(neat__fmutstr_ref(neat__coerce_not(any_str, Neat_Mut_String_Ref, Neat_String_Buffer*), begin, end, neat_str_view(any_str_replacement))) \
 )
 
 #define neat_str_split(any_str, any_str_delim, ...) \
@@ -983,7 +983,7 @@ Neat_Error neat__fmutstr_ref_delete_range(Neat__Fixed_Mut_String_Ref str, unsign
 Neat_Error neat__fmutstr_ref_insert(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src, unsigned int idx);
 Neat_Error neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement);
 Neat_Error neat__fmutstr_ref_replace_first(Neat__Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement);
-Neat_Error neat__fmustr_ref_replace_range(Neat__Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement);
+Neat_Error neat__fmutstr_ref_replace_range(Neat__Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement);
 
 Neat_Error neat__dstr_copy(Neat_DString *dstr, const Neat_String_View src);
 
