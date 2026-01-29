@@ -1145,6 +1145,18 @@ unsigned int neat__mutstr_ref_cap(const Neat_Mut_String_Ref str)
     };
 }
 
+unsigned int neat__mutstr_ref_len(const Neat_Mut_String_Ref str)
+{
+    switch(str.ty)
+    {
+        case NEAT__DSTR_TY     : return str.str.dstr->len;
+        case NEAT__STRBUF_TY   : return str.str.strbuf->len;
+        case NEAT__SSTR_REF_TY : return str.str.sstr_ref.sstr->len;
+        case NEAT__BUF_TY      : return strlen((char*) str.str.buf.ptr);
+        default                : unreachable();
+    };
+}
+
 Neat_Error neat__fmutstr_ref_insert(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src, unsigned int idx)
 {
     unsigned int len = *dst.len;

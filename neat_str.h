@@ -340,7 +340,17 @@ _Generic(any_str,                                   \
 )((any_str), idx)
 
 #define neat_str_len(any_str) \
-((void)0, neat_str_view(any_str).len)
+_Generic(any_str, \
+    char*               : strlen(neat__coerce(any_str, char*)), \
+    unsigned char*      : strlen((char*) neat__coerce(any_str, unsigned char*)), \
+    Neat_DString        : neat__coerce(any_str, Neat_DString).len, \
+    Neat_DString*       : neat__coerce(any_str, Neat_DString*)->len, \
+    Neat_String_View    : neat__coerce(any_str, Neat_String_View).len, \
+    Neat_String_Buffer  : neat__coerce(any_str, Neat_String_Buffer).len, \
+    Neat_String_Buffer* : neat__coerce(any_str, Neat_String_Buffer*)->len, \
+    Neat_SString_Ref    : neat__coerce(any_str, Neat_SString_Ref).sstr->len, \
+    Neat_Mut_String_Ref : neat__mutstr_ref_len(neat__coerce(any_str, Neat_Mut_String_Ref)) \
+)
 
 #define neat_str_cap(any_str)                                             \
 _Generic((__typeof__(any_str)*){0},                                       \
@@ -756,17 +766,17 @@ do                                           \
 do                                                    \
 {                                                     \
     neat__fprint_strv(neat_file_stream, _Generic(x,   \
-        char*               : neat__strv_cstr2,       \
-        unsigned char*      : neat__strv_ucstr2,      \
-        Neat_DString        : neat__strv_dstr2,       \
-        Neat_DString*       : neat__strv_dstr_ptr2,   \
-        Neat_String_View    : neat__strv_strv2,       \
-        Neat_String_Buffer  : neat__strv_strbuf2,     \
-        Neat_String_Buffer* : neat__strv_strbuf_ptr2, \
-        Neat_SString_Ref    : neat__strv_sstr_ref2,   \
-        Neat_Mut_String_Ref : neat__strv_mutstr_ref2, \
-        default             : neat__strv_dstr2        \
-    )(neat__coerce_string_type(x, (neat_tostr(&neat__tmp, x), neat__tmp)), 0)); \
+        char*               : neat__strv_cstr1,       \
+        unsigned char*      : neat__strv_ucstr1,      \
+        Neat_DString        : neat__strv_dstr1,       \
+        Neat_DString*       : neat__strv_dstr_ptr1,   \
+        Neat_String_View    : neat__strv_strv1,       \
+        Neat_String_Buffer  : neat__strv_strbuf1,     \
+        Neat_String_Buffer* : neat__strv_strbuf_ptr1, \
+        Neat_SString_Ref    : neat__strv_sstr_ref1,   \
+        Neat_Mut_String_Ref : neat__strv_mutstr_ref1, \
+        default             : neat__strv_dstr1        \
+    )(neat__coerce_string_type(x, (neat_tostr(&neat__tmp, x), neat__tmp)))); \
     neat__tmp.len = 0;                                \
 } while(0);
 
@@ -1060,6 +1070,7 @@ unsigned int neat__strbuf_ptr_cap(const Neat_String_Buffer *str);
 unsigned int neat__sstr_ref_cap(const Neat_SString_Ref str);
 unsigned int neat__buf_cap(const Neat_Buffer buf);
 unsigned int neat__mutstr_ref_cap(const Neat_Mut_String_Ref str);
+unsigned int neat__mutstr_ref_len(const Neat_Mut_String_Ref str);
 
 unsigned char neat__cstr_char_at(const char *str, unsigned int idx);
 unsigned char neat__ucstr_char_at(const unsigned char *str, unsigned int idx);
