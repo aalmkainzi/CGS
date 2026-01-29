@@ -2970,3 +2970,4 @@ Neat_Error neat__mutstr_ref_tostr(Neat_Mut_String_Ref dst, Neat_Mut_String_Ref o
 {
     return neat__mutstr_ref_copy(dst, neat__strv_mutstr_ref2(obj, 0));
 }
+

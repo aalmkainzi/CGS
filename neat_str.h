@@ -789,7 +789,7 @@ typedef bool neat__b;
 typedef char neat__c;
 typedef signed char neat__sc;
 typedef unsigned char neat__uc;
-typedef unsigned short neat__s;
+typedef short neat__s;
 typedef unsigned short neat__us;
 typedef int neat__i;
 typedef unsigned int neat__ui;
@@ -798,7 +798,9 @@ typedef unsigned long neat__ul;
 typedef long long neat__ll;
 typedef unsigned long long neat__ull;
 
-#define NEAT__INTEGER_TYPES(extra) \
+#define NEAT__MCALL(macro, arglist) macro arglist
+
+#define NEAT__INTEGER_TYPES(NEAT__X, extra, ...) \
 NEAT__X(neat__b, extra) \
 NEAT__X(neat__c, extra) \
 NEAT__X(neat__sc, extra) \
@@ -810,37 +812,97 @@ NEAT__X(neat__ui, extra) \
 NEAT__X(neat__l, extra) \
 NEAT__X(neat__ul, extra) \
 NEAT__X(neat__ll, extra) \
-NEAT__X(neat__ull, extra)
+NEAT__MCALL(NEAT__VA_OR(NEAT__X, __VA_ARGS__), (neat__ull, extra))
+
+#define NEAT__FLOATING_TYPES(NEAT__X, extra, ...) \
+NEAT__X(float, extra) \
+NEAT__MCALL(NEAT__VA_OR(NEAT__X, __VA_ARGS__), (double, extra))
 
 #define NEAT__X(ty, extra) \
 typedef struct Neat__Integer_Decimal_Fmt_##ty \
 { \
     ty obj; \
-    char fmt; \
-} Neat__Integer_Fmt_##ty;
+} Neat__Integer_Decimal_Fmt_##ty; \
+typedef struct Neat__Integer_Hex_Fmt_##ty \
+{ \
+    ty obj; \
+} Neat__Integer_Hex_Fmt_##ty; \
+typedef struct Neat__Integer_Octal_Fmt_##ty \
+{ \
+    ty obj; \
+} Neat__Integer_Octal_Fmt_##ty; \
+typedef struct Neat__Integer_Binary_Fmt_##ty \
+{ \
+    ty obj; \
+} Neat__Integer_Binary_Fmt_##ty;
 
-NEAT__INTEGER_TYPES(ignore)
+NEAT__INTEGER_TYPES(NEAT__X, ignore)
 
 #undef NEAT__X
 
-typedef struct Neat__Floating_Fmt_float
-{
-    float obj;
-    char fmt;
-} Neat__Floating_Fmt_float;
-
-typedef struct Neat__Floating_Fmt_double
-{
-    float obj;
-    char fmt;
-} Neat__Floating_Fmt_double;
-
 #define NEAT__X(ty, extra) \
-ty: (Neat__Integer_Fmt_##ty){neat__coerce(x, ty), extra}
+typedef struct Neat__Floating_f_Fmt_##ty \
+{ \
+    ty obj; \
+} Neat__Floating_f_Fmt_##ty; \
+typedef struct Neat__Floating_g_Fmt_##ty \
+{ \
+    ty obj; \
+} Neat__Floating_g_Fmt_##ty; \
+typedef struct Neat__Floating_e_Fmt_##ty \
+{ \
+    ty obj; \
+} Neat__Floating_e_Fmt_##ty; \
+typedef struct Neat__Floating_a_Fmt_##ty \
+{ \
+    ty obj; \
+} Neat__Floating_a_Fmt_##ty; \
+
+NEAT__FLOATING_TYPES(NEAT__X, ignore)
+
+#undef NEAT__X
+
+#define NEAT__X_IS_TY(ty, extra) \
+ty: 1,
+
+#define NEAT__IS_FLOATING(obj) \
+_Generic(obj, \
+NEAT__FLOATING_TYPES(NEAT__X_IS_TY, ignore) \
+default: 0)
+
+#define NEAT__IS_INTEGER(obj) \
+_Generic(obj, \
+NEAT__INTEGER_TYPES(NEAT__X_IS_TY, ignore) \
+default: 0)
+
+#define NEAT__INTEGER_FMT_GENERIC_BRANCHES(ty, extra) \
+ty: \
+_Generic((char(*)[NEAT__ARG2 extra]){0}, \
+char(*)['d']: (Neat__Integer_Decimal_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
+char(*)['x']: (Neat__Integer_Hex_Fmt_##ty)    {neat__coerce(NEAT__ARG1 extra, ty)},  \
+char(*)['o']: (Neat__Integer_Octal_Fmt_##ty)  {neat__coerce(NEAT__ARG1 extra, ty)},  \
+char(*)['b']: (Neat__Integer_Binary_Fmt_##ty) {neat__coerce(NEAT__ARG1 extra, ty)},  \
+default: 0),
+
+#define NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra) \
+ty: \
+_Generic((char(*)[NEAT__ARG2 extra]){0}, \
+char(*)['f']: (Neat__Floating_f_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
+char(*)['g']: (Neat__Floating_g_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
+char(*)['e']: (Neat__Floating_e_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
+char(*)['a']: (Neat__Floating_a_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
+default: 0)
+
+#define NEAT__FLOATING_FMT_GENERIC_BRANCHES(ty, extra) \
+NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 
 #define neat_tsfmt(x, fmt_chr) \
-_Generic(x, \
-    NEAT__INTEGER_TYPES(fmt_chr) \
+( \
+    neat__static_assertx( (NEAT__IS_FLOATING(x) && (fmt_chr == 'f' || fmt_chr == 'g' || fmt_chr == 'e' || fmt_chr == 'a')  ) || (NEAT__IS_INTEGER(x) && (fmt_chr == 'd' || fmt_chr == 'x' || fmt_chr == 'o' || fmt_chr == 'b')), "Incorrect formatting char for the type" ), \
+    _Generic(x, \
+        NEAT__INTEGER_TYPES(NEAT__INTEGER_FMT_GENERIC_BRANCHES, (x, fmt_chr)) \
+        NEAT__FLOATING_TYPES(NEAT__FLOATING_FMT_GENERIC_BRANCHES, (x, fmt_chr), NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH) \
+    ) \
 )
 
 #undef NEAT__X
@@ -925,8 +987,6 @@ neat__get_tostr_func(__typeof__(src))(neat_mutstr_ref(dst), (src))
 
 #define neat_has_tostr(ty) \
 (!neat__has_type(neat__get_tostr_func_ft(ty), neat__tostr_fail))
-
-#define NEAT__MCALL(macro, arglist) macro arglist
 
 #define NEAT__DECL_TOSTR_FUNC(n) \
 typedef __typeof__(NEAT__MCALL(NEAT__ARG1, ADD_TOSTR)) neat__tostr_type_##n; \
