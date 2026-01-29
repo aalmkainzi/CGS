@@ -593,6 +593,10 @@ static const Neat_String_View neat__sc_to_string[] = {
     {.chars = (unsigned char*) "-1", .len = 2}
 };
 
+_Thread_local Neat_DString neat__fprint_tostr_dynamic_buffer = {
+    .allocator = &neat__default_allocator
+};
+
 typedef struct Neat__DString_Append_Allocator
 {
     Neat_Allocator base;

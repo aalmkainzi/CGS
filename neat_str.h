@@ -752,14 +752,13 @@ neat__dstr_shrink_to_fit(dstr)
 #define neat_dstr_ensure_cap(dstr, new_cap) \
 neat__dstr_ensure_cap(dstr, new_cap)
 
-#define neat_fprint(f, ...)                  \
-do                                           \
-{                                            \
-    FILE *neat_file_stream = f;              \
-    (void) neat_file_stream;                 \
-    Neat_DString neat__tmp = dstr_init(0);   \
+#define neat_fprint(f, ...)                        \
+do                                                 \
+{                                                  \
+    FILE *neat_file_stream = f;                    \
+    (void) neat_file_stream;                       \
+    extern _Thread_local Neat_DString neat__fprint_tostr_dynamic_buffer; \
     NEAT__FOREACH(neat__fprint_each, __VA_ARGS__); \
-    dstr_deinit(&neat__tmp);                 \
 } while(0)
 
 #define neat__fprint_each(x)                          \
@@ -776,8 +775,8 @@ do                                                    \
         Neat_SString_Ref    : neat__strv_sstr_ref1,   \
         Neat_Mut_String_Ref : neat__strv_mutstr_ref1, \
         default             : neat__strv_dstr1        \
-    )(neat__coerce_string_type(x, (neat_tostr(&neat__tmp, x), neat__tmp)))); \
-    neat__tmp.len = 0;                                \
+    )(neat__coerce_string_type(x, (neat_tostr(&neat__fprint_tostr_dynamic_buffer, x), neat__fprint_tostr_dynamic_buffer)))); \
+    neat__fprint_tostr_dynamic_buffer.len = 0;                                \
 } while(0);
 
 #define neat_print(...) \
