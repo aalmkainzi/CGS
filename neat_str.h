@@ -785,6 +785,66 @@ do                                            \
 #define neat_println(...) \
 neat_fprintln(stdout, __VA_ARGS__)
 
+typedef bool neat__b;
+typedef char neat__c;
+typedef signed char neat__sc;
+typedef unsigned char neat__uc;
+typedef unsigned short neat__s;
+typedef unsigned short neat__us;
+typedef int neat__i;
+typedef unsigned int neat__ui;
+typedef long neat__l;
+typedef unsigned long neat__ul;
+typedef long long neat__ll;
+typedef unsigned long long neat__ull;
+
+#define NEAT__INTEGER_TYPES(extra) \
+NEAT__X(neat__b, extra) \
+NEAT__X(neat__c, extra) \
+NEAT__X(neat__sc, extra) \
+NEAT__X(neat__uc, extra) \
+NEAT__X(neat__s, extra) \
+NEAT__X(neat__us, extra) \
+NEAT__X(neat__i, extra) \
+NEAT__X(neat__ui, extra) \
+NEAT__X(neat__l, extra) \
+NEAT__X(neat__ul, extra) \
+NEAT__X(neat__ll, extra) \
+NEAT__X(neat__ull, extra)
+
+#define NEAT__X(ty, extra) \
+typedef struct Neat__Integer_Decimal_Fmt_##ty \
+{ \
+    ty obj; \
+    char fmt; \
+} Neat__Integer_Fmt_##ty;
+
+NEAT__INTEGER_TYPES(ignore)
+
+#undef NEAT__X
+
+typedef struct Neat__Floating_Fmt_float
+{
+    float obj;
+    char fmt;
+} Neat__Floating_Fmt_float;
+
+typedef struct Neat__Floating_Fmt_double
+{
+    float obj;
+    char fmt;
+} Neat__Floating_Fmt_double;
+
+#define NEAT__X(ty, extra) \
+ty: (Neat__Integer_Fmt_##ty){neat__coerce(x, ty), extra}
+
+#define neat_tsfmt(x, fmt_chr) \
+_Generic(x, \
+    NEAT__INTEGER_TYPES(fmt_chr) \
+)
+
+#undef NEAT__X
+
 #define NEAT__DEFAULT_TOSTR_TYPES             \
 bool                : neat__bool_tostr,       \
 char*               : neat__cstr_tostr,       \
