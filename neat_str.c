@@ -12,6 +12,10 @@
     #endif
 #endif
 
+Neat_Allocation neat__default_allocator_alloc(Neat_Allocator *ctx, size_t alignment, size_t n);
+void neat__default_allocator_dealloc(Neat_Allocator *ctx, void *ptr, size_t n);
+Neat_Allocation neat__default_allocator_realloc(Neat_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size);
+
 static Neat_Allocator neat__default_allocator = {
     .alloc   = neat__default_allocator_alloc,
     .dealloc = neat__default_allocator_dealloc,
