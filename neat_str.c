@@ -3317,7 +3317,7 @@ _Generic((char(*)[sizeof(num)])0,       \
 (neat__highest_bit(n) >> ((sizeof(n) - 1) * 8))
 
 #define neat__highest_3bits(n) \
-((__typeof__(n))((n) & (((__typeof__(n)) 0b111))))
+((__typeof__(n))((n) & (((__typeof__(n)) 0b111) << (sizeof(n) * 8 - 3))))
 
 #define neat__highest_3bits_as_u8(n) \
 (neat__highest_3bits(n) >> ((sizeof(n) - 1) * 8))
