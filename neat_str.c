@@ -3357,6 +3357,18 @@ do \
     return err; \
 } while(0)
 
+#define neat__integer_b_Fmt_tostr(dst, num) \
+do \
+{ \
+    neat__unsigned_of_size(sizeof(num)) unum = num; \
+    size_t sz = sizeof(unum); \
+    const __typeof__(unum) neat__; \
+    while(sz--) \
+    { \
+        unum = unum << 1; \
+    } \
+} while(0)
+
 #define NEAT__X(ty, extra) \
 Neat_Error neat__Integer_d_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty obj) \
 { \
