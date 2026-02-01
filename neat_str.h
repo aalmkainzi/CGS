@@ -763,28 +763,32 @@ neat__dstr_ensure_cap(dstr, new_cap)
 #define neat_fprint(f, ...)                        \
 do                                                 \
 {                                                  \
-    FILE *neat_file_stream = f;                    \
-    (void) neat_file_stream;                       \
+    FILE *neat__file_stream = f;                   \
+    (void) neat__file_stream;                      \
     extern _Thread_local Neat_DString neat__fprint_tostr_dynamic_buffer; \
     NEAT__FOREACH(neat__fprint_each, __VA_ARGS__); \
 } while(0)
 
-#define neat__fprint_each(x)                          \
-do                                                    \
-{                                                     \
-    neat__fprint_strv(neat_file_stream, _Generic(x,   \
-        char*               : neat__strv_cstr1,       \
-        unsigned char*      : neat__strv_ucstr1,      \
-        Neat_DString        : neat__strv_dstr1,       \
-        Neat_DString*       : neat__strv_dstr_ptr1,   \
-        Neat_String_View    : neat__strv_strv1,       \
-        Neat_String_Buffer  : neat__strv_strbuf1,     \
-        Neat_String_Buffer* : neat__strv_strbuf_ptr1, \
-        Neat_SString_Ref    : neat__strv_sstr_ref1,   \
-        Neat_Mut_String_Ref : neat__strv_mutstr_ref1, \
-        default             : neat__strv_dstr1        \
-    )(neat__coerce_string_type(x, (neat_tostr(&neat__fprint_tostr_dynamic_buffer, x), neat__fprint_tostr_dynamic_buffer)))); \
-    neat__fprint_tostr_dynamic_buffer.len = 0;                                \
+#define neat__fprint_each(x)                                \
+do                                                          \
+{                                                           \
+    neat__fprint_strv(neat__file_stream, _Generic(x,        \
+        char*                     : neat__strv_cstr1,       \
+        unsigned char*            : neat__strv_ucstr1,      \
+        Neat_DString              : neat__strv_dstr1,       \
+        Neat_DString*             : neat__strv_dstr_ptr1,   \
+        Neat_String_View          : neat__strv_strv1,       \
+        Neat_String_Buffer        : neat__strv_strbuf1,     \
+        Neat_String_Buffer*       : neat__strv_strbuf_ptr1, \
+        Neat_SString_Ref          : neat__strv_sstr_ref1,   \
+        Neat_Mut_String_Ref       : neat__strv_mutstr_ref1, \
+        const char*               : neat__strv_cstr1,       \
+        const unsigned char*      : neat__strv_ucstr1,      \
+        const Neat_DString*       : neat__strv_dstr_ptr1,   \
+        const Neat_String_Buffer* : neat__strv_strbuf_ptr1, \
+        default                   : neat__strv_dstr1        \
+    )(neat__coerce_string_type(x, (neat_tostr(&neat__fprint_tostr_dynamic_buffer, x), neat__fprint_tostr_dynamic_buffer))));                  \
+    neat__fprint_tostr_dynamic_buffer.len = 0;              \
 } while(0);
 
 #define neat_print(...) \
@@ -817,14 +821,14 @@ typedef unsigned long long neat__ull;
 #define NEAT__MCALL(macro, arglist) macro arglist
 
 #define NEAT__INTEGER_TYPES(NEAT__X, extra, ...) \
-NEAT__X(neat__c, extra) \
+NEAT__X(neat__c, extra)  \
 NEAT__X(neat__sc, extra) \
 NEAT__X(neat__uc, extra) \
-NEAT__X(neat__s, extra) \
+NEAT__X(neat__s, extra)  \
 NEAT__X(neat__us, extra) \
-NEAT__X(neat__i, extra) \
+NEAT__X(neat__i, extra)  \
 NEAT__X(neat__ui, extra) \
-NEAT__X(neat__l, extra) \
+NEAT__X(neat__l, extra)  \
 NEAT__X(neat__ul, extra) \
 NEAT__X(neat__ll, extra) \
 NEAT__MCALL(NEAT__VA_OR(NEAT__X, __VA_ARGS__), (neat__ull, extra))
@@ -908,7 +912,7 @@ char(*)['e']: (Neat__Floating_e_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  
 char(*)['a']: (Neat__Floating_a_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
 default: 0)
 
-#define NEAT__FLOATING_FMT_GENERIC_BRANCHES(ty, extra) \
+#define NEAT__FLOATING_FMT_GENERIC_BRANCH(ty, extra) \
 NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 
 #define neat_tsfmt(x, fmt_chr) \
@@ -916,7 +920,7 @@ NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
     neat__static_assertx( (NEAT__IS_FLOATING(x) && (fmt_chr == 'f' || fmt_chr == 'g' || fmt_chr == 'e' || fmt_chr == 'a')  ) || (NEAT__IS_INTEGER(x) && (fmt_chr == 'd' || fmt_chr == 'x' || fmt_chr == 'o' || fmt_chr == 'b')), "Incorrect formatting char for the type" ), \
     _Generic(x, \
         NEAT__INTEGER_TYPES(NEAT__INTEGER_FMT_GENERIC_BRANCHES, (x, fmt_chr)) \
-        NEAT__FLOATING_TYPES(NEAT__FLOATING_FMT_GENERIC_BRANCHES, (x, fmt_chr), NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH) \
+        NEAT__FLOATING_TYPES(NEAT__FLOATING_FMT_GENERIC_BRANCH, (x, fmt_chr), NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH) \
     ) \
 )
 
@@ -1290,6 +1294,8 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 #define println(...) neat_println(__VA_ARGS__)
 #define fprint(stream, ...) neat_fprint(stream, __VA_ARGS__)
 #define fprintln(stream, ...) neat_fprintln(stream, __VA_ARGS__)
+
+#define tsfmt(exp, fmt_char) neat_tsfmt(exp, fmt_char)
 
 #endif
 

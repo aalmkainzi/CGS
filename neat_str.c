@@ -3251,8 +3251,16 @@ Neat_Error neat__mutstr_ref_tostr(Neat_Mut_String_Ref dst, Neat_Mut_String_Ref o
     return neat__mutstr_ref_copy(dst, neat__strv_mutstr_ref2(obj, 0));
 }
 
+#define neat__unsigned_of_size(sz)  \
+__typeof__(_Generic((char(*)[sz])0, \
+    char(*)[1]: (uint8_t) 0,        \
+    char(*)[2]: (uint16_t)0,        \
+    char(*)[4]: (uint32_t)0,        \
+    char(*)[8]: (uint64_t)0         \
+))
+
 #define neat__integer_d_Fmt_tostr(dst, num) \
-_Generic(num, \
+return _Generic(num, \
     char: neat__schar_tostr, \
     signed char: neat__schar_tostr, \
     unsigned char: neat__ushort_tostr, \
@@ -3269,25 +3277,76 @@ _Generic(num, \
 #define neat__integer_x_Fmt_tostr(dst, num) \
 do \
 { \
-    if(dst.); \
+    Neat_Error err = {NEAT_OK}; \
+    size_t sz = sizeof(num); \
+    uint8_t *num_bytes = ((uint8_t*) &num) + sizeof(num) - 1; \
+    bool zero_pad = true; \
+    while(sz--) \
+    { \
+        if(num_bytes == (uint8_t*)&num || !zero_pad || *num_bytes != 0) \
+        { \
+            Neat_String_View hex_sv = {.chars = (unsigned char*) neat__byte_to_hex[*num_bytes], .len = 2}; \
+            if(zero_pad && hex_sv.chars[0] == '0') \
+            { \
+                hex_sv.chars += 1; \
+                hex_sv.len -= 1; \
+            } \
+            zero_pad = false; \
+            err = neat__mutstr_ref_append(dst, hex_sv); \
+        } \
+        num_bytes -= 1; \
+    } \
+    return err; \
+} while(0)
+
+#define neat__3bits(num, begin) \
+(((num) >> (begin)) & 0b111)
+
+#define neat__bswap(num)                \
+_Generic((char(*)[sizeof(num)])0,       \
+    char(*)[1]: num,                    \
+    char(*)[2]: __builtin_bswap16(num), \
+    char(*)[4]: __builtin_bswap32(num), \
+    char(*)[8]: __builtin_bswap64(num)  \
+)
+
+#define neat__integer_o_Fmt_tostr(dst, num) \
+do \
+{ \
+    Neat_Error err = {NEAT_OK}; \
+    const size_t bits = (sizeof(num) * 8); \
+    int iters = (bits + 3) / 3; \
+    num = neat__bswap(num); \
+    for(int i = 0 ; i < iters ; i++) \
+    { \
+        uint8_t _3bits = num & 0b111; \
+        Neat_String_View octal_sv = {.chars = &(unsigned char){'0' + _3bits}, .len = 1}; \
+        err = neat__mutstr_ref_append(dst, octal_sv); \
+        num = ((neat__unsigned_of_size(sizeof(num)))num) >> 3; \
+    } \
+    return err; \
 } while(0)
 
 #define NEAT__X(ty, extra) \
 Neat_Error neat__Integer_d_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty obj) \
 { \
-    return neat__integer_d_Fmt_tostr(dst, obj.obj); \
+    neat__integer_d_Fmt_tostr(dst, obj.obj); \
 } \
 Neat_Error neat__Integer_x_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty obj) \
 { \
-    return neat__integer_d_Fmt_tostr(dst, obj.obj); \
+    neat__mutstr_ref_clear(dst); \
+    neat__integer_x_Fmt_tostr(dst, obj.obj); \
 } \
 Neat_Error neat__Integer_o_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty obj) \
 { \
-    return neat__integer_d_Fmt_tostr(dst, obj.obj); \
+    neat__mutstr_ref_clear(dst); \
+    neat__integer_o_Fmt_tostr(dst, obj.obj); \
 } \
 Neat_Error neat__Integer_b_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty obj) \
 { \
-    return neat__integer_d_Fmt_tostr(dst, obj.obj); \
+    neat__integer_d_Fmt_tostr(dst, obj.obj); \
 } \
+
+// NEAT__INTEGER_TYPES(NEAT__X, ignore) ::
 
 NEAT__INTEGER_TYPES(NEAT__X, ignore)
