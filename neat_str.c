@@ -3259,6 +3259,9 @@ __typeof__(_Generic((char(*)[sz])0, \
     char(*)[8]: (uint64_t)0         \
 ))
 
+#define neat__as_unsigned(n) \
+((neat__unsigned_of_size(sizeof(n))) n)
+
 #define neat__integer_d_Fmt_tostr(dst, num) \
 return _Generic(num, \
     char: neat__schar_tostr, \
@@ -3299,9 +3302,6 @@ do \
     return err; \
 } while(0)
 
-#define neat__3bits(num, begin) \
-(((num) >> (begin)) & 0b111)
-
 #define neat__bswap(num)                \
 _Generic((char(*)[sizeof(num)])0,       \
     char(*)[1]: num,                    \
@@ -3310,19 +3310,49 @@ _Generic((char(*)[sizeof(num)])0,       \
     char(*)[8]: __builtin_bswap64(num)  \
 )
 
+#define neat__highest_bit(n) \
+((__typeof__(n))((n) & (((__typeof__(n)) 0b1) << (sizeof(n) * 8 - 1))))
+
+#define neat__highest_bit_as_u8(n) \
+(neat__highest_bit(n) >> ((sizeof(n) - 1) * 8))
+
+#define neat__highest_3bits(n) \
+((__typeof__(n))((n) & (((__typeof__(n)) 0b111))))
+
+#define neat__highest_3bits_as_u8(n) \
+(neat__highest_3bits(n) >> ((sizeof(n) - 1) * 8))
+
 #define neat__integer_o_Fmt_tostr(dst, num) \
 do \
 { \
+    neat__unsigned_of_size(sizeof(num)) unum = num; \
     Neat_Error err = {NEAT_OK}; \
-    const size_t bits = (sizeof(num) * 8); \
-    int iters = (bits + 3) / 3; \
-    num = neat__bswap(num); \
+    const size_t bits = (sizeof(unum) * 8); \
+    int iters = bits / 3; \
+    uint8_t extra_bits = 3 - ((sizeof(unum) * 8) % 3); \
+    uint8_t high3 = neat__highest_3bits_as_u8(unum); \
+    uint8_t first_3bits = high3 >> extra_bits; \
+    first_3bits = first_3bits >> 5; \
+    bool zero_pad = true; \
+    if(first_3bits != 0) \
+    { \
+        zero_pad = false; \
+        Neat_String_View octal_sv = {.chars = &(unsigned char){'0' + first_3bits}, .len = 1}; \
+        err = neat__mutstr_ref_append(dst, octal_sv); \
+    } \
+    unum = unum << (3 - extra_bits); \
+    \
     for(int i = 0 ; i < iters ; i++) \
     { \
-        uint8_t _3bits = num & 0b111; \
-        Neat_String_View octal_sv = {.chars = &(unsigned char){'0' + _3bits}, .len = 1}; \
-        err = neat__mutstr_ref_append(dst, octal_sv); \
-        num = ((neat__unsigned_of_size(sizeof(num)))num) >> 3; \
+        high3 = neat__highest_3bits_as_u8(unum); \
+        first_3bits = high3 >> (8 - 3); \
+        if(i == (iters - 1) || !zero_pad || (first_3bits != 0)) \
+        { \
+            zero_pad =  false; \
+            Neat_String_View octal_sv = {.chars = &(unsigned char){'0' + first_3bits}, .len = 1}; \
+            err = neat__mutstr_ref_append(dst, octal_sv); \
+        } \
+        unum = unum << 3; \
     } \
     return err; \
 } while(0)
