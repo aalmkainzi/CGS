@@ -3360,13 +3360,25 @@ do \
 #define neat__integer_b_Fmt_tostr(dst, num) \
 do \
 { \
+    Neat_Error err = {NEAT_OK}; \
     neat__unsigned_of_size(sizeof(num)) unum = num; \
-    size_t sz = sizeof(unum); \
-    const __typeof__(unum) neat__; \
+    size_t sz = sizeof(unum) * 8; \
+    bool zero_pad = true; \
     while(sz--) \
     { \
+        bool bit = unum & (((__typeof__(unum)) 1) << (sizeof(unum) * 8 - 1)) ; \
+        if(bit) \
+        { \
+            zero_pad = false; \
+            neat__mutstr_ref_putc(dst, '1'); \
+        } \
+        else if(!zero_pad || sz == 0) \
+        { \
+            neat__mutstr_ref_putc(dst, '0'); \
+        } \
         unum = unum << 1; \
     } \
+    return err; \
 } while(0)
 
 #define NEAT__X(ty, extra) \
@@ -3386,7 +3398,8 @@ Neat_Error neat__Integer_o_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integ
 } \
 Neat_Error neat__Integer_b_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty obj) \
 { \
-    neat__integer_d_Fmt_tostr(dst, obj.obj); \
+    neat__mutstr_ref_clear(dst); \
+    neat__integer_b_Fmt_tostr(dst, obj.obj); \
 } \
 
 // NEAT__INTEGER_TYPES(NEAT__X, ignore) ::
