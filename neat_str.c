@@ -2725,22 +2725,27 @@ Neat_Error neat__dstr_fread_line(Neat_DString *dstr, FILE *stream)
 
 Neat_Error neat__dstr_append_fread_line(Neat_DString *dstr, FILE *stream)
 {
-    // TODO optimize this
+    Neat_Error err = {NEAT_OK};
     int c = 0;
-    while((c=fgetc(stream)) != EOF)
+    while(c != EOF && c != '\n')
     {
-        unsigned char as_char = c;
-        Neat_Error err = neat__dstr_putc(dstr, as_char);
+        Neat_Error err = neat__dstr_maybe_grow(dstr, 64);
         if(err.ec != NEAT_OK)
             return err;
-        if(c == '\n')
-            break;
+        
+        int count = 0;
+        while(c != '\n' && count < 64 && (c=fgetc(stream)) != EOF)
+        {
+            unsigned char as_char = c;
+            dstr->chars[dstr->len + count] = as_char;
+            count += 1;
+        }
+        dstr->len += count;
     }
     
     return (Neat_Error){NEAT_OK};
 }
 
-// TODO why not just clear and append_fread_line
 Neat_Error neat__fmutstr_ref_fread_line(Neat__Fixed_Mut_String_Ref dst, FILE *stream)
 {
     if(dst.cap == 0)
@@ -3216,37 +3221,37 @@ Neat_Error neat__error_tostr(Neat_Mut_String_Ref dst, Neat_Error obj)
     return neat__mutstr_ref_copy(dst, neat__error_to_string[obj.ec]);
 }
 
-Neat_Error neat__dstr_tostr(Neat_Mut_String_Ref dst, Neat_DString obj)
+Neat_Error neat__dstr_tostr(Neat_Mut_String_Ref dst, const Neat_DString obj)
 {
     return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = obj.chars, .len = obj.len});
 }
 
-Neat_Error neat__dstr_ptr_tostr(Neat_Mut_String_Ref dst, Neat_DString *obj)
+Neat_Error neat__dstr_ptr_tostr(Neat_Mut_String_Ref dst, const Neat_DString *obj)
 {
     return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = obj->chars, .len = obj->len});
 }
 
-Neat_Error neat__strv_tostr(Neat_Mut_String_Ref dst, Neat_String_View obj)
+Neat_Error neat__strv_tostr(Neat_Mut_String_Ref dst, const Neat_String_View obj)
 {
     return neat__mutstr_ref_copy(dst, obj);
 }
 
-Neat_Error neat__strbuf_tostr(Neat_Mut_String_Ref dst, Neat_String_Buffer obj)
+Neat_Error neat__strbuf_tostr(Neat_Mut_String_Ref dst, const Neat_String_Buffer obj)
 {
     return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = obj.chars, .len = obj.len});
 }
 
-Neat_Error neat__strbuf_ptr_tostr(Neat_Mut_String_Ref dst, Neat_String_Buffer *obj)
+Neat_Error neat__strbuf_ptr_tostr(Neat_Mut_String_Ref dst, const Neat_String_Buffer *obj)
 {
     return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = obj->chars, .len = obj->len});
 }
 
-Neat_Error neat__sstr_ref_tostr(Neat_Mut_String_Ref dst, Neat_SString_Ref obj)
+Neat_Error neat__sstr_ref_tostr(Neat_Mut_String_Ref dst, const Neat_SString_Ref obj)
 {
     return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = obj.sstr->chars, .len = obj.sstr->len});
 }
 
-Neat_Error neat__mutstr_ref_tostr(Neat_Mut_String_Ref dst, Neat_Mut_String_Ref obj)
+Neat_Error neat__mutstr_ref_tostr(Neat_Mut_String_Ref dst, const Neat_Mut_String_Ref obj)
 {
     return neat__mutstr_ref_copy(dst, neat__strv_mutstr_ref2(obj, 0));
 }
