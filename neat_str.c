@@ -1365,7 +1365,7 @@ Neat_Error neat__mutstr_ref_set_len(Neat_Mut_String_Ref str, unsigned int new_le
             break;
         case NEAT__BUF_TY      :
             return (Neat_Error){NEAT_INCORRECT_TYPE};
-        default               :
+        default                :
             unreachable();
     };
     return (Neat_Error){NEAT_OK};
@@ -3357,6 +3357,10 @@ do \
     return err; \
 } while(0)
 
+// TODO this can be more optimized:
+// if dstr, pre-allocate sizeof(unum) * 8 and write directly to chars
+// else, figure out how many chars we can write, and only write that many
+// but then again, we don't know how many leading zero bits, so can't exactly pre-allocate
 #define neat__integer_b_Fmt_tostr(dst, num) \
 do \
 { \
@@ -3402,6 +3406,101 @@ Neat_Error neat__Integer_b_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integ
     neat__integer_b_Fmt_tostr(dst, obj.obj); \
 } \
 
-// NEAT__INTEGER_TYPES(NEAT__X, ignore) ::
-
 NEAT__INTEGER_TYPES(NEAT__X, ignore)
+
+#undef NEAT__X
+
+#define NEAT__X(type, extra) \
+Neat_Error neat__Floating_f_Fmt_##type##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##type obj) \
+{ \
+    neat__mutstr_ref_clear(dst); \
+    int len = snprintf(0, 0, "%.*f", obj.precision, obj.obj); \
+    if(dst.ty == NEAT__DSTR_TY) \
+    { \
+        neat__dstr_ensure_cap(dst.str.dstr, len + 1); \
+    } \
+    int err = snprintf(neat__mutstr_ref_as_cstr(dst), neat__mutstr_ref_cap(dst), "%.*f", obj.precision, obj.obj); \
+    if(neat__mutstr_ref_cap(dst) - 1 < len) \
+    { \
+        neat__mutstr_ref_set_len(dst, neat__mutstr_ref_cap(dst) - 1); \
+        return (Neat_Error){NEAT_DST_TOO_SMALL}; \
+    } \
+    else \
+    { \
+        neat__mutstr_ref_set_len(dst, len); \
+    } \
+    if(err < 0) \
+        return (Neat_Error){NEAT_ENCODING_ERROR}; \
+    return (Neat_Error){NEAT_OK}; \
+} \
+Neat_Error neat__Floating_g_Fmt_##type##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##type obj) \
+{ \
+    neat__mutstr_ref_clear(dst); \
+    int len = snprintf(0, 0, "%.*g", obj.precision, obj.obj); \
+    if(dst.ty == NEAT__DSTR_TY) \
+    { \
+        neat__dstr_ensure_cap(dst.str.dstr, len + 1); \
+    } \
+    int err = snprintf(neat__mutstr_ref_as_cstr(dst), neat__mutstr_ref_cap(dst), "%.*g", obj.precision, obj.obj); \
+    if(neat__mutstr_ref_cap(dst) - 1 < len) \
+    { \
+        neat__mutstr_ref_set_len(dst, neat__mutstr_ref_cap(dst) - 1); \
+        return (Neat_Error){NEAT_DST_TOO_SMALL}; \
+    } \
+    else \
+    { \
+        neat__mutstr_ref_set_len(dst, len); \
+    } \
+    if(err < 0) \
+        return (Neat_Error){NEAT_ENCODING_ERROR}; \
+    return (Neat_Error){NEAT_OK}; \
+} \
+Neat_Error neat__Floating_e_Fmt_##type##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##type obj) \
+{ \
+    neat__mutstr_ref_clear(dst); \
+    int len = snprintf(0, 0, "%.*e", obj.precision, obj.obj); \
+    if(dst.ty == NEAT__DSTR_TY) \
+    { \
+        neat__dstr_ensure_cap(dst.str.dstr, len + 1); \
+    } \
+    int err = snprintf(neat__mutstr_ref_as_cstr(dst), neat__mutstr_ref_cap(dst), "%.*e", obj.precision, obj.obj); \
+    if(neat__mutstr_ref_cap(dst) - 1 < len) \
+    { \
+        neat__mutstr_ref_set_len(dst, neat__mutstr_ref_cap(dst) - 1); \
+        return (Neat_Error){NEAT_DST_TOO_SMALL}; \
+    } \
+    else \
+    { \
+        neat__mutstr_ref_set_len(dst, len); \
+    } \
+    if(err < 0) \
+        return (Neat_Error){NEAT_ENCODING_ERROR}; \
+    return (Neat_Error){NEAT_OK}; \
+} \
+Neat_Error neat__Floating_a_Fmt_##type##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##type obj) \
+{ \
+    neat__mutstr_ref_clear(dst); \
+    int len = snprintf(0, 0, "%.*a", obj.precision, obj.obj); \
+    if(dst.ty == NEAT__DSTR_TY) \
+    { \
+        neat__dstr_ensure_cap(dst.str.dstr, len + 1); \
+    } \
+    int err = snprintf(neat__mutstr_ref_as_cstr(dst), neat__mutstr_ref_cap(dst), "%.*a", obj.precision, obj.obj); \
+    if(neat__mutstr_ref_cap(dst) - 1 < len) \
+    { \
+        neat__mutstr_ref_set_len(dst, neat__mutstr_ref_cap(dst) - 1); \
+        return (Neat_Error){NEAT_DST_TOO_SMALL}; \
+    } \
+    else \
+    { \
+        neat__mutstr_ref_set_len(dst, len); \
+    } \
+    \
+    if(err < 0) \
+        return (Neat_Error){NEAT_ENCODING_ERROR}; \
+    return (Neat_Error){NEAT_OK}; \
+}
+
+NEAT__FLOATING_TYPES(NEAT__X, ignore, NEAT__X)
+
+#undef NEAT__X

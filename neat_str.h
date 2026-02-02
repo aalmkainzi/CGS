@@ -252,6 +252,7 @@ typedef struct Neat_Error
         NEAT_UTF8_ERR,
         NEAT_ALIASING_NOT_SUPPORTED,
         NEAT_INCORRECT_TYPE,
+        NEAT_ENCODING_ERROR,
         NEAT_CALLBACK_EXIT
     } ec;
 } Neat_Error;
@@ -833,9 +834,9 @@ NEAT__X(neat__ul, extra) \
 NEAT__X(neat__ll, extra) \
 NEAT__MCALL(NEAT__VA_OR(NEAT__X, __VA_ARGS__), (neat__ull, extra))
 
-#define NEAT__FLOATING_TYPES(NEAT__X, extra, ...) \
+#define NEAT__FLOATING_TYPES(NEAT__X, extra, last_call) \
 NEAT__X(float, extra) \
-NEAT__MCALL(NEAT__VA_OR(NEAT__X, __VA_ARGS__), (double, extra))
+last_call(double, extra)
 
 #define NEAT__X(ty, extra) \
 typedef struct Neat__Integer_d_Fmt_##ty \
@@ -863,21 +864,25 @@ NEAT__INTEGER_TYPES(NEAT__X, ignore)
 typedef struct Neat__Floating_f_Fmt_##ty \
 { \
     ty obj; \
+    int precision; \
 } Neat__Floating_f_Fmt_##ty; \
 typedef struct Neat__Floating_g_Fmt_##ty \
 { \
     ty obj; \
+    int precision; \
 } Neat__Floating_g_Fmt_##ty; \
 typedef struct Neat__Floating_e_Fmt_##ty \
 { \
     ty obj; \
+    int precision; \
 } Neat__Floating_e_Fmt_##ty; \
 typedef struct Neat__Floating_a_Fmt_##ty \
 { \
     ty obj; \
+    int precision; \
 } Neat__Floating_a_Fmt_##ty; \
 
-NEAT__FLOATING_TYPES(NEAT__X, ignore)
+NEAT__FLOATING_TYPES(NEAT__X, ignore, NEAT__X)
 
 #undef NEAT__X
 
@@ -886,7 +891,7 @@ ty: 1,
 
 #define NEAT__IS_FLOATING(obj) \
 _Generic(obj, \
-NEAT__FLOATING_TYPES(NEAT__X_IS_TY, ignore) \
+NEAT__FLOATING_TYPES(NEAT__X_IS_TY, ignore, NEAT__X_IS_TY) \
 default: 0)
 
 #define NEAT__IS_INTEGER(obj) \
@@ -903,24 +908,27 @@ char(*)['o']: (Neat__Integer_o_Fmt_##ty)  {neat__coerce(NEAT__ARG1 extra, ty)}, 
 char(*)['b']: (Neat__Integer_b_Fmt_##ty) {neat__coerce(NEAT__ARG1 extra, ty)},  \
 default: 0),
 
+#define NEAT__3_VA_OR(otherwise, a,b, ...) \
+NEAT__VA_OR(otherwise, __VA_ARGS__)
+
 #define NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra) \
 ty: \
 _Generic((char(*)[NEAT__ARG2 extra]){0}, \
-char(*)['f']: (Neat__Floating_f_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
-char(*)['g']: (Neat__Floating_g_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
-char(*)['e']: (Neat__Floating_e_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
-char(*)['a']: (Neat__Floating_a_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
+char(*)['f']: (Neat__Floating_f_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty), NEAT__MCALL(NEAT__3_VA_OR, (6, NEAT__EXPAND1 extra))},   \
+char(*)['g']: (Neat__Floating_g_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty), NEAT__MCALL(NEAT__3_VA_OR, (6, NEAT__EXPAND1 extra))},   \
+char(*)['e']: (Neat__Floating_e_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty), NEAT__MCALL(NEAT__3_VA_OR, (6, NEAT__EXPAND1 extra))},   \
+char(*)['a']: (Neat__Floating_a_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty), NEAT__MCALL(NEAT__3_VA_OR, (-1, NEAT__EXPAND1 extra))},  \
 default: 0)
 
 #define NEAT__FLOATING_FMT_GENERIC_BRANCH(ty, extra) \
 NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 
-#define neat_tsfmt(x, fmt_chr) \
+#define neat_tsfmt(x, fmt_chr, ...) \
 ( \
     neat__static_assertx( (NEAT__IS_FLOATING(x) && (fmt_chr == 'f' || fmt_chr == 'g' || fmt_chr == 'e' || fmt_chr == 'a')  ) || (NEAT__IS_INTEGER(x) && (fmt_chr == 'd' || fmt_chr == 'x' || fmt_chr == 'o' || fmt_chr == 'b')), "Incorrect formatting char for the type" ), \
     _Generic(x, \
         NEAT__INTEGER_TYPES(NEAT__INTEGER_FMT_GENERIC_BRANCHES, (x, fmt_chr)) \
-        NEAT__FLOATING_TYPES(NEAT__FLOATING_FMT_GENERIC_BRANCH, (x, fmt_chr), NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH) \
+        NEAT__FLOATING_TYPES(NEAT__FLOATING_FMT_GENERIC_BRANCH, (x, fmt_chr __VA_OPT__(,) __VA_ARGS__), NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH) \
     ) \
 )
 
@@ -1217,7 +1225,7 @@ Neat_Error neat__Floating_g_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floa
 Neat_Error neat__Floating_e_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##ty obj); \
 Neat_Error neat__Floating_a_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##ty obj);
 
-NEAT__FLOATING_TYPES(NEAT__X, ignore)
+NEAT__FLOATING_TYPES(NEAT__X, ignore, NEAT__X)
 
 #undef NEAT__X
 
@@ -1295,7 +1303,7 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 #define fprint(stream, ...) neat_fprint(stream, __VA_ARGS__)
 #define fprintln(stream, ...) neat_fprintln(stream, __VA_ARGS__)
 
-#define tsfmt(exp, fmt_char) neat_tsfmt(exp, fmt_char)
+#define tsfmt(exp, fmt_char, ...) neat_tsfmt(exp, fmt_char __VA_OPT__(,) __VA_ARGS__)
 
 #endif
 
