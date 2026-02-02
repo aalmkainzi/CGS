@@ -926,6 +926,7 @@ NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 #define neat_tsfmt(x, fmt_chr, ...) \
 ( \
     neat__static_assertx( (NEAT__IS_FLOATING(x) && (fmt_chr == 'f' || fmt_chr == 'g' || fmt_chr == 'e' || fmt_chr == 'a')  ) || (NEAT__IS_INTEGER(x) && (fmt_chr == 'd' || fmt_chr == 'x' || fmt_chr == 'o' || fmt_chr == 'b')), "Incorrect formatting char for the type" ), \
+    neat__static_assertx(NEAT__IS_FLOATING(x) || (1 __VA_OPT__(-1)), "tsfmt Integers dont take a third parameter"), \
     _Generic(x, \
         NEAT__INTEGER_TYPES(NEAT__INTEGER_FMT_GENERIC_BRANCHES, (x, fmt_chr)) \
         NEAT__FLOATING_TYPES(NEAT__FLOATING_FMT_GENERIC_BRANCH, (x, fmt_chr __VA_OPT__(,) __VA_ARGS__), NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH) \
