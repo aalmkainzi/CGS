@@ -32,6 +32,8 @@ static const Neat_String_View neat__error_to_string[] = {
     [NEAT_UTF8_ERR]               = {.len = sizeof("UTF8_ERR")               - 1, .chars = (unsigned char*) "UTF8_ERR"},
     [NEAT_ALIASING_NOT_SUPPORTED] = {.len = sizeof("ALIASING_NOT_SUPPORTED") - 1, .chars = (unsigned char*) "ALIASING_NOT_SUPPORTED"},
     [NEAT_INCORRECT_TYPE]         = {.len = sizeof("INCORRECT_TYPE")         - 1, .chars = (unsigned char*) "INCORRECT_TYPE"},
+    [NEAT_ENCODING_ERROR]         = {.len = sizeof("ENCODING_ERROR")         - 1, .chars = (unsigned char*) "ENCODING_ERROR"},
+    [NEAT_CALLBACK_EXIT]          = {.len = sizeof("CALLBACK_EXIT")          - 1, .chars = (unsigned char*) "CALLBACK_EXIT"}
 };
 
 static const long long neat__ten_pows[] = {
@@ -2995,7 +2997,6 @@ do { \
     *fmutstr.len = chars_to_copy + isneg; \
 } while(0)
 
-// TODO: optimize this
 #define neat__sinteger_tostr_dstr(dstr) \
 do { \
     unsigned int numlen = neat__numstr_len(obj); \
@@ -3039,7 +3040,6 @@ do { \
     } \
 } while(0)
 
-// TODO optimize this
 #define neat__uinteger_tostr_dstr(dstr) \
 do { \
     unsigned int numlen = neat_numstr_len_ull(obj); \
@@ -3256,6 +3256,15 @@ Neat_Error neat__mutstr_ref_tostr(Neat_Mut_String_Ref dst, const Neat_Mut_String
     return neat__mutstr_ref_copy(dst, neat__strv_mutstr_ref2(obj, 0));
 }
 
+Neat_Error neat__uchar_d_tostr(Neat_Mut_String_Ref dst, unsigned char obj)
+{
+    neat__mutstr_ref_clear(dst);
+    return neat__mutstr_ref_append(dst, neat__uc_to_string[obj]);
+}
+
+#define neat__if_else(cond, then, else) \
+_Generic((char(*)[(cond) + 1])0, char(*)[1]: else, char(*)[2]: then)
+
 #define neat__unsigned_of_size(sz)  \
 __typeof__(_Generic((char(*)[sz])0, \
     char(*)[1]: (uint8_t) 0,        \
@@ -3269,9 +3278,9 @@ __typeof__(_Generic((char(*)[sz])0, \
 
 #define neat__integer_d_Fmt_tostr(dst, num) \
 return _Generic(num, \
-    char: neat__schar_tostr, \
+    char: neat__if_else(CHAR_MIN < 0, neat__schar_tostr, neat__uchar_d_tostr), \
     signed char: neat__schar_tostr, \
-    unsigned char: neat__ushort_tostr, \
+    unsigned char: neat__uchar_d_tostr, \
     short: neat__short_tostr, \
     unsigned short: neat__ushort_tostr, \
     int: neat__int_tostr, \
@@ -3362,31 +3371,41 @@ do \
     return err; \
 } while(0)
 
-// TODO this can be more optimized:
-// if dstr, pre-allocate sizeof(unum) * 8 and write directly to chars
-// else, figure out how many chars we can write, and only write that many
-// but then again, we don't know how many leading zero bits, so can't exactly pre-allocate
 #define neat__integer_b_Fmt_tostr(dst, num) \
 do \
 { \
     Neat_Error err = {NEAT_OK}; \
     neat__unsigned_of_size(sizeof(num)) unum = num; \
-    size_t sz = sizeof(unum) * 8; \
+    size_t sz; \
+    if(dst.ty == NEAT__DSTR_TY) \
+    { \
+        sz = sizeof(unum) * 8; \
+        neat__dstr_maybe_grow(dst.str.dstr, sizeof(unum) * 8 + 1); \
+    } \
+    else \
+    { \
+        sz = neat__mutstr_ref_cap(dst) - 1; \
+    } \
+    char *bytes = neat__mutstr_ref_as_cstr(dst); \
+    size_t written = 0; \
+    size_t counter = sizeof(unum) * 8; \
     bool zero_pad = true; \
-    while(sz--) \
+    while(written < sz && counter != 0) \
     { \
         bool bit = unum & (((__typeof__(unum)) 1) << (sizeof(unum) * 8 - 1)) ; \
         if(bit) \
         { \
             zero_pad = false; \
-            neat__mutstr_ref_putc(dst, '1'); \
+            bytes[written++] = '1'; \
         } \
-        else if(!zero_pad || sz == 0) \
+        else if(!zero_pad || counter == 1) \
         { \
-            neat__mutstr_ref_putc(dst, '0'); \
+            bytes[written++] = '0'; \
         } \
         unum = unum << 1; \
+        counter -= 1; \
     } \
+    neat__mutstr_ref_set_len(dst, written); \
     return err; \
 } while(0)
 

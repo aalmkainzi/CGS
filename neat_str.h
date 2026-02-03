@@ -69,16 +69,9 @@ neat__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (ol
 
 #endif
 
-#if defined(__GNUC__) || defined(__clang__)
-    #define neat__static_assertx(exp, msg) \
-    ({ _Static_assert(exp, msg); (void)0; })
-#elif defined(_MSC_VER)
-    #define neat__static_assertx(exp, msg) \
-    (__extension__ ({ _Static_assert(exp, msg); 0; }))
-#else
-    #define neat__static_assertx(exp, msg) \
-    ((void)sizeof(struct { _Static_assert(exp, msg); int dummy; }))
-#endif
+
+#define neat__static_assertx(exp, msg) \
+((void)sizeof(struct { _Static_assert(exp, msg); int : 8; }))
 
 #define neat__has_type(exp, t) \
 _Generic(exp, t: 1, default: 0)
