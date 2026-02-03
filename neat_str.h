@@ -373,7 +373,7 @@ _Generic((__typeof__(any_str)*){0},                                       \
     Neat_SString_Ref*                             : neat__sstr_ref_cap,   \
     Neat_Mut_String_Ref*                          : neat__mutstr_ref_cap  \
 )(_Generic((__typeof__(any_str)*){0},                                     \
-    char(*)[sizeof(__typeof__(any_str))]: sizeof(any_str),  \
+    char(*)[sizeof(__typeof__(any_str))]: sizeof(any_str),                \
     unsigned char(*)[sizeof(__typeof__(any_str))]: sizeof(any_str), \
     default: (any_str) \
 ))
