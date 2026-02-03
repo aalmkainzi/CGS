@@ -3111,7 +3111,7 @@ Neat_Error neat__bool_tostr(Neat_Mut_String_Ref dst, bool obj)
     return neat__mutstr_ref_copy(dst, res);
 }
 
-Neat_Error neat__cstr_tostr(Neat_Mut_String_Ref dst, char *obj)
+Neat_Error neat__cstr_tostr(Neat_Mut_String_Ref dst, const char *obj)
 {
     return neat__mutstr_ref_copy(
         dst,
@@ -3122,12 +3122,12 @@ Neat_Error neat__cstr_tostr(Neat_Mut_String_Ref dst, char *obj)
     );
 }
 
-Neat_Error neat__ucstr_tostr(Neat_Mut_String_Ref dst, unsigned char *obj)
+Neat_Error neat__ucstr_tostr(Neat_Mut_String_Ref dst, const unsigned char *obj)
 {
     return neat__mutstr_ref_copy(
         dst,
         (Neat_String_View){
-            .chars = obj,
+            .chars = (unsigned char*) obj,
             .len = strlen((char*) obj)
         }
     );

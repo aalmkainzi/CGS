@@ -342,21 +342,30 @@ _Generic(any_str,                                   \
 
 #define neat_str_len(any_str) \
 _Generic(any_str, \
-    char*               : strlen(neat__coerce_fallback(any_str, char*, "")), \
-    unsigned char*      : strlen((char*) neat__coerce_fallback(any_str, unsigned char*, "")), \
-    Neat_DString        : ((void)0, neat__coerce(any_str, Neat_DString).len), \
-    Neat_DString*       : ((void)0, neat__coerce(any_str, Neat_DString*)->len), \
-    Neat_String_View    : ((void)0, neat__coerce(any_str, Neat_String_View).len), \
-    Neat_String_Buffer  : ((void)0, neat__coerce(any_str, Neat_String_Buffer).len), \
-    Neat_String_Buffer* : ((void)0, neat__coerce(any_str, Neat_String_Buffer*)->len), \
-    Neat_SString_Ref    : ((void)0, neat__coerce(any_str, Neat_SString_Ref).sstr->len), \
-    Neat_Mut_String_Ref : ((void)0, neat__mutstr_ref_len(neat__coerce(any_str, Neat_Mut_String_Ref))) \
+    char*                     : strlen(neat__coerce_fallback(any_str, char*, "")), \
+    unsigned char*            : strlen((char*) neat__coerce_fallback(any_str, unsigned char*, "")), \
+    Neat_DString              : ((void)0, neat__coerce(any_str, Neat_DString).len), \
+    Neat_DString*             : ((void)0, neat__coerce(any_str, Neat_DString*)->len), \
+    Neat_String_View          : ((void)0, neat__coerce(any_str, Neat_String_View).len), \
+    Neat_String_Buffer        : ((void)0, neat__coerce(any_str, Neat_String_Buffer).len), \
+    Neat_String_Buffer*       : ((void)0, neat__coerce(any_str, Neat_String_Buffer*)->len), \
+    Neat_SString_Ref          : ((void)0, neat__coerce(any_str, Neat_SString_Ref).sstr->len), \
+    Neat_Mut_String_Ref       : ((void)0, neat__mutstr_ref_len(neat__coerce(any_str, Neat_Mut_String_Ref))), \
+    const char*               : strlen(neat__coerce_fallback(any_str, const char*, "")), \
+    const unsigned char*      : strlen((char*) neat__coerce_fallback(any_str, const unsigned char*, "")), \
+    const Neat_DString*       : ((void)0, neat__coerce(any_str, const Neat_DString*)->len), \
+    const Neat_String_Buffer* : ((void)0, neat__coerce(any_str, const Neat_String_Buffer*)->len) \
 )
+
+static inline uint32_t neat__return_32(unsigned int a)
+{
+    return a;
+}
 
 #define neat_str_cap(any_str)                                             \
 _Generic((__typeof__(any_str)*){0},                                       \
-    char(*)[sizeof(__typeof__(any_str))]          : neat__buf_cap,        \
-    unsigned char(*)[sizeof(__typeof__(any_str))] : neat__buf_cap,        \
+    char(*)[sizeof(__typeof__(any_str))]          : neat__return_32,      \
+    unsigned char(*)[sizeof(__typeof__(any_str))] : neat__return_32,      \
     Neat_DString*                                 : neat__dstr_cap,       \
     Neat_DString**                                : neat__dstr_ptr_cap,   \
     Neat_String_Buffer*                           : neat__strbuf_cap,     \
@@ -364,8 +373,8 @@ _Generic((__typeof__(any_str)*){0},                                       \
     Neat_SString_Ref*                             : neat__sstr_ref_cap,   \
     Neat_Mut_String_Ref*                          : neat__mutstr_ref_cap  \
 )(_Generic((__typeof__(any_str)*){0},                                     \
-    char(*)[sizeof(__typeof__(any_str))]: (Neat_Buffer){.ptr = (unsigned char*) neat__coerce(any_str, char*), .cap = sizeof(__typeof__(any_str))},  \
-    unsigned char(*)[sizeof(__typeof__(any_str))]: (Neat_Buffer){.ptr = neat__coerce(any_str, unsigned char*), .cap = sizeof(__typeof__(any_str))}, \
+    char(*)[sizeof(__typeof__(any_str))]: sizeof(any_str),  \
+    unsigned char(*)[sizeof(__typeof__(any_str))]: sizeof(any_str), \
     default: (any_str) \
 ))
 
@@ -1192,8 +1201,8 @@ unsigned int neat__fprint_strv(FILE *stream, const Neat_String_View str);
 unsigned int neat__fprintln_strv(FILE *stream, const Neat_String_View str);
 
 Neat_Error neat__bool_tostr(Neat_Mut_String_Ref dst, bool obj);
-Neat_Error neat__cstr_tostr(Neat_Mut_String_Ref dst, char *obj);
-Neat_Error neat__ucstr_tostr(Neat_Mut_String_Ref dst, unsigned char *obj);
+Neat_Error neat__cstr_tostr(Neat_Mut_String_Ref dst, const char *obj);
+Neat_Error neat__ucstr_tostr(Neat_Mut_String_Ref dst, const unsigned char *obj);
 Neat_Error neat__char_tostr(Neat_Mut_String_Ref dst, char obj);
 Neat_Error neat__schar_tostr(Neat_Mut_String_Ref dst, signed char obj);
 Neat_Error neat__uchar_tostr(Neat_Mut_String_Ref dst, unsigned char obj);
