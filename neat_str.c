@@ -1707,7 +1707,7 @@ static bool neat__combine_views_into_array(Neat_String_View str, void *ctx)
     
     if(array->cap <= array->len)
     {
-        Neat_Allocation allocation = allocator->realloc(allocator, array->strs, _Alignof(Neat_String_View), array->cap * sizeof(Neat_String_View), (array->len + 1) * 2);
+        Neat_Allocation allocation = neat_realloc(allocator, array->strs, Neat_String_View, array->cap, (array->len + 1));
         array->strs = allocation.ptr;
         array->cap = allocation.n / sizeof(Neat_String_View);
     }
@@ -2731,7 +2731,7 @@ Neat_Error neat__dstr_append_fread_line(Neat_DString *dstr, FILE *stream)
     int c = 0;
     while(c != EOF && c != '\n')
     {
-        Neat_Error err = neat__dstr_maybe_grow(dstr, 64);
+        err = neat__dstr_maybe_grow(dstr, 64);
         if(err.ec != NEAT_OK)
             return err;
         

@@ -616,7 +616,7 @@ _Generic(&(__typeof__(buf)){0}, \
 #define neat__strbuf_init_from_buf_2(buf, cap_) \
 neat__strbuf_from_buf((Neat_Buffer){.ptr = buf, .cap = cap_})
 
-#define neat_cstr_to_buf(carr, ...) \
+#define neat__cstr_to_buf(carr, ...) \
 ( \
 NEAT__IF_EMPTY( \
     _Generic((__typeof__(carr)*){0}, \
@@ -657,7 +657,7 @@ unsigned char(*)[sizeof(__typeof__(any_str))]: neat__buf_as_mutstr_ref     \
 ))
 
 #define neat__mutstr_ref2(carr_or_ptr, cap_) \
-(Neat_Mut_String_Ref){.ty = NEAT__BUF_TY, .str.carr = neat_cstr_to_buf(carr_or_ptr, cap_)} \
+(Neat_Mut_String_Ref){.ty = NEAT__BUF_TY, .str.carr = neat__cstr_to_buf(carr_or_ptr, cap_)} \
 
 #define neat_sstr_ref(sstr_ptr) \
 ( \
@@ -1273,6 +1273,7 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 #define str_tolower(any_str) neat_str_tolower(any_str)
 #define str_toupper(any_str) neat_str_toupper(any_str)
 #define str_copy(any_str_dst, any_str_src) neat_str_copy(any_str_dst, any_str_src)
+#define str_putc(any_str_dst, c) neat_str_putc(any_str_dst, c)
 #define str_dup(any_str_src) neat_str_dup(any_str_src)
 #define str_append(cap_str_dst, any_str_src) neat_str_append(cap_str_dst, any_str_src)
 #define str_insert(any_str_dst, any_str_src, idx) neat_str_insert(any_str_dst, any_str_src, idx)
@@ -1316,6 +1317,7 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 #define str_view_arr_from_carr(strv_carr, ...) neat_str_view_arr_from_carr(strv_carr __VA_OPT__(,) __VA_ARGS__)
 
 #define tostr(dst, src) neat_tostr(dst, src)
+#define has_tostr(T) neat_has_tostr(T)
 
 #define print(...) neat_print(__VA_ARGS__)
 #define println(...) neat_println(__VA_ARGS__)
