@@ -115,16 +115,6 @@ _Generic(exp, \
     default: exp \
 )
 
-#define neat__coerce_not_mutstr_ref(exp) \
-_Generic(exp,                            \
-    char*               : exp,           \
-    unsigned char*      : exp,           \
-    Neat_DString*       : exp,           \
-    Neat_String_Buffer* : exp,           \
-    Neat_SString_Ref    : exp,           \
-    Neat_Mut_String_Ref : (Neat_String_Buffer*){0} \
-)
-
 #define NEAT__CARR_LEN(carr) (sizeof(carr) / sizeof(carr[0]))
 
 // IF_DEF and ARG_n stuff
