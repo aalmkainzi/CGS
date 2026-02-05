@@ -1383,6 +1383,7 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 #define fprintln(stream, ...) neat_fprintln(stream, __VA_ARGS__)
 
 #define tsfmt(exp, fmt_char, ...) neat_tsfmt(exp, fmt_char __VA_OPT__(,) __VA_ARGS__)
+#define arrfmt(arr, n, open, close, delim, ...) neat_arrfmt(arr, n, open, close, delim __VA_OPT__(,) __VA_ARGS__)
 
 #endif
 
