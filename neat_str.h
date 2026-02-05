@@ -206,7 +206,7 @@ typedef struct Neat_Buffer
 // This is a tagged union for all mutable string types (i.e. all except String_View)
 typedef struct Neat_Mut_String_Ref
 {
-    enum Neat_Mut_String_Ref_Type : signed char
+    const enum Neat_Mut_String_Ref_Type : signed char
     {
         NEAT__DSTR_TY = 1,
         NEAT__STRBUF_TY,
@@ -248,7 +248,7 @@ typedef struct Neat__Fixed_Mut_String_Ref
 typedef struct Neat__Array_Fmt
 {
     const void *array;
-    const long long nb;
+    const size_t nb;
     const size_t elm_size;
     
     const Neat_Error(*tostr_p)(Neat_Mut_String_Ref dst, const void *obj);
@@ -256,7 +256,11 @@ typedef struct Neat__Array_Fmt
     const Neat_String_View open;
     const Neat_String_View close;
     const Neat_String_View separator;
-    const bool trailing_separator;
+    const enum {
+        NEAT_NO_TRAILING_SEPERATOR = 0,
+        NEAT_TRAILING_SEPERATOR,
+        NEAT_TRAILING_SEPERATOR_NO_SPACE
+    } trailing_separator;
 } Neat__Array_Fmt;
 
 #define neat__fmutstr_ref(s, ...) \
@@ -483,7 +487,6 @@ do \
     Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, void *dstr_appender_allocator, Neat_String_Buffer *appender_strbuf_opt); \
     Neat_Error neat__mutstr_ref_commit_appender(Neat_Mut_String_Ref owner, Neat_Mut_String_Ref appender); \
     \
-    Neat_Mut_String_Ref neat__as_mutstr_ref = neat_mutstr_ref(neat__dst); \
     neat__str_print_each_setup(__VA_ARGS__); \
 } while(0) \
 )
@@ -491,15 +494,15 @@ do \
 #define neat_str_print_append(any_str_dst, ...) \
 do \
 { \
-    __typeof__(any_str_dst) neat__dst = any_str_dst; \
+    Neat_Mut_String_Ref neat__as_mutstr_ref = neat_mutstr_ref(any_str_dst); \
     neat__str_print_append(__VA_ARGS__); \
 } while(0)
 
 #define neat_str_print(any_str_dst, ...) \
 do \
 { \
-    __typeof__(any_str_dst) neat__dst = any_str_dst; \
-    neat_str_clear(neat__dst); \
+    Neat_Mut_String_Ref neat__as_mutstr_ref = neat_mutstr_ref(any_str_dst); \
+    neat_str_clear(neat__as_mutstr_ref); \
     neat__str_print_append(__VA_ARGS__); \
 } while(0)
 
@@ -579,15 +582,15 @@ __VA_OPT__(neat__cstr_to_buf2((carr), __VA_ARGS__)) \
 #define neat_mutstr_ref(any_str, ...) \
 NEAT__CAT(neat__mutstr_ref, __VA_OPT__(2))((any_str) __VA_OPT__(,) __VA_ARGS__)
 
-#define neat__mutstr_ref(any_str)                                          \
-_Generic((__typeof__(any_str)*){0},                                        \
-char**                                   : neat__cstr_as_mutstr_ref,       \
-unsigned char**                          : neat__ucstr_as_mutstr_ref,      \
-Neat_DString**                           : neat__dstr_ptr_as_mutstr_ref,   \
-Neat_String_Buffer**                     : neat__strbuf_ptr_as_mutstr_ref, \
-Neat_Mut_String_Ref*                     : neat__mutstr_ref_as_mutstr_ref, \
-char(*)[sizeof(__typeof__(any_str))]         : neat__buf_as_mutstr_ref,    \
-unsigned char(*)[sizeof(__typeof__(any_str))]: neat__buf_as_mutstr_ref     \
+#define neat__mutstr_ref(any_str)                                              \
+_Generic((__typeof__(any_str)*){0},                                            \
+char**                                       : neat__cstr_as_mutstr_ref,       \
+unsigned char**                              : neat__ucstr_as_mutstr_ref,      \
+Neat_DString**                               : neat__dstr_ptr_as_mutstr_ref,   \
+Neat_String_Buffer**                         : neat__strbuf_ptr_as_mutstr_ref, \
+Neat_Mut_String_Ref*                         : neat__mutstr_ref_as_mutstr_ref, \
+char(*)[sizeof(__typeof__(any_str))]         : neat__buf_as_mutstr_ref,        \
+unsigned char(*)[sizeof(__typeof__(any_str))]: neat__buf_as_mutstr_ref         \
 )(_Generic((__typeof__(any_str)*){0},                                          \
     char(*)[sizeof(__typeof__(any_str))]: (Neat_Buffer){.ptr = (unsigned char*) neat__coerce(any_str, char*), .cap = sizeof(__typeof__(any_str))}, \
     unsigned char(*)[sizeof(__typeof__(any_str))]: (Neat_Buffer){.ptr = neat__coerce(any_str, unsigned char*), .cap = sizeof(__typeof__(any_str))}, \

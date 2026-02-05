@@ -1027,8 +1027,7 @@ Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Ne
         case NEAT__STRBUF_TY  :
         case NEAT__BUF_TY     :
             ;
-            Neat_Mut_String_Ref ret = {0};
-            ret.ty = NEAT__STRBUF_TY;
+            Neat_Mut_String_Ref ret = {.ty = NEAT__STRBUF_TY};
             ret.str.strbuf = appender_strbuf_opt;
             *ret.str.strbuf = neat__make_appender_strbuf(owner);
             return ret;
@@ -3122,30 +3121,46 @@ Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat__Array_Fmt obj)
     
     const uint8_t *arr = obj.array;
     
-    for(long long i = 0 ; i < obj.nb - 1 ; i++)
-    {
-
-        Neat_Mut_String_Ref appender = neat__make_appender_mutstr_ref(dst, &appender_dstr_opt, &dstr_append_allocator_opt, &appender_strbuf_opt);
-        
-        err = obj.tostr_p(appender, arr + (obj.elm_size * i));
-        // TODO return if err?
-        
-        err = neat__mutstr_ref_append(appender, obj.separator);
-        
-        neat__mutstr_ref_commit_appender(dst, appender);
-    }
-    
     if(obj.nb > 0)
     {
+        for(size_t i = 0 ; i < obj.nb - 1 ; i++)
+        {
+            
+            Neat_Mut_String_Ref appender = neat__make_appender_mutstr_ref(dst, &appender_dstr_opt, &dstr_append_allocator_opt, &appender_strbuf_opt);
+            
+            err = obj.tostr_p(appender, arr + (obj.elm_size * i));
+            // TODO return if err?
+            
+            err = neat__mutstr_ref_append(appender, obj.separator);
+            
+            neat__mutstr_ref_commit_appender(dst, appender);
+        }
+        
         Neat_Mut_String_Ref appender = neat__make_appender_mutstr_ref(dst, &appender_dstr_opt, &dstr_append_allocator_opt, &appender_strbuf_opt);
         err = obj.tostr_p(appender, arr + obj.elm_size * (obj.nb - 1));
         neat__mutstr_ref_commit_appender(dst, appender);
         
-        if(obj.trailing_separator)
+        switch(obj.trailing_separator)
         {
-            err = neat__mutstr_ref_append(dst, obj.separator);
+            case NEAT_TRAILING_SEPERATOR:
+                err = neat__mutstr_ref_append(dst, obj.separator);
+            break;
+            case NEAT_TRAILING_SEPERATOR_NO_SPACE:
+                Neat_String_View last_separator = obj.separator;
+                last_separator.len = 0;
+                
+                while(!isspace(last_separator.chars[last_separator.len]))
+                {
+                    last_separator.len += 1;
+                }
+                
+                err = neat__mutstr_ref_append(dst, last_separator);
+            break;
+            case NEAT_NO_TRAILING_SEPERATOR:
+            break;
         }
     }
+    
     err = neat__mutstr_ref_append(dst, obj.close);
     
     return err;
