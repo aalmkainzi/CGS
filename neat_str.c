@@ -2334,11 +2334,9 @@ Neat_String_View neat__strv_dstr_ptr1(const Neat_DString *str)
 
 Neat_String_View neat__strv_strv1(const Neat_String_View str)
 {
-    return (Neat_String_View){
-        .chars = str.chars,
-        .len = str.len
-    };
+    return str;
 }
+
 Neat_String_View neat__strv_strbuf1(const Neat_String_Buffer str)
 {
     return (Neat_String_View){
@@ -3307,6 +3305,24 @@ Neat_Error neat__Integer_b_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integ
     neat__mutstr_ref_clear(dst); \
     neat__integer_b_Fmt_tostr(dst, obj.obj); \
 } \
+\
+\
+Neat_Error neat__Integer_d_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty *obj) \
+{ \
+    return neat__Integer_d_Fmt_##ty##_tostr(dst, *obj); \
+} \
+Neat_Error neat__Integer_x_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty *obj) \
+{ \
+    return neat__Integer_x_Fmt_##ty##_tostr(dst, *obj); \
+} \
+Neat_Error neat__Integer_o_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty *obj) \
+{ \
+    return neat__Integer_o_Fmt_##ty##_tostr(dst, *obj); \
+} \
+Neat_Error neat__Integer_b_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty *obj) \
+{ \
+    return neat__Integer_b_Fmt_##ty##_tostr(dst, *obj); \
+}
 
 NEAT__INTEGER_TYPES(NEAT__X, ignore)
 
@@ -3406,3 +3422,99 @@ Neat_Error neat__Floating_a_Fmt_##type##_tostr(Neat_Mut_String_Ref dst, Neat__Fl
 NEAT__FLOATING_TYPES(NEAT__X, ignore, NEAT__X)
 
 #undef NEAT__X
+
+
+Neat_Error neat__bool_tostr_p(Neat_Mut_String_Ref dst, bool *obj)
+{
+    return neat__bool_tostr(dst, *obj);
+}
+Neat_Error neat__cstr_tostr_p(Neat_Mut_String_Ref dst, const char **obj)
+{
+    return neat__cstr_tostr(dst, *obj);
+}
+Neat_Error neat__ucstr_tostr_p(Neat_Mut_String_Ref dst, const unsigned char **obj)
+{
+    return neat__ucstr_tostr(dst, *obj);
+}
+Neat_Error neat__char_tostr_p(Neat_Mut_String_Ref dst, char *obj)
+{
+    return neat__char_tostr(dst, *obj);
+}
+Neat_Error neat__schar_tostr_p(Neat_Mut_String_Ref dst, signed char *obj)
+{
+    return neat__schar_tostr(dst, *obj);
+}
+Neat_Error neat__uchar_tostr_p(Neat_Mut_String_Ref dst, unsigned char *obj)
+{
+    return neat__uchar_tostr(dst, *obj);
+}
+Neat_Error neat__short_tostr_p(Neat_Mut_String_Ref dst, short *obj)
+{
+    return neat__short_tostr(dst, *obj);
+}
+Neat_Error neat__ushort_tostr_p(Neat_Mut_String_Ref dst, unsigned short *obj)
+{
+    return neat__ushort_tostr(dst, *obj);
+}
+Neat_Error neat__int_tostr_p(Neat_Mut_String_Ref dst, int *obj)
+{
+    return neat__int_tostr(dst, *obj);
+}
+Neat_Error neat__uint_tostr_p(Neat_Mut_String_Ref dst, unsigned int *obj)
+{
+    return neat__uint_tostr(dst, *obj);
+}
+Neat_Error neat__long_tostr_p(Neat_Mut_String_Ref dst, long *obj)
+{
+    return neat__long_tostr(dst, *obj);
+}
+Neat_Error neat__ulong_tostr_p(Neat_Mut_String_Ref dst, unsigned long *obj)
+{
+    return neat__ulong_tostr(dst, *obj);
+}
+Neat_Error neat__llong_tostr_p(Neat_Mut_String_Ref dst, long long *obj)
+{
+    return neat__llong_tostr(dst, *obj);
+}
+Neat_Error neat__ullong_tostr_p(Neat_Mut_String_Ref dst, unsigned long long *obj)
+{
+    return neat__ullong_tostr(dst, *obj);
+}
+Neat_Error neat__float_tostr_p(Neat_Mut_String_Ref dst, float *obj)
+{
+    return neat__float_tostr(dst, *obj);
+}
+Neat_Error neat__double_tostr_p(Neat_Mut_String_Ref dst, double *obj)
+{
+    return neat__double_tostr(dst, *obj);
+}
+
+Neat_Error neat__dstr_tostr_p(Neat_Mut_String_Ref dst, const Neat_DString *obj)
+{
+    return neat__dstr_tostr(dst, *obj);
+}
+Neat_Error neat__dstr_ptr_tostr_p(Neat_Mut_String_Ref dst, const Neat_DString **obj)
+{
+    return neat__dstr_ptr_tostr(dst, *obj);
+}
+Neat_Error neat__strv_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_View *obj)
+{
+    return neat__strv_tostr(dst, *obj);
+}
+Neat_Error neat__strbuf_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_Buffer *obj)
+{
+    return neat__strbuf_tostr(dst, *obj);
+}
+Neat_Error neat__strbuf_ptr_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_Buffer **obj)
+{
+    return neat__strbuf_ptr_tostr(dst, *obj);
+}
+Neat_Error neat__mutstr_ref_tostr_p(Neat_Mut_String_Ref dst, const Neat_Mut_String_Ref *obj)
+{
+    return neat__mutstr_ref_tostr(dst, *obj);
+}
+
+Neat_Error neat__error_tostr_p(Neat_Mut_String_Ref dst, Neat_Error *obj)
+{
+    return neat__error_tostr(dst, *obj);
+}

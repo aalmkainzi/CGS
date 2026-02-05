@@ -245,6 +245,18 @@ typedef struct Neat__Fixed_Mut_String_Ref
     unsigned int cap;
 } Neat__Fixed_Mut_String_Ref;
 
+typedef struct Neat__Array_Fmt
+{
+    void *array;
+    const size_t elm_size;
+    const Neat_Error(*tostr_p)(Neat_Mut_String_Ref dst, void *obj);
+    
+    const Neat_String_View open;
+    const Neat_String_View close;
+    const Neat_String_View seperator;
+    const bool seperator_after_last_elm;
+} Neat__Array_Fmt;
+
 #define neat__fmutstr_ref(s, ...) \
 _Generic(&(__typeof__(s)){0}, \
     Neat_DString**                          : neat__dstr_ptr_as_fmutstr_ref(neat__coerce(s, Neat_DString*)), \
@@ -862,6 +874,15 @@ NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 
 #undef NEAT__X
 
+#define neat_arrfmt(array_, open_, close_, seperator_, ...) \
+(Neat__Array_Fmt){ \
+    .array = array_, \
+    .open = neat_str_view(open_), \
+    .close = neat_str_view(close_), \
+    .seperator = neat_str_view(seperator_), \
+    .seperator_after_last_elm = (__VA_ARGS__) +0 \
+}
+
 #define NEAT__INTEGER_TOSTR_GENERIC_CASE(ty, extra) \
 Neat__Integer_d_Fmt_##ty : neat__Integer_d_Fmt_##ty##_tostr, \
 Neat__Integer_x_Fmt_##ty : neat__Integer_x_Fmt_##ty##_tostr, \
@@ -874,41 +895,87 @@ Neat__Floating_g_Fmt_##ty : neat__Floating_g_Fmt_##ty##_tostr, \
 Neat__Floating_e_Fmt_##ty : neat__Floating_e_Fmt_##ty##_tostr, \
 Neat__Floating_a_Fmt_##ty : neat__Floating_a_Fmt_##ty##_tostr
 
+#define NEAT__INTEGER_TOSTR_P_GENERIC_CASE(ty, extra) \
+Neat__Integer_d_Fmt_##ty : neat__Integer_d_Fmt_##ty##_tostr_p, \
+Neat__Integer_x_Fmt_##ty : neat__Integer_x_Fmt_##ty##_tostr_p, \
+Neat__Integer_o_Fmt_##ty : neat__Integer_o_Fmt_##ty##_tostr_p, \
+Neat__Integer_b_Fmt_##ty : neat__Integer_b_Fmt_##ty##_tostr_p, \
+
+#define NEAT__FLOATING_TOSTR_P_LAST_GENERIC_CASE(ty, extra) \
+Neat__Floating_f_Fmt_##ty : neat__Floating_f_Fmt_##ty##_tostr_p, \
+Neat__Floating_g_Fmt_##ty : neat__Floating_g_Fmt_##ty##_tostr_p, \
+Neat__Floating_e_Fmt_##ty : neat__Floating_e_Fmt_##ty##_tostr_p, \
+Neat__Floating_a_Fmt_##ty : neat__Floating_a_Fmt_##ty##_tostr_p
+
 #define NEAT__FLOATING_TOSTR_GENERIC_CASE(ty, extra) \
 NEAT__FLOATING_TOSTR_LAST_GENERIC_CASE(ty, extra),
 
-#define NEAT__DEFAULT_TOSTR_TYPES                   \
-bool                : neat__bool_tostr,             \
-char*               : neat__cstr_tostr,             \
-unsigned char*      : neat__ucstr_tostr,            \
-char                : neat__char_tostr,             \
-signed char         : neat__schar_tostr,            \
-unsigned char       : neat__uchar_tostr,            \
-short               : neat__short_tostr,            \
-unsigned short      : neat__ushort_tostr,           \
-int                 : neat__int_tostr,              \
-unsigned int        : neat__uint_tostr,             \
-long                : neat__long_tostr,             \
-unsigned long       : neat__ulong_tostr,            \
-long long           : neat__llong_tostr,            \
-unsigned long long  : neat__ullong_tostr,           \
-float               : neat__float_tostr,            \
-double              : neat__double_tostr,           \
-Neat_DString        : neat__dstr_tostr,             \
-Neat_DString*       : neat__dstr_ptr_tostr,         \
-Neat_String_View    : neat__strv_tostr,             \
-Neat_String_Buffer  : neat__strbuf_tostr,           \
-Neat_String_Buffer* : neat__strbuf_ptr_tostr,       \
-Neat_Mut_String_Ref : neat__mutstr_ref_tostr,       \
-const char*               : neat__cstr_tostr,       \
-const unsigned char*      : neat__ucstr_tostr,      \
-const Neat_DString*       : neat__dstr_ptr_tostr,   \
-const Neat_String_Buffer* : neat__strbuf_ptr_tostr, \
-Neat_Error          : neat__error_tostr,            \
+#define NEAT__FLOATING_TOSTR_P_GENERIC_CASE(ty, extra) \
+NEAT__FLOATING_TOSTR_P_LAST_GENERIC_CASE(ty, extra),
+
+#define NEAT__DEFAULT_TOSTR_GENERIC_BRANCHES                  \
+bool                      : neat__bool_tostr,                 \
+char*                     : neat__cstr_tostr,                 \
+unsigned char*            : neat__ucstr_tostr,                \
+char                      : neat__char_tostr,                 \
+signed char               : neat__schar_tostr,                \
+unsigned char             : neat__uchar_tostr,                \
+short                     : neat__short_tostr,                \
+unsigned short            : neat__ushort_tostr,               \
+int                       : neat__int_tostr,                  \
+unsigned int              : neat__uint_tostr,                 \
+long                      : neat__long_tostr,                 \
+unsigned long             : neat__ulong_tostr,                \
+long long                 : neat__llong_tostr,                \
+unsigned long long        : neat__ullong_tostr,               \
+float                     : neat__float_tostr,                \
+double                    : neat__double_tostr,               \
+Neat_DString              : neat__dstr_tostr,                 \
+Neat_DString*             : neat__dstr_ptr_tostr,             \
+Neat_String_View          : neat__strv_tostr,                 \
+Neat_String_Buffer        : neat__strbuf_tostr,               \
+Neat_String_Buffer*       : neat__strbuf_ptr_tostr,           \
+Neat_Mut_String_Ref       : neat__mutstr_ref_tostr,           \
+const char*               : neat__cstr_tostr,                 \
+const unsigned char*      : neat__ucstr_tostr,                \
+const Neat_DString*       : neat__dstr_ptr_tostr,             \
+const Neat_String_Buffer* : neat__strbuf_ptr_tostr,           \
+Neat_Error                : neat__error_tostr,                \
 NEAT__INTEGER_TYPES(NEAT__INTEGER_TOSTR_GENERIC_CASE, ignore) \
 NEAT__FLOATING_TYPES(NEAT__FLOATING_TOSTR_GENERIC_CASE, ignore, NEAT__FLOATING_TOSTR_LAST_GENERIC_CASE)
 
-#define NEAT__ALL_TOSTR_TYPES                                          \
+#define NEAT__DEFAULT_TOSTR_P_GENERIC_BRANCHES                  \
+bool                      : neat__bool_tostr_p,                 \
+char*                     : neat__cstr_tostr_p,                 \
+unsigned char*            : neat__ucstr_tostr_p,                \
+char                      : neat__char_tostr_p,                 \
+signed char               : neat__schar_tostr_p,                \
+unsigned char             : neat__uchar_tostr_p,                \
+short                     : neat__short_tostr_p,                \
+unsigned short            : neat__ushort_tostr_p,               \
+int                       : neat__int_tostr_p,                  \
+unsigned int              : neat__uint_tostr_p,                 \
+long                      : neat__long_tostr_p,                 \
+unsigned long             : neat__ulong_tostr_p,                \
+long long                 : neat__llong_tostr_p,                \
+unsigned long long        : neat__ullong_tostr_p,               \
+float                     : neat__float_tostr_p,                \
+double                    : neat__double_tostr_p,               \
+Neat_DString              : neat__dstr_tostr_p,                 \
+Neat_DString*             : neat__dstr_ptr_tostr_p,             \
+Neat_String_View          : neat__strv_tostr_p,                 \
+Neat_String_Buffer        : neat__strbuf_tostr_p,               \
+Neat_String_Buffer*       : neat__strbuf_ptr_tostr_p,           \
+Neat_Mut_String_Ref       : neat__mutstr_ref_tostr_p,           \
+const char*               : neat__cstr_tostr_p,                 \
+const unsigned char*      : neat__ucstr_tostr_p,                \
+const Neat_DString*       : neat__dstr_ptr_tostr_p,             \
+const Neat_String_Buffer* : neat__strbuf_ptr_tostr_p,           \
+Neat_Error                : neat__error_tostr_p,                \
+NEAT__INTEGER_TYPES(NEAT__INTEGER_TOSTR_P_GENERIC_CASE, ignore) \
+NEAT__FLOATING_TYPES(NEAT__FLOATING_TOSTR_P_GENERIC_CASE, ignore, NEAT__FLOATING_TOSTR_P_LAST_GENERIC_CASE)
+
+#define NEAT__TOSTR_FUNCS_GENERIC_BRANCHES                             \
 NEAT__IF_DEF(NEAT__TOSTR1) (neat__tostr_type_1 : neat__tostr_func_1,)  \
 NEAT__IF_DEF(NEAT__TOSTR2) (neat__tostr_type_2 : neat__tostr_func_2,)  \
 NEAT__IF_DEF(NEAT__TOSTR3) (neat__tostr_type_3 : neat__tostr_func_3,)  \
@@ -941,20 +1008,60 @@ NEAT__IF_DEF(NEAT__TOSTR29)(neat__tostr_type_29: neat__tostr_func_29,) \
 NEAT__IF_DEF(NEAT__TOSTR30)(neat__tostr_type_30: neat__tostr_func_30,) \
 NEAT__IF_DEF(NEAT__TOSTR31)(neat__tostr_type_31: neat__tostr_func_31,) \
 NEAT__IF_DEF(NEAT__TOSTR32)(neat__tostr_type_32: neat__tostr_func_32,) \
-NEAT__DEFAULT_TOSTR_TYPES
+NEAT__DEFAULT_TOSTR_GENERIC_BRANCHES
+
+#define NEAT__TOSTR_P_FUNCS_GENERIC_BRANCHES                             \
+NEAT__IF_DEF(NEAT__TOSTR1) (neat__tostr_type_1 : neat__tostr_p_func_1,)  \
+NEAT__IF_DEF(NEAT__TOSTR2) (neat__tostr_type_2 : neat__tostr_p_func_2,)  \
+NEAT__IF_DEF(NEAT__TOSTR3) (neat__tostr_type_3 : neat__tostr_p_func_3,)  \
+NEAT__IF_DEF(NEAT__TOSTR4) (neat__tostr_type_4 : neat__tostr_p_func_4,)  \
+NEAT__IF_DEF(NEAT__TOSTR5) (neat__tostr_type_5 : neat__tostr_p_func_5,)  \
+NEAT__IF_DEF(NEAT__TOSTR6) (neat__tostr_type_6 : neat__tostr_p_func_6,)  \
+NEAT__IF_DEF(NEAT__TOSTR7) (neat__tostr_type_7 : neat__tostr_p_func_7,)  \
+NEAT__IF_DEF(NEAT__TOSTR8) (neat__tostr_type_8 : neat__tostr_p_func_8,)  \
+NEAT__IF_DEF(NEAT__TOSTR9) (neat__tostr_type_9 : neat__tostr_p_func_9,)  \
+NEAT__IF_DEF(NEAT__TOSTR10)(neat__tostr_type_10: neat__tostr_p_func_10,) \
+NEAT__IF_DEF(NEAT__TOSTR11)(neat__tostr_type_11: neat__tostr_p_func_11,) \
+NEAT__IF_DEF(NEAT__TOSTR12)(neat__tostr_type_12: neat__tostr_p_func_12,) \
+NEAT__IF_DEF(NEAT__TOSTR13)(neat__tostr_type_13: neat__tostr_p_func_13,) \
+NEAT__IF_DEF(NEAT__TOSTR14)(neat__tostr_type_14: neat__tostr_p_func_14,) \
+NEAT__IF_DEF(NEAT__TOSTR15)(neat__tostr_type_15: neat__tostr_p_func_15,) \
+NEAT__IF_DEF(NEAT__TOSTR16)(neat__tostr_type_16: neat__tostr_p_func_16,) \
+NEAT__IF_DEF(NEAT__TOSTR17)(neat__tostr_type_17: neat__tostr_p_func_17,) \
+NEAT__IF_DEF(NEAT__TOSTR18)(neat__tostr_type_18: neat__tostr_p_func_18,) \
+NEAT__IF_DEF(NEAT__TOSTR19)(neat__tostr_type_19: neat__tostr_p_func_19,) \
+NEAT__IF_DEF(NEAT__TOSTR20)(neat__tostr_type_20: neat__tostr_p_func_20,) \
+NEAT__IF_DEF(NEAT__TOSTR21)(neat__tostr_type_21: neat__tostr_p_func_21,) \
+NEAT__IF_DEF(NEAT__TOSTR22)(neat__tostr_type_22: neat__tostr_p_func_22,) \
+NEAT__IF_DEF(NEAT__TOSTR23)(neat__tostr_type_23: neat__tostr_p_func_23,) \
+NEAT__IF_DEF(NEAT__TOSTR24)(neat__tostr_type_24: neat__tostr_p_func_24,) \
+NEAT__IF_DEF(NEAT__TOSTR25)(neat__tostr_type_25: neat__tostr_p_func_25,) \
+NEAT__IF_DEF(NEAT__TOSTR26)(neat__tostr_type_26: neat__tostr_p_func_26,) \
+NEAT__IF_DEF(NEAT__TOSTR27)(neat__tostr_type_27: neat__tostr_p_func_27,) \
+NEAT__IF_DEF(NEAT__TOSTR28)(neat__tostr_type_28: neat__tostr_p_func_28,) \
+NEAT__IF_DEF(NEAT__TOSTR29)(neat__tostr_type_29: neat__tostr_p_func_29,) \
+NEAT__IF_DEF(NEAT__TOSTR30)(neat__tostr_type_30: neat__tostr_p_func_30,) \
+NEAT__IF_DEF(NEAT__TOSTR31)(neat__tostr_type_31: neat__tostr_p_func_31,) \
+NEAT__IF_DEF(NEAT__TOSTR32)(neat__tostr_type_32: neat__tostr_p_func_32,) \
+NEAT__DEFAULT_TOSTR_P_GENERIC_BRANCHES
 
 struct neat__fail_type { int dummy; };
 typedef void(*neat__tostr_fail)(struct neat__fail_type*);
 
 #define neat__get_tostr_func(ty) \
 _Generic((ty){0}, \
-    NEAT__ALL_TOSTR_TYPES \
+    NEAT__TOSTR_FUNCS_GENERIC_BRANCHES \
 )
 
 #define neat__get_tostr_func_ft(ty) \
 _Generic((ty){0}, \
-    NEAT__ALL_TOSTR_TYPES, \
+    NEAT__TOSTR_FUNCS_GENERIC_BRANCHES, \
     default: (neat__tostr_fail){0} \
+)
+
+#define neat__get_tostr_p_func(ty) \
+_Generic((ty){0}, \
+    NEAT__TOSTR_P_FUNCS_GENERIC_BRANCHES \
 )
 
 #define neat_tostr(dst, src) \
@@ -963,6 +1070,9 @@ neat__get_tostr_func(__typeof__(src))(neat_mutstr_ref(dst), (src))
 #define neat_has_tostr(ty) \
 (!neat__has_type(neat__get_tostr_func_ft(ty), neat__tostr_fail))
 
+#define neat_tostr_p(dst, src) \
+neat__get_tostr_p_func(__typeof__(*(src)))(neat_mutstr_ref(dst), (src))
+
 #define NEAT__DECL_TOSTR_FUNC(n) \
 typedef __typeof__(NEAT__MCALL(NEAT__ARG1, ADD_TOSTR)) neat__tostr_type_##n; \
 static inline Neat_Error neat__tostr_func_##n (Neat_Mut_String_Ref dst, neat__tostr_type_##n obj) \
@@ -970,6 +1080,10 @@ static inline Neat_Error neat__tostr_func_##n (Neat_Mut_String_Ref dst, neat__to
     _Static_assert(neat__has_type(NEAT__MCALL(NEAT__ARG2, ADD_TOSTR), __typeof__(Neat_Error(*)(Neat_Mut_String_Ref, neat__tostr_type_##n))), "tostr functions must have signature `Neat_Error(Neat_Mut_String_Ref dst, T src)`"); \
     neat__mutstr_ref_clear(dst); \
     return NEAT__MCALL(NEAT__ARG2, ADD_TOSTR) (dst, obj); \
+} \
+static inline Neat_Error neat__tostr_p_func_##n (Neat_Mut_String_Ref dst, neat__tostr_type_##n *obj) \
+{ \
+    return neat__tostr_func_##n(dst, *obj); \
 }
 
 Neat_String_View neat__strv_cstr1(const char *str);
@@ -1131,21 +1245,57 @@ Neat_Error neat__mutstr_ref_tostr(Neat_Mut_String_Ref dst, const Neat_Mut_String
 
 Neat_Error neat__error_tostr(Neat_Mut_String_Ref dst, Neat_Error obj);
 
+Neat_Error neat__bool_tostr_p(Neat_Mut_String_Ref dst, bool *obj);
+Neat_Error neat__cstr_tostr_p(Neat_Mut_String_Ref dst, const char **obj);
+Neat_Error neat__ucstr_tostr_p(Neat_Mut_String_Ref dst, const unsigned char **obj);
+Neat_Error neat__char_tostr_p(Neat_Mut_String_Ref dst, char *obj);
+Neat_Error neat__schar_tostr_p(Neat_Mut_String_Ref dst, signed char *obj);
+Neat_Error neat__uchar_tostr_p(Neat_Mut_String_Ref dst, unsigned char *obj);
+Neat_Error neat__short_tostr_p(Neat_Mut_String_Ref dst, short *obj);
+Neat_Error neat__ushort_tostr_p(Neat_Mut_String_Ref dst, unsigned short *obj);
+Neat_Error neat__int_tostr_p(Neat_Mut_String_Ref dst, int *obj);
+Neat_Error neat__uint_tostr_p(Neat_Mut_String_Ref dst, unsigned int *obj);
+Neat_Error neat__long_tostr_p(Neat_Mut_String_Ref dst, long *obj);
+Neat_Error neat__ulong_tostr_p(Neat_Mut_String_Ref dst, unsigned long *obj);
+Neat_Error neat__llong_tostr_p(Neat_Mut_String_Ref dst, long long *obj);
+Neat_Error neat__ullong_tostr_p(Neat_Mut_String_Ref dst, unsigned long long *obj);
+Neat_Error neat__float_tostr_p(Neat_Mut_String_Ref dst, float *obj);
+Neat_Error neat__double_tostr_p(Neat_Mut_String_Ref dst, double *obj);
+
+Neat_Error neat__dstr_tostr_p(Neat_Mut_String_Ref dst, const Neat_DString *obj);
+Neat_Error neat__dstr_ptr_tostr_p(Neat_Mut_String_Ref dst, const Neat_DString **obj);
+Neat_Error neat__strv_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_View *obj);
+Neat_Error neat__strbuf_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_Buffer *obj);
+Neat_Error neat__strbuf_ptr_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_Buffer **obj);
+Neat_Error neat__mutstr_ref_tostr_p(Neat_Mut_String_Ref dst, const Neat_Mut_String_Ref *obj);
+
+Neat_Error neat__error_tostr_p(Neat_Mut_String_Ref dst, Neat_Error *obj);
+
 #define NEAT__X(ty, extra) \
-Neat_Error neat__Integer_d_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty obj); \
-Neat_Error neat__Integer_x_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty obj); \
-Neat_Error neat__Integer_o_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty obj); \
-Neat_Error neat__Integer_b_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty obj);
+Neat_Error neat__Integer_d_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty obj);    \
+Neat_Error neat__Integer_x_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty obj);    \
+Neat_Error neat__Integer_o_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty obj);    \
+Neat_Error neat__Integer_b_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty obj);    \
+                                                                                                       \
+Neat_Error neat__Integer_d_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty *obj); \
+Neat_Error neat__Integer_x_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty *obj); \
+Neat_Error neat__Integer_o_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty *obj); \
+Neat_Error neat__Integer_b_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty *obj);
 
 NEAT__INTEGER_TYPES(NEAT__X, ignore)
 
 #undef NEAT__X
 
 #define NEAT__X(ty, extra) \
-Neat_Error neat__Floating_f_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##ty obj); \
-Neat_Error neat__Floating_g_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##ty obj); \
-Neat_Error neat__Floating_e_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##ty obj); \
-Neat_Error neat__Floating_a_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##ty obj);
+Neat_Error neat__Floating_f_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##ty obj);    \
+Neat_Error neat__Floating_g_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##ty obj);    \
+Neat_Error neat__Floating_e_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##ty obj);    \
+Neat_Error neat__Floating_a_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##ty obj);    \
+                                                                                                         \
+Neat_Error neat__Floating_f_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##ty *obj); \
+Neat_Error neat__Floating_g_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##ty *obj); \
+Neat_Error neat__Floating_e_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##ty *obj); \
+Neat_Error neat__Floating_a_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##ty *obj);
 
 NEAT__FLOATING_TYPES(NEAT__X, ignore, NEAT__X)
 
