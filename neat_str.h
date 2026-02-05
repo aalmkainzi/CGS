@@ -259,7 +259,7 @@ typedef struct Neat__Array_Fmt
     const enum {
         NEAT_NO_TRAILING_SEPERATOR = 0,
         NEAT_TRAILING_SEPERATOR,
-        NEAT_TRAILING_SEPERATOR_NO_SPACE
+        NEAT_TRAILING_SEPARATOR_LEADING_NON_WS
     } trailing_separator;
 } Neat__Array_Fmt;
 

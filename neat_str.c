@@ -3139,11 +3139,20 @@ Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat__Array_Fmt obj)
             case NEAT_TRAILING_SEPERATOR:
                 err = neat__mutstr_ref_append(dst, obj.separator);
             break;
-            case NEAT_TRAILING_SEPERATOR_NO_SPACE:
+            case NEAT_TRAILING_SEPARATOR_LEADING_NON_WS:
                 Neat_String_View last_separator = obj.separator;
                 last_separator.len = 0;
                 
-                while(!isspace(last_separator.chars[last_separator.len]))
+                while(
+                    (last_separator.chars < (obj.separator.chars + obj.separator.len)) &&
+                    isspace(last_separator.chars[0]))
+                {
+                    last_separator.chars += 1;
+                }
+                
+                while(
+                    ((last_separator.chars + last_separator.len) <= (obj.separator.chars + obj.separator.len)) && 
+                    !isspace(last_separator.chars[last_separator.len]))
                 {
                     last_separator.len += 1;
                 }
