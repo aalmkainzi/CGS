@@ -106,7 +106,7 @@ _Generic(exp,                                   \
     const unsigned char*      : exp,            \
     const Neat_DString*       : exp,            \
     const Neat_String_Buffer* : exp,            \
-    default                   : (fallback)      \
+    default                   : fallback        \
 )
 
 #define neat__coerce_not(exp, not_ty, fallback_ty) \
