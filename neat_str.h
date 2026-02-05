@@ -247,16 +247,16 @@ typedef struct Neat__Fixed_Mut_String_Ref
 
 typedef struct Neat__Array_Fmt
 {
-    void *array;
-    const size_t nb;
+    const void *array;
+    const long long nb;
     const size_t elm_size;
     
-    const Neat_Error(*tostr_p)(Neat_Mut_String_Ref dst, void *obj);
+    const Neat_Error(*tostr_p)(Neat_Mut_String_Ref dst, const void *obj);
     
     const Neat_String_View open;
     const Neat_String_View close;
-    const Neat_String_View seperator;
-    const bool seperator_after_last_elm;
+    const Neat_String_View separator;
+    const bool trailing_separator;
 } Neat__Array_Fmt;
 
 #define neat__fmutstr_ref(s, ...) \
@@ -880,12 +880,12 @@ NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 ((Neat__Array_Fmt){ \
     .array = (array_), \
     .nb = (nb_), \
-    .elm_size = sizeof(array_[0]), \
-    .tostr_p = (void*) neat__get_tostr_p_func(__typeof__(array_[0])), \
+    .elm_size = sizeof((array_)[0]), \
+    .tostr_p = (void*) neat__get_tostr_p_func(__typeof__((array_)[0])), \
     .open = neat_str_view(open_), \
     .close = neat_str_view(close_), \
-    .seperator = neat_str_view(seperator_), \
-    .seperator_after_last_elm = __VA_ARGS__ +0 \
+    .separator = neat_str_view(seperator_), \
+    .trailing_separator = __VA_ARGS__ +0 \
 })
 
 #define NEAT__INTEGER_TOSTR_GENERIC_CASE(ty, extra) \
@@ -1087,7 +1087,7 @@ static inline Neat_Error neat__tostr_func_##n (Neat_Mut_String_Ref dst, neat__to
     neat__mutstr_ref_clear(dst); \
     return NEAT__MCALL(NEAT__ARG2, ADD_TOSTR) (dst, obj); \
 } \
-static inline Neat_Error neat__tostr_p_func_##n (Neat_Mut_String_Ref dst, neat__tostr_type_##n *obj) \
+static inline Neat_Error neat__tostr_p_func_##n (Neat_Mut_String_Ref dst, const neat__tostr_type_##n *obj) \
 { \
     return neat__tostr_func_##n(dst, *obj); \
 }

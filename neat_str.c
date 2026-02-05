@@ -3120,9 +3120,9 @@ Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat__Array_Fmt obj)
     
     Neat_Error err = neat__mutstr_ref_append(dst, obj.open);
     
-    uint8_t *arr = obj.array;
+    const uint8_t *arr = obj.array;
     
-    for(size_t i = 0 ; i < obj.nb - 1 ; i++)
+    for(long long i = 0 ; i < obj.nb - 1 ; i++)
     {
 
         Neat_Mut_String_Ref appender = neat__make_appender_mutstr_ref(dst, &appender_dstr_opt, &dstr_append_allocator_opt, &appender_strbuf_opt);
@@ -3130,7 +3130,7 @@ Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat__Array_Fmt obj)
         err = obj.tostr_p(appender, arr + (obj.elm_size * i));
         // TODO return if err?
         
-        err = neat__mutstr_ref_append(appender, obj.seperator);
+        err = neat__mutstr_ref_append(appender, obj.separator);
         
         neat__mutstr_ref_commit_appender(dst, appender);
     }
@@ -3141,9 +3141,9 @@ Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat__Array_Fmt obj)
         err = obj.tostr_p(appender, arr + obj.elm_size * (obj.nb - 1));
         neat__mutstr_ref_commit_appender(dst, appender);
         
-        if(obj.seperator_after_last_elm)
+        if(obj.trailing_separator)
         {
-            err = neat__mutstr_ref_append(dst, obj.seperator);
+            err = neat__mutstr_ref_append(dst, obj.separator);
         }
     }
     err = neat__mutstr_ref_append(dst, obj.close);
