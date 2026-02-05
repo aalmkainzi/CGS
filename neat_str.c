@@ -1347,6 +1347,14 @@ Neat_Error neat__mutstr_ref_set_len(Neat_Mut_String_Ref str, unsigned int new_le
     return (Neat_Error){NEAT_OK};
 }
 
+Neat_Error neat__mutstr_ref_commit_appender(Neat_Mut_String_Ref owner, Neat_Mut_String_Ref appender)
+{
+    return neat__mutstr_ref_set_len(
+        owner,
+        neat__mutstr_ref_len(owner) + neat__mutstr_ref_len(appender) \
+    );
+}
+
 unsigned int neat__dstr_cap(const Neat_DString str)
 {
     return str.cap;
@@ -3100,6 +3108,47 @@ Neat_Error neat__double_tostr(Neat_Mut_String_Ref dst, double obj)
 Neat_Error neat__error_tostr(Neat_Mut_String_Ref dst, Neat_Error obj)
 {
     return neat__mutstr_ref_copy(dst, neat__error_to_string[obj.ec]);
+}
+
+Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat__Array_Fmt obj)
+{
+    neat__mutstr_ref_clear(dst);
+    
+    Neat_DString appender_dstr_opt;
+    Neat__DString_Append_Allocator dstr_append_allocator_opt;
+    Neat_String_Buffer appender_strbuf_opt;
+    
+    Neat_Error err = neat__mutstr_ref_append(dst, obj.open);
+    
+    uint8_t *arr = obj.array;
+    
+    for(size_t i = 0 ; i < obj.nb - 1 ; i++)
+    {
+
+        Neat_Mut_String_Ref appender = neat__make_appender_mutstr_ref(dst, &appender_dstr_opt, &dstr_append_allocator_opt, &appender_strbuf_opt);
+        
+        err = obj.tostr_p(appender, arr + (obj.elm_size * i));
+        // TODO return if err?
+        
+        err = neat__mutstr_ref_append(appender, obj.seperator);
+        
+        neat__mutstr_ref_commit_appender(dst, appender);
+    }
+    
+    if(obj.nb > 0)
+    {
+        Neat_Mut_String_Ref appender = neat__make_appender_mutstr_ref(dst, &appender_dstr_opt, &dstr_append_allocator_opt, &appender_strbuf_opt);
+        err = obj.tostr_p(appender, arr + obj.elm_size * (obj.nb - 1));
+        neat__mutstr_ref_commit_appender(dst, appender);
+        
+        if(obj.seperator_after_last_elm)
+        {
+            err = neat__mutstr_ref_append(dst, obj.seperator);
+        }
+    }
+    err = neat__mutstr_ref_append(dst, obj.close);
+    
+    return err;
 }
 
 Neat_Error neat__dstr_tostr(Neat_Mut_String_Ref dst, const Neat_DString obj)

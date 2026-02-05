@@ -248,7 +248,9 @@ typedef struct Neat__Fixed_Mut_String_Ref
 typedef struct Neat__Array_Fmt
 {
     void *array;
+    const size_t nb;
     const size_t elm_size;
+    
     const Neat_Error(*tostr_p)(Neat_Mut_String_Ref dst, void *obj);
     
     const Neat_String_View open;
@@ -454,9 +456,9 @@ do \
         &neat__appender_strbuf_opt \
     ); \
     neat_tostr(neat__appender_mutstr_ref, x); \
-    neat__mutstr_ref_set_len( \
+    neat__mutstr_ref_commit_appender( \
         neat__as_mutstr_ref, \
-        neat_str_len(neat__as_mutstr_ref) + neat_str_len(neat__appender_mutstr_ref) \
+        neat__appender_mutstr_ref \
     ); \
 } while(0);
 
@@ -479,7 +481,7 @@ do \
     } Neat__DString_Append_Allocator; \
     \
     Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, void *dstr_appender_allocator, Neat_String_Buffer *appender_strbuf_opt); \
-    Neat_Error neat__mutstr_ref_set_len(Neat_Mut_String_Ref str, unsigned int new_len); \
+    Neat_Error neat__mutstr_ref_commit_appender(Neat_Mut_String_Ref owner, Neat_Mut_String_Ref appender); \
     \
     Neat_Mut_String_Ref neat__as_mutstr_ref = neat_mutstr_ref(neat__dst); \
     neat__str_print_each_setup(__VA_ARGS__); \
@@ -874,14 +876,17 @@ NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 
 #undef NEAT__X
 
-#define neat_arrfmt(array_, open_, close_, seperator_, ...) \
-(Neat__Array_Fmt){ \
-    .array = array_, \
+#define neat_arrfmt(array_, nb_, open_, close_, seperator_, ...) \
+((Neat__Array_Fmt){ \
+    .array = (array_), \
+    .nb = (nb_), \
+    .elm_size = sizeof(array_[0]), \
+    .tostr_p = (void*) neat__get_tostr_p_func(__typeof__(array_[0])), \
     .open = neat_str_view(open_), \
     .close = neat_str_view(close_), \
     .seperator = neat_str_view(seperator_), \
-    .seperator_after_last_elm = (__VA_ARGS__) +0 \
-}
+    .seperator_after_last_elm = __VA_ARGS__ +0 \
+})
 
 #define NEAT__INTEGER_TOSTR_GENERIC_CASE(ty, extra) \
 Neat__Integer_d_Fmt_##ty : neat__Integer_d_Fmt_##ty##_tostr, \
@@ -941,6 +946,7 @@ const unsigned char*      : neat__ucstr_tostr,                \
 const Neat_DString*       : neat__dstr_ptr_tostr,             \
 const Neat_String_Buffer* : neat__strbuf_ptr_tostr,           \
 Neat_Error                : neat__error_tostr,                \
+Neat__Array_Fmt           : neat__array_fmt_tostr,            \
 NEAT__INTEGER_TYPES(NEAT__INTEGER_TOSTR_GENERIC_CASE, ignore) \
 NEAT__FLOATING_TYPES(NEAT__FLOATING_TOSTR_GENERIC_CASE, ignore, NEAT__FLOATING_TOSTR_LAST_GENERIC_CASE)
 
@@ -1244,6 +1250,7 @@ Neat_Error neat__strbuf_ptr_tostr(Neat_Mut_String_Ref dst, const Neat_String_Buf
 Neat_Error neat__mutstr_ref_tostr(Neat_Mut_String_Ref dst, const Neat_Mut_String_Ref obj);
 
 Neat_Error neat__error_tostr(Neat_Mut_String_Ref dst, Neat_Error obj);
+Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat__Array_Fmt obj);
 
 Neat_Error neat__bool_tostr_p(Neat_Mut_String_Ref dst, bool *obj);
 Neat_Error neat__cstr_tostr_p(Neat_Mut_String_Ref dst, const char **obj);
