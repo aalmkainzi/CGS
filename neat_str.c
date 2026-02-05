@@ -2722,22 +2722,15 @@ Neat_Error neat__mutstr_ref_append_fread_line(Neat_Mut_String_Ref dst, FILE *str
 
 unsigned int neat__fprint_strv(FILE *stream, Neat_String_View str)
 {
-#ifndef NDEBUG
-    if(str.chars == NULL)
-        return (fputs("(NULL)", stream), sizeof("(NULL)") - 1);
-    else
-#endif
-        return fwrite(str.chars, sizeof(unsigned char), str.len, stream);
+    assert(str.chars != NULL);
+    return fwrite(str.chars, sizeof(unsigned char), str.len, stream);
 }
 
 unsigned int neat__fprintln_strv(FILE *stream, Neat_String_View str)
 {
     unsigned int written = fwrite(str.chars, sizeof(unsigned char), str.len, stream);
     int err = fputc('\n', stream);
-    if(err == EOF)
-        return written;
-    else
-        return written + 1;
+    return written + (err != EOF);
 }
 
 static unsigned int neat__numstr_len(long long num)

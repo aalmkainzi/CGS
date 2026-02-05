@@ -87,8 +87,8 @@ neat__coerce_fallback(exp, t, (t){0})
 
 #define neat__coerce_fallback(exp, ty, fallback) \
 _Generic(exp, \
-    ty: exp, \
-    default: fallback \
+    ty: (exp), \
+    default: (fallback) \
 )
 
 #define neat__coerce_string_type(exp, fallback) \
