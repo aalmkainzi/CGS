@@ -880,16 +880,6 @@ Neat__Fixed_Mut_String_Ref neat__buf_as_fmutstr_ref(Neat_Buffer buf, unsigned in
     return ret;
 }
 
-Neat__Fixed_Mut_String_Ref neat__sstr_ref_as_fmutstr_ref(Neat_SString_Ref sstr_ref)
-{
-    Neat__Fixed_Mut_String_Ref ret = {
-        .chars = sstr_ref.sstr->chars,
-        .cap = sstr_ref.cap,
-        .len = &sstr_ref.sstr->len
-    };
-    return ret;
-}
-
 Neat__Fixed_Mut_String_Ref neat__strbuf_ptr_as_fmutstr_ref(Neat_String_Buffer *strbuf)
 {
     Neat__Fixed_Mut_String_Ref ret = {
@@ -1035,11 +1025,9 @@ Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Ne
             *appender_dstr_opt = neat__make_appender_dstr(owner.str.dstr, dstr_appender_allocator_opt);
             return neat_mutstr_ref(appender_dstr_opt);
         case NEAT__STRBUF_TY  :
-        case NEAT__SSTR_REF_TY:
         case NEAT__BUF_TY     :
             ;
-            Neat_Mut_String_Ref ret = {0};
-            ret.ty = NEAT__STRBUF_TY;
+            Neat_Mut_String_Ref ret = {.ty = NEAT__STRBUF_TY};
             ret.str.strbuf = appender_strbuf_opt;
             *ret.str.strbuf = neat__make_appender_strbuf(owner);
             return ret;
@@ -1287,18 +1275,12 @@ char *neat__strbuf_ptr_as_cstr(const Neat_String_Buffer *str)
     return (char*) str->chars;
 }
 
-char *neat__sstr_ref_as_cstr(const Neat_SString_Ref str)
-{
-    return (char*) str.sstr->chars;
-}
-
 char *neat__mutstr_ref_as_cstr(const Neat_Mut_String_Ref str)
 {
     switch(str.ty)
     {
         case NEAT__DSTR_TY     : return (char*) str.str.dstr->chars;
         case NEAT__STRBUF_TY   : return (char*) str.str.strbuf->chars;
-        case NEAT__SSTR_REF_TY : return (char*) str.str.sstr_ref.sstr->chars;
         case NEAT__BUF_TY      : return (char*) str.str.buf.ptr;
         default                : unreachable();
     };
@@ -1339,11 +1321,6 @@ unsigned char neat__strbuf_ptr_char_at(const Neat_String_Buffer *str, unsigned i
     return str->chars[idx];
 }
 
-unsigned char neat__sstr_ref_char_at(const Neat_SString_Ref str, unsigned int idx)
-{
-    return str.sstr->chars[idx];
-}
-
 unsigned char neat__mutstr_ref_char_at(const Neat_Mut_String_Ref str, unsigned int idx)
 {
     return neat__mutstr_ref_as_cstr(str)[idx];
@@ -1361,16 +1338,20 @@ Neat_Error neat__mutstr_ref_set_len(Neat_Mut_String_Ref str, unsigned int new_le
             str.str.strbuf->len = new_len;
             assert(str.str.strbuf->cap >= str.str.strbuf->len);
             break;
-        case NEAT__SSTR_REF_TY :
-            str.str.sstr_ref.sstr->len = new_len;
-            assert(str.str.sstr_ref.cap >= str.str.sstr_ref.sstr->len);
-            break;
         case NEAT__BUF_TY      :
             return (Neat_Error){NEAT_INCORRECT_TYPE};
         default                :
             unreachable();
     };
     return (Neat_Error){NEAT_OK};
+}
+
+Neat_Error neat__mutstr_ref_commit_appender(Neat_Mut_String_Ref owner, Neat_Mut_String_Ref appender)
+{
+    return neat__mutstr_ref_set_len(
+        owner,
+        neat__mutstr_ref_len(owner) + neat__mutstr_ref_len(appender) \
+    );
 }
 
 unsigned int neat__dstr_cap(const Neat_DString str)
@@ -1393,11 +1374,6 @@ unsigned int neat__strbuf_ptr_cap(const Neat_String_Buffer *str)
     return str->cap;
 }
 
-unsigned int neat__sstr_ref_cap(const Neat_SString_Ref str)
-{
-    return str.cap;
-}
-
 unsigned int neat__buf_cap(const Neat_Buffer buf)
 {
     return buf.cap;
@@ -1409,7 +1385,6 @@ unsigned int neat__mutstr_ref_cap(const Neat_Mut_String_Ref str)
     {
         case NEAT__DSTR_TY     : return str.str.dstr->cap;
         case NEAT__STRBUF_TY   : return str.str.strbuf->cap;
-        case NEAT__SSTR_REF_TY : return str.str.sstr_ref.cap;
         case NEAT__BUF_TY      : return str.str.buf.cap;
         default                : unreachable();
     };
@@ -1421,7 +1396,6 @@ unsigned int neat__mutstr_ref_len(const Neat_Mut_String_Ref str)
     {
         case NEAT__DSTR_TY     : return str.str.dstr->len;
         case NEAT__STRBUF_TY   : return str.str.strbuf->len;
-        case NEAT__SSTR_REF_TY : return str.str.sstr_ref.sstr->len;
         case NEAT__BUF_TY      : return strlen((char*) str.str.buf.ptr);
         default                : unreachable();
     };
@@ -1456,7 +1430,6 @@ Neat_Error neat__mutstr_ref_insert(Neat_Mut_String_Ref dst, const Neat_String_Vi
     {
         case NEAT__DSTR_TY     : return neat__dstr_insert_strv(dst.str.dstr, src, idx);
         case NEAT__STRBUF_TY   : return neat__fmutstr_ref_insert(neat__fmutstr_ref(dst.str.strbuf), src, idx);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_insert(neat__fmutstr_ref(dst.str.sstr_ref), src, idx);
         case NEAT__BUF_TY      : return neat__fmutstr_ref_insert(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src, idx);
         default                : unreachable();
     };
@@ -1524,7 +1497,6 @@ Neat_Error neat__mutstr_ref_copy(Neat_Mut_String_Ref dst, const Neat_String_View
     {
         case NEAT__DSTR_TY     : return neat__dstr_copy(dst.str.dstr, src);
         case NEAT__STRBUF_TY   : return neat__fmutstr_ref_copy(neat__fmutstr_ref(dst.str.strbuf), src);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_copy(neat__fmutstr_ref(dst.str.sstr_ref), src);
         case NEAT__BUF_TY      : return neat__fmutstr_ref_copy(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
         default                : unreachable();
     };
@@ -1563,7 +1535,6 @@ Neat_Error neat__mutstr_ref_putc(Neat_Mut_String_Ref dst, unsigned char c)
     {
         case NEAT__DSTR_TY     : return neat__dstr_putc(dst.str.dstr, c);
         case NEAT__STRBUF_TY   : return neat__fmutstr_ref_putc(neat__fmutstr_ref(dst.str.strbuf), c);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_putc(neat__fmutstr_ref(dst.str.sstr_ref), c);
         case NEAT__BUF_TY      : return neat__fmutstr_ref_putc(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), c);
         default                : unreachable();
     }
@@ -1592,7 +1563,6 @@ Neat_Error neat__mutstr_ref_append(Neat_Mut_String_Ref dst, const Neat_String_Vi
     {
         case NEAT__DSTR_TY     : return neat__dstr_append_strv(dst.str.dstr, src);
         case NEAT__STRBUF_TY   : return neat__fmutstr_ref_append_strv(neat__fmutstr_ref(dst.str.strbuf), src);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_append_strv(neat__fmutstr_ref(dst.str.sstr_ref), src);
         case NEAT__BUF_TY      : return neat__fmutstr_ref_append_strv(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
         default                : unreachable();
     };
@@ -1629,7 +1599,6 @@ Neat_Error neat__mutstr_ref_delete_range(Neat_Mut_String_Ref str, unsigned int b
     {
         case NEAT__DSTR_TY     : return neat__fmutstr_ref_delete_range(neat__fmutstr_ref(str.str.dstr), begin, end);
         case NEAT__STRBUF_TY   : return neat__fmutstr_ref_delete_range(neat__fmutstr_ref(str.str.strbuf), begin, end);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_delete_range(neat__fmutstr_ref(str.str.sstr_ref), begin, end);
         case NEAT__BUF_TY      : return neat__fmutstr_ref_delete_range(neat__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
         default                : unreachable();
     };
@@ -1770,7 +1739,6 @@ Neat_Error neat__strv_arr_join(Neat_Mut_String_Ref dst, const Neat_String_View_A
     {
         case NEAT__DSTR_TY     : return neat__strv_arr_join_into_dstr(dst.str.dstr, strs, delim);
         case NEAT__STRBUF_TY   : return neat__strv_arr_join_into_fmutstr_ref(neat__fmutstr_ref(dst.str.strbuf), strs, delim);
-        case NEAT__SSTR_REF_TY : return neat__strv_arr_join_into_fmutstr_ref(neat__fmutstr_ref(dst.str.sstr_ref), strs, delim);
         case NEAT__BUF_TY      : return neat__strv_arr_join_into_fmutstr_ref(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), strs, delim);
         default                : unreachable();
     };
@@ -1865,7 +1833,6 @@ Neat_Error neat__mutstr_ref_replace_range(Neat_Mut_String_Ref str, unsigned int 
     {
         case NEAT__DSTR_TY     : return neat__dstr_replace_range(str.str.dstr, begin, end, replacement);
         case NEAT__STRBUF_TY   : return neat__fmutstr_ref_replace_range(neat__fmutstr_ref(str.str.strbuf), begin, end, replacement);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_replace_range(neat__fmutstr_ref(str.str.sstr_ref), begin, end, replacement);
         case NEAT__BUF_TY      : return neat__fmutstr_ref_replace_range(neat__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end, replacement);
         default                : unreachable();
     };
@@ -2073,7 +2040,6 @@ Neat_Error neat__mutstr_ref_replace(Neat_Mut_String_Ref str, const Neat_String_V
     {
         case NEAT__DSTR_TY     : return neat__dstr_replace(str.str.dstr, target, replacement);
         case NEAT__STRBUF_TY   : return neat__fmutstr_ref_replace(neat__fmutstr_ref(str.str.strbuf), target, replacement);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_replace(neat__fmutstr_ref(str.str.sstr_ref), target, replacement);
         case NEAT__BUF_TY      : return neat__fmutstr_ref_replace(neat__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
         default                : unreachable();
     };
@@ -2139,7 +2105,6 @@ Neat_Error neat__mutstr_ref_replace_first(Neat_Mut_String_Ref str, const Neat_St
     {
         case NEAT__DSTR_TY     : return neat__dstr_replace_first(str.str.dstr, target, replacement);
         case NEAT__STRBUF_TY   : return neat__fmutstr_ref_replace_first(neat__fmutstr_ref(str.str.strbuf), target, replacement);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_replace_first(neat__fmutstr_ref(str.str.sstr_ref), target, replacement);
         case NEAT__BUF_TY      : return neat__fmutstr_ref_replace_first(neat__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
         default                : unreachable();
     };
@@ -2198,9 +2163,6 @@ Neat_Error neat__mutstr_ref_toupper(Neat_Mut_String_Ref str)
         case NEAT__STRBUF_TY:
             neat__chars_toupper(str.str.strbuf->chars, str.str.strbuf->len);
             break;
-        case NEAT__SSTR_REF_TY:
-            neat__chars_toupper(str.str.sstr_ref.sstr->chars, str.str.sstr_ref.sstr->len);
-            break;
         case NEAT__BUF_TY:
             neat__chars_toupper(str.str.buf.ptr, strlen((char*) str.str.buf.ptr));
             break;
@@ -2225,13 +2187,6 @@ Neat_Error neat__mutstr_ref_clear(Neat_Mut_String_Ref str)
             if(str.str.strbuf->cap > 0)
             {
                 str.str.strbuf->chars[0] = '\0';
-            }
-            break;
-        case NEAT__SSTR_REF_TY:
-            str.str.sstr_ref.sstr->len = 0;
-            if(str.str.sstr_ref.cap > 0)
-            {
-                str.str.sstr_ref.sstr->chars[0] = '\0';
             }
             break;
         case NEAT__BUF_TY:
@@ -2287,14 +2242,6 @@ Neat_Mut_String_Ref neat__strbuf_ptr_as_mutstr_ref(const Neat_String_Buffer *str
     return (Neat_Mut_String_Ref){
         .ty = NEAT__STRBUF_TY,
         .str.strbuf = (Neat_String_Buffer*) str
-    };
-}
-
-Neat_Mut_String_Ref neat__sstr_ref_as_mutstr_ref(const Neat_SString_Ref str)
-{
-    return (Neat_Mut_String_Ref){
-        .ty = NEAT__SSTR_REF_TY,
-        .str.sstr_ref = str
     };
 }
 
@@ -2394,11 +2341,9 @@ Neat_String_View neat__strv_dstr_ptr1(const Neat_DString *str)
 
 Neat_String_View neat__strv_strv1(const Neat_String_View str)
 {
-    return (Neat_String_View){
-        .chars = str.chars,
-        .len = str.len
-    };
+    return str;
 }
+
 Neat_String_View neat__strv_strbuf1(const Neat_String_Buffer str)
 {
     return (Neat_String_View){
@@ -2414,21 +2359,12 @@ Neat_String_View neat__strv_strbuf_ptr1(const Neat_String_Buffer *str)
     };
 }
 
-Neat_String_View neat__strv_sstr_ref1(const Neat_SString_Ref str)
-{
-    return (Neat_String_View){
-        .chars = str.sstr->chars,
-        .len = str.sstr->len
-    };
-}
-
 Neat_String_View neat__strv_mutstr_ref1(const Neat_Mut_String_Ref str)
 {
     switch(str.ty)
     {
         case NEAT__DSTR_TY     : return neat__strv_dstr_ptr1(str.str.dstr);
         case NEAT__STRBUF_TY   : return neat__strv_strbuf_ptr1(str.str.strbuf);
-        case NEAT__SSTR_REF_TY : return neat__strv_sstr_ref1(str.str.sstr_ref);
         case NEAT__BUF_TY      : return neat__strv_ucstr1(str.str.buf.ptr);
         default                : unreachable();
     }
@@ -2528,29 +2464,12 @@ Neat_String_View neat__strv_strbuf2(const Neat_String_Buffer str, unsigned int b
     return neat__strv_strbuf_ptr2(&str, begin);
 }
 
-Neat_String_View neat__strv_sstr_ref2(const Neat_SString_Ref str, unsigned int begin)
-{
-    if(begin > str.sstr->len)
-    {
-        return (Neat_String_View){
-            .len = 0,
-            .chars = NULL
-        };
-    }
-    
-    return (Neat_String_View){
-        .len   = str.sstr->len   - begin,
-        .chars = str.sstr->chars + begin
-    };
-}
-
 Neat_String_View neat__strv_mutstr_ref2(const Neat_Mut_String_Ref str, unsigned int begin)
 {
     switch(str.ty)
     {
         case NEAT__DSTR_TY     : return neat__strv_dstr_ptr2(str.str.dstr, begin);
         case NEAT__STRBUF_TY   : return neat__strv_strbuf_ptr2(str.str.strbuf, begin);
-        case NEAT__SSTR_REF_TY : return neat__strv_sstr_ref2(str.str.sstr_ref, begin);
         case NEAT__BUF_TY      : return neat__strv_fmutstr_ref2(neat__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin);
         default                : unreachable();
     }
@@ -2660,29 +2579,12 @@ Neat_String_View neat__strv_strbuf_ptr3(const Neat_String_Buffer *str, unsigned 
     };
 }
 
-Neat_String_View neat__strv_sstr_ref3(Neat_SString_Ref str, unsigned int begin, unsigned int end)
-{
-    if(begin > str.sstr->len || end > str.sstr->len || begin > end)
-    {
-        return (Neat_String_View){
-            .len = 0,
-            .chars = NULL
-        };
-    }
-    
-    return (Neat_String_View){
-        .len   = end - begin,
-        .chars = str.sstr->chars + begin
-    };
-}
-
 Neat_String_View neat__strv_mutstr_ref3(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end)
 {
     switch(str.ty)
     {
         case NEAT__DSTR_TY     : return neat__strv_dstr_ptr3(str.str.dstr, begin, end);
         case NEAT__STRBUF_TY   : return neat__strv_strbuf_ptr3(str.str.strbuf, begin, end);
-        case NEAT__SSTR_REF_TY : return neat__strv_sstr_ref3(str.str.sstr_ref, begin, end);
         case NEAT__BUF_TY      : return neat__strv_fmutstr_ref3(neat__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
         default                : unreachable();
     }
@@ -2780,7 +2682,6 @@ Neat_Error neat__mutstr_ref_fread_line(Neat_Mut_String_Ref dst, FILE *stream)
     {
         case NEAT__DSTR_TY     : return neat__dstr_fread_line(dst.str.dstr, stream);
         case NEAT__STRBUF_TY   : return neat__fmutstr_ref_fread_line(neat__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_fread_line(neat__sstr_ref_as_fmutstr_ref(dst.str.sstr_ref), stream);
         case NEAT__BUF_TY      : return neat__fmutstr_ref_fread_line(neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream);
         default                : unreachable();
     };
@@ -2814,7 +2715,6 @@ Neat_Error neat__mutstr_ref_append_fread_line(Neat_Mut_String_Ref dst, FILE *str
     {
         case NEAT__DSTR_TY     : return neat__dstr_append_fread_line(dst.str.dstr, stream);
         case NEAT__STRBUF_TY   : return neat__fmutstr_ref_append_fread_line(neat__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream);
-        case NEAT__SSTR_REF_TY : return neat__fmutstr_ref_append_fread_line(neat__sstr_ref_as_fmutstr_ref(dst.str.sstr_ref), stream);
         case NEAT__BUF_TY      : return neat__fmutstr_ref_append_fread_line(neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream);
         default                : unreachable();
     };
@@ -3018,12 +2918,6 @@ do { \
             neat__sintger_tostr_fmutstr_ref(strbuf_as_fixed); \
             return err; \
         } \
-        case NEAT__SSTR_REF_TY: \
-        { \
-            Neat__Fixed_Mut_String_Ref sstr_ref_as_fixed = neat__sstr_ref_as_fmutstr_ref(dst.str.sstr_ref); \
-            neat__sintger_tostr_fmutstr_ref(sstr_ref_as_fixed); \
-            return err; \
-        } \
         case NEAT__BUF_TY: \
         { \
             Neat__Fixed_Mut_String_Ref buf_as_fixed = neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}); \
@@ -3081,12 +2975,6 @@ do { \
         { \
             Neat__Fixed_Mut_String_Ref strbuf_as_fixed = neat__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf); \
             neat__uintger_tostr_fmutstr_ref(strbuf_as_fixed); \
-            return err; \
-        } \
-        case NEAT__SSTR_REF_TY: \
-        { \
-            Neat__Fixed_Mut_String_Ref sstr_ref_as_fixed = neat__sstr_ref_as_fmutstr_ref(dst.str.sstr_ref); \
-            neat__uintger_tostr_fmutstr_ref(sstr_ref_as_fixed); \
             return err; \
         } \
         case NEAT__BUF_TY: \
@@ -3215,6 +3103,63 @@ Neat_Error neat__error_tostr(Neat_Mut_String_Ref dst, Neat_Error obj)
     return neat__mutstr_ref_copy(dst, neat__error_to_string[obj.ec]);
 }
 
+Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat__Array_Fmt obj)
+{
+    neat__mutstr_ref_clear(dst);
+    
+    Neat_DString appender_dstr_opt;
+    Neat__DString_Append_Allocator dstr_append_allocator_opt;
+    Neat_String_Buffer appender_strbuf_opt;
+    
+    Neat_Error err = neat__mutstr_ref_append(dst, obj.open);
+    
+    const uint8_t *arr = obj.array;
+    
+    if(obj.nb > 0)
+    {
+        for(size_t i = 0 ; i < obj.nb - 1 ; i++)
+        {
+            
+            Neat_Mut_String_Ref appender = neat__make_appender_mutstr_ref(dst, &appender_dstr_opt, &dstr_append_allocator_opt, &appender_strbuf_opt);
+            
+            err = obj.tostr_p(appender, arr + (obj.elm_size * i));
+            // TODO return if err?
+            
+            err = neat__mutstr_ref_append(appender, obj.separator);
+            
+            neat__mutstr_ref_commit_appender(dst, appender);
+        }
+        
+        Neat_Mut_String_Ref appender = neat__make_appender_mutstr_ref(dst, &appender_dstr_opt, &dstr_append_allocator_opt, &appender_strbuf_opt);
+        err = obj.tostr_p(appender, arr + obj.elm_size * (obj.nb - 1));
+        neat__mutstr_ref_commit_appender(dst, appender);
+        
+        switch(obj.trailing_separator)
+        {
+            case NEAT_TRAILING_SEPERATOR:
+                err = neat__mutstr_ref_append(dst, obj.separator);
+            break;
+            case NEAT_TRAILING_SEPERATOR_NO_SPACE:
+                Neat_String_View last_separator = obj.separator;
+                last_separator.len = 0;
+                
+                while(!isspace(last_separator.chars[last_separator.len]))
+                {
+                    last_separator.len += 1;
+                }
+                
+                err = neat__mutstr_ref_append(dst, last_separator);
+            break;
+            case NEAT_NO_TRAILING_SEPERATOR:
+            break;
+        }
+    }
+    
+    err = neat__mutstr_ref_append(dst, obj.close);
+    
+    return err;
+}
+
 Neat_Error neat__dstr_tostr(Neat_Mut_String_Ref dst, const Neat_DString obj)
 {
     return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = obj.chars, .len = obj.len});
@@ -3238,11 +3183,6 @@ Neat_Error neat__strbuf_tostr(Neat_Mut_String_Ref dst, const Neat_String_Buffer 
 Neat_Error neat__strbuf_ptr_tostr(Neat_Mut_String_Ref dst, const Neat_String_Buffer *obj)
 {
     return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = obj->chars, .len = obj->len});
-}
-
-Neat_Error neat__sstr_ref_tostr(Neat_Mut_String_Ref dst, const Neat_SString_Ref obj)
-{
-    return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = obj.sstr->chars, .len = obj.sstr->len});
 }
 
 Neat_Error neat__mutstr_ref_tostr(Neat_Mut_String_Ref dst, const Neat_Mut_String_Ref obj)
@@ -3423,6 +3363,24 @@ Neat_Error neat__Integer_b_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integ
     neat__mutstr_ref_clear(dst); \
     neat__integer_b_Fmt_tostr(dst, obj.obj); \
 } \
+\
+\
+Neat_Error neat__Integer_d_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty *obj) \
+{ \
+    return neat__Integer_d_Fmt_##ty##_tostr(dst, *obj); \
+} \
+Neat_Error neat__Integer_x_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty *obj) \
+{ \
+    return neat__Integer_x_Fmt_##ty##_tostr(dst, *obj); \
+} \
+Neat_Error neat__Integer_o_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty *obj) \
+{ \
+    return neat__Integer_o_Fmt_##ty##_tostr(dst, *obj); \
+} \
+Neat_Error neat__Integer_b_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty *obj) \
+{ \
+    return neat__Integer_b_Fmt_##ty##_tostr(dst, *obj); \
+}
 
 NEAT__INTEGER_TYPES(NEAT__X, ignore)
 
@@ -3522,3 +3480,99 @@ Neat_Error neat__Floating_a_Fmt_##type##_tostr(Neat_Mut_String_Ref dst, Neat__Fl
 NEAT__FLOATING_TYPES(NEAT__X, ignore, NEAT__X)
 
 #undef NEAT__X
+
+
+Neat_Error neat__bool_tostr_p(Neat_Mut_String_Ref dst, bool *obj)
+{
+    return neat__bool_tostr(dst, *obj);
+}
+Neat_Error neat__cstr_tostr_p(Neat_Mut_String_Ref dst, const char **obj)
+{
+    return neat__cstr_tostr(dst, *obj);
+}
+Neat_Error neat__ucstr_tostr_p(Neat_Mut_String_Ref dst, const unsigned char **obj)
+{
+    return neat__ucstr_tostr(dst, *obj);
+}
+Neat_Error neat__char_tostr_p(Neat_Mut_String_Ref dst, char *obj)
+{
+    return neat__char_tostr(dst, *obj);
+}
+Neat_Error neat__schar_tostr_p(Neat_Mut_String_Ref dst, signed char *obj)
+{
+    return neat__schar_tostr(dst, *obj);
+}
+Neat_Error neat__uchar_tostr_p(Neat_Mut_String_Ref dst, unsigned char *obj)
+{
+    return neat__uchar_tostr(dst, *obj);
+}
+Neat_Error neat__short_tostr_p(Neat_Mut_String_Ref dst, short *obj)
+{
+    return neat__short_tostr(dst, *obj);
+}
+Neat_Error neat__ushort_tostr_p(Neat_Mut_String_Ref dst, unsigned short *obj)
+{
+    return neat__ushort_tostr(dst, *obj);
+}
+Neat_Error neat__int_tostr_p(Neat_Mut_String_Ref dst, int *obj)
+{
+    return neat__int_tostr(dst, *obj);
+}
+Neat_Error neat__uint_tostr_p(Neat_Mut_String_Ref dst, unsigned int *obj)
+{
+    return neat__uint_tostr(dst, *obj);
+}
+Neat_Error neat__long_tostr_p(Neat_Mut_String_Ref dst, long *obj)
+{
+    return neat__long_tostr(dst, *obj);
+}
+Neat_Error neat__ulong_tostr_p(Neat_Mut_String_Ref dst, unsigned long *obj)
+{
+    return neat__ulong_tostr(dst, *obj);
+}
+Neat_Error neat__llong_tostr_p(Neat_Mut_String_Ref dst, long long *obj)
+{
+    return neat__llong_tostr(dst, *obj);
+}
+Neat_Error neat__ullong_tostr_p(Neat_Mut_String_Ref dst, unsigned long long *obj)
+{
+    return neat__ullong_tostr(dst, *obj);
+}
+Neat_Error neat__float_tostr_p(Neat_Mut_String_Ref dst, float *obj)
+{
+    return neat__float_tostr(dst, *obj);
+}
+Neat_Error neat__double_tostr_p(Neat_Mut_String_Ref dst, double *obj)
+{
+    return neat__double_tostr(dst, *obj);
+}
+
+Neat_Error neat__dstr_tostr_p(Neat_Mut_String_Ref dst, const Neat_DString *obj)
+{
+    return neat__dstr_tostr(dst, *obj);
+}
+Neat_Error neat__dstr_ptr_tostr_p(Neat_Mut_String_Ref dst, const Neat_DString **obj)
+{
+    return neat__dstr_ptr_tostr(dst, *obj);
+}
+Neat_Error neat__strv_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_View *obj)
+{
+    return neat__strv_tostr(dst, *obj);
+}
+Neat_Error neat__strbuf_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_Buffer *obj)
+{
+    return neat__strbuf_tostr(dst, *obj);
+}
+Neat_Error neat__strbuf_ptr_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_Buffer **obj)
+{
+    return neat__strbuf_ptr_tostr(dst, *obj);
+}
+Neat_Error neat__mutstr_ref_tostr_p(Neat_Mut_String_Ref dst, const Neat_Mut_String_Ref *obj)
+{
+    return neat__mutstr_ref_tostr(dst, *obj);
+}
+
+Neat_Error neat__error_tostr_p(Neat_Mut_String_Ref dst, Neat_Error *obj)
+{
+    return neat__error_tostr(dst, *obj);
+}

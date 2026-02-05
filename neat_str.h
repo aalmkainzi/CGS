@@ -87,8 +87,8 @@ neat__coerce_fallback(exp, t, (t){0})
 
 #define neat__coerce_fallback(exp, ty, fallback) \
 _Generic(exp, \
-    ty: exp, \
-    default: fallback \
+    ty: (exp), \
+    default: (fallback) \
 )
 
 #define neat__coerce_string_type(exp, fallback) \
@@ -100,7 +100,6 @@ _Generic(exp,                                   \
     Neat_String_View          : exp,            \
     Neat_String_Buffer        : exp,            \
     Neat_String_Buffer*       : exp,            \
-    Neat_SString_Ref          : exp,            \
     Neat_Mut_String_Ref       : exp,            \
     const char*               : exp,            \
     const unsigned char*      : exp,            \
@@ -197,16 +196,6 @@ typedef struct Neat_String_View_Array
     Neat_String_View *strs;
 } Neat_String_View_Array;
 
-// Used for passing SString around
-typedef struct Neat_SString_Ref
-{
-    const unsigned int cap;
-    struct {
-        unsigned int len;
-        unsigned char chars[];
-    } *sstr;
-} Neat_SString_Ref;
-
 // Used for passing `char[]` or `unsigned char[]`, such that it doesn't lose cap information
 typedef struct Neat_Buffer
 {
@@ -217,18 +206,16 @@ typedef struct Neat_Buffer
 // This is a tagged union for all mutable string types (i.e. all except String_View)
 typedef struct Neat_Mut_String_Ref
 {
-    enum Neat_Mut_String_Ref_Type : signed char
+    const enum Neat_Mut_String_Ref_Type : signed char
     {
         NEAT__DSTR_TY = 1,
         NEAT__STRBUF_TY,
-        NEAT__SSTR_REF_TY,
         NEAT__BUF_TY
     } ty;
     union
     {
         Neat_DString *dstr;
         Neat_String_Buffer *strbuf;
-        Neat_SString_Ref sstr_ref;
         Neat_Buffer buf;
     } str;
 } Neat_Mut_String_Ref;
@@ -258,59 +245,29 @@ typedef struct Neat__Fixed_Mut_String_Ref
     unsigned int cap;
 } Neat__Fixed_Mut_String_Ref;
 
-// in C23 structs can be defined multiple times with the same tag and members,
-// in which NEAT_DECL_SSTRING is useless, but older standards require it.
-#if __STDC_VERSION__ >= 202311L
-
-    #define Neat_SString(cap) \
-    struct Neat_SString_##cap \
-    { \
-        _Static_assert((1##cap##1ull || cap##8ull || 1) && (cap > 0), "capacity must be a positive decimal integer literal"); \
-        unsigned int len; \
-        unsigned char chars[ cap ]; \
-    }
+typedef struct Neat__Array_Fmt
+{
+    const void *array;
+    const size_t nb;
+    const size_t elm_size;
     
-    #define NEAT_DECL_SSTRING(cap)
-#else
-
-    #define Neat_SString(cap) \
-    Neat_SString_##cap
+    const Neat_Error(*tostr_p)(Neat_Mut_String_Ref dst, const void *obj);
     
-    #define NEAT__DECL_SSTRING(cap) \
-    typedef struct Neat_SString_##cap \
-    { \
-        _Static_assert((1##cap##1ul || cap##8ul || 1) && (cap > 0), "argument must be positive decimal integer literal"); /* the first term is to make sure cap is an integer literal */ \
-        unsigned int len; \
-        unsigned char chars[ cap ]; \
-    } Neat_SString_##cap
-
-    #define NEAT_DECL_SSTRING(cap) \
-    NEAT__DECL_SSTRING(cap)
-#endif
-
-#define NEAT__SSTRING_NTAG(cap) \
-struct \
-{ \
-    unsigned int len; \
-    unsigned char chars[ cap ]; \
-}
-
-#define NEAT__TYPEOF_SSTR(sstr) \
-NEAT__SSTRING_NTAG(sizeof((sstr)->chars))
-
-#define NEAT__IS_SSTRING_PTR(s) \
-(                                                                         \
-sizeof(*(s)) == sizeof(NEAT__TYPEOF_SSTR(s)) &&                           \
-_Alignof(__typeof__(*(s))) == _Alignof(NEAT__TYPEOF_SSTR(s)) &&           \
-neat__has_type(&(s)->chars, __typeof__(&(NEAT__TYPEOF_SSTR(s)){0}.chars)) \
-)
+    const Neat_String_View open;
+    const Neat_String_View close;
+    const Neat_String_View separator;
+    const enum {
+        NEAT_NO_TRAILING_SEPERATOR = 0,
+        NEAT_TRAILING_SEPERATOR,
+        NEAT_TRAILING_SEPERATOR_NO_SPACE
+    } trailing_separator;
+} Neat__Array_Fmt;
 
 #define neat__fmutstr_ref(s, ...) \
 _Generic(&(__typeof__(s)){0}, \
     Neat_DString**                          : neat__dstr_ptr_as_fmutstr_ref(neat__coerce(s, Neat_DString*)), \
     Neat_Buffer*                            : neat__buf_as_fmutstr_ref(neat__coerce(s, Neat_Buffer), NEAT__VA_OR(&(unsigned int){0}, __VA_ARGS__)), \
     Neat_String_Buffer**                    : neat__strbuf_ptr_as_fmutstr_ref(neat__coerce(s, Neat_String_Buffer*)), \
-    Neat_SString_Ref*                       : neat__sstr_ref_as_fmutstr_ref(neat__coerce(s, Neat_SString_Ref)),  \
     char**                                  : neat__buf_as_fmutstr_ref(neat__buf_from_cstr(neat__coerce(s, char*)), &(unsigned int){0}), \
     unsigned char**                         : neat__buf_as_fmutstr_ref(neat__buf_from_ucstr(neat__coerce(s, unsigned char*)), &(unsigned int){0}), \
     char(*)[sizeof(__typeof__(s))]          : neat__buf_as_fmutstr_ref(neat__buf_from_carr(neat__coerce(s, char*), sizeof(__typeof__(s))), &(unsigned int){0}), \
@@ -326,7 +283,6 @@ _Generic(any_str,                                   \
     Neat_String_View    : neat__strv_char_at,       \
     Neat_String_Buffer  : neat__strbuf_char_at,     \
     Neat_String_Buffer* : neat__strbuf_ptr_char_at, \
-    Neat_SString_Ref    : neat__sstr_ref_char_at,   \
     Neat_Mut_String_Ref : neat__mutstr_ref_char_at  \
 )((any_str), idx)
 
@@ -339,7 +295,6 @@ _Generic(any_str, \
     Neat_String_View          : ((void)0, neat__coerce(any_str, Neat_String_View).len), \
     Neat_String_Buffer        : ((void)0, neat__coerce(any_str, Neat_String_Buffer).len), \
     Neat_String_Buffer*       : ((void)0, neat__coerce(any_str, Neat_String_Buffer*)->len), \
-    Neat_SString_Ref          : ((void)0, neat__coerce(any_str, Neat_SString_Ref).sstr->len), \
     Neat_Mut_String_Ref       : ((void)0, neat__mutstr_ref_len(neat__coerce(any_str, Neat_Mut_String_Ref))), \
     const char*               : strlen(neat__coerce_fallback(any_str, const char*, "")), \
     const unsigned char*      : strlen((char*) neat__coerce_fallback(any_str, const unsigned char*, "")), \
@@ -360,7 +315,6 @@ _Generic((__typeof__(any_str)*){0},                                       \
     Neat_DString**                                : neat__dstr_ptr_cap,   \
     Neat_String_Buffer*                           : neat__strbuf_cap,     \
     Neat_String_Buffer**                          : neat__strbuf_ptr_cap, \
-    Neat_SString_Ref*                             : neat__sstr_ref_cap,   \
     Neat_Mut_String_Ref*                          : neat__mutstr_ref_cap  \
 )(_Generic((__typeof__(any_str)*){0},                                     \
     char(*)[sizeof(__typeof__(any_str))]: sizeof(any_str),                \
@@ -377,7 +331,6 @@ _Generic(any_str,                                   \
     Neat_String_View    : neat__strv_as_cstr,       \
     Neat_String_Buffer  : neat__strbuf_as_cstr,     \
     Neat_String_Buffer* : neat__strbuf_ptr_as_cstr, \
-    Neat_SString_Ref    : neat__sstr_ref_as_cstr,   \
     Neat_Mut_String_Ref : neat__mutstr_ref_as_cstr  \
 )(any_str)
 
@@ -507,9 +460,9 @@ do \
         &neat__appender_strbuf_opt \
     ); \
     neat_tostr(neat__appender_mutstr_ref, x); \
-    neat__mutstr_ref_set_len( \
+    neat__mutstr_ref_commit_appender( \
         neat__as_mutstr_ref, \
-        neat_str_len(neat__as_mutstr_ref) + neat_str_len(neat__appender_mutstr_ref) \
+        neat__appender_mutstr_ref \
     ); \
 } while(0);
 
@@ -532,9 +485,8 @@ do \
     } Neat__DString_Append_Allocator; \
     \
     Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, void *dstr_appender_allocator, Neat_String_Buffer *appender_strbuf_opt); \
-    Neat_Error neat__mutstr_ref_set_len(Neat_Mut_String_Ref str, unsigned int new_len); \
+    Neat_Error neat__mutstr_ref_commit_appender(Neat_Mut_String_Ref owner, Neat_Mut_String_Ref appender); \
     \
-    Neat_Mut_String_Ref neat__as_mutstr_ref = neat_mutstr_ref(neat__dst); \
     neat__str_print_each_setup(__VA_ARGS__); \
 } while(0) \
 )
@@ -542,15 +494,15 @@ do \
 #define neat_str_print_append(any_str_dst, ...) \
 do \
 { \
-    __typeof__(any_str_dst) neat__dst = any_str_dst; \
+    Neat_Mut_String_Ref neat__as_mutstr_ref = neat_mutstr_ref(any_str_dst); \
     neat__str_print_append(__VA_ARGS__); \
 } while(0)
 
 #define neat_str_print(any_str_dst, ...) \
 do \
 { \
-    __typeof__(any_str_dst) neat__dst = any_str_dst; \
-    neat_str_clear(neat__dst); \
+    Neat_Mut_String_Ref neat__as_mutstr_ref = neat_mutstr_ref(any_str_dst); \
+    neat_str_clear(neat__as_mutstr_ref); \
     neat__str_print_append(__VA_ARGS__); \
 } while(0)
 
@@ -630,16 +582,15 @@ __VA_OPT__(neat__cstr_to_buf2((carr), __VA_ARGS__)) \
 #define neat_mutstr_ref(any_str, ...) \
 NEAT__CAT(neat__mutstr_ref, __VA_OPT__(2))((any_str) __VA_OPT__(,) __VA_ARGS__)
 
-#define neat__mutstr_ref(any_str)                                          \
-_Generic((__typeof__(any_str)*){0},                                        \
-char**                                   : neat__cstr_as_mutstr_ref,       \
-unsigned char**                          : neat__ucstr_as_mutstr_ref,      \
-Neat_DString**                           : neat__dstr_ptr_as_mutstr_ref,   \
-Neat_String_Buffer**                     : neat__strbuf_ptr_as_mutstr_ref, \
-Neat_SString_Ref*                        : neat__sstr_ref_as_mutstr_ref,   \
-Neat_Mut_String_Ref*                     : neat__mutstr_ref_as_mutstr_ref, \
-char(*)[sizeof(__typeof__(any_str))]         : neat__buf_as_mutstr_ref,    \
-unsigned char(*)[sizeof(__typeof__(any_str))]: neat__buf_as_mutstr_ref     \
+#define neat__mutstr_ref(any_str)                                              \
+_Generic((__typeof__(any_str)*){0},                                            \
+char**                                       : neat__cstr_as_mutstr_ref,       \
+unsigned char**                              : neat__ucstr_as_mutstr_ref,      \
+Neat_DString**                               : neat__dstr_ptr_as_mutstr_ref,   \
+Neat_String_Buffer**                         : neat__strbuf_ptr_as_mutstr_ref, \
+Neat_Mut_String_Ref*                         : neat__mutstr_ref_as_mutstr_ref, \
+char(*)[sizeof(__typeof__(any_str))]         : neat__buf_as_mutstr_ref,        \
+unsigned char(*)[sizeof(__typeof__(any_str))]: neat__buf_as_mutstr_ref         \
 )(_Generic((__typeof__(any_str)*){0},                                          \
     char(*)[sizeof(__typeof__(any_str))]: (Neat_Buffer){.ptr = (unsigned char*) neat__coerce(any_str, char*), .cap = sizeof(__typeof__(any_str))}, \
     unsigned char(*)[sizeof(__typeof__(any_str))]: (Neat_Buffer){.ptr = neat__coerce(any_str, unsigned char*), .cap = sizeof(__typeof__(any_str))}, \
@@ -648,12 +599,6 @@ unsigned char(*)[sizeof(__typeof__(any_str))]: neat__buf_as_mutstr_ref     \
 
 #define neat__mutstr_ref2(carr_or_ptr, cap_) \
 (Neat_Mut_String_Ref){.ty = NEAT__BUF_TY, .str.carr = neat__cstr_to_buf(carr_or_ptr, cap_)} \
-
-#define neat_sstr_ref(sstr_ptr) \
-( \
-    neat__static_assertx(NEAT__IS_SSTRING_PTR(sstr_ptr), "Must pass SString(N)*"), \
-    (Neat_SString_Ref){.cap = sizeof((sstr_ptr)->chars), .sstr = (void*) sstr_ptr} \
-)
 
 #define neat_str_view(any_str, ...) \
 __VA_OPT__(neat__strv2(any_str, __VA_ARGS__)) \
@@ -668,7 +613,6 @@ _Generic(any_str,                                       \
     Neat_String_View          : neat__strv_strv1,       \
     Neat_String_Buffer        : neat__strv_strbuf1,     \
     Neat_String_Buffer*       : neat__strv_strbuf_ptr1, \
-    Neat_SString_Ref          : neat__strv_sstr_ref1,   \
     Neat_Mut_String_Ref       : neat__strv_mutstr_ref1, \
     const char*               : neat__strv_cstr1,       \
     const unsigned char*      : neat__strv_ucstr1,      \
@@ -687,7 +631,6 @@ _Generic(any_str,                                       \
     Neat_String_View    : neat__strv_strv2,             \
     Neat_String_Buffer  : neat__strv_strbuf2,           \
     Neat_String_Buffer* : neat__strv_strbuf_ptr2,       \
-    Neat_SString_Ref    : neat__strv_sstr_ref2,         \
     Neat_Mut_String_Ref : neat__strv_mutstr_ref2,       \
     const char*               : neat__strv_cstr2,       \
     const unsigned char*      : neat__strv_ucstr2,      \
@@ -704,7 +647,6 @@ _Generic(any_str,                                       \
     Neat_String_View    : neat__strv_strv3,             \
     Neat_String_Buffer  : neat__strv_strbuf3,           \
     Neat_String_Buffer* : neat__strv_strbuf_ptr3,       \
-    Neat_SString_Ref    : neat__strv_sstr_ref3,         \
     Neat_Mut_String_Ref : neat__strv_mutstr_ref3,       \
     const char*               : neat__strv_cstr3,       \
     const unsigned char*      : neat__strv_ucstr3,      \
@@ -784,7 +726,6 @@ do                                                          \
         Neat_String_View          : neat__strv_strv1,       \
         Neat_String_Buffer        : neat__strv_strbuf1,     \
         Neat_String_Buffer*       : neat__strv_strbuf_ptr1, \
-        Neat_SString_Ref          : neat__strv_sstr_ref1,   \
         Neat_Mut_String_Ref       : neat__strv_mutstr_ref1, \
         const char*               : neat__strv_cstr1,       \
         const unsigned char*      : neat__strv_ucstr1,      \
@@ -938,6 +879,18 @@ NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 
 #undef NEAT__X
 
+#define neat_arrfmt(array_, nb_, open_, close_, seperator_, ...) \
+((Neat__Array_Fmt){ \
+    .array = (array_), \
+    .nb = (nb_), \
+    .elm_size = sizeof((array_)[0]), \
+    .tostr_p = (void*) neat__get_tostr_p_func(__typeof__((array_)[0])), \
+    .open = neat_str_view(open_), \
+    .close = neat_str_view(close_), \
+    .separator = neat_str_view(seperator_), \
+    .trailing_separator = __VA_ARGS__ +0 \
+})
+
 #define NEAT__INTEGER_TOSTR_GENERIC_CASE(ty, extra) \
 Neat__Integer_d_Fmt_##ty : neat__Integer_d_Fmt_##ty##_tostr, \
 Neat__Integer_x_Fmt_##ty : neat__Integer_x_Fmt_##ty##_tostr, \
@@ -950,42 +903,88 @@ Neat__Floating_g_Fmt_##ty : neat__Floating_g_Fmt_##ty##_tostr, \
 Neat__Floating_e_Fmt_##ty : neat__Floating_e_Fmt_##ty##_tostr, \
 Neat__Floating_a_Fmt_##ty : neat__Floating_a_Fmt_##ty##_tostr
 
+#define NEAT__INTEGER_TOSTR_P_GENERIC_CASE(ty, extra) \
+Neat__Integer_d_Fmt_##ty : neat__Integer_d_Fmt_##ty##_tostr_p, \
+Neat__Integer_x_Fmt_##ty : neat__Integer_x_Fmt_##ty##_tostr_p, \
+Neat__Integer_o_Fmt_##ty : neat__Integer_o_Fmt_##ty##_tostr_p, \
+Neat__Integer_b_Fmt_##ty : neat__Integer_b_Fmt_##ty##_tostr_p, \
+
+#define NEAT__FLOATING_TOSTR_P_LAST_GENERIC_CASE(ty, extra) \
+Neat__Floating_f_Fmt_##ty : neat__Floating_f_Fmt_##ty##_tostr_p, \
+Neat__Floating_g_Fmt_##ty : neat__Floating_g_Fmt_##ty##_tostr_p, \
+Neat__Floating_e_Fmt_##ty : neat__Floating_e_Fmt_##ty##_tostr_p, \
+Neat__Floating_a_Fmt_##ty : neat__Floating_a_Fmt_##ty##_tostr_p
+
 #define NEAT__FLOATING_TOSTR_GENERIC_CASE(ty, extra) \
 NEAT__FLOATING_TOSTR_LAST_GENERIC_CASE(ty, extra),
 
-#define NEAT__DEFAULT_TOSTR_TYPES                   \
-bool                : neat__bool_tostr,             \
-char*               : neat__cstr_tostr,             \
-unsigned char*      : neat__ucstr_tostr,            \
-char                : neat__char_tostr,             \
-signed char         : neat__schar_tostr,            \
-unsigned char       : neat__uchar_tostr,            \
-short               : neat__short_tostr,            \
-unsigned short      : neat__ushort_tostr,           \
-int                 : neat__int_tostr,              \
-unsigned int        : neat__uint_tostr,             \
-long                : neat__long_tostr,             \
-unsigned long       : neat__ulong_tostr,            \
-long long           : neat__llong_tostr,            \
-unsigned long long  : neat__ullong_tostr,           \
-float               : neat__float_tostr,            \
-double              : neat__double_tostr,           \
-Neat_DString        : neat__dstr_tostr,             \
-Neat_DString*       : neat__dstr_ptr_tostr,         \
-Neat_String_View    : neat__strv_tostr,             \
-Neat_String_Buffer  : neat__strbuf_tostr,           \
-Neat_String_Buffer* : neat__strbuf_ptr_tostr,       \
-Neat_SString_Ref    : neat__sstr_ref_tostr,         \
-Neat_Mut_String_Ref : neat__mutstr_ref_tostr,       \
-const char*               : neat__cstr_tostr,       \
-const unsigned char*      : neat__ucstr_tostr,      \
-const Neat_DString*       : neat__dstr_ptr_tostr,   \
-const Neat_String_Buffer* : neat__strbuf_ptr_tostr, \
-Neat_Error          : neat__error_tostr,            \
+#define NEAT__FLOATING_TOSTR_P_GENERIC_CASE(ty, extra) \
+NEAT__FLOATING_TOSTR_P_LAST_GENERIC_CASE(ty, extra),
+
+#define NEAT__DEFAULT_TOSTR_GENERIC_BRANCHES                  \
+bool                      : neat__bool_tostr,                 \
+char*                     : neat__cstr_tostr,                 \
+unsigned char*            : neat__ucstr_tostr,                \
+char                      : neat__char_tostr,                 \
+signed char               : neat__schar_tostr,                \
+unsigned char             : neat__uchar_tostr,                \
+short                     : neat__short_tostr,                \
+unsigned short            : neat__ushort_tostr,               \
+int                       : neat__int_tostr,                  \
+unsigned int              : neat__uint_tostr,                 \
+long                      : neat__long_tostr,                 \
+unsigned long             : neat__ulong_tostr,                \
+long long                 : neat__llong_tostr,                \
+unsigned long long        : neat__ullong_tostr,               \
+float                     : neat__float_tostr,                \
+double                    : neat__double_tostr,               \
+Neat_DString              : neat__dstr_tostr,                 \
+Neat_DString*             : neat__dstr_ptr_tostr,             \
+Neat_String_View          : neat__strv_tostr,                 \
+Neat_String_Buffer        : neat__strbuf_tostr,               \
+Neat_String_Buffer*       : neat__strbuf_ptr_tostr,           \
+Neat_Mut_String_Ref       : neat__mutstr_ref_tostr,           \
+const char*               : neat__cstr_tostr,                 \
+const unsigned char*      : neat__ucstr_tostr,                \
+const Neat_DString*       : neat__dstr_ptr_tostr,             \
+const Neat_String_Buffer* : neat__strbuf_ptr_tostr,           \
+Neat_Error                : neat__error_tostr,                \
+Neat__Array_Fmt           : neat__array_fmt_tostr,            \
 NEAT__INTEGER_TYPES(NEAT__INTEGER_TOSTR_GENERIC_CASE, ignore) \
 NEAT__FLOATING_TYPES(NEAT__FLOATING_TOSTR_GENERIC_CASE, ignore, NEAT__FLOATING_TOSTR_LAST_GENERIC_CASE)
 
-#define NEAT__ALL_TOSTR_TYPES                                          \
+#define NEAT__DEFAULT_TOSTR_P_GENERIC_BRANCHES                  \
+bool                      : neat__bool_tostr_p,                 \
+char*                     : neat__cstr_tostr_p,                 \
+unsigned char*            : neat__ucstr_tostr_p,                \
+char                      : neat__char_tostr_p,                 \
+signed char               : neat__schar_tostr_p,                \
+unsigned char             : neat__uchar_tostr_p,                \
+short                     : neat__short_tostr_p,                \
+unsigned short            : neat__ushort_tostr_p,               \
+int                       : neat__int_tostr_p,                  \
+unsigned int              : neat__uint_tostr_p,                 \
+long                      : neat__long_tostr_p,                 \
+unsigned long             : neat__ulong_tostr_p,                \
+long long                 : neat__llong_tostr_p,                \
+unsigned long long        : neat__ullong_tostr_p,               \
+float                     : neat__float_tostr_p,                \
+double                    : neat__double_tostr_p,               \
+Neat_DString              : neat__dstr_tostr_p,                 \
+Neat_DString*             : neat__dstr_ptr_tostr_p,             \
+Neat_String_View          : neat__strv_tostr_p,                 \
+Neat_String_Buffer        : neat__strbuf_tostr_p,               \
+Neat_String_Buffer*       : neat__strbuf_ptr_tostr_p,           \
+Neat_Mut_String_Ref       : neat__mutstr_ref_tostr_p,           \
+const char*               : neat__cstr_tostr_p,                 \
+const unsigned char*      : neat__ucstr_tostr_p,                \
+const Neat_DString*       : neat__dstr_ptr_tostr_p,             \
+const Neat_String_Buffer* : neat__strbuf_ptr_tostr_p,           \
+Neat_Error                : neat__error_tostr_p,                \
+NEAT__INTEGER_TYPES(NEAT__INTEGER_TOSTR_P_GENERIC_CASE, ignore) \
+NEAT__FLOATING_TYPES(NEAT__FLOATING_TOSTR_P_GENERIC_CASE, ignore, NEAT__FLOATING_TOSTR_P_LAST_GENERIC_CASE)
+
+#define NEAT__TOSTR_FUNCS_GENERIC_BRANCHES                             \
 NEAT__IF_DEF(NEAT__TOSTR1) (neat__tostr_type_1 : neat__tostr_func_1,)  \
 NEAT__IF_DEF(NEAT__TOSTR2) (neat__tostr_type_2 : neat__tostr_func_2,)  \
 NEAT__IF_DEF(NEAT__TOSTR3) (neat__tostr_type_3 : neat__tostr_func_3,)  \
@@ -1018,20 +1017,60 @@ NEAT__IF_DEF(NEAT__TOSTR29)(neat__tostr_type_29: neat__tostr_func_29,) \
 NEAT__IF_DEF(NEAT__TOSTR30)(neat__tostr_type_30: neat__tostr_func_30,) \
 NEAT__IF_DEF(NEAT__TOSTR31)(neat__tostr_type_31: neat__tostr_func_31,) \
 NEAT__IF_DEF(NEAT__TOSTR32)(neat__tostr_type_32: neat__tostr_func_32,) \
-NEAT__DEFAULT_TOSTR_TYPES
+NEAT__DEFAULT_TOSTR_GENERIC_BRANCHES
+
+#define NEAT__TOSTR_P_FUNCS_GENERIC_BRANCHES                             \
+NEAT__IF_DEF(NEAT__TOSTR1) (neat__tostr_type_1 : neat__tostr_p_func_1,)  \
+NEAT__IF_DEF(NEAT__TOSTR2) (neat__tostr_type_2 : neat__tostr_p_func_2,)  \
+NEAT__IF_DEF(NEAT__TOSTR3) (neat__tostr_type_3 : neat__tostr_p_func_3,)  \
+NEAT__IF_DEF(NEAT__TOSTR4) (neat__tostr_type_4 : neat__tostr_p_func_4,)  \
+NEAT__IF_DEF(NEAT__TOSTR5) (neat__tostr_type_5 : neat__tostr_p_func_5,)  \
+NEAT__IF_DEF(NEAT__TOSTR6) (neat__tostr_type_6 : neat__tostr_p_func_6,)  \
+NEAT__IF_DEF(NEAT__TOSTR7) (neat__tostr_type_7 : neat__tostr_p_func_7,)  \
+NEAT__IF_DEF(NEAT__TOSTR8) (neat__tostr_type_8 : neat__tostr_p_func_8,)  \
+NEAT__IF_DEF(NEAT__TOSTR9) (neat__tostr_type_9 : neat__tostr_p_func_9,)  \
+NEAT__IF_DEF(NEAT__TOSTR10)(neat__tostr_type_10: neat__tostr_p_func_10,) \
+NEAT__IF_DEF(NEAT__TOSTR11)(neat__tostr_type_11: neat__tostr_p_func_11,) \
+NEAT__IF_DEF(NEAT__TOSTR12)(neat__tostr_type_12: neat__tostr_p_func_12,) \
+NEAT__IF_DEF(NEAT__TOSTR13)(neat__tostr_type_13: neat__tostr_p_func_13,) \
+NEAT__IF_DEF(NEAT__TOSTR14)(neat__tostr_type_14: neat__tostr_p_func_14,) \
+NEAT__IF_DEF(NEAT__TOSTR15)(neat__tostr_type_15: neat__tostr_p_func_15,) \
+NEAT__IF_DEF(NEAT__TOSTR16)(neat__tostr_type_16: neat__tostr_p_func_16,) \
+NEAT__IF_DEF(NEAT__TOSTR17)(neat__tostr_type_17: neat__tostr_p_func_17,) \
+NEAT__IF_DEF(NEAT__TOSTR18)(neat__tostr_type_18: neat__tostr_p_func_18,) \
+NEAT__IF_DEF(NEAT__TOSTR19)(neat__tostr_type_19: neat__tostr_p_func_19,) \
+NEAT__IF_DEF(NEAT__TOSTR20)(neat__tostr_type_20: neat__tostr_p_func_20,) \
+NEAT__IF_DEF(NEAT__TOSTR21)(neat__tostr_type_21: neat__tostr_p_func_21,) \
+NEAT__IF_DEF(NEAT__TOSTR22)(neat__tostr_type_22: neat__tostr_p_func_22,) \
+NEAT__IF_DEF(NEAT__TOSTR23)(neat__tostr_type_23: neat__tostr_p_func_23,) \
+NEAT__IF_DEF(NEAT__TOSTR24)(neat__tostr_type_24: neat__tostr_p_func_24,) \
+NEAT__IF_DEF(NEAT__TOSTR25)(neat__tostr_type_25: neat__tostr_p_func_25,) \
+NEAT__IF_DEF(NEAT__TOSTR26)(neat__tostr_type_26: neat__tostr_p_func_26,) \
+NEAT__IF_DEF(NEAT__TOSTR27)(neat__tostr_type_27: neat__tostr_p_func_27,) \
+NEAT__IF_DEF(NEAT__TOSTR28)(neat__tostr_type_28: neat__tostr_p_func_28,) \
+NEAT__IF_DEF(NEAT__TOSTR29)(neat__tostr_type_29: neat__tostr_p_func_29,) \
+NEAT__IF_DEF(NEAT__TOSTR30)(neat__tostr_type_30: neat__tostr_p_func_30,) \
+NEAT__IF_DEF(NEAT__TOSTR31)(neat__tostr_type_31: neat__tostr_p_func_31,) \
+NEAT__IF_DEF(NEAT__TOSTR32)(neat__tostr_type_32: neat__tostr_p_func_32,) \
+NEAT__DEFAULT_TOSTR_P_GENERIC_BRANCHES
 
 struct neat__fail_type { int dummy; };
 typedef void(*neat__tostr_fail)(struct neat__fail_type*);
 
 #define neat__get_tostr_func(ty) \
 _Generic((ty){0}, \
-    NEAT__ALL_TOSTR_TYPES \
+    NEAT__TOSTR_FUNCS_GENERIC_BRANCHES \
 )
 
 #define neat__get_tostr_func_ft(ty) \
 _Generic((ty){0}, \
-    NEAT__ALL_TOSTR_TYPES, \
+    NEAT__TOSTR_FUNCS_GENERIC_BRANCHES, \
     default: (neat__tostr_fail){0} \
+)
+
+#define neat__get_tostr_p_func(ty) \
+_Generic((ty){0}, \
+    NEAT__TOSTR_P_FUNCS_GENERIC_BRANCHES \
 )
 
 #define neat_tostr(dst, src) \
@@ -1040,6 +1079,9 @@ neat__get_tostr_func(__typeof__(src))(neat_mutstr_ref(dst), (src))
 #define neat_has_tostr(ty) \
 (!neat__has_type(neat__get_tostr_func_ft(ty), neat__tostr_fail))
 
+#define neat_tostr_p(dst, src) \
+neat__get_tostr_p_func(__typeof__(*(src)))(neat_mutstr_ref(dst), (src))
+
 #define NEAT__DECL_TOSTR_FUNC(n) \
 typedef __typeof__(NEAT__MCALL(NEAT__ARG1, ADD_TOSTR)) neat__tostr_type_##n; \
 static inline Neat_Error neat__tostr_func_##n (Neat_Mut_String_Ref dst, neat__tostr_type_##n obj) \
@@ -1047,6 +1089,10 @@ static inline Neat_Error neat__tostr_func_##n (Neat_Mut_String_Ref dst, neat__to
     _Static_assert(neat__has_type(NEAT__MCALL(NEAT__ARG2, ADD_TOSTR), __typeof__(Neat_Error(*)(Neat_Mut_String_Ref, neat__tostr_type_##n))), "tostr functions must have signature `Neat_Error(Neat_Mut_String_Ref dst, T src)`"); \
     neat__mutstr_ref_clear(dst); \
     return NEAT__MCALL(NEAT__ARG2, ADD_TOSTR) (dst, obj); \
+} \
+static inline Neat_Error neat__tostr_p_func_##n (Neat_Mut_String_Ref dst, const neat__tostr_type_##n *obj) \
+{ \
+    return neat__tostr_func_##n(dst, *obj); \
 }
 
 Neat_String_View neat__strv_cstr1(const char *str);
@@ -1056,7 +1102,6 @@ Neat_String_View neat__strv_dstr_ptr1(const Neat_DString *str);
 Neat_String_View neat__strv_strv1(const Neat_String_View str);
 Neat_String_View neat__strv_strbuf1(const Neat_String_Buffer str);
 Neat_String_View neat__strv_strbuf_ptr1(const Neat_String_Buffer *str);
-Neat_String_View neat__strv_sstr_ref1(const Neat_SString_Ref str);
 Neat_String_View neat__strv_mutstr_ref1(const Neat_Mut_String_Ref str);
 
 Neat_String_View neat__strv_cstr2(const char *str, unsigned int begin);
@@ -1066,7 +1111,6 @@ Neat_String_View neat__strv_dstr_ptr2(const Neat_DString *str, unsigned int begi
 Neat_String_View neat__strv_strv2(const Neat_String_View str, unsigned int begin);
 Neat_String_View neat__strv_strbuf2(const Neat_String_Buffer str, unsigned int begin);
 Neat_String_View neat__strv_strbuf_ptr2(const Neat_String_Buffer *str, unsigned int begin);
-Neat_String_View neat__strv_sstr_ref2(const Neat_SString_Ref str, unsigned int begin);
 Neat_String_View neat__strv_mutstr_ref2(const Neat_Mut_String_Ref str, unsigned int begin);
 
 Neat_String_View neat__strv_cstr3(const char *str, unsigned int begin, unsigned int end);
@@ -1076,7 +1120,6 @@ Neat_String_View neat__strv_dstr_ptr3(const Neat_DString *str, unsigned int begi
 Neat_String_View neat__strv_strv3(const Neat_String_View str, unsigned int begin, unsigned int end);
 Neat_String_View neat__strv_strbuf3(const Neat_String_Buffer str, unsigned int begin, unsigned int end);
 Neat_String_View neat__strv_strbuf_ptr3(const Neat_String_Buffer *str, unsigned int begin, unsigned int end);
-Neat_String_View neat__strv_sstr_ref3(const Neat_SString_Ref str, unsigned int begin, unsigned int end);
 Neat_String_View neat__strv_mutstr_ref3(const Neat_Mut_String_Ref str, unsigned int begin, unsigned int end);
 
 Neat_String_Buffer neat__strbuf_from_cstr(const char *ptr, unsigned int cap);
@@ -1092,11 +1135,9 @@ Neat_Mut_String_Ref neat__ucstr_as_mutstr_ref(const unsigned char *str);
 Neat_Mut_String_Ref neat__buf_as_mutstr_ref(const Neat_Buffer str);
 Neat_Mut_String_Ref neat__dstr_ptr_as_mutstr_ref(const Neat_DString *str);
 Neat_Mut_String_Ref neat__strbuf_ptr_as_mutstr_ref(const Neat_String_Buffer *str);
-Neat_Mut_String_Ref neat__sstr_ref_as_mutstr_ref(const Neat_SString_Ref str);
 Neat_Mut_String_Ref neat__mutstr_ref_as_mutstr_ref(const Neat_Mut_String_Ref str);
 
 Neat__Fixed_Mut_String_Ref neat__buf_as_fmutstr_ref(Neat_Buffer buf, unsigned int *len_ptr);
-Neat__Fixed_Mut_String_Ref neat__sstr_ref_as_fmutstr_ref(Neat_SString_Ref sstr_ref);
 Neat__Fixed_Mut_String_Ref neat__strbuf_ptr_as_fmutstr_ref(Neat_String_Buffer *strbuf);
 Neat__Fixed_Mut_String_Ref neat__dstr_ptr_as_fmutstr_ref(Neat_DString *dstr);
 
@@ -1107,14 +1148,12 @@ char *neat__dstr_ptr_as_cstr(const Neat_DString *str);
 char *neat__strv_as_cstr(const Neat_String_View str);
 char *neat__strbuf_as_cstr(const Neat_String_Buffer str);
 char *neat__strbuf_ptr_as_cstr(const Neat_String_Buffer *str);
-char *neat__sstr_ref_as_cstr(const Neat_SString_Ref str);
 char *neat__mutstr_ref_as_cstr(const Neat_Mut_String_Ref str);
 
 unsigned int neat__dstr_cap(const Neat_DString str);
 unsigned int neat__dstr_ptr_cap(const Neat_DString *str);
 unsigned int neat__strbuf_cap(const Neat_String_Buffer str);
 unsigned int neat__strbuf_ptr_cap(const Neat_String_Buffer *str);
-unsigned int neat__sstr_ref_cap(const Neat_SString_Ref str);
 unsigned int neat__buf_cap(const Neat_Buffer buf);
 unsigned int neat__mutstr_ref_cap(const Neat_Mut_String_Ref str);
 unsigned int neat__mutstr_ref_len(const Neat_Mut_String_Ref str);
@@ -1126,7 +1165,6 @@ unsigned char neat__dstr_ptr_char_at(const Neat_DString *str, unsigned int idx);
 unsigned char neat__strv_char_at(const Neat_String_View str, unsigned int idx);
 unsigned char neat__strbuf_char_at(const Neat_String_Buffer str, unsigned int idx);
 unsigned char neat__strbuf_ptr_char_at(const Neat_String_Buffer *str, unsigned int idx);
-unsigned char neat__sstr_ref_char_at(const Neat_SString_Ref str, unsigned int idx);
 unsigned char neat__mutstr_ref_char_at(const Neat_Mut_String_Ref str, unsigned int idx);
 
 bool neat__is_strv_within(Neat_String_View base, Neat_String_View sub);
@@ -1212,26 +1250,62 @@ Neat_Error neat__dstr_ptr_tostr(Neat_Mut_String_Ref dst, const Neat_DString *obj
 Neat_Error neat__strv_tostr(Neat_Mut_String_Ref dst, const Neat_String_View obj);
 Neat_Error neat__strbuf_tostr(Neat_Mut_String_Ref dst, const Neat_String_Buffer obj);
 Neat_Error neat__strbuf_ptr_tostr(Neat_Mut_String_Ref dst, const Neat_String_Buffer *obj);
-Neat_Error neat__sstr_ref_tostr(Neat_Mut_String_Ref dst, const Neat_SString_Ref obj);
 Neat_Error neat__mutstr_ref_tostr(Neat_Mut_String_Ref dst, const Neat_Mut_String_Ref obj);
 
 Neat_Error neat__error_tostr(Neat_Mut_String_Ref dst, Neat_Error obj);
+Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat__Array_Fmt obj);
+
+Neat_Error neat__bool_tostr_p(Neat_Mut_String_Ref dst, bool *obj);
+Neat_Error neat__cstr_tostr_p(Neat_Mut_String_Ref dst, const char **obj);
+Neat_Error neat__ucstr_tostr_p(Neat_Mut_String_Ref dst, const unsigned char **obj);
+Neat_Error neat__char_tostr_p(Neat_Mut_String_Ref dst, char *obj);
+Neat_Error neat__schar_tostr_p(Neat_Mut_String_Ref dst, signed char *obj);
+Neat_Error neat__uchar_tostr_p(Neat_Mut_String_Ref dst, unsigned char *obj);
+Neat_Error neat__short_tostr_p(Neat_Mut_String_Ref dst, short *obj);
+Neat_Error neat__ushort_tostr_p(Neat_Mut_String_Ref dst, unsigned short *obj);
+Neat_Error neat__int_tostr_p(Neat_Mut_String_Ref dst, int *obj);
+Neat_Error neat__uint_tostr_p(Neat_Mut_String_Ref dst, unsigned int *obj);
+Neat_Error neat__long_tostr_p(Neat_Mut_String_Ref dst, long *obj);
+Neat_Error neat__ulong_tostr_p(Neat_Mut_String_Ref dst, unsigned long *obj);
+Neat_Error neat__llong_tostr_p(Neat_Mut_String_Ref dst, long long *obj);
+Neat_Error neat__ullong_tostr_p(Neat_Mut_String_Ref dst, unsigned long long *obj);
+Neat_Error neat__float_tostr_p(Neat_Mut_String_Ref dst, float *obj);
+Neat_Error neat__double_tostr_p(Neat_Mut_String_Ref dst, double *obj);
+
+Neat_Error neat__dstr_tostr_p(Neat_Mut_String_Ref dst, const Neat_DString *obj);
+Neat_Error neat__dstr_ptr_tostr_p(Neat_Mut_String_Ref dst, const Neat_DString **obj);
+Neat_Error neat__strv_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_View *obj);
+Neat_Error neat__strbuf_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_Buffer *obj);
+Neat_Error neat__strbuf_ptr_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_Buffer **obj);
+Neat_Error neat__mutstr_ref_tostr_p(Neat_Mut_String_Ref dst, const Neat_Mut_String_Ref *obj);
+
+Neat_Error neat__error_tostr_p(Neat_Mut_String_Ref dst, Neat_Error *obj);
 
 #define NEAT__X(ty, extra) \
-Neat_Error neat__Integer_d_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty obj); \
-Neat_Error neat__Integer_x_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty obj); \
-Neat_Error neat__Integer_o_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty obj); \
-Neat_Error neat__Integer_b_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty obj);
+Neat_Error neat__Integer_d_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty obj);    \
+Neat_Error neat__Integer_x_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty obj);    \
+Neat_Error neat__Integer_o_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty obj);    \
+Neat_Error neat__Integer_b_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty obj);    \
+                                                                                                       \
+Neat_Error neat__Integer_d_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty *obj); \
+Neat_Error neat__Integer_x_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty *obj); \
+Neat_Error neat__Integer_o_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty *obj); \
+Neat_Error neat__Integer_b_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty *obj);
 
 NEAT__INTEGER_TYPES(NEAT__X, ignore)
 
 #undef NEAT__X
 
 #define NEAT__X(ty, extra) \
-Neat_Error neat__Floating_f_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##ty obj); \
-Neat_Error neat__Floating_g_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##ty obj); \
-Neat_Error neat__Floating_e_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##ty obj); \
-Neat_Error neat__Floating_a_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##ty obj);
+Neat_Error neat__Floating_f_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##ty obj);    \
+Neat_Error neat__Floating_g_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##ty obj);    \
+Neat_Error neat__Floating_e_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##ty obj);    \
+Neat_Error neat__Floating_a_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##ty obj);    \
+                                                                                                         \
+Neat_Error neat__Floating_f_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##ty *obj); \
+Neat_Error neat__Floating_g_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##ty *obj); \
+Neat_Error neat__Floating_e_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##ty *obj); \
+Neat_Error neat__Floating_a_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##ty *obj);
 
 NEAT__FLOATING_TYPES(NEAT__X, ignore, NEAT__X)
 
@@ -1246,9 +1320,7 @@ typedef Neat_DString            DString;
 typedef Neat_String_Buffer      String_Buffer;
 typedef Neat_String_View        String_View;
 typedef Neat_String_View_Array  String_View_Array;
-typedef Neat_SString_Ref        SString_Ref;
 typedef Neat_Mut_String_Ref     Mut_String_Ref;
-#define SString(N)              Neat_SString(N)
 
 #define str_at(any_str, idx) neat_str_at(any_str, idx)
 #define str_len(any_str) neat_str_len(any_str)
@@ -1300,7 +1372,6 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 
 #define strbuf_init_from_cstr(cstr, ...) neat_strbuf_init_from_cstr(cstr __VA_OPT__(,) __VA_ARGS__)
 #define strbuf_init_from_buf(buf, ...) neat_strbuf_init_from_buf(buf __VA_OPT__(,) __VA_ARGS__)
-#define sstr_ref(sstr_ptr) neat_sstr_ref(sstr_ptr)
 #define str_view(...) neat_str_view(__VA_ARGS__)
 #define mutstr_ref(any_str, ...) neat_mutstr_ref(any_str __VA_OPT__(,) __VA_ARGS__)
 #define str_view_arr(...) neat_str_view_arr(__VA_ARGS__)
@@ -1315,6 +1386,7 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 #define fprintln(stream, ...) neat_fprintln(stream, __VA_ARGS__)
 
 #define tsfmt(exp, fmt_char, ...) neat_tsfmt(exp, fmt_char __VA_OPT__(,) __VA_ARGS__)
+#define arrfmt(arr, n, open, close, delim, ...) neat_arrfmt(arr, n, open, close, delim __VA_OPT__(,) __VA_ARGS__)
 
 #endif
 
