@@ -256,12 +256,21 @@ typedef struct Neat__Array_Fmt
     const Neat_String_View open;
     const Neat_String_View close;
     const Neat_String_View separator;
-    const enum {
-        NEAT_NO_TRAILING_SEPERATOR = 0,
-        NEAT_TRAILING_SEPERATOR,
-        NEAT_TRAILING_SEPARATOR_LEADING_NON_WS
-    } trailing_separator;
+    const Neat_String_View trailing_separator;
 } Neat__Array_Fmt;
+
+typedef struct Neat__DString_Append_Allocator
+{
+    Neat_Allocator base;
+    struct Neat_DString *owner;
+} Neat__DString_Append_Allocator;
+
+typedef struct Neat__Appender_Mut_String_Ref_State
+{
+    Neat_DString appender_dstr;
+    Neat__DString_Append_Allocator dstr_append_allocator;
+    Neat_String_Buffer appender_buf;
+} Neat__Appender_Mut_String_Ref_State;
 
 #define neat__fmutstr_ref(s, ...) \
 _Generic(&(__typeof__(s)){0}, \
@@ -455,9 +464,7 @@ do \
 { \
     Neat_Mut_String_Ref neat__appender_mutstr_ref = neat__make_appender_mutstr_ref( \
         neat__as_mutstr_ref, \
-        &neat__appender_dstr_opt, \
-        &neat__appender_dstr_allocator_opt, \
-        &neat__appender_strbuf_opt \
+        &neat__appender_state \
     ); \
     neat_tostr(neat__appender_mutstr_ref, x); \
     neat__mutstr_ref_commit_appender( \
@@ -468,9 +475,7 @@ do \
 
 #define neat__str_print_each_setup(...) \
 __VA_OPT__( \
-    Neat_DString neat__appender_dstr_opt = {0}; \
-    Neat__DString_Append_Allocator neat__appender_dstr_allocator_opt = {0}; \
-    Neat_String_Buffer neat__appender_strbuf_opt = {0}; \
+    Neat__Appender_Mut_String_Ref_State neat__appender_state = {0}; \
     NEAT__FOREACH(neat__str_print_each, __VA_ARGS__); \
 )
 
@@ -478,15 +483,7 @@ __VA_OPT__( \
 __VA_OPT__( \
 do \
 { \
-    typedef struct Neat__DString_Append_Allocator \
-    { \
-        Neat_Allocator funcs; \
-        struct Neat_DString *owner; \
-    } Neat__DString_Append_Allocator; \
-    \
-    Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_DString *appender_dstr_opt, void *dstr_appender_allocator, Neat_String_Buffer *appender_strbuf_opt); \
     Neat_Error neat__mutstr_ref_commit_appender(Neat_Mut_String_Ref owner, Neat_Mut_String_Ref appender); \
-    \
     neat__str_print_each_setup(__VA_ARGS__); \
 } while(0) \
 )
@@ -879,7 +876,24 @@ NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 
 #undef NEAT__X
 
-#define neat_arrfmt(array_, nb_, open_, close_, seperator_, ...) \
+#define neat_arrfmt(array, nb, ...) \
+NEAT__IF_EMPTY(neat__arrfmt_, __VA_ARGS__) \
+__VA_OPT__(neat__arrfmt_2) \
+(array, nb __VA_OPT__(,) __VA_ARGS__)
+
+#define neat__arrfmt_(array_, nb_) \
+((Neat__Array_Fmt){ \
+    .array = (array_), \
+    .nb = (nb_), \
+    .elm_size = sizeof((array_)[0]), \
+    .tostr_p = (void*) neat__get_tostr_p_func(__typeof__((array_)[0])), \
+    .open = neat_str_view("{"), \
+    .close = neat_str_view("}"), \
+    .separator = neat_str_view(", "), \
+    .trailing_separator = neat_str_view("") \
+})
+
+#define neat__arrfmt_2(array_, nb_, open_, close_, seperator_, ...) \
 ((Neat__Array_Fmt){ \
     .array = (array_), \
     .nb = (nb_), \
@@ -888,7 +902,7 @@ NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
     .open = neat_str_view(open_), \
     .close = neat_str_view(close_), \
     .separator = neat_str_view(seperator_), \
-    .trailing_separator = __VA_ARGS__ +0 \
+    .trailing_separator = neat_str_view(NEAT__VA_OR("", __VA_ARGS__)) \
 })
 
 #define NEAT__INTEGER_TOSTR_GENERIC_CASE(ty, extra) \
@@ -1141,6 +1155,8 @@ Neat__Fixed_Mut_String_Ref neat__buf_as_fmutstr_ref(Neat_Buffer buf, unsigned in
 Neat__Fixed_Mut_String_Ref neat__strbuf_ptr_as_fmutstr_ref(Neat_String_Buffer *strbuf);
 Neat__Fixed_Mut_String_Ref neat__dstr_ptr_as_fmutstr_ref(Neat_DString *dstr);
 
+Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat__Appender_Mut_String_Ref_State *state);
+
 char *neat__cstr_as_cstr(const char *str);
 char *neat__ucstr_as_cstr(const unsigned char *str);
 char *neat__dstr_as_cstr(const Neat_DString str);
@@ -1386,7 +1402,7 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 #define fprintln(stream, ...) neat_fprintln(stream, __VA_ARGS__)
 
 #define tsfmt(exp, fmt_char, ...) neat_tsfmt(exp, fmt_char __VA_OPT__(,) __VA_ARGS__)
-#define arrfmt(arr, n, open, close, delim, ...) neat_arrfmt(arr, n, open, close, delim __VA_OPT__(,) __VA_ARGS__)
+#define arrfmt(arr, n, ...) neat_arrfmt(arr, n, __VA_ARGS__)
 
 #endif
 
