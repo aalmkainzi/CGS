@@ -265,12 +265,12 @@ typedef struct Neat__DString_Append_Allocator
     struct Neat_DString *owner;
 } Neat__DString_Append_Allocator;
 
-typedef struct Neat__Appender_Mut_String_Ref_State
+typedef struct Neat_Appender_State
 {
     Neat_DString appender_dstr;
     Neat__DString_Append_Allocator dstr_append_allocator;
     Neat_String_Buffer appender_buf;
-} Neat__Appender_Mut_String_Ref_State;
+} Neat_Appender_State;
 
 #define neat__fmutstr_ref(s, ...) \
 _Generic(&(__typeof__(s)){0}, \
@@ -475,7 +475,7 @@ do \
 
 #define neat__str_print_each_setup(...) \
 __VA_OPT__( \
-    Neat__Appender_Mut_String_Ref_State neat__appender_state = {0}; \
+    Neat_Appender_State neat__appender_state = {0}; \
     NEAT__FOREACH(neat__str_print_each, __VA_ARGS__); \
 )
 
@@ -483,7 +483,6 @@ __VA_OPT__( \
 __VA_OPT__( \
 do \
 { \
-    Neat_Error neat__mutstr_ref_commit_appender(Neat_Mut_String_Ref owner, Neat_Mut_String_Ref appender); \
     neat__str_print_each_setup(__VA_ARGS__); \
 } while(0) \
 )
@@ -596,6 +595,12 @@ unsigned char(*)[sizeof(__typeof__(any_str))]: neat__buf_as_mutstr_ref         \
 
 #define neat__mutstr_ref2(carr_or_ptr, cap_) \
 (Neat_Mut_String_Ref){.ty = NEAT__BUF_TY, .str.carr = neat__cstr_to_buf(carr_or_ptr, cap_)} \
+
+#define neat_str_appender(any_str, appender_state) \
+neat__make_appender_mutstr_ref(neat_mutstr_ref(any_str), (appender_state))
+
+#define neat_str_commit_appender(original, appender) \
+neat__mutstr_ref_commit_appender(neat_mutstr_ref(original), appender)
 
 #define neat_str_view(any_str, ...) \
 __VA_OPT__(neat__strv2(any_str, __VA_ARGS__)) \
@@ -1155,7 +1160,8 @@ Neat__Fixed_Mut_String_Ref neat__buf_as_fmutstr_ref(Neat_Buffer buf, unsigned in
 Neat__Fixed_Mut_String_Ref neat__strbuf_ptr_as_fmutstr_ref(Neat_String_Buffer *strbuf);
 Neat__Fixed_Mut_String_Ref neat__dstr_ptr_as_fmutstr_ref(Neat_DString *dstr);
 
-Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat__Appender_Mut_String_Ref_State *state);
+Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_Appender_State *state);
+Neat_Error neat__mutstr_ref_commit_appender(Neat_Mut_String_Ref owner, Neat_Mut_String_Ref appender);
 
 char *neat__cstr_as_cstr(const char *str);
 char *neat__ucstr_as_cstr(const unsigned char *str);
@@ -1386,6 +1392,9 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 #define dstr_shrink_to_fit(dstr) neat_dstr_shrink_to_fit(dstr)
 #define dstr_ensure_cap(dstr, new_cap) neat_dstr_ensure_cap(dstr, new_cap)
 
+#define str_appender(any_str, appender_state) neat_str_appender(any_str, appender_state)
+#define str_commit_appender(original, appender) neat_str_commit_appender(original, appender)
+
 #define strbuf_init_from_cstr(cstr, ...) neat_strbuf_init_from_cstr(cstr __VA_OPT__(,) __VA_ARGS__)
 #define strbuf_init_from_buf(buf, ...) neat_strbuf_init_from_buf(buf __VA_OPT__(,) __VA_ARGS__)
 #define str_view(...) neat_str_view(__VA_ARGS__)
@@ -1394,6 +1403,7 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 #define str_view_arr_from_carr(strv_carr, ...) neat_str_view_arr_from_carr(strv_carr __VA_OPT__(,) __VA_ARGS__)
 
 #define tostr(dst, src) neat_tostr(dst, src)
+#define tostr_p(dst, srcp) neat_tostr_p(dst, srcp)
 #define has_tostr(T) neat_has_tostr(T)
 
 #define print(...) neat_print(__VA_ARGS__)
@@ -1407,6 +1417,8 @@ typedef Neat_Mut_String_Ref     Mut_String_Ref;
 #endif
 
 #if defined(ADD_TOSTR)
+
+_Static_assert( neat__has_type(neat__get_tostr_func_ft(NEAT__ARG1 ADD_TOSTR), neat__tostr_fail), "Type already has a tostr" );
 
 #if !defined(NEAT__TOSTR1)
 #define NEAT__TOSTR1

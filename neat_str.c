@@ -1011,7 +1011,7 @@ Neat_String_Buffer neat__make_appender_strbuf(Neat_Mut_String_Ref owner)
     };
 }
 
-Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat__Appender_Mut_String_Ref_State *state)
+Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_Appender_State *state)
 {
     switch(owner.ty)
     {
@@ -3101,7 +3101,7 @@ Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat__Array_Fmt obj)
 {
     neat__mutstr_ref_clear(dst);
     
-    Neat__Appender_Mut_String_Ref_State appender_state;
+    Neat_Appender_State appender_state;
     
     Neat_Error err = neat__mutstr_ref_append(dst, obj.open);
     
