@@ -1841,23 +1841,25 @@ NEAT_API Neat_Error neat__mutstr_ref_replace_range(Neat_Mut_String_Ref str, unsi
     };
 }
 
-NEAT_API Neat_Error neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
+NEAT_API Neat_Replace_Result neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
 {
     Neat_String_View as_strv = neat__strv_fmutstr_ref2(str, 0);
     if(neat__is_strv_within(as_strv, target) || neat__is_strv_within(as_strv, replacement))
     {
-        return (Neat_Error){NEAT_ALIASING_NOT_SUPPORTED};
+        return (Neat_Replace_Result){.nb_replaced = 0, .err = {NEAT_ALIASING_NOT_SUPPORTED}};
     }
     
     Neat_Error err = (Neat_Error){NEAT_OK};
+    unsigned int replace_count = 0;
     
     if(target.len == 0)
     {
         for(unsigned int i = 0 ; i <= *str.len && err.ec == NEAT_OK ; i += replacement.len + 1)
         {
             err = neat__fmutstr_ref_insert(str, replacement, i);
+            replace_count += 1;
         }
-        return err;
+        return (Neat_Replace_Result){.nb_replaced = replace_count, .err = err};
     }
     
     if(target.len < replacement.len)
@@ -1880,6 +1882,8 @@ NEAT_API Neat_Error neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Ref str, co
                     *str.len += (replacement.len - target.len);
                     
                     i = idx + replacement.len;
+                    
+                    replace_count += 1;
                 }
                 else
                 {
@@ -1911,6 +1915,8 @@ NEAT_API Neat_Error neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Ref str, co
                 *str.len -= (target.len - replacement.len);
                 
                 i = idx + replacement.len;
+                
+                replace_count += 1;
             }
             else
             {
@@ -1931,6 +1937,8 @@ NEAT_API Neat_Error neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Ref str, co
                 memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
                 
                 i = idx + replacement.len;
+                
+                replace_count += 1;
             }
             else
             {
@@ -1941,26 +1949,28 @@ NEAT_API Neat_Error neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Ref str, co
     
     if(str.cap > 0)
         str.chars[*str.len] = '\0';
-    return err;
+    return (Neat_Replace_Result){.nb_replaced = replace_count += 1, .err = err};
 }
 
-NEAT_API Neat_Error neat__dstr_replace(Neat_DString *dstr, const Neat_String_View target, const Neat_String_View replacement)
+NEAT_API Neat_Replace_Result neat__dstr_replace(Neat_DString *dstr, const Neat_String_View target, const Neat_String_View replacement)
 {
     Neat_String_View as_strv = neat__strv_dstr_ptr2(dstr, 0);
     if(neat__is_strv_within(as_strv, target) || neat__is_strv_within(as_strv, replacement))
     {
-        return (Neat_Error){NEAT_ALIASING_NOT_SUPPORTED};
+        return (Neat_Replace_Result){.nb_replaced = 0, .err = NEAT_ALIASING_NOT_SUPPORTED};
     }
     
     Neat_Error err = (Neat_Error){NEAT_OK};
+    unsigned int replace_count = 0;
     
     if(target.len == 0)
     {
         for(unsigned int i = 0 ; i <= dstr->len && err.ec == NEAT_OK ; i += replacement.len + 1)
         {
             err = neat__dstr_insert(dstr, replacement, i);
+            replace_count += 1;
         }
-        return err;
+        return (Neat_Replace_Result){.nb_replaced = replace_count, .err = err};
     }
     
     if(target.len < replacement.len)
@@ -1983,6 +1993,8 @@ NEAT_API Neat_Error neat__dstr_replace(Neat_DString *dstr, const Neat_String_Vie
                 dstr->len += (replacement.len - target.len);
                 
                 i = idx + replacement.len;
+                
+                replace_count += 1;
             }
         }
     }
@@ -2004,6 +2016,8 @@ NEAT_API Neat_Error neat__dstr_replace(Neat_DString *dstr, const Neat_String_Vie
                 dstr->len -= (target.len - replacement.len);
                 
                 i = idx + replacement.len;
+                
+                replace_count += 1;
             }
             else
             {
@@ -2024,6 +2038,8 @@ NEAT_API Neat_Error neat__dstr_replace(Neat_DString *dstr, const Neat_String_Vie
                 memmove(dstr->chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
                 
                 i = idx + replacement.len;
+                
+                replace_count += 1;
             }
             else
             {
@@ -2034,10 +2050,10 @@ NEAT_API Neat_Error neat__dstr_replace(Neat_DString *dstr, const Neat_String_Vie
     
     dstr->chars[dstr->len] = '\0';
     
-    return err;
+    return (Neat_Replace_Result){.nb_replaced = replace_count, .err = err};
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_replace(Neat_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
+NEAT_API Neat_Replace_Result neat__mutstr_ref_replace(Neat_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
 {
     switch(str.ty)
     {
