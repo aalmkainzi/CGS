@@ -1949,7 +1949,7 @@ NEAT_API Neat_Replace_Result neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Re
     
     if(str.cap > 0)
         str.chars[*str.len] = '\0';
-    return (Neat_Replace_Result){.nb_replaced = replace_count += 1, .err = err};
+    return (Neat_Replace_Result){.nb_replaced = replace_count, .err = err};
 }
 
 NEAT_API Neat_Replace_Result neat__dstr_replace(Neat_DString *dstr, const Neat_String_View target, const Neat_String_View replacement)
@@ -2140,7 +2140,7 @@ NEAT_API unsigned int neat__strv_count(const Neat_String_View hay, const Neat_St
     while(found.chars != NULL)
     {
         count += 1;
-        found = neat__strv_find(neat__strv_strv2(hay, (found.chars - hay.chars) + 1), needle);
+        found = neat__strv_find(neat__strv_strv2(hay, (found.chars - hay.chars) + found.len), needle);
     }
     
     return count;
@@ -3043,7 +3043,7 @@ NEAT_API Neat_Error neat__char_tostr(Neat_Mut_String_Ref dst, char obj)
 
 NEAT_API Neat_Error neat__schar_tostr(Neat_Mut_String_Ref dst, signed char obj)
 {
-    return neat__mutstr_ref_copy(dst, neat__sc_to_string[obj]);
+    return neat__mutstr_ref_copy(dst, neat__sc_to_string[(unsigned char)obj]);
 }
 
 NEAT_API Neat_Error neat__uchar_tostr(Neat_Mut_String_Ref dst, unsigned char obj)
