@@ -3387,7 +3387,7 @@ NEAT_API Neat_Error neat__Floating_f_Fmt_##type##_tostr(Neat_Mut_String_Ref dst,
         neat__dstr_ensure_cap(dst.str.dstr, len + 1); \
     } \
     int err = snprintf(neat__mutstr_ref_as_cstr(dst), neat__mutstr_ref_cap(dst), "%.*f", obj.precision, obj.obj); \
-    if(neat__mutstr_ref_cap(dst) - 1 < len) \
+    if(neat__mutstr_ref_cap(dst) - 1 < (unsigned int) len) \
     { \
         neat__mutstr_ref_set_len(dst, neat__mutstr_ref_cap(dst) - 1); \
         return (Neat_Error){NEAT_DST_TOO_SMALL}; \
@@ -3409,7 +3409,7 @@ NEAT_API Neat_Error neat__Floating_g_Fmt_##type##_tostr(Neat_Mut_String_Ref dst,
         neat__dstr_ensure_cap(dst.str.dstr, len + 1); \
     } \
     int err = snprintf(neat__mutstr_ref_as_cstr(dst), neat__mutstr_ref_cap(dst), "%.*g", obj.precision, obj.obj); \
-    if(neat__mutstr_ref_cap(dst) - 1 < len) \
+    if(neat__mutstr_ref_cap(dst) - 1 < (unsigned int) len) \
     { \
         neat__mutstr_ref_set_len(dst, neat__mutstr_ref_cap(dst) - 1); \
         return (Neat_Error){NEAT_DST_TOO_SMALL}; \
@@ -3431,7 +3431,7 @@ NEAT_API Neat_Error neat__Floating_e_Fmt_##type##_tostr(Neat_Mut_String_Ref dst,
         neat__dstr_ensure_cap(dst.str.dstr, len + 1); \
     } \
     int err = snprintf(neat__mutstr_ref_as_cstr(dst), neat__mutstr_ref_cap(dst), "%.*e", obj.precision, obj.obj); \
-    if(neat__mutstr_ref_cap(dst) - 1 < len) \
+    if(neat__mutstr_ref_cap(dst) - 1 < (unsigned int) len) \
     { \
         neat__mutstr_ref_set_len(dst, neat__mutstr_ref_cap(dst) - 1); \
         return (Neat_Error){NEAT_DST_TOO_SMALL}; \
@@ -3453,7 +3453,7 @@ NEAT_API Neat_Error neat__Floating_a_Fmt_##type##_tostr(Neat_Mut_String_Ref dst,
         neat__dstr_ensure_cap(dst.str.dstr, len + 1); \
     } \
     int err = snprintf(neat__mutstr_ref_as_cstr(dst), neat__mutstr_ref_cap(dst), "%.*a", obj.precision, obj.obj); \
-    if(neat__mutstr_ref_cap(dst) - 1 < len) \
+    if(neat__mutstr_ref_cap(dst) - 1 < (unsigned int) len) \
     { \
         neat__mutstr_ref_set_len(dst, neat__mutstr_ref_cap(dst) - 1); \
         return (Neat_Error){NEAT_DST_TOO_SMALL}; \

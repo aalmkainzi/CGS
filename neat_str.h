@@ -254,7 +254,7 @@ typedef struct Neat__Array_Fmt
     const size_t nb;
     const size_t elm_size;
     
-    const Neat_Error(*elm_tostr)(Neat_Mut_String_Ref dst, const void *obj);
+    Neat_Error(* const elm_tostr)(Neat_Mut_String_Ref dst, const void *obj);
     
     const Neat_String_View open;
     const Neat_String_View close;
