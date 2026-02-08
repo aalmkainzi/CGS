@@ -299,7 +299,7 @@ _Generic(any_str,                                         \
     const char*               : neat__cstr_char_at,       \
     const unsigned char*      : neat__ucstr_char_at,      \
     const Neat_DString*       : neat__dstr_ptr_char_at,   \
-    const Neat_String_Buffer* : neat__strbuf_ptr_char_at, \
+    const Neat_String_Buffer* : neat__strbuf_ptr_char_at  \
 )((any_str), idx)
 
 #define neat_str_len(any_str) \
@@ -351,7 +351,7 @@ _Generic(any_str,                                         \
     const char*               : neat__cstr_as_cstr,       \
     const unsigned char*      : neat__ucstr_as_cstr,      \
     const Neat_DString*       : neat__dstr_ptr_as_cstr,   \
-    const Neat_String_Buffer* : neat__strbuf_ptr_as_cstr, \
+    const Neat_String_Buffer* : neat__strbuf_ptr_as_cstr  \
 )(any_str)
 
 #define neat_str_equal(any_str1, any_str2) \
@@ -603,9 +603,11 @@ unsigned char(*)[sizeof(__typeof__(any_str))]: neat__buf_as_mutstr_ref         \
 #define neat__mutstr_ref2(carr_or_ptr, cap_) \
 (Neat_Mut_String_Ref){.ty = NEAT__BUF_TY, .str.carr = neat__cstr_to_buf(carr_or_ptr, cap_)} \
 
+// TODO _Generic
 #define neat_str_appender(any_str, appender_state) \
 neat__make_appender_mutstr_ref(neat_mutstr_ref(any_str), (appender_state))
 
+// TODO _Generic
 #define neat_str_commit_appender(original, appender) \
 neat__mutstr_ref_commit_appender(neat_mutstr_ref(original), appender)
 
