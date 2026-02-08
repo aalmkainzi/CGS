@@ -39,7 +39,7 @@ NEAT_API Neat_Allocation neat__allocator_invoke_alloc(Neat_Allocator *allocator,
 NEAT_API void neat__allocator_invoke_dealloc(Neat_Allocator *allocator, void *ptr, size_t obj_size, size_t nb);
 NEAT_API Neat_Allocation neat__allocator_invoke_realloc(Neat_Allocator *allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb);
 
-Neat_Allocator *neat_get_default_allocator();
+NEAT_API Neat_Allocator *neat_get_default_allocator();
 
 #define neat_alloc(allocator, T, n) \
 neat__allocator_invoke_alloc(allocator, _Alignof(T), sizeof(T), (n))
@@ -254,7 +254,7 @@ typedef struct Neat__Array_Fmt
     const size_t nb;
     const size_t elm_size;
     
-    const Neat_Error(*tostr_p)(Neat_Mut_String_Ref dst, const void *obj);
+    const Neat_Error(*elm_tostr)(Neat_Mut_String_Ref dst, const void *obj);
     
     const Neat_String_View open;
     const Neat_String_View close;
@@ -352,6 +352,7 @@ neat__strv_equal(neat_str_view(any_str1), neat_str_view(any_str2))
 #define neat_str_dup(any_str, ...) \
 neat__dstr_init_from(neat_str_view(any_str), NEAT__VA_OR(neat_get_default_allocator(), __VA_ARGS__))
 
+// TODO dstr branch shoudl call dstr_*
 #define neat_str_copy(any_str_dst, any_str_src) \
 _Generic(any_str_dst, \
     Neat_Mut_String_Ref : neat__mutstr_ref_copy(neat__coerce(any_str_dst, Neat_Mut_String_Ref), neat_str_view(any_str_src)), \
@@ -359,6 +360,7 @@ _Generic(any_str_dst, \
     default             : neat__fmutstr_ref_copy(neat__fmutstr_ref(neat__coerce_not(any_str_dst, Neat_Mut_String_Ref, Neat_String_Buffer*)), neat_str_view(any_str_src)) \
 )
 
+// TODO dstr branch shoudl call dstr_*
 #define neat_str_putc(any_str_dst, c) \
 _Generic(any_str_dst, \
     Neat_Mut_String_Ref : neat__mutstr_ref_putc(neat__coerce(any_str_dst, Neat_Mut_String_Ref), c), \
@@ -404,6 +406,7 @@ neat__mutstr_ref_tolower(neat_mutstr_ref(any_str))
 #define neat_str_toupper(any_str) \
 neat__mutstr_ref_toupper(neat_mutstr_ref(any_str))
 
+// TODO dstring branch should call dstr version
 #define neat_str_replace(any_str, any_str_target, any_str_replacement) \
 _Generic(any_str, \
     Mut_String_Ref : neat__mutstr_ref_replace(neat__coerce(any_str, Neat_Mut_String_Ref), neat_str_view(any_str_target), neat_str_view(any_str_replacement)), \
@@ -411,6 +414,7 @@ _Generic(any_str, \
     default        : neat__fmutstr_ref_replace(neat__fmutstr_ref(neat__coerce_not(any_str, Neat_Mut_String_Ref, Neat_String_Buffer*)), neat_str_view(any_str_target), neat_str_view(any_str_replacement)) \
 )
 
+// TODO dstring branch should call dstr version
 #define neat_str_replace_first(any_str, any_str_target, any_str_replacement) \
 _Generic(any_str, \
     Neat_Mut_String_Ref : neat__mutstr_ref_replace_first(neat__coerce(any_str, Neat_Mut_String_Ref), neat_str_view(any_str_target), neat_str_view(any_str_replacement)), \
@@ -418,11 +422,12 @@ _Generic(any_str, \
     default             : neat__fmutstr_ref_replace_first(neat__fmutstr_ref(neat__coerce_not(any_str, Neat_Mut_String_Ref, Neat_String_Buffer*)), neat_str_view(any_str_target), neat_str_view(any_str_replacement)) \
 )
 
+// TODO call dstr version for DString branch
 #define neat_str_replace_range(any_str, begin, end, any_str_replacement) \
 _Generic(any_str, \
     Neat_Mut_String_Ref : neat__mutstr_ref_replace_range(neat__coerce(any_str, Neat_Mut_String_Ref), begin, end, neat_str_view(any_str_replacement)), \
     Neat_DString*       : neat__mutstr_ref_replace_range(neat_mutstr_ref(any_str), begin, end, neat_str_view(any_str_replacement)) \
-    default              : neat__fmutstr_ref_replace_range(neat__fmutstr_ref(neat__coerce_not(any_str, Neat_Mut_String_Ref, Neat_String_Buffer*), begin, end, neat_str_view(any_str_replacement))) \
+    default             : neat__fmutstr_ref_replace_range(neat__fmutstr_ref(neat__coerce_not(any_str, Neat_Mut_String_Ref, Neat_String_Buffer*), begin, end, neat_str_view(any_str_replacement))) \
 )
 
 #define neat_str_split(any_str, any_str_delim, ...) \
@@ -890,7 +895,7 @@ __VA_OPT__(neat__arrfmt_2) \
     .array = (array_), \
     .nb = (nb_), \
     .elm_size = sizeof((array_)[0]), \
-    .tostr_p = (void*) neat__get_tostr_p_func(__typeof__((array_)[0])), \
+    .elm_tostr = (void*) neat__get_tostr_p_func(__typeof__((array_)[0])), \
     .open = neat_str_view("{"), \
     .close = neat_str_view("}"), \
     .separator = neat_str_view(", "), \
@@ -902,7 +907,7 @@ __VA_OPT__(neat__arrfmt_2) \
     .array = (array_), \
     .nb = (nb_), \
     .elm_size = sizeof((array_)[0]), \
-    .tostr_p = (void*) neat__get_tostr_p_func(__typeof__((array_)[0])), \
+    .elm_tostr = (void*) neat__get_tostr_p_func(__typeof__((array_)[0])), \
     .open = neat_str_view(open_), \
     .close = neat_str_view(close_), \
     .separator = neat_str_view(seperator_), \
@@ -1303,30 +1308,30 @@ NEAT_API Neat_Error neat__mutstr_ref_tostr_p(Neat_Mut_String_Ref dst, const Neat
 NEAT_API Neat_Error neat__error_tostr_p(Neat_Mut_String_Ref dst, Neat_Error *obj);
 
 #define NEAT__X(ty, extra) \
-Neat_Error neat__Integer_d_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty obj);    \
-Neat_Error neat__Integer_x_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty obj);    \
-Neat_Error neat__Integer_o_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty obj);    \
-Neat_Error neat__Integer_b_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty obj);    \
+NEAT_API Neat_Error neat__Integer_d_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty obj);    \
+NEAT_API Neat_Error neat__Integer_x_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty obj);    \
+NEAT_API Neat_Error neat__Integer_o_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty obj);    \
+NEAT_API Neat_Error neat__Integer_b_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty obj);    \
                                                                                                        \
-Neat_Error neat__Integer_d_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty *obj); \
-Neat_Error neat__Integer_x_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty *obj); \
-Neat_Error neat__Integer_o_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty *obj); \
-Neat_Error neat__Integer_b_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty *obj);
+NEAT_API Neat_Error neat__Integer_d_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty *obj); \
+NEAT_API Neat_Error neat__Integer_x_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty *obj); \
+NEAT_API Neat_Error neat__Integer_o_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty *obj); \
+NEAT_API Neat_Error neat__Integer_b_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty *obj);
 
 NEAT__INTEGER_TYPES(NEAT__X, ignore)
 
 #undef NEAT__X
 
 #define NEAT__X(ty, extra) \
-Neat_Error neat__Floating_f_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##ty obj);    \
-Neat_Error neat__Floating_g_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##ty obj);    \
-Neat_Error neat__Floating_e_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##ty obj);    \
-Neat_Error neat__Floating_a_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##ty obj);    \
+NEAT_API Neat_Error neat__Floating_f_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##ty obj);    \
+NEAT_API Neat_Error neat__Floating_g_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##ty obj);    \
+NEAT_API Neat_Error neat__Floating_e_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##ty obj);    \
+NEAT_API Neat_Error neat__Floating_a_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##ty obj);    \
                                                                                                          \
-Neat_Error neat__Floating_f_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##ty *obj); \
-Neat_Error neat__Floating_g_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##ty *obj); \
-Neat_Error neat__Floating_e_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##ty *obj); \
-Neat_Error neat__Floating_a_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##ty *obj);
+NEAT_API Neat_Error neat__Floating_f_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##ty *obj); \
+NEAT_API Neat_Error neat__Floating_g_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##ty *obj); \
+NEAT_API Neat_Error neat__Floating_e_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##ty *obj); \
+NEAT_API Neat_Error neat__Floating_a_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##ty *obj);
 
 NEAT__FLOATING_TYPES(NEAT__X, ignore, NEAT__X)
 
