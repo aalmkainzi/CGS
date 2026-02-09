@@ -865,9 +865,9 @@ default: 0)
 ty: \
 _Generic((char(*)[NEAT__ARG2 extra]){0}, \
 char(*)['d']: (Neat__Integer_d_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
-char(*)['x']: (Neat__Integer_x_Fmt_##ty)    {neat__coerce(NEAT__ARG1 extra, ty)},  \
-char(*)['o']: (Neat__Integer_o_Fmt_##ty)  {neat__coerce(NEAT__ARG1 extra, ty)},  \
-char(*)['b']: (Neat__Integer_b_Fmt_##ty) {neat__coerce(NEAT__ARG1 extra, ty)},  \
+char(*)['x']: (Neat__Integer_x_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
+char(*)['o']: (Neat__Integer_o_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
+char(*)['b']: (Neat__Integer_b_Fmt_##ty){neat__coerce(NEAT__ARG1 extra, ty)},  \
 default: 0),
 
 #define NEAT__3_VA_OR(otherwise, a,b, ...) \
@@ -895,7 +895,8 @@ NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
     ) \
 )
 
-#undef NEAT__X
+#define neat_tsfmt_t(ty, fmt_chr, ...) \
+__typeof__(neat_tsfmt((ty)0) fmt_chr __VA_OPT__(,) __VA_ARGS__)
 
 #define neat_arrfmt(array, nb, ...) \
 NEAT__IF_EMPTY(neat__arrfmt_, __VA_ARGS__) \

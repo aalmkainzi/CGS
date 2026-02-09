@@ -2955,6 +2955,7 @@ do { \
 
 #define neat__sinteger_tostr() \
 do { \
+    neat__mutstr_ref_clear(dst); \
     Neat_Error err = (Neat_Error){NEAT_OK}; \
     switch(dst.ty) \
     { \
@@ -3014,6 +3015,7 @@ do { \
 
 #define neat__uinteger_tostr() \
 do { \
+    neat__mutstr_ref_clear(dst); \
     Neat_Error err = (Neat_Error){NEAT_OK}; \
     switch(dst.ty) \
     { \
