@@ -18,7 +18,7 @@ do { \
     tests_run++; \
     if (name()) { \
         tests_passed++; \
-        printf(" PASSED\n"); \
+        /*printf(" PASSED\n")*/; \
     } else { \
         printf(" FAILED\n"); \
     } \
@@ -722,7 +722,7 @@ bool test_str_replace_none() {
 bool test_str_replace_empty_target() {
     DString dst = dstr_init_from("hello");
     Replace_Result result = str_replace(&dst, "", "x");
-    ASSERT_EQ(result.nb_replaced, 0);
+    ASSERT_EQ(result.nb_replaced, 6);
     dstr_deinit(&dst);
     return true;
 }

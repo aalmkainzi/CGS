@@ -2089,16 +2089,10 @@ NEAT_API Neat_Error neat__dstr_replace_first(Neat_DString *dstr, const Neat_Stri
     Neat_String_View match = neat__strv_find(neat__strv_dstr_ptr2(dstr, 0), target);
     if(match.chars != NULL)
     {
-        if(dstr->cap > 0 && dstr->cap - 1 > dstr->len + (replacement.len - target.len))
-        {
-            unsigned int begin = match.chars - dstr->chars;
-            unsigned int end = begin + match.len;
-            err = neat__dstr_replace_range(dstr, begin, end, replacement);
-        }
+        unsigned int begin = match.chars - dstr->chars;
+        unsigned int end = begin + match.len;
+        err = neat__dstr_replace_range(dstr, begin, end, replacement);
     }
-    
-    if(dstr->cap > 0)
-        dstr->chars[dstr->len] = '\0';
     
     return err;
 }
@@ -2110,6 +2104,7 @@ NEAT_API Neat_Error neat__fmutstr_ref_replace_first(Neat__Fixed_Mut_String_Ref s
     Neat_String_View match = neat__strv_find(neat__strv_fmutstr_ref2(str, 0), target);
     if(match.chars != NULL)
     {
+        // TODO make this fill as much as possible. just call replace_range
         if(str.cap > 0 && str.cap - 1 > *str.len + (replacement.len - target.len))
         {
             unsigned int idx = match.chars - str.chars;
@@ -3286,6 +3281,7 @@ do \
         } \
         num_bytes -= 1; \
     } \
+    neat__mutstr_ref_set_len(dst, neat__mutstr_ref_len(dst)); \
     return err; \
 } while(0)
 
@@ -3341,6 +3337,7 @@ do \
         } \
         unum = unum << 3; \
     } \
+    neat__mutstr_ref_set_len(dst, neat__mutstr_ref_len(dst)); \
     return err; \
 } while(0)
 
