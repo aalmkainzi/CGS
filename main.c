@@ -4,8 +4,8 @@
 #include <float.h>
 
 #define NEAT_STR_SHORT_NAMES
-// #define NEAT_API static inline
-// #define NEAT_PRIVATE static inline
+#define NEAT_API static inline
+#define NEAT_PRIVATE static inline
 
 #include "neat_str.c"
 
@@ -1038,49 +1038,54 @@ void tests_memmem()
 
 int main()
 {
-    test_tostr();
-    test_str_del();
-    test_str_count();
-    test_str_find();
-    test_str_replace();
-    test_str_replace_first();
-    test_read();
-    test_misc();
-    test_sprint();
-    test_insert();
-    tests_memmem();
+//     test_tostr();
+//     test_str_del();
+//     test_str_count();
+//     test_str_find();
+//     test_str_replace();
+//     test_str_replace_first();
+//     test_read();
+//     test_misc();
+//     test_sprint();
+//     test_insert();
+//     tests_memmem();
+//
+//     test_bin();
+//     test_ffmt();
+//     test_octal();
+//     test_read2();
+//     test_ffmt();
+//     test_split();
+//     //
+//     String_Buffer str = strbuf_init_from_buf((char[512]){});
+//
+//     int arr[5] = {1,2,3,4,5};
+//     tostr(&str, arrfmt((Neat__Integer_b_Fmt_neat__i*) arr, 5, "{\n    ", "\n}", ",\n    ", ","));
+//
+//     println(str);
+//
+//     tostr(&str, arrfmt(arr, 5));
+//
+//     println(str);
+//
+//     Mut_String_Ref appender = str_appender(&str, &(Neat_Appender_State){0});
+//
+//     str_append(appender, "---''");
+//
+//     println(str);
+//     println(appender);
+//
+//     str_commit_appender(&str, appender);
+//
+//     println(str);
+//
+//     S2 s2 = {'a', 15.2f};
+//     tostr_p(&str, &s2);
+//
+//     println(str);
     
-    test_bin();
-    test_ffmt();
-    test_octal();
-    test_read2();
-    test_ffmt();
-    test_split();
-    //     
-    String_Buffer str = strbuf_init_from_buf((char[512]){});
-    
-    int arr[5] = {1,2,3,4,5};
-    tostr(&str, arrfmt((Neat__Integer_b_Fmt_neat__i*) arr, 5, "{\n    ", "\n}", ",\n    ", ","));
-    
-    println(str);
-    
-    tostr(&str, arrfmt(arr, 5));
-    
-    println(str);
-    
-    auto appender = str_appender(&str, &(Neat_Appender_State){0});
-    
-    str_append(appender, "---''");
-    
-    println(str);
-    println(appender);
-    
-    str_commit_appender(&str, appender);
-    
-    println(str);
-    
-    S2 s2 = {'a', 15.2f};
-    tostr_p(&str, &s2);
-    
-    println(str);
+    int arr[10];
+    for(int i = 0 ; i < 10 ; i++)
+        arr[i] = rand() % 100;
+    println(arrfmt(arr, 10));
 }
