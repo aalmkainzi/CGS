@@ -2926,7 +2926,7 @@ do { \
         num *= -1; \
         if(fmutstr.cap > 1) \
         { \
-            neat__fmutstr_ref_putc(fmutstr, '-'); \
+            fmutstr.chars[0] = '-'; \
         } \
     } \
     unsigned int numstr_len = neat__numstr_len(num); \
@@ -2940,6 +2940,7 @@ do { \
     } \
     \
     *fmutstr.len = chars_to_copy + isneg; \
+    fmutstr.chars[*fmutstr.len] = '\0'; \
 } while(0)
 
 #define neat__sinteger_tostr_dstr(dstr) \
@@ -2955,7 +2956,7 @@ do { \
 
 #define neat__sinteger_tostr() \
 do { \
-    neat__mutstr_ref_clear(dst); \
+    /*neat__mutstr_ref_clear(dst);*/ \
     Neat_Error err = (Neat_Error){NEAT_OK}; \
     switch(dst.ty) \
     { \
@@ -3011,11 +3012,12 @@ do { \
     } \
     \
     *fmutstr.len = chars_to_copy; \
+    fmutstr.chars[*fmutstr.len] = '\0'; \
 } while(0)
 
 #define neat__uinteger_tostr() \
 do { \
-    neat__mutstr_ref_clear(dst); \
+    /*neat__mutstr_ref_clear(dst);*/ \
     Neat_Error err = (Neat_Error){NEAT_OK}; \
     switch(dst.ty) \
     { \
@@ -3264,6 +3266,7 @@ return _Generic(num, \
 #define neat__integer_x_Fmt_tostr(dst, num) \
 do \
 { \
+    neat__mutstr_ref_clear(dst); \
     Neat_Error err = {NEAT_OK}; \
     size_t sz = sizeof(num); \
     uint8_t *num_bytes = ((uint8_t*) &num) + sizeof(num) - 1; \
@@ -3307,9 +3310,12 @@ _Generic((char(*)[sizeof(num)])0,       \
 #define neat__highest_3bits_as_u8(n) \
 (neat__highest_3bits(n) >> ((sizeof(n) - 1) * 8))
 
+// TODO optimize these. dont clear then append chars.
+// instead, write from beginning of chars up to cap, then put the nul
 #define neat__integer_o_Fmt_tostr(dst, num) \
 do \
 { \
+    neat__mutstr_ref_clear(dst); \
     neat__unsigned_of_size(sizeof(num)) unum = num; \
     Neat_Error err = {NEAT_OK}; \
     const size_t bits = (sizeof(unum) * 8); \
@@ -3346,6 +3352,7 @@ do \
 #define neat__integer_b_Fmt_tostr(dst, num) \
 do \
 { \
+    neat__mutstr_ref_clear(dst); \
     Neat_Error err = {NEAT_OK}; \
     neat__unsigned_of_size(sizeof(num)) unum = num; \
     size_t sz; \
