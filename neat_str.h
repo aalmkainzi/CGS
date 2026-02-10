@@ -344,26 +344,26 @@ static inline unsigned int neat__strv_len(const Neat_String_View sv)
     return sv.len;
 }
 
-#define neat_str_cap(any_str)                                               \
-_Generic((__typeof__(any_str)*){0},                                         \
-    char(*)[sizeof(__typeof__(any_str))]          : neat__return_32,        \
-    unsigned char(*)[sizeof(__typeof__(any_str))] : neat__return_32,        \
-    char**                                        : neat__strlen_plus_one,  \
-    unsigned char**                               : neat__ustrlen_plus_one, \
-    Neat_String_View*                             : neat__strv_len,         \
-    Neat_DString*                                 : neat__dstr_cap,         \
-    Neat_DString**                                : neat__dstr_ptr_cap,     \
-    Neat_String_Buffer*                           : neat__strbuf_cap,       \
-    Neat_String_Buffer**                          : neat__strbuf_ptr_cap,   \
-    Neat_Mut_String_Ref*                          : neat__mutstr_ref_cap,   \
-    const char**                                  : neat__strlen_plus_one,  \
-    const unsigned char**                         : neat__ustrlen_plus_one, \
-    const Neat_DString**                          : neat__dstr_ptr_cap,     \
-    const Neat_String_Buffer**                    : neat__strbuf_ptr_cap    \
-)(_Generic((__typeof__(any_str)*){0},                                       \
-    char(*)[sizeof(__typeof__(any_str))]: sizeof(__typeof__(any_str)),                  \
-    unsigned char(*)[sizeof(__typeof__(any_str))]: sizeof(__typeof__(any_str)),         \
-    default: (any_str)                                                      \
+#define neat_str_cap(any_str)                                                   \
+_Generic((__typeof__(any_str)*){0},                                             \
+    char(*)[sizeof(__typeof__(any_str))]          : neat__return_32,            \
+    unsigned char(*)[sizeof(__typeof__(any_str))] : neat__return_32,            \
+    char**                                        : neat__strlen_plus_one,      \
+    unsigned char**                               : neat__ustrlen_plus_one,     \
+    Neat_String_View*                             : neat__strv_len,             \
+    Neat_DString*                                 : neat__dstr_cap,             \
+    Neat_DString**                                : neat__dstr_ptr_cap,         \
+    Neat_String_Buffer*                           : neat__strbuf_cap,           \
+    Neat_String_Buffer**                          : neat__strbuf_ptr_cap,       \
+    Neat_Mut_String_Ref*                          : neat__mutstr_ref_cap,       \
+    const char**                                  : neat__strlen_plus_one,      \
+    const unsigned char**                         : neat__ustrlen_plus_one,     \
+    const Neat_DString**                          : neat__dstr_ptr_cap,         \
+    const Neat_String_Buffer**                    : neat__strbuf_ptr_cap        \
+)(_Generic((__typeof__(any_str)*){0},                                           \
+    char(*)[sizeof(__typeof__(any_str))]: sizeof(__typeof__(any_str)),          \
+    unsigned char(*)[sizeof(__typeof__(any_str))]: sizeof(__typeof__(any_str)), \
+    default: (any_str)                                                          \
 ))
 
 #define neat_str_chars(any_str)                           \
@@ -590,7 +590,7 @@ _Generic(&(__typeof__(buf)){0}, \
 ))
 
 #define neat__strbuf_init_from_buf_2(buf, cap_) \
-neat__strbuf_from_buf((Neat_Buffer){.ptr = buf, .cap = cap_})
+neat__strbuf_from_buf((Neat_Buffer){.ptr = (unsigned char*) _Generic(buf,char*:buf,unsigned char*:buf,void*:buf), .cap = cap_})
 
 #define neat__cstr_to_buf(carr, ...) \
 ( \
@@ -1391,6 +1391,7 @@ typedef Neat_String_View_Array     String_View_Array;
 typedef Neat_Mut_String_Ref        Mut_String_Ref;
 typedef Neat_Replace_Result        Replace_Result;
 typedef Neat_String_Appender_State String_Appender_State;
+typedef Neat_Array_Fmt             Array_Fmt;
 
 #define str_at(any_str, idx) neat_str_at(any_str, idx)
 #define str_len(any_str) neat_str_len(any_str)

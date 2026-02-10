@@ -1585,11 +1585,11 @@ NEAT_API Neat_Error neat__fmutstr_ref_delete_range(Neat__Fixed_Mut_String_Ref st
 {
     unsigned int len = *str.len;
     
-    if(end > len || begin >= len)
+    if(end > len || begin > len)
     {
         return (Neat_Error){NEAT_INDEX_OUT_OF_BOUNDS};
     }
-    if(begin >= end)
+    if(begin > end)
     {
         return (Neat_Error){NEAT_BAD_RANGE};
     }
@@ -1763,9 +1763,9 @@ NEAT_API Neat_Error neat__strv_arr_join(Neat_Mut_String_Ref dst, const Neat_Stri
 
 NEAT_API Neat_Error neat__dstr_replace_range(Neat_DString *dstr, unsigned int begin, unsigned int end, const Neat_String_View replacement)
 {
-    if(begin >= dstr->len)
+    if(begin > dstr->len || end > dstr->len)
         return (Neat_Error){NEAT_INDEX_OUT_OF_BOUNDS};
-    if(begin >= end || end > dstr->len)
+    if(begin > end)
         return (Neat_Error){NEAT_BAD_RANGE};
     if(neat__is_strv_within(neat__strv_dstr_ptr2(dstr, 0), replacement))
         return (Neat_Error){NEAT_ALIASING_NOT_SUPPORTED};
