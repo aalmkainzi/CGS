@@ -896,7 +896,7 @@ NEAT__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 )
 
 #define neat_tsfmt_t(ty, fmt_chr, ...) \
-__typeof__(neat_tsfmt((ty)0) fmt_chr __VA_OPT__(,) __VA_ARGS__)
+__typeof__(neat_tsfmt((ty)0, fmt_chr __VA_OPT__(,) __VA_ARGS__))
 
 #define neat_arrfmt(array, nb, ...) \
 NEAT__IF_EMPTY(neat__arrfmt_, __VA_ARGS__) \
@@ -1436,6 +1436,7 @@ typedef Neat_String_Appender_State String_Appender_State;
 #define fprintln(stream, ...) neat_fprintln(stream, __VA_ARGS__)
 
 #define tsfmt(exp, fmt_char, ...) neat_tsfmt(exp, fmt_char __VA_OPT__(,) __VA_ARGS__)
+#define tsfmt_t(T, fmt_char, ...) neat_tsfmt_t(T, fmt_char __VA_OPT__(,) __VA_ARGS__)
 #define arrfmt(arr, n, ...) neat_arrfmt(arr, n, __VA_ARGS__)
 
 #endif
