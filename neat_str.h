@@ -248,7 +248,7 @@ typedef struct Neat__Fixed_Mut_String_Ref
     unsigned int cap;
 } Neat__Fixed_Mut_String_Ref;
 
-typedef struct Neat__Array_Fmt
+typedef struct Neat_Array_Fmt
 {
     const void *array;
     const size_t nb;
@@ -260,7 +260,7 @@ typedef struct Neat__Array_Fmt
     const Neat_String_View close;
     const Neat_String_View separator;
     const Neat_String_View trailing_separator;
-} Neat__Array_Fmt;
+} Neat_Array_Fmt;
 
 typedef struct Neat__DString_Append_Allocator
 {
@@ -324,24 +324,46 @@ _Generic(any_str, \
     const Neat_String_Buffer* : ((void)0, neat__coerce(any_str, const Neat_String_Buffer*)->len) \
 )
 
-static inline uint32_t neat__return_32(unsigned int a)
+static inline unsigned int neat__return_32(unsigned int a)
 {
     return a;
 }
 
-#define neat_str_cap(any_str)                                             \
-_Generic((__typeof__(any_str)*){0},                                       \
-    char(*)[sizeof(__typeof__(any_str))]          : neat__return_32,      \
-    unsigned char(*)[sizeof(__typeof__(any_str))] : neat__return_32,      \
-    Neat_DString*                                 : neat__dstr_cap,       \
-    Neat_DString**                                : neat__dstr_ptr_cap,   \
-    Neat_String_Buffer*                           : neat__strbuf_cap,     \
-    Neat_String_Buffer**                          : neat__strbuf_ptr_cap, \
-    Neat_Mut_String_Ref*                          : neat__mutstr_ref_cap  \
-)(_Generic((__typeof__(any_str)*){0},                                     \
-    char(*)[sizeof(__typeof__(any_str))]: sizeof(any_str),                \
-    unsigned char(*)[sizeof(__typeof__(any_str))]: sizeof(any_str),       \
-    default: (any_str) \
+static inline unsigned int neat__strlen_plus_one(const char *s)
+{
+    return strlen(s) + 1;
+}
+
+static inline unsigned int neat__ustrlen_plus_one(const unsigned char *s)
+{
+    return strlen((const char*) s) + 1;
+}
+
+static inline unsigned int neat__strv_len(const Neat_String_View sv)
+{
+    return sv.len;
+}
+
+#define neat_str_cap(any_str)                                               \
+_Generic((__typeof__(any_str)*){0},                                         \
+    char(*)[sizeof(__typeof__(any_str))]          : neat__return_32,        \
+    unsigned char(*)[sizeof(__typeof__(any_str))] : neat__return_32,        \
+    char**                                        : neat__strlen_plus_one,  \
+    unsigned char**                               : neat__ustrlen_plus_one, \
+    Neat_String_View*                             : neat__strv_len,         \
+    Neat_DString*                                 : neat__dstr_cap,         \
+    Neat_DString**                                : neat__dstr_ptr_cap,     \
+    Neat_String_Buffer*                           : neat__strbuf_cap,       \
+    Neat_String_Buffer**                          : neat__strbuf_ptr_cap,   \
+    Neat_Mut_String_Ref*                          : neat__mutstr_ref_cap,   \
+    const char**                                  : neat__strlen_plus_one,  \
+    const unsigned char**                         : neat__ustrlen_plus_one, \
+    const Neat_DString**                          : neat__dstr_ptr_cap,     \
+    const Neat_String_Buffer**                    : neat__strbuf_ptr_cap    \
+)(_Generic((__typeof__(any_str)*){0},                                       \
+    char(*)[sizeof(__typeof__(any_str))]: sizeof(__typeof__(any_str)),                  \
+    unsigned char(*)[sizeof(__typeof__(any_str))]: sizeof(__typeof__(any_str)),         \
+    default: (any_str)                                                      \
 ))
 
 #define neat_str_chars(any_str)                           \
@@ -904,7 +926,7 @@ __VA_OPT__(neat__arrfmt_2) \
 (array, nb __VA_OPT__(,) __VA_ARGS__)
 
 #define neat__arrfmt_(array_, nb_) \
-((Neat__Array_Fmt){ \
+((Neat_Array_Fmt){ \
     .array = (array_), \
     .nb = (nb_), \
     .elm_size = sizeof((array_)[0]), \
@@ -916,7 +938,7 @@ __VA_OPT__(neat__arrfmt_2) \
 })
 
 #define neat__arrfmt_2(array_, nb_, open_, close_, seperator_, ...) \
-((Neat__Array_Fmt){ \
+((Neat_Array_Fmt){ \
     .array = (array_), \
     .nb = (nb_), \
     .elm_size = sizeof((array_)[0]), \
@@ -985,7 +1007,7 @@ const unsigned char*      : neat__ucstr_tostr,                \
 const Neat_DString*       : neat__dstr_ptr_tostr,             \
 const Neat_String_Buffer* : neat__strbuf_ptr_tostr,           \
 Neat_Error                : neat__error_tostr,                \
-Neat__Array_Fmt           : neat__array_fmt_tostr,            \
+Neat_Array_Fmt           : neat__array_fmt_tostr,            \
 NEAT__INTEGER_TYPES(NEAT__INTEGER_TOSTR_GENERIC_CASE, ignore) \
 NEAT__FLOATING_TYPES(NEAT__FLOATING_TOSTR_GENERIC_CASE, ignore, NEAT__FLOATING_TOSTR_LAST_GENERIC_CASE)
 
@@ -1299,7 +1321,7 @@ NEAT_API Neat_Error neat__strbuf_ptr_tostr(Neat_Mut_String_Ref dst, const Neat_S
 NEAT_API Neat_Error neat__mutstr_ref_tostr(Neat_Mut_String_Ref dst, const Neat_Mut_String_Ref obj);
 
 NEAT_API Neat_Error neat__error_tostr(Neat_Mut_String_Ref dst, Neat_Error obj);
-NEAT_API Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat__Array_Fmt obj);
+NEAT_API Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat_Array_Fmt obj);
 
 NEAT_API Neat_Error neat__bool_tostr_p(Neat_Mut_String_Ref dst, bool *obj);
 NEAT_API Neat_Error neat__cstr_tostr_p(Neat_Mut_String_Ref dst, const char **obj);

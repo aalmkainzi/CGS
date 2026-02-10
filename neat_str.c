@@ -3159,7 +3159,7 @@ NEAT_API Neat_Error neat__error_tostr(Neat_Mut_String_Ref dst, Neat_Error obj)
     return neat__mutstr_ref_copy(dst, neat__error_to_string[obj.ec]);
 }
 
-NEAT_API Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat__Array_Fmt obj)
+NEAT_API Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat_Array_Fmt obj)
 {
     neat__mutstr_ref_clear(dst);
     
