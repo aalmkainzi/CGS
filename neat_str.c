@@ -1353,6 +1353,7 @@ NEAT_API Neat_Error neat__mutstr_ref_set_len(Neat_Mut_String_Ref str, unsigned i
             break;
         case NEAT__BUF_TY      :
             str.str.buf.ptr[new_len] = '\0';
+            break;
         default                :
             unreachable();
     };
