@@ -1976,7 +1976,7 @@ NEAT_API Neat_Replace_Result neat__dstr_replace(Neat_DString *dstr, const Neat_S
     Neat_String_View as_strv = neat__strv_dstr_ptr2(dstr, 0);
     if(neat__is_strv_within(as_strv, target) || neat__is_strv_within(as_strv, replacement))
     {
-        return (Neat_Replace_Result){.nb_replaced = 0, .err = NEAT_ALIASING_NOT_SUPPORTED};
+        return (Neat_Replace_Result){.nb_replaced = 0, .err = {NEAT_ALIASING_NOT_SUPPORTED}};
     }
     
     Neat_Error err = {NEAT_OK};
@@ -2806,7 +2806,7 @@ NEAT_PRIVATE unsigned int neat__numstr_len(long long num)
     return len;
 }
 
-NEAT_PRIVATE unsigned int neat_numstr_len_ull(unsigned long long num)
+NEAT_PRIVATE unsigned int neat__numstr_len_ull(unsigned long long num)
 {
     unsigned int len = 1;
     for(unsigned int i = 1 ; i < NEAT__CARR_LEN(neat__ten_pows_ull) && num >= neat__ten_pows_ull[i++] ; len++);
@@ -2919,7 +2919,7 @@ NEAT_PRIVATE Neat_Error neat__llong_min_into_fmutstr_ref(Neat__Fixed_Mut_String_
     }
 }
 
-#define neat__sintger_tostr_fmutstr_ref(fmutstr) \
+#define neat__sintger_tostr_fmutstr_ref(fmutstr, numstr_len) \
 do { \
     if(fmutstr.cap <= 1) \
         return (Neat_Error){NEAT_DST_TOO_SMALL}; \
@@ -2938,8 +2938,16 @@ do { \
             fmutstr.chars[0] = '-'; \
         } \
     } \
-    unsigned int numstr_len = neat__numstr_len(num); \
     unsigned int chars_to_copy = neat__uint_min(fmutstr.cap - (1 + isneg), numstr_len); \
+    if(fmutstr.cap > numstr_len + isneg) \
+    { \
+        chars_to_copy = numstr_len; \
+    } \
+    else \
+    { \
+        err.ec = NEAT_DST_TOO_SMALL; \
+        chars_to_copy = fmutstr.cap - (1 + isneg); \
+    } \
     num /= neat__ten_pows[numstr_len - chars_to_copy]; \
     for (unsigned int i = 0; i < chars_to_copy ; i++) \
     { \
@@ -2960,13 +2968,13 @@ do { \
         return err; \
     \
     Neat__Fixed_Mut_String_Ref as_fixed = neat__dstr_ptr_as_fmutstr_ref(dstr); \
-    neat__sintger_tostr_fmutstr_ref(as_fixed); \
+    neat__sintger_tostr_fmutstr_ref(as_fixed, numlen); \
 } while(0)
 
 #define neat__sinteger_tostr() \
 do { \
     /*neat__mutstr_ref_clear(dst);*/ \
-    Neat_Error err = (Neat_Error){NEAT_OK}; \
+    Neat_Error err = {NEAT_OK}; \
     switch(dst.ty) \
     { \
         case NEAT__DSTR_TY: \
@@ -2977,13 +2985,13 @@ do { \
         case NEAT__STRBUF_TY: \
         { \
             Neat__Fixed_Mut_String_Ref strbuf_as_fixed = neat__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf); \
-            neat__sintger_tostr_fmutstr_ref(strbuf_as_fixed); \
+            neat__sintger_tostr_fmutstr_ref(strbuf_as_fixed, neat__numstr_len(obj)); \
             return err; \
         } \
         case NEAT__BUF_TY: \
         { \
             Neat__Fixed_Mut_String_Ref buf_as_fixed = neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}); \
-            neat__sintger_tostr_fmutstr_ref(buf_as_fixed); \
+            neat__sintger_tostr_fmutstr_ref(buf_as_fixed, neat__numstr_len(obj)); \
             return err; \
         } \
         default: unreachable(); \
@@ -2992,7 +3000,7 @@ do { \
 
 #define neat__uinteger_tostr_dstr(dstr) \
 do { \
-    unsigned int numlen = neat_numstr_len_ull(obj); \
+    unsigned int numlen = neat__numstr_len_ull(obj); \
     err = neat__dstr_ensure_cap(dstr, numlen + 1); \
     if(err.ec != NEAT_OK) \
         return err; \
@@ -3002,16 +3010,24 @@ do { \
         .len = &dstr->len, \
         .cap = dstr->cap \
     }; \
-    neat__uintger_tostr_fmutstr_ref(as_fixed); \
+    neat__uintger_tostr_fmutstr_ref(as_fixed, numlen); \
 } while(0)
 
-#define neat__uintger_tostr_fmutstr_ref(fmutstr) \
+#define neat__uintger_tostr_fmutstr_ref(fmutstr, numstr_len) \
 do { \
     if(fmutstr.cap <= 1) \
         return (Neat_Error){NEAT_DST_TOO_SMALL}; \
     __typeof__(obj) num = obj; \
-    unsigned int numstr_len = neat_numstr_len_ull(num); \
-    unsigned int chars_to_copy = neat__uint_min(fmutstr.cap - 1, numstr_len); \
+    unsigned int chars_to_copy; \
+    if(numstr_len < fmutstr.cap) \
+    { \
+        chars_to_copy = numstr_len; \
+    } \
+    else \
+    { \
+        err.ec = NEAT_DST_TOO_SMALL; \
+        chars_to_copy = fmutstr.cap - 1; \
+    } \
     num /= neat__ten_pows[numstr_len - chars_to_copy]; \
     for (unsigned int i = 0; i < chars_to_copy ; i++) \
     { \
@@ -3038,13 +3054,13 @@ do { \
         case NEAT__STRBUF_TY: \
         { \
             Neat__Fixed_Mut_String_Ref strbuf_as_fixed = neat__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf); \
-            neat__uintger_tostr_fmutstr_ref(strbuf_as_fixed); \
+            neat__uintger_tostr_fmutstr_ref(strbuf_as_fixed, neat__numstr_len_ull(obj)); \
             return err; \
         } \
         case NEAT__BUF_TY: \
         { \
             Neat__Fixed_Mut_String_Ref buf_as_fixed = neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}); \
-            neat__uintger_tostr_fmutstr_ref(buf_as_fixed); \
+            neat__uintger_tostr_fmutstr_ref(buf_as_fixed, neat__numstr_len_ull(obj)); \
             return err; \
         } \
         default: unreachable(); \

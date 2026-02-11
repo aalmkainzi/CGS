@@ -14,11 +14,12 @@ static int passed_count = 0;
 #define TEST(name) \
 do { \
     printf("Running test: %s\n", name); \
-    test_count++; \
+    /*test_count++*/; \
 } while(0)
 
 #define ASSERT_EQ(a, b) \
 do { \
+    test_count++; \
     if ((a) == (b)) { \
         passed_count++; \
     } else { \
@@ -28,6 +29,7 @@ do { \
 
 #define ASSERT_TRUE(cond) \
 do { \
+    test_count++; \
     if (cond) { \
         passed_count++; \
     } else { \
@@ -37,6 +39,7 @@ do { \
 
 #define ASSERT_FALSE(cond) \
 do { \
+    test_count++; \
     if (!(cond)) { \
         passed_count++; \
     } else { \
@@ -46,6 +49,7 @@ do { \
 
 #define ASSERT_NULL(ptr) \
 do { \
+    test_count++; \
     if ((ptr) == NULL) { \
         passed_count++; \
     } else { \
@@ -55,6 +59,7 @@ do { \
 
 #define ASSERT_NOT_NULL(ptr) \
 do { \
+    test_count++; \
     if ((ptr) != NULL) { \
         passed_count++; \
     } else { \
@@ -156,7 +161,7 @@ void test_str_cap_edge_cases() {
         // This tests that it doesn't crash
         unsigned int cap = str_cap(buf);
         (void)cap; // Just ensure no crash
-        passed_count++;
+        ASSERT_TRUE(1);
     }
     
     TEST("str_cap: String_Buffer at exact capacity");
@@ -243,7 +248,7 @@ void test_str_find_edge_cases() {
         String_View result = str_find(hay, needle);
         // Finding empty in empty might return start or invalid
         // Check it doesn't crash
-        passed_count++;
+        ASSERT_TRUE(1);
     }
     
     TEST("str_find: empty needle in non-empty haystack");
@@ -252,7 +257,7 @@ void test_str_find_edge_cases() {
         char needle[] = "";
         String_View result = str_find(hay, needle);
         // Should probably find at position 0 or be invalid
-        passed_count++;
+        ASSERT_TRUE(1);
     }
     
     TEST("str_find: needle longer than haystack");
@@ -317,7 +322,7 @@ void test_str_count_edge_cases() {
         unsigned int count = str_count(hay, needle);
         // Counting empty strings might return 0 or undefined
         (void)count;
-        passed_count++;
+        ASSERT_TRUE(1);
     }
     
     TEST("str_count: empty haystack");
@@ -387,7 +392,7 @@ void test_str_clear_edge_cases() {
         // This might return an error or work
         Neat_Error err = str_clear(buf);
         // Just check it doesn't crash
-        passed_count++;
+        ASSERT_TRUE(1);
     }
     
     TEST("str_clear: then append");
@@ -532,7 +537,7 @@ void test_str_case_edge_cases() {
         // Might return error on certain string types
         Neat_Error err = str_tolower(buf);
         // Just ensure no crash
-        passed_count++;
+        ASSERT_TRUE(1);
     }
 }
 
@@ -625,7 +630,7 @@ void test_str_putc_edge_cases() {
         Neat_Error err = str_putc(&dstr, '\0');
         // Behavior may vary - might end string or add literal null
         (void)err;
-        passed_count++;
+        ASSERT_TRUE(1);
         dstr_deinit(&dstr);
     }
     
@@ -1015,8 +1020,7 @@ void test_str_split_edge_cases() {
         String_View_Array arr = str_split(str, delim);
         // Should return array with 0 or 1 empty element
         ASSERT_TRUE(arr.len == 0 || arr.len == 1);
-        // Clean up if needed
-        passed_count++;
+        free(arr.strs);
     }
     
     TEST("str_split: empty delimiter");
@@ -1025,7 +1029,8 @@ void test_str_split_edge_cases() {
         char delim[] = "";
         String_View_Array arr = str_split(str, delim);
         // Behavior undefined - might split into characters or return whole string
-        passed_count++;
+        ASSERT_TRUE(1);
+        free(arr.strs);
     }
     
     TEST("str_split: delimiter not in string");
@@ -1034,6 +1039,7 @@ void test_str_split_edge_cases() {
         char delim[] = ",";
         String_View_Array arr = str_split(str, delim);
         ASSERT_EQ(arr.len, 1);
+        free(arr.strs);
     }
     
     TEST("str_split: consecutive delimiters");
@@ -1043,6 +1049,7 @@ void test_str_split_edge_cases() {
         String_View_Array arr = str_split(str, delim);
         // Should have 5 elements: "a", "", "b", "", "c"
         ASSERT_EQ(arr.len, 5);
+        free(arr.strs);
     }
     
     TEST("str_split: delimiter at start");
@@ -1052,6 +1059,7 @@ void test_str_split_edge_cases() {
         String_View_Array arr = str_split(str, delim);
         // Should have 2 elements: "" and "test"
         ASSERT_EQ(arr.len, 2);
+        free(arr.strs);
     }
     
     TEST("str_split: delimiter at end");
@@ -1061,6 +1069,7 @@ void test_str_split_edge_cases() {
         String_View_Array arr = str_split(str, delim);
         // Should have 2 elements: "test" and ""
         ASSERT_EQ(arr.len, 2);
+        free(arr.strs);
     }
     
     TEST("str_split: only delimiter");
@@ -1070,6 +1079,7 @@ void test_str_split_edge_cases() {
         String_View_Array arr = str_split(str, delim);
         // Should have 2 empty elements
         ASSERT_EQ(arr.len, 2);
+        free(arr.strs);
     }
     
     TEST("str_split: multi-character delimiter");
@@ -1078,6 +1088,7 @@ void test_str_split_edge_cases() {
         char delim[] = "::";
         String_View_Array arr = str_split(str, delim);
         ASSERT_EQ(arr.len, 3);
+        free(arr.strs);
     }
     
     TEST("str_split: many splits");
@@ -1089,6 +1100,7 @@ void test_str_split_edge_cases() {
         String_View_Array arr = str_split(&dstr, ",");
         ASSERT_EQ(arr.len, 101); // 100 "x" and 1 trailing empty
         dstr_deinit(&dstr);
+        free(arr.strs);
     }
 }
 
@@ -1287,7 +1299,7 @@ void test_string_buffer_edge_cases() {
         String_Buffer sb = strbuf_init_from_buf(buf, 5);
         // No strlen called, so length is undefined until we set it
         // Just verify it doesn't crash
-        passed_count++;
+        ASSERT_TRUE(1);
     }
     
     TEST("String_Buffer: from cstr with capacity exactly length + 1");
@@ -1348,7 +1360,7 @@ void test_str_view_edge_cases() {
         char str[] = "test";
         String_View sv = str_view(str, 0, 100);
         // May clamp or error
-        passed_count++;
+        ASSERT_TRUE(1);
     }
     
     TEST("str_view: invalid range (from > to)");
@@ -1356,7 +1368,7 @@ void test_str_view_edge_cases() {
         char str[] = "test";
         String_View sv = str_view(str, 3, 1);
         // Likely returns empty or errors
-        passed_count++;
+        ASSERT_TRUE(1);
     }
     
     TEST("str_view: single character");
@@ -1382,7 +1394,6 @@ void test_file_io_edge_cases() {
         ASSERT_TRUE(err.ec == NEAT_OK || err.ec != NEAT_OK);
         fclose(f);
         dstr_deinit(&dstr);
-        passed_count++;
     }
     
     TEST("str_fread_line: very long line");
@@ -1679,7 +1690,7 @@ void test_tostr_edge_cases() {
         // Assuming str_print can take multiple args
         // str_print(&dstr, 123, " ", "test", " ", 456);
         // Test would verify concatenation
-        passed_count++;
+        ASSERT_TRUE(1);
         dstr_deinit(&dstr);
     }
     
@@ -1688,7 +1699,7 @@ void test_tostr_edge_cases() {
         DString dstr = dstr_init(30);
         // Test hex, octal, etc.
         // tostr(&dstr, tsfmt(255, 'x'));
-        passed_count++;
+        ASSERT_TRUE(1);
         dstr_deinit(&dstr);
     }
 }
@@ -1707,7 +1718,7 @@ void test_stress_cases() {
             }
             dstr_deinit(&dstr);
         }
-        passed_count++;
+        ASSERT_TRUE(1);
     }
     
     TEST("stress: alternating growth and shrinkage");
@@ -1720,7 +1731,7 @@ void test_stress_cases() {
             str_clear(&dstr);
         }
         dstr_deinit(&dstr);
-        passed_count++;
+        ASSERT_TRUE(1);
     }
     
     TEST("stress: very deep nesting of operations");
@@ -1733,7 +1744,7 @@ void test_stress_cases() {
             str_replace(&dstr, "end", "start");
         }
         dstr_deinit(&dstr);
-        passed_count++;
+        ASSERT_TRUE(1);
     }
 }
 
@@ -1769,7 +1780,7 @@ void test_special_characters() {
             str_putc(&dstr, c);
         }
         dstr_deinit(&dstr);
-        passed_count++;
+        ASSERT_TRUE(1);
     }
 }
 
