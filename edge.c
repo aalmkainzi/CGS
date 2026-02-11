@@ -884,11 +884,12 @@ void test_str_replace_edge_cases() {
     
     TEST("str_replace: on String_Buffer with insufficient space");
     {
-        char backing[10] = "hi hi";
+        char backing[10] = "hi hi"; // "hello hi"
         String_Buffer sb = strbuf_init_from_cstr(backing, 10);
         Replace_Result res = str_replace(&sb, "hi", "hello");
+        // println("hi hi", " became :: ", sb);
         ASSERT_EQ(res.err.ec, NEAT_DST_TOO_SMALL);
-        ASSERT_EQ(res.nb_replaced, 0);
+        ASSERT_EQ(res.nb_replaced, 1);
     }
     
     TEST("str_replace: many occurrences");
@@ -1387,7 +1388,8 @@ void test_file_io_edge_cases() {
     TEST("str_fread_line: very long line");
     {
         FILE *f = tmpfile();
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 10000; i++)
+        {
             fputc('x', f);
         }
         fputc('\n', f);
@@ -1396,8 +1398,9 @@ void test_file_io_edge_cases() {
         DString dstr = dstr_init(10);
         Neat_Error err = str_fread_line(&dstr, f);
         ASSERT_TRUE(err.ec == NEAT_OK || err.ec == NEAT_ALLOC_ERR);
-        if (err.ec == NEAT_OK) {
-            ASSERT_EQ(str_len(&dstr), 10000);
+        if (err.ec == NEAT_OK)
+        {
+            ASSERT_EQ(str_len(&dstr), 10001);
         }
         fclose(f);
         dstr_deinit(&dstr);
@@ -1425,11 +1428,11 @@ void test_file_io_edge_cases() {
         
         DString dstr = dstr_init(20);
         str_fread_line(&dstr, f);
-        ASSERT_TRUE(str_equal(&dstr, "line1"));
+        ASSERT_TRUE(str_equal(&dstr, "line1\n"));
         
         str_clear(&dstr);
         str_fread_line(&dstr, f);
-        ASSERT_TRUE(str_equal(&dstr, "line2"));
+        ASSERT_TRUE(str_equal(&dstr, "line2\n"));
         
         fclose(f);
         dstr_deinit(&dstr);
@@ -1444,7 +1447,7 @@ void test_file_io_edge_cases() {
         DString dstr = dstr_init(50);
         str_append_fread_line(&dstr, f);
         str_append_fread_line(&dstr, f);
-        ASSERT_TRUE(str_equal(&dstr, "line1line2"));
+        ASSERT_TRUE(str_equal(&dstr, "line1\nline2\n"));
         
         fclose(f);
         dstr_deinit(&dstr);

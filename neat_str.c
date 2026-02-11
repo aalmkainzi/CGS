@@ -1863,17 +1863,17 @@ NEAT_API Neat_Replace_Result neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Re
         return (Neat_Replace_Result){.nb_replaced = 0, .err = {NEAT_ALIASING_NOT_SUPPORTED}};
     }
     
-    Neat_Error err = (Neat_Error){NEAT_OK};
+    Neat_Error err = {NEAT_OK};
     unsigned int replace_count = 0;
     
     if(target.len == 0)
     {
-        for(unsigned int i = 0 ; i <= *str.len && err.ec == NEAT_OK ; i += replacement.len + 1)
+        for(unsigned int i = 0 ; i <= *str.len && (err.ec == NEAT_OK) ; i += replacement.len + 1)
         {
             err = neat__fmutstr_ref_insert(str, replacement, i);
             replace_count += 1;
         }
-        return (Neat_Replace_Result){.nb_replaced = replace_count, .err = err};
+        goto out;
     }
     
     if(target.len < replacement.len)
@@ -1945,6 +1945,7 @@ NEAT_API Neat_Replace_Result neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Re
             Neat_String_View match = neat__strv_find(neat__strv_fmutstr_ref2(str, i), target);
             if(match.chars != NULL)
             {
+                err.ec = NEAT_OK;
                 unsigned int idx = match.chars - str.chars;
                 
                 // put the replacement
@@ -1963,6 +1964,10 @@ NEAT_API Neat_Replace_Result neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Re
     
     if(str.cap > 0)
         str.chars[*str.len] = '\0';
+    
+    out:
+    if(replace_count == 0)
+        err.ec = NEAT_NOT_FOUND;
     return (Neat_Replace_Result){.nb_replaced = replace_count, .err = err};
 }
 
@@ -1974,17 +1979,18 @@ NEAT_API Neat_Replace_Result neat__dstr_replace(Neat_DString *dstr, const Neat_S
         return (Neat_Replace_Result){.nb_replaced = 0, .err = NEAT_ALIASING_NOT_SUPPORTED};
     }
     
-    Neat_Error err = (Neat_Error){NEAT_OK};
+    Neat_Error err = {NEAT_OK};
     unsigned int replace_count = 0;
     
     if(target.len == 0)
     {
-        for(unsigned int i = 0 ; i <= dstr->len && err.ec == NEAT_OK ; i += replacement.len + 1)
+        err.ec = NEAT_OK;
+        for(unsigned int i = 0 ; i <= dstr->len && (err.ec == NEAT_OK) ; i += replacement.len + 1)
         {
             err = neat__dstr_insert(dstr, replacement, i);
             replace_count += 1;
         }
-        return (Neat_Replace_Result){.nb_replaced = replace_count, .err = err};
+        goto out;
     }
     
     if(target.len < replacement.len)
@@ -1996,7 +2002,7 @@ NEAT_API Neat_Replace_Result neat__dstr_replace(Neat_DString *dstr, const Neat_S
             {
                 unsigned int idx = match.chars - dstr->chars;
                 
-                neat__dstr_ensure_cap(dstr, dstr->len + (replacement.len - target.len) + 1);
+                err = neat__dstr_ensure_cap(dstr, dstr->len + (replacement.len - target.len) + 1);
                 
                 // shift right
                 memmove(dstr->chars + idx + replacement.len, dstr->chars + idx + target.len, (dstr->len - idx - target.len) * sizeof(unsigned char));
@@ -2068,6 +2074,9 @@ NEAT_API Neat_Replace_Result neat__dstr_replace(Neat_DString *dstr, const Neat_S
     
     dstr->chars[dstr->len] = '\0';
     
+    out:
+    if(replace_count == 0)
+        err.ec = NEAT_NOT_FOUND;
     return (Neat_Replace_Result){.nb_replaced = replace_count, .err = err};
 }
 
