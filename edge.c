@@ -1297,9 +1297,7 @@ void test_string_buffer_edge_cases() {
     {
         char buf[5] = {'t', 'e', 's', 't', 'x'};
         String_Buffer sb = strbuf_init_from_buf(buf, 5);
-        // No strlen called, so length is undefined until we set it
-        // Just verify it doesn't crash
-        ASSERT_TRUE(1);
+        ASSERT_TRUE(sb.len == 0);
     }
     
     TEST("String_Buffer: from cstr with capacity exactly length + 1");
@@ -1353,14 +1351,6 @@ void test_str_view_edge_cases() {
         String_View sv = str_view(str, 0, 4);
         ASSERT_EQ(str_len(sv), 4);
         ASSERT_TRUE(str_equal(sv, "test"));
-    }
-    
-    TEST("str_view: out of bounds to");
-    {
-        char str[] = "test";
-        String_View sv = str_view(str, 0, 100);
-        // May clamp or error
-        ASSERT_TRUE(1);
     }
     
     TEST("str_view: invalid range (from > to)");

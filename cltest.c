@@ -51,7 +51,9 @@ do { \
 #define ASSERT_OK(err) \
 do { \
     if ((err).ec != NEAT_OK) { \
-        println("    Expected NEAT_OK, got error code, ", err, "(line ",  __LINE__, ")"); \
+        \
+        int ln = __LINE__; \
+        printf("    Expected NEAT_OK, got error code, %d (line %d )", err.ec, __LINE__); \
         return false; \
     } \
 } while(0)
@@ -712,7 +714,7 @@ bool test_str_replace_multiple() {
 bool test_str_replace_none() {
     DString dst = dstr_init_from("hello world");
     Replace_Result result = str_replace(&dst, "xyz", "abc");
-    ASSERT_OK(result.err);
+    ASSERT_ERR(result.err, NEAT_NOT_FOUND);
     ASSERT_EQ(result.nb_replaced, 0);
     ASSERT(str_equal(dst, "hello world"));
     dstr_deinit(&dst);
