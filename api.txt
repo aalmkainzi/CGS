@@ -1,5 +1,20 @@
 anystr is: char* || unsigned char* || char[] || unsigned char[] || String_View || DString || DString* || String_Buffer || String_Buffer* || Mut_String_Ref
 mutstr is: char* || unsigned char* || char[] || unsigned char[] || DString* || String_Buffer* || Mut_String_Ref
+
+String_View                     str_view(anystr str, unsigned int from = 0, unsigned int to_exclusive = str_len(str));
+
+String_Buffer                   strbuf_init_from_cstr([unsigned] char *cstr, unsigned int cap = strlen(cstr) + 1);
+String_Buffer                   strbuf_init_from_cstr([unsigned] char cstr[], unsigned int cap = sizeof(cstr));
+String_Buffer                   strbuf_init_from_buf([unsigned] char *buf, unsigned int cap);
+String_Buffer                   strbuf_init_from_buf([unsigned] char buf[], unsigned int cap = sizeof(buf));
+
+DString                         dstr_init(unsigned int initial_cap = 0, Neat_Allocator *allocator = neat_get_default_allocator());
+DString                         dstr_init_from(anystr src, Neat_Allocator *allocator = neat_get_default_allocator());
+void                            dstr_deinit(DString *dstr);
+Neat_Error                      dstr_shrink_to_fit(DString *dstr);
+
+Mut_String_Ref                  mutstr_ref(mutstr str);
+
 char                            str_at(anystr, unsigned int idx);
 unsigned int                    str_len(anystr);
 unsigned int                    str_cap(anystr);
@@ -31,19 +46,9 @@ Neat_Error                      str_read_line(mutstr dst);
 Neat_Error                      str_append_read_line(mutstr dst);
                                 str_print(mutstr dst, ...args with tostr);
                                 str_print_append(mutstr dst, ...args with tostr);
-DString                         dstr_init(unsigned int initial_cap = 0, Neat_Allocator *allocator = neat_get_default_allocator());
-DString                         dstr_init_from(anystr src, Neat_Allocator *allocator = neat_get_default_allocator());
-void                            dstr_deinit(DString *dstr);
-Neat_Error                      dstr_shrink_to_fit(DString *dstr);
 Neat_Error                      dstr_ensure_cap(Neat_DString *dstr, unsigned int at_least);
 Mut_String_Ref                  str_appender(mutstr owner, String_Appender_State *state);
 Neat_Error                      str_commit_appender(mutstr owner, Mut_String_Ref appender);
-String_Buffer                   strbuf_init_from_cstr([unsigned] char *cstr, unsigned int cap = strlen(cstr) + 1);
-String_Buffer                   strbuf_init_from_cstr([unsigned] char cstr[], unsigned int cap = sizeof(cstr));
-String_Buffer                   strbuf_init_from_buf([unsigned] char *buf, unsigned int cap);
-String_Buffer                   strbuf_init_from_buf([unsigned] char buf[], unsigned int cap = sizeof(buf));
-String_View                     str_view(anystr str, unsigned int from = 0, unsigned int to_exclusive = str_len(str));
-Mut_String_Ref                  mutstr_ref(mutstr str);
 String_View_Array               str_view_arr(...anystr);
 String_View_Array               str_view_arr_from_carr(String_View strs[]);
 Neat_Error                      tostr(mutstr dst, T val);
