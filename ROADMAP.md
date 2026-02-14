@@ -10,3 +10,4 @@ arrfmt((tsfmt_t(int,'x')*) nums, 10);
 ```
 - Make `Neat__Array_Fmt` be exposed to the user, no reason why not.
 - Fix integer tostr functions
+- Name macro args anystr or mutstr correctly

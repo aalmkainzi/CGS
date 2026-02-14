@@ -1412,7 +1412,7 @@ typedef Neat_Array_Fmt             Array_Fmt;
 #define str_toupper(any_str) neat_str_toupper(any_str)
 #define str_copy(any_str_dst, any_str_src) neat_str_copy(any_str_dst, any_str_src)
 #define str_putc(any_str_dst, c) neat_str_putc(any_str_dst, c)
-#define str_dup(any_str_src) neat_str_dup(any_str_src)
+#define str_dup(any_str_src, ...) neat_str_dup(any_str_src __VA_OPT__(,) __VA_ARGS__)
 #define str_append(cap_str_dst, any_str_src) neat_str_append(cap_str_dst, any_str_src)
 #define str_insert(any_str_dst, any_str_src, idx) neat_str_insert(any_str_dst, any_str_src, idx)
 #define str_prepend(neat_str_dst, neat_str_src) neat_str_prepend(neat_str_dst, neat_str_src)
