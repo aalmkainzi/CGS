@@ -7,7 +7,7 @@
 #define NEAT_API static inline
 #define NEAT_PRIVATE static inline
 
-#include "neat_str.c"
+#include "../neat_str.c"
 
 typedef struct S
 {
@@ -896,7 +896,7 @@ void test_read2()
     FILE *f = fopen("file", "rb");
     str_fread_line(&sb, f);
     println(sb.len, " :: '", sb, "'");
-    assert(str_equal(sb, "this is the first line\r\n"));
+    assert(str_equal(sb, "this is the first line\n"));
     unsigned int linelen = str_len(sb);
     str_append_fread_line(&sb, f);
     assert(str_equal(str_view(sb, linelen, sb.len), "no newline here"));
@@ -904,9 +904,8 @@ void test_read2()
     assert(feof(f));
     
     fclose(f);
-    free(sb.chars);
     
-    f = fopen("file", "r");
+    f = fopen("file", "rb");
     
     DString line = dstr_init();
     
@@ -940,6 +939,7 @@ void test_misc()
     str_join(&d, split, "-");
     assert(str_equal(d, "h-e-l-l-o-,-w-o-r-l-d"));
     
+    free(split.strs);
     split = str_split("abc", "a");
     
     str_join(&d, split, "X");
@@ -1038,58 +1038,22 @@ void tests_memmem()
 
 int main()
 {
-//     test_tostr();
-//     test_str_del();
-//     test_str_count();
-//     test_str_find();
-//     test_str_replace();
-//     test_str_replace_first();
-//     test_read();
-//     test_misc();
-//     test_sprint();
-//     test_insert();
-//     tests_memmem();
-//
-//     test_bin();
-//     test_ffmt();
-//     test_octal();
-//     test_read2();
-//     test_ffmt();
-//     test_split();
-//     //
-//     String_Buffer str = strbuf_init_from_buf((char[512]){});
-//
-//     int arr[5] = {1,2,3,4,5};
-//     tostr(&str, arrfmt((Neat__Integer_b_Fmt_neat__i*) arr, 5, "{\n    ", "\n}", ",\n    ", ","));
-//
-//     println(str);
-//
-//     tostr(&str, arrfmt(arr, 5));
-//
-//     println(str);
-//
-//     Mut_String_Ref appender = str_appender(&str, &(Neat_Appender_State){0});
-//
-//     str_append(appender, "---''");
-//
-//     println(str);
-//     println(appender);
-//
-//     str_commit_appender(&str, appender);
-//
-//     println(str);
-//
-//     S2 s2 = {'a', 15.2f};
-//     tostr_p(&str, &s2);
-//
-//     println(str);
-    
-    int arr[10];
-    for(int i = 0 ; i < 10 ; i++)
-        arr[i] = rand() % 100;
-    // println(arrfmt(arr, 10));
-    printf("{%d", arr[0]);
-    for(int i = 1 ; i < 10 ; i++)
-        printf(", %d", arr[i]);
-    printf("}");
+    test_tostr();
+    test_str_del();
+    test_str_count();
+    test_str_find();
+    test_str_replace();
+    test_str_replace_first();
+    test_read();
+    test_misc();
+    test_sprint();
+    test_insert();
+    tests_memmem();
+
+    test_bin();
+    test_ffmt();
+    test_octal();
+    test_read2();
+    test_ffmt();
+    test_split();
 }

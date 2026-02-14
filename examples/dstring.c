@@ -1,9 +1,9 @@
-#define NEAT_STR_IMPL
+#define NEAT_STR_SHORT_NAMES
 #include "../neat_str.h"
 
 int main()
 {
-    DString str = dstr();
+    DString str = dstr_init();
     
     dstr_append(&str, "world");
     dstr_prepend(&str, "hello, ");

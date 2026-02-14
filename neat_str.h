@@ -31,7 +31,7 @@ typedef struct Neat_Allocator
     neat_realloc_func realloc;
 } Neat_Allocator;
 
-#if !defined(NEAT__SOURCE)
+#if !defined(NEAT_API)
     #define NEAT_API
 #endif
 
@@ -755,25 +755,26 @@ do                                                 \
     NEAT__FOREACH(neat__fprint_each, __VA_ARGS__); \
 } while(0)
 
-#define neat__fprint_each(x)                                \
-do                                                          \
-{                                                           \
-    neat__fprint_strv(neat__file_stream, _Generic(x,        \
-        char*                     : neat__strv_cstr1,       \
-        unsigned char*            : neat__strv_ucstr1,      \
-        Neat_DString              : neat__strv_dstr1,       \
-        Neat_DString*             : neat__strv_dstr_ptr1,   \
-        Neat_String_View          : neat__strv_strv1,       \
-        Neat_String_Buffer        : neat__strv_strbuf1,     \
-        Neat_String_Buffer*       : neat__strv_strbuf_ptr1, \
-        Neat_Mut_String_Ref       : neat__strv_mutstr_ref1, \
-        const char*               : neat__strv_cstr1,       \
-        const unsigned char*      : neat__strv_ucstr1,      \
-        const Neat_DString*       : neat__strv_dstr_ptr1,   \
-        const Neat_String_Buffer* : neat__strv_strbuf_ptr1, \
-        default                   : neat__strv_dstr1        \
-    )(neat__coerce_string_type(x, (neat_tostr(&neat__fprint_tostr_dynamic_buffer, x), neat__fprint_tostr_dynamic_buffer)))); \
-    neat__fprint_tostr_dynamic_buffer.len = 0;              \
+#define neat__fprint_each(x)                                   \
+do                                                             \
+{                                                              \
+    __typeof__(((void)0,x)) neat__x_tmp = x;                   \
+    neat__fprint_strv(neat__file_stream, _Generic(neat__x_tmp, \
+        char*                     : neat__strv_cstr1,          \
+        unsigned char*            : neat__strv_ucstr1,         \
+        Neat_DString              : neat__strv_dstr1,          \
+        Neat_DString*             : neat__strv_dstr_ptr1,      \
+        Neat_String_View          : neat__strv_strv1,          \
+        Neat_String_Buffer        : neat__strv_strbuf1,        \
+        Neat_String_Buffer*       : neat__strv_strbuf_ptr1,    \
+        Neat_Mut_String_Ref       : neat__strv_mutstr_ref1,    \
+        const char*               : neat__strv_cstr1,          \
+        const unsigned char*      : neat__strv_ucstr1,         \
+        const Neat_DString*       : neat__strv_dstr_ptr1,      \
+        const Neat_String_Buffer* : neat__strv_strbuf_ptr1,    \
+        default                   : neat__strv_dstr1           \
+    )(neat__coerce_string_type(neat__x_tmp, (neat_tostr(&neat__fprint_tostr_dynamic_buffer, neat__x_tmp), neat__fprint_tostr_dynamic_buffer)))); \
+    neat__fprint_tostr_dynamic_buffer.len = 0;                 \
 } while(0);
 
 #define neat_print(...) \

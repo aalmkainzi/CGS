@@ -9,7 +9,6 @@
     #define NEAT_PRIVATE
 #endif
 
-#define NEAT__SOURCE
 #include "neat_str.h"
 
 #if !defined(unreachable)
@@ -1694,7 +1693,7 @@ NEAT_PRIVATE bool neat__combine_views_into_array(Neat_String_View str, void *ctx
     
     if(array->cap <= array->len)
     {
-        Neat_Allocation allocation = neat_realloc(allocator, array->strs, Neat_String_View, array->cap, (array->len + 1));
+        Neat_Allocation allocation = neat_realloc(allocator, array->strs, Neat_String_View, array->cap, 2 * (array->len + 1));
         array->strs = allocation.ptr;
         array->cap = allocation.n / sizeof(Neat_String_View);
     }
@@ -2984,7 +2983,7 @@ do { \
         isneg = true; \
         obj *= -1; \
     } \
-    int numlen = neat__numstr_len(obj); \
+    unsigned int numlen = neat__numstr_len(obj); \
     switch(dst.ty) \
     { \
         case NEAT__DSTR_TY: \
@@ -3053,7 +3052,7 @@ do { \
 do { \
     /*neat__mutstr_ref_clear(dst);*/ \
     Neat_Error err = {NEAT_OK}; \
-    int numlen = neat__numstr_len(obj); \
+    unsigned int numlen = neat__numstr_len(obj); \
     switch(dst.ty) \
     { \
         case NEAT__DSTR_TY: \

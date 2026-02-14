@@ -1,0 +1,127 @@
+{
+  "context": {
+    "date": "2026-02-13T21:09:14+03:00",
+    "host_name": "malek-MS-7E30",
+    "executable": "./runb",
+    "num_cpus": 12,
+    "mhz_per_cpu": 5486,
+    "cpu_scaling_enabled": true,
+    "aslr_enabled": false,
+    "caches": [
+      {
+        "type": "Data",
+        "level": 1,
+        "size": 49152,
+        "num_sharing": 2
+      },
+      {
+        "type": "Instruction",
+        "level": 1,
+        "size": 32768,
+        "num_sharing": 2
+      },
+      {
+        "type": "Unified",
+        "level": 2,
+        "size": 1048576,
+        "num_sharing": 2
+      },
+      {
+        "type": "Unified",
+        "level": 3,
+        "size": 33554432,
+        "num_sharing": 12
+      }
+    ],
+    "load_avg": [0.216309,0.23877,0.212402],
+    "library_version": "v1.9.5",
+    "library_build_type": "release",
+    "json_schema_version": 1
+  },
+  "benchmarks": [
+    {
+      "name": "BM_neat2/10000",
+      "family_index": 0,
+      "per_family_instance_index": 0,
+      "run_name": "BM_neat2/10000",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 80153597,
+      "real_time": 6.9608692296479759e+00,
+      "cpu_time": 6.9604401658979818e+00,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_neat2/32768",
+      "family_index": 0,
+      "per_family_instance_index": 1,
+      "run_name": "BM_neat2/32768",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 100312075,
+      "real_time": 7.0205443861435990e+00,
+      "cpu_time": 7.0198166272604769e+00,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_neat2/100000",
+      "family_index": 0,
+      "per_family_instance_index": 2,
+      "run_name": "BM_neat2/100000",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 93050565,
+      "real_time": 7.4938527670869748e+00,
+      "cpu_time": 7.4934058272510224e+00,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_std2/10000",
+      "family_index": 1,
+      "per_family_instance_index": 0,
+      "run_name": "BM_std2/10000",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 36740549,
+      "real_time": 1.8714319347684484e+01,
+      "cpu_time": 1.8712341233659846e+01,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_std2/32768",
+      "family_index": 1,
+      "per_family_instance_index": 1,
+      "run_name": "BM_std2/32768",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 37366135,
+      "real_time": 1.8666294788036307e+01,
+      "cpu_time": 1.8660282044155753e+01,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_std2/100000",
+      "family_index": 1,
+      "per_family_instance_index": 2,
+      "run_name": "BM_std2/100000",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 36644921,
+      "real_time": 1.9073201931536151e+01,
+      "cpu_time": 1.9067067384317731e+01,
+      "time_unit": "ns"
+    }
+  ]
+}
