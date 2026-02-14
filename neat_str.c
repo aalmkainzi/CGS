@@ -11,8 +11,8 @@
 
 #include "neat_str.h"
 
-#if !defined(NEAT_STR_C_INCLUDED)
-#define NEAT_STR_C_INCLUDED
+#if !defined(NEAT__STR_C_INCLUDED)
+#define NEAT__STR_C_INCLUDED
 
 #if !defined(unreachable)
     #if defined(_MSC_VER)
@@ -3159,9 +3159,6 @@ NEAT_API Neat_Error neat__ullong_tostr(Neat_Mut_String_Ref dst, unsigned long lo
     neat__uinteger_tostr();
 }
 
-// TODO optimize
-// should check if dstr, and do the current impl if so,
-// otherwise write directly to dst
 NEAT_API Neat_Error neat__float_tostr(Neat_Mut_String_Ref dst, float obj)
 {
     char tmp[32] = { 0 };
@@ -3672,4 +3669,4 @@ NEAT_API Neat_Error neat__error_tostr_p(Neat_Mut_String_Ref dst, Neat_Error *obj
     return neat__error_tostr(dst, *obj);
 }
 
-#endif // NEAT_STR_C_INCLUDED
+#endif // NEAT__STR_C_INCLUDED
