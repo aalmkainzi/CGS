@@ -11,6 +11,9 @@
 
 #include "neat_str.h"
 
+#if !defined(NEAT_STR_C_INCLUDED)
+#define NEAT_STR_C_INCLUDED
+
 #if !defined(unreachable)
     #if defined(_MSC_VER)
         #define unreachable() __assume(0)
@@ -1079,17 +1082,12 @@ NEAT_API Neat_DString neat__dstr_init(unsigned int cap, Neat_Allocator *allocato
     Neat_DString ret = { 0 };
     
     ret.allocator = allocator;
-    size_t actual_allocated_cap = 0;
     
-    if(cap > 0)
-    {
-        Neat_Allocation allocation = neat_alloc(allocator, unsigned char, cap);
-        ret.chars = allocation.ptr;
-        actual_allocated_cap = allocation.n;
-    }
-    ret.cap = actual_allocated_cap;
+    Neat_Allocation allocation = neat_alloc(allocator, unsigned char, cap);
+    ret.chars = allocation.ptr;
+    ret.cap = allocation.n;
     
-    if(ret.chars != NULL && ret.cap > 0)
+    if(ret.chars != NULL)
     {
         ret.chars[0] = '\0';
     }
@@ -3673,3 +3671,5 @@ NEAT_API Neat_Error neat__error_tostr_p(Neat_Mut_String_Ref dst, Neat_Error *obj
 {
     return neat__error_tostr(dst, *obj);
 }
+
+#endif // NEAT_STR_C_INCLUDED

@@ -1,5 +1,5 @@
-#ifndef NEAT_STR_H
-#define NEAT_STR_H
+#ifndef NEAT__STR_H_INCLUDED
+#define NEAT__STR_H_INCLUDED
 
 #include <stdarg.h>
 #include <stdint.h>
@@ -698,7 +698,7 @@ _Generic(any_str,                                       \
 NEAT__CAT(neat__dstr_init0, __VA_OPT__(1))(__VA_ARGS__)
 
 #define neat__dstr_init0() \
-neat__dstr_init(0, neat_get_default_allocator())
+neat__dstr_init(1, neat_get_default_allocator())
 
 #define neat__dstr_init01(cap, ...)              \
 __VA_OPT__(neat__dstr_init2((cap), __VA_ARGS__)) \
@@ -1380,7 +1380,7 @@ NEAT__FLOATING_TYPES(NEAT__X, ignore, NEAT__X)
 
 #undef NEAT__X
 
-#endif /* NEAT_STR_H */
+#endif /* NEAT__STR_H_INCLUDED */
 
 #ifdef NEAT_STR_SHORT_NAMES
 
