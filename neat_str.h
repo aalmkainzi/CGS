@@ -207,15 +207,17 @@ typedef struct Neat_Buffer
     unsigned int cap;
 } Neat_Buffer;
 
+enum Neat__Mut_String_Ref_Type
+{
+    NEAT__DSTR_TY = 1,
+    NEAT__STRBUF_TY,
+    NEAT__BUF_TY
+};
+
 // This is a tagged union for all mutable string types (i.e. all except String_View)
 typedef struct Neat_Mut_String_Ref
 {
-    const enum Neat_Mut_String_Ref_Type : signed char
-    {
-        NEAT__DSTR_TY = 1,
-        NEAT__STRBUF_TY,
-        NEAT__BUF_TY
-    } ty;
+    const uint8_t ty;
     union
     {
         Neat_DString *dstr;
@@ -224,21 +226,23 @@ typedef struct Neat_Mut_String_Ref
     } str;
 } Neat_Mut_String_Ref;
 
+enum Neat__Error_Value
+{
+    NEAT_OK = 0,
+    NEAT_DST_TOO_SMALL,
+    NEAT_ALLOC_ERR,
+    NEAT_INDEX_OUT_OF_BOUNDS,
+    NEAT_BAD_RANGE,
+    NEAT_NOT_FOUND,
+    NEAT_ALIASING_NOT_SUPPORTED,
+    NEAT_INCORRECT_TYPE,
+    NEAT_ENCODING_ERROR,
+    NEAT_CALLBACK_EXIT
+};
+
 typedef struct Neat_Error
 {
-    enum Neat_Error_Value : signed char
-    {
-        NEAT_OK = 0,
-        NEAT_DST_TOO_SMALL,
-        NEAT_ALLOC_ERR,
-        NEAT_INDEX_OUT_OF_BOUNDS,
-        NEAT_BAD_RANGE,
-        NEAT_NOT_FOUND,
-        NEAT_ALIASING_NOT_SUPPORTED,
-        NEAT_INCORRECT_TYPE,
-        NEAT_ENCODING_ERROR,
-        NEAT_CALLBACK_EXIT
-    } ec;
+    uint8_t ec;
 } Neat_Error;
 
 typedef struct Neat__Fixed_Mut_String_Ref

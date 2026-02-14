@@ -5,3 +5,4 @@
 *.out
 *.exe
 *.app
+/tests/files/

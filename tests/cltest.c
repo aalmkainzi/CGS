@@ -816,7 +816,7 @@ bool test_str_split_basic() {
     ASSERT(str_equal(arr.strs[0], "one"));
     ASSERT(str_equal(arr.strs[1], "two"));
     ASSERT(str_equal(arr.strs[2], "three"));
-    // Free array
+    free(arr.strs);
     return true;
 }
 
@@ -824,6 +824,7 @@ bool test_str_split_no_delimiter() {
     String_View_Array arr = str_split("hello", ",");
     ASSERT_EQ(arr.len, 1);
     ASSERT(str_equal(arr.strs[0], "hello"));
+    free(arr.strs);
     return true;
 }
 
@@ -833,6 +834,7 @@ bool test_str_split_empty_parts() {
     ASSERT(str_equal(arr.strs[0], "a"));
     ASSERT(str_equal(arr.strs[1], ""));
     ASSERT(str_equal(arr.strs[2], "b"));
+    free(arr.strs);
     return true;
 }
 
@@ -842,6 +844,7 @@ bool test_str_split_multi_char_delim() {
     ASSERT(str_equal(arr.strs[0], "one"));
     ASSERT(str_equal(arr.strs[1], "two"));
     ASSERT(str_equal(arr.strs[2], "three"));
+    free(arr.strs);
     return true;
 }
 

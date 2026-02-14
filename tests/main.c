@@ -505,11 +505,11 @@ void test_read()
     DString str = dstr_init();
     
     {
-        FILE *f_setup = fopen("test_basic.txt", "wb");
+        FILE *f_setup = fopen("files/test_basic.txt", "wb");
         fputs("hello world\n", f_setup);
         fclose(f_setup);
         
-        FILE *f = fopen("test_basic.txt", "rb");
+        FILE *f = fopen("files/test_basic.txt", "rb");
         str_fread_line(&str, f);
         println(str);
         fclose(f);
@@ -519,11 +519,11 @@ str_clear(&str);
     
     // --- 2. Multi-line Reading ---
     {
-        FILE *f_setup = fopen("test_multi.txt", "wb");
+        FILE *f_setup = fopen("files/test_multi.txt", "wb");
         fputs("line one\nline two\n", f_setup);
         fclose(f_setup);
         
-        FILE *f = fopen("test_multi.txt", "rb");
+        FILE *f = fopen("files/test_multi.txt", "rb");
         
         str_fread_line(&str, f);
         assert(str_equal(str, "line one\n"));
@@ -537,11 +537,11 @@ str_clear(&str);
     
     // --- 3. No Trailing Newline ---
     {
-        FILE *f_setup = fopen("test_no_nl.txt", "wb");
+        FILE *f_setup = fopen("files/test_no_nl.txt", "wb");
         fputs("missing newline", f_setup);
         fclose(f_setup);
         
-        FILE *f = fopen("test_no_nl.txt", "rb");
+        FILE *f = fopen("files/test_no_nl.txt", "rb");
         str_fread_line(&str, f);
         println(str);
         fclose(f);
@@ -551,10 +551,10 @@ str_clear(&str);
     
     // --- 4. Empty File ---
     {
-        FILE *f_setup = fopen("test_empty.txt", "wb");
+        FILE *f_setup = fopen("files/test_empty.txt", "wb");
         fclose(f_setup);
         
-        FILE *f = fopen("test_empty.txt", "rb");
+        FILE *f = fopen("files/test_empty.txt", "rb");
         str_fread_line(&str, f);
         fclose(f);
         // Adjust this check based on your API's specific behavior for EOF/empty files
@@ -564,11 +564,11 @@ str_clear(&str);
     
     // --- 5. Windows-style Line Endings (CRLF) ---
     {
-        FILE *f_setup = fopen("test_crlf.txt", "wb");
+        FILE *f_setup = fopen("files/test_crlf.txt", "wb");
         fputs("windows line\r\n", f_setup);
         fclose(f_setup);
         
-        FILE *f = fopen("test_crlf.txt", "rb");
+        FILE *f = fopen("files/test_crlf.txt", "rb");
         str_fread_line(&str, f);
         println(str);
         fclose(f);
@@ -578,12 +578,12 @@ str_clear(&str);
     
     // --- 6. Very Long Line (Testing Dynamic Growth) ---
     {
-        FILE *f_setup = fopen("test_long.txt", "wb");
+        FILE *f_setup = fopen("files/test_long.txt", "wb");
         for(int i = 0; i < 5000; i++) fputc('a', f_setup);
         fputc('\n', f_setup);
         fclose(f_setup);
         
-        FILE *f = fopen("test_long.txt", "rb");
+        FILE *f = fopen("files/test_long.txt", "rb");
         str_fread_line(&str, f);
         fclose(f);
         
@@ -596,11 +596,11 @@ str_clear(&str);
     
     // --- 7. Multiple Consecutive Newlines ---
     {
-        FILE *f_setup = fopen("test_newlines.txt", "wb");
+        FILE *f_setup = fopen("files/test_newlines.txt", "wb");
         fputs("\n\n", f_setup);
         fclose(f_setup);
         
-        FILE *f = fopen("test_newlines.txt", "rb");
+        FILE *f = fopen("files/test_newlines.txt", "rb");
         
         str_fread_line(&str, f);
         assert(str_equal(str, "\n"));
@@ -615,11 +615,11 @@ str_clear(&str);
     
     
     {
-        FILE *f_setup = fopen("test1.txt", "wb");
+        FILE *f_setup = fopen("files/test1.txt", "wb");
         fputs("hello\n", f_setup);
         fclose(f_setup);
         
-        FILE *f = fopen("test1.txt", "rb");
+        FILE *f = fopen("files/test1.txt", "rb");
         str_append_fread_line(&str, f);
         println(str);
         fclose(f);
@@ -630,12 +630,12 @@ str_clear(&str);
     
     // --- 2. Append to Existing Content ---
     {
-        FILE *f_setup = fopen("test2.txt", "wb");
+        FILE *f_setup = fopen("files/test2.txt", "wb");
         fputs("world\n", f_setup);
         fclose(f_setup);
         
         str_copy(&str, "hello "); // Manually set initial content
-        FILE *f = fopen("test2.txt", "rb");
+        FILE *f = fopen("files/test2.txt", "rb");
         str_append_fread_line(&str, f);
         println(str);
         fclose(f);
@@ -646,11 +646,11 @@ str_clear(&str);
     
     // --- 3. Consecutive Appends from Same File ---
     {
-        FILE *f_setup = fopen("test3.txt", "wb");
+        FILE *f_setup = fopen("files/test3.txt", "wb");
         fputs("line1\nline2\n", f_setup);
         fclose(f_setup);
         
-        FILE *f = fopen("test3.txt", "rb");
+        FILE *f = fopen("files/test3.txt", "rb");
         str_append_fread_line(&str, f); // Appends "line1\n"
         str_append_fread_line(&str, f); // Appends "line2\n"
         println(str);
@@ -662,12 +662,12 @@ str_clear(&str);
     
     // --- 4. Append No-Newline File to String with Newline ---
     {
-        FILE *f_setup = fopen("test4.txt", "wb");
+        FILE *f_setup = fopen("files/test4.txt", "wb");
         fputs("part2", f_setup); // No newline at end
         fclose(f_setup);
         
         str_copy(&str, "part1\n");
-        FILE *f = fopen("test4.txt", "rb");
+        FILE *f = fopen("files/test4.txt", "rb");
         str_append_fread_line(&str, f);
         println(str);
         fclose(f);
@@ -678,11 +678,11 @@ str_clear(&str);
     
     // --- 5. Append from Empty File (Should change nothing) ---
     {
-        FILE *f_setup = fopen("test5.txt", "wb");
+        FILE *f_setup = fopen("files/test5.txt", "wb");
         fclose(f_setup);
         
         str_copy(&str, "preserved");
-        FILE *f = fopen("test5.txt", "rb");
+        FILE *f = fopen("files/test5.txt", "rb");
         str_append_fread_line(&str, f);
         println(str);
         fclose(f);
@@ -693,13 +693,13 @@ str_clear(&str);
     
     // --- 6. Large Append (Dynamic Memory Stress) ---
     {
-        FILE *f_setup = fopen("test6.txt", "wb");
+        FILE *f_setup = fopen("files/test6.txt", "wb");
         for(int i = 0; i < 5000; i++) fputc('b', f_setup);
         fputc('\n', f_setup);
         fclose(f_setup);
         
         str_copy(&str, "aaaaa"); 
-        FILE *f = fopen("test6.txt", "rb");
+        FILE *f = fopen("files/test6.txt", "rb");
         str_append_fread_line(&str, f);
         fclose(f);
         
@@ -713,12 +713,12 @@ str_clear(&str);
     
     // --- 7. Append CRLF Line ---
     {
-        FILE *f_setup = fopen("test7.txt", "wb");
+        FILE *f_setup = fopen("files/test7.txt", "wb");
         fputs("dos\r\n", f_setup);
         fclose(f_setup);
         
         str_copy(&str, "unix\n");
-        FILE *f = fopen("test7.txt", "rb");
+        FILE *f = fopen("files/test7.txt", "rb");
         str_append_fread_line(&str, f);
         println(str);
         fclose(f);
@@ -893,7 +893,7 @@ void test_read2()
 {
     String_Buffer sb = strbuf_init_from_buf((char[64]){});
     
-    FILE *f = fopen("file", "rb");
+    FILE *f = fopen("files/file", "rb");
     str_fread_line(&sb, f);
     println(sb.len, " :: '", sb, "'");
     assert(str_equal(sb, "this is the first line\n"));
@@ -905,7 +905,7 @@ void test_read2()
     
     fclose(f);
     
-    f = fopen("file", "rb");
+    f = fopen("files/file", "rb");
     
     DString line = dstr_init();
     
