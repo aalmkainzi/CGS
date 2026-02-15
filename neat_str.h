@@ -217,7 +217,7 @@ enum Neat__Mut_String_Ref_Type
 // This is a tagged union for all mutable string types (i.e. all except String_View)
 typedef struct Neat_Mut_String_Ref
 {
-    const uint8_t ty;
+    uint8_t ty;
     union
     {
         Neat_DString *dstr;
