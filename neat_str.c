@@ -3669,4 +3669,9 @@ NEAT_API Neat_Error neat__error_tostr_p(Neat_Mut_String_Ref dst, Neat_Error *obj
     return neat__error_tostr(dst, *obj);
 }
 
+NEAT_API Neat_Error neat__array_fmt_tostr_p(Neat_Mut_String_Ref dst, Neat_Array_Fmt *obj)
+{
+    return neat__array_fmt_tostr(dst, *obj);
+}
+
 #endif // NEAT__STR_C_INCLUDED
