@@ -924,8 +924,8 @@ FXS__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
     ) \
 )
 
-#define fxs_tsfmt_t(ty, fmt_chr, ...) \
-__typeof__(fxs_tsfmt((ty)0, fmt_chr __VA_OPT__(,) __VA_ARGS__))
+#define fxs_tsfmt_t(ty, fmt_chr) \
+__typeof__(fxs_tsfmt((ty)0, fmt_chr))
 
 #define fxs_arrfmt(array, nb, ...) \
 FXS__IF_EMPTY(fxs__arrfmt_, __VA_ARGS__) \

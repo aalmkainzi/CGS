@@ -1,2 +1,3 @@
 - Add default precision float fmt structs (maybe not?)
 - Add capital fmt_char structs
+- Port examples
