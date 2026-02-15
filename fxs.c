@@ -1,18 +1,18 @@
 #include <ctype.h>
 
-#ifndef NEAT_API
+#ifndef FXS_API
     // for functions exposed in the header
-    #define NEAT_API
+    #define FXS_API
 #endif
-#ifndef NEAT_PRIVATE
-    // for functions only in neat_str.c
-    #define NEAT_PRIVATE
+#ifndef FXS_PRIVATE
+    // for functions only in fxs_str.c
+    #define FXS_PRIVATE
 #endif
 
-#include "neat_str.h"
+#include "fxs.h"
 
-#if !defined(NEAT__STR_C_INCLUDED)
-#define NEAT__STR_C_INCLUDED
+#if !defined(FXS__STR_C_INCLUDED)
+#define FXS__STR_C_INCLUDED
 
 #if !defined(unreachable)
     #if defined(_MSC_VER)
@@ -24,30 +24,30 @@
     #endif
 #endif
 
-NEAT_PRIVATE Neat_Allocation neat__default_allocator_alloc(Neat_Allocator *ctx, size_t alignment, size_t n);
-NEAT_PRIVATE void neat__default_allocator_dealloc(Neat_Allocator *ctx, void *ptr, size_t n);
-NEAT_PRIVATE Neat_Allocation neat__default_allocator_realloc(Neat_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size);
+FXS_PRIVATE FXS_Allocation fxs__default_allocator_alloc(FXS_Allocator *ctx, size_t alignment, size_t n);
+FXS_PRIVATE void fxs__default_allocator_dealloc(FXS_Allocator *ctx, void *ptr, size_t n);
+FXS_PRIVATE FXS_Allocation fxs__default_allocator_realloc(FXS_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size);
 
-static Neat_Allocator neat__default_allocator = {
-    .alloc   = neat__default_allocator_alloc,
-    .dealloc = neat__default_allocator_dealloc,
-    .realloc = neat__default_allocator_realloc,
+static FXS_Allocator fxs__default_allocator = {
+    .alloc   = fxs__default_allocator_alloc,
+    .dealloc = fxs__default_allocator_dealloc,
+    .realloc = fxs__default_allocator_realloc,
 };
 
-static const Neat_String_View neat__error_to_string[] = {
-    [NEAT_OK]                     = {.len = sizeof("OK")                     - 1, .chars = (unsigned char*) "OK"},
-    [NEAT_DST_TOO_SMALL]          = {.len = sizeof("DST_TOO_SMALL")          - 1, .chars = (unsigned char*) "DST_TOO_SMALL"},
-    [NEAT_ALLOC_ERR]              = {.len = sizeof("ALLOC_ERR")              - 1, .chars = (unsigned char*) "ALLOC_ERR"},
-    [NEAT_INDEX_OUT_OF_BOUNDS]    = {.len = sizeof("INDEX_OUT_OF_BOUNDS")    - 1, .chars = (unsigned char*) "INDEX_OUT_OF_BOUNDS"},
-    [NEAT_BAD_RANGE]              = {.len = sizeof("BAD_RANGE")              - 1, .chars = (unsigned char*) "BAD_RANGE"},
-    [NEAT_NOT_FOUND]              = {.len = sizeof("NOT_FOUND")              - 1, .chars = (unsigned char*) "NOT_FOUND"},
-    [NEAT_ALIASING_NOT_SUPPORTED] = {.len = sizeof("ALIASING_NOT_SUPPORTED") - 1, .chars = (unsigned char*) "ALIASING_NOT_SUPPORTED"},
-    [NEAT_INCORRECT_TYPE]         = {.len = sizeof("INCORRECT_TYPE")         - 1, .chars = (unsigned char*) "INCORRECT_TYPE"},
-    [NEAT_ENCODING_ERROR]         = {.len = sizeof("ENCODING_ERROR")         - 1, .chars = (unsigned char*) "ENCODING_ERROR"},
-    [NEAT_CALLBACK_EXIT]          = {.len = sizeof("CALLBACK_EXIT")          - 1, .chars = (unsigned char*) "CALLBACK_EXIT"}
+static const FXS_StrView fxs__error_to_string[] = {
+    [FXS_OK]                     = {.len = sizeof("OK")                     - 1, .chars = (unsigned char*) "OK"},
+    [FXS_DST_TOO_SMALL]          = {.len = sizeof("DST_TOO_SMALL")          - 1, .chars = (unsigned char*) "DST_TOO_SMALL"},
+    [FXS_ALLOC_ERR]              = {.len = sizeof("ALLOC_ERR")              - 1, .chars = (unsigned char*) "ALLOC_ERR"},
+    [FXS_INDEX_OUT_OF_BOUNDS]    = {.len = sizeof("INDEX_OUT_OF_BOUNDS")    - 1, .chars = (unsigned char*) "INDEX_OUT_OF_BOUNDS"},
+    [FXS_BAD_RANGE]              = {.len = sizeof("BAD_RANGE")              - 1, .chars = (unsigned char*) "BAD_RANGE"},
+    [FXS_NOT_FOUND]              = {.len = sizeof("NOT_FOUND")              - 1, .chars = (unsigned char*) "NOT_FOUND"},
+    [FXS_ALIASING_NOT_SUPPORTED] = {.len = sizeof("ALIASING_NOT_SUPPORTED") - 1, .chars = (unsigned char*) "ALIASING_NOT_SUPPORTED"},
+    [FXS_INCORRECT_TYPE]         = {.len = sizeof("INCORRECT_TYPE")         - 1, .chars = (unsigned char*) "INCORRECT_TYPE"},
+    [FXS_ENCODING_ERROR]         = {.len = sizeof("ENCODING_ERROR")         - 1, .chars = (unsigned char*) "ENCODING_ERROR"},
+    [FXS_CALLBACK_EXIT]          = {.len = sizeof("CALLBACK_EXIT")          - 1, .chars = (unsigned char*) "CALLBACK_EXIT"}
 };
 
-static const long long neat__ten_pows[] = {
+static const long long fxs__ten_pows[] = {
     1,
     10,
     100,
@@ -69,7 +69,7 @@ static const long long neat__ten_pows[] = {
     1000000000000000000,
 };
 
-static const unsigned long long neat__ten_pows_ull[] = {
+static const unsigned long long fxs__ten_pows_ull[] = {
     1ull,
     10ull,
     100ull,
@@ -92,7 +92,7 @@ static const unsigned long long neat__ten_pows_ull[] = {
     10000000000000000000ull,
 };
 
-static const Neat_String_View neat__uc_to_string[256] = {
+static const FXS_StrView fxs__uc_to_string[256] = {
     {.chars = (unsigned char*) "0", .len = 1},
     {.chars = (unsigned char*) "1", .len = 1},
     {.chars = (unsigned char*) "2", .len = 1},
@@ -351,7 +351,7 @@ static const Neat_String_View neat__uc_to_string[256] = {
     {.chars = (unsigned char*) "255", .len = 3},
 };
 
-static const Neat_String_View neat__sc_to_string[] = {
+static const FXS_StrView fxs__sc_to_string[] = {
     {.chars = (unsigned char*) "0", .len = 1},
     {.chars = (unsigned char*) "1", .len = 1},
     {.chars = (unsigned char*) "2", .len = 1},
@@ -610,7 +610,7 @@ static const Neat_String_View neat__sc_to_string[] = {
     {.chars = (unsigned char*) "-1", .len = 2}
 };
 
-const char neat__byte_to_hex[][2] = 
+const char fxs__byte_to_hex[][2] = 
 {
     {'0', '0'},
     {'0', '1'},
@@ -870,14 +870,14 @@ const char neat__byte_to_hex[][2] =
     {'f', 'f'}
 };
 
-_Thread_local Neat_DString neat__fprint_tostr_dynamic_buffer = {
-    .allocator = &neat__default_allocator
+_Thread_local FXS_DStr fxs__fprint_tostr_dynamic_buffer = {
+    .allocator = &fxs__default_allocator
 };
 
-NEAT_API Neat__Fixed_Mut_String_Ref neat__buf_as_fmutstr_ref(Neat_Buffer buf, unsigned int *len_ptr)
+FXS_API FXS__FixedMutStrRef fxs__buf_as_fmutstr_ref(FXS_Buffer buf, unsigned int *len_ptr)
 {
     *len_ptr = strlen((char*) buf.ptr);
-    Neat__Fixed_Mut_String_Ref ret = {
+    FXS__FixedMutStrRef ret = {
         .chars = buf.ptr,
         .cap = buf.cap,
         .len = len_ptr
@@ -885,9 +885,9 @@ NEAT_API Neat__Fixed_Mut_String_Ref neat__buf_as_fmutstr_ref(Neat_Buffer buf, un
     return ret;
 }
 
-NEAT_API Neat__Fixed_Mut_String_Ref neat__strbuf_ptr_as_fmutstr_ref(Neat_String_Buffer *strbuf)
+FXS_API FXS__FixedMutStrRef fxs__strbuf_ptr_as_fmutstr_ref(FXS_StrBuf *strbuf)
 {
-    Neat__Fixed_Mut_String_Ref ret = {
+    FXS__FixedMutStrRef ret = {
         .chars = strbuf->chars,
         .cap = strbuf->cap,
         .len = &strbuf->len
@@ -895,9 +895,9 @@ NEAT_API Neat__Fixed_Mut_String_Ref neat__strbuf_ptr_as_fmutstr_ref(Neat_String_
     return ret;
 }
 
-NEAT_API Neat__Fixed_Mut_String_Ref neat__dstr_ptr_as_fmutstr_ref(Neat_DString *dstr)
+FXS_API FXS__FixedMutStrRef fxs__dstr_ptr_as_fmutstr_ref(FXS_DStr *dstr)
 {
-    Neat__Fixed_Mut_String_Ref ret = {
+    FXS__FixedMutStrRef ret = {
         .chars = dstr->chars,
         .cap = dstr->cap,
         .len = &dstr->len
@@ -905,46 +905,46 @@ NEAT_API Neat__Fixed_Mut_String_Ref neat__dstr_ptr_as_fmutstr_ref(Neat_DString *
     return ret;
 }
 
-NEAT_PRIVATE Neat_Allocation neat__default_allocator_alloc(Neat_Allocator *ctx, size_t alignment, size_t n)
+FXS_PRIVATE FXS_Allocation fxs__default_allocator_alloc(FXS_Allocator *ctx, size_t alignment, size_t n)
 {
     (void) alignment;
     (void) ctx;
     void *mem = malloc(n);
-    return (Neat_Allocation){
+    return (FXS_Allocation){
         .ptr = mem,
         .n = n
     };
 }
 
-NEAT_PRIVATE void neat__default_allocator_dealloc(Neat_Allocator *ctx, void *ptr, size_t n)
+FXS_PRIVATE void fxs__default_allocator_dealloc(FXS_Allocator *ctx, void *ptr, size_t n)
 {
     (void) ctx;
     (void) n;
     free(ptr);
 }
 
-NEAT_PRIVATE Neat_Allocation neat__default_allocator_realloc(Neat_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size)
+FXS_PRIVATE FXS_Allocation fxs__default_allocator_realloc(FXS_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size)
 {
     (void) ctx;
     (void) alignment;
     (void) old_size;
     void *mem = realloc(ptr, new_size);
-    return (Neat_Allocation){
+    return (FXS_Allocation){
         .ptr = mem,
         .n = new_size
     };
 }
 
-NEAT_PRIVATE Neat_Allocation neat__dstr_append_allocator_alloc(Neat_Allocator *allocator, size_t alignment, size_t n)
+FXS_PRIVATE FXS_Allocation fxs__dstr_append_allocator_alloc(FXS_Allocator *allocator, size_t alignment, size_t n)
 {
     assert(0); // this should never get called
     (void) allocator;
     (void) alignment;
     (void) n;
-    return (Neat_Allocation){0};
+    return (FXS_Allocation){0};
 }
 
-NEAT_PRIVATE void neat__dstr_append_allocator_dealloc(Neat_Allocator *allocator, void *ptr, size_t n)
+FXS_PRIVATE void fxs__dstr_append_allocator_dealloc(FXS_Allocator *allocator, void *ptr, size_t n)
 {
     assert(0); // this should never get called
     (void) allocator;
@@ -952,60 +952,60 @@ NEAT_PRIVATE void neat__dstr_append_allocator_dealloc(Neat_Allocator *allocator,
     (void) n;
 }
 
-NEAT_PRIVATE Neat_Allocation neat__dstr_append_allocator_realloc(Neat_Allocator *allocator, void *ptr, size_t alignment, size_t old_size, size_t new_size)
+FXS_PRIVATE FXS_Allocation fxs__dstr_append_allocator_realloc(FXS_Allocator *allocator, void *ptr, size_t alignment, size_t old_size, size_t new_size)
 {
     (void) alignment;
     
-    Neat__DString_Append_Allocator *dstr_append_allocator = (__typeof__(dstr_append_allocator)) allocator;
+    FXS__DStrAppendAllocator *dstr_append_allocator = (__typeof__(dstr_append_allocator)) allocator;
     
-    Neat_DString *owner = dstr_append_allocator->owner;
+    FXS_DStr *owner = dstr_append_allocator->owner;
     
     assert(old_size == owner->cap - owner->len);
     assert(((unsigned char*)ptr - owner->chars) == owner->len);
     
-    neat_dstr_ensure_cap(owner, owner->cap + (new_size - old_size));
-    return (Neat_Allocation){
+    fxs_dstr_ensure_cap(owner, owner->cap + (new_size - old_size));
+    return (FXS_Allocation){
         .ptr = owner->chars + owner->len,
         .n = owner->cap - owner->len
     };
 }
 
-NEAT_API Neat_Allocation neat__allocator_invoke_alloc(Neat_Allocator *allocator, size_t alignment, size_t obj_size, size_t nb)
+FXS_API FXS_Allocation fxs__allocator_invoke_alloc(FXS_Allocator *allocator, size_t alignment, size_t obj_size, size_t nb)
 {
     return allocator->alloc(allocator, alignment, nb * obj_size);
 }
 
-NEAT_API void neat__allocator_invoke_dealloc(Neat_Allocator *allocator, void *ptr, size_t obj_size, size_t nb)
+FXS_API void fxs__allocator_invoke_dealloc(FXS_Allocator *allocator, void *ptr, size_t obj_size, size_t nb)
 {
     allocator->dealloc(allocator, ptr, nb * obj_size);
 }
 
-NEAT_API Neat_Allocation neat__allocator_invoke_realloc(Neat_Allocator *allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb)
+FXS_API FXS_Allocation fxs__allocator_invoke_realloc(FXS_Allocator *allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb)
 {
     return allocator->realloc(allocator, ptr, alignment, old_nb * obj_size, new_nb * obj_size);
 }
 
-NEAT_API Neat_Allocator *neat_get_default_allocator()
+FXS_API FXS_Allocator *fxs_get_default_allocator()
 {
-    return &neat__default_allocator;
+    return &fxs__default_allocator;
 }
 
-NEAT_PRIVATE void neat__make_dstr_append_allocator(Neat_DString *dstr, Neat__DString_Append_Allocator *out)
+FXS_PRIVATE void fxs__make_dstr_append_allocator(FXS_DStr *dstr, FXS__DStrAppendAllocator *out)
 {
-    *out = (Neat__DString_Append_Allocator){
+    *out = (FXS__DStrAppendAllocator){
         .base = {
-            .alloc   = neat__dstr_append_allocator_alloc,
-            .dealloc = neat__dstr_append_allocator_dealloc,
-            .realloc = neat__dstr_append_allocator_realloc,
+            .alloc   = fxs__dstr_append_allocator_alloc,
+            .dealloc = fxs__dstr_append_allocator_dealloc,
+            .realloc = fxs__dstr_append_allocator_realloc,
         },
         .owner = dstr
     };
 }
 
-NEAT_PRIVATE Neat_DString neat__make_appender_dstr(Neat_DString *owner, Neat__DString_Append_Allocator *allocator)
+FXS_PRIVATE FXS_DStr fxs__make_appender_dstr(FXS_DStr *owner, FXS__DStrAppendAllocator *allocator)
 {
-    neat__make_dstr_append_allocator(owner, allocator);
-    return (Neat_DString){
+    fxs__make_dstr_append_allocator(owner, allocator);
+    return (FXS_DStr){
         .allocator = (void*) allocator,
         .cap = owner->cap - owner->len,
         .len = 0,
@@ -1013,45 +1013,45 @@ NEAT_PRIVATE Neat_DString neat__make_appender_dstr(Neat_DString *owner, Neat__DS
     };
 }
 
-NEAT_PRIVATE Neat_String_Buffer neat__make_appender_strbuf(Neat_Mut_String_Ref owner)
+FXS_PRIVATE FXS_StrBuf fxs__make_appender_strbuf(FXS_MutStrRef owner)
 {
-    return (Neat_String_Buffer){
-        .cap = neat_str_cap(owner) - neat__mutstr_ref_len(owner),
+    return (FXS_StrBuf){
+        .cap = fxs__mutstr_ref_cap(owner) - fxs__mutstr_ref_len(owner),
         .len = 0,
-        .chars = (unsigned char*)neat_str_chars(owner) + neat__mutstr_ref_len(owner)
+        .chars = (unsigned char*) fxs__mutstr_ref_as_cstr(owner) + fxs__mutstr_ref_len(owner)
     };
 }
 
-NEAT_API Neat_Mut_String_Ref neat__make_appender_mutstr_ref(Neat_Mut_String_Ref owner, Neat_String_Appender_State *state)
+FXS_API FXS_MutStrRef fxs__make_appender_mutstr_ref(FXS_MutStrRef owner, FXS_StrAppenderState *state)
 {
     switch(owner.ty)
     {
-        case NEAT__DSTR_TY    :
-            state->appender_dstr = neat__make_appender_dstr(owner.str.dstr, &state->dstr_append_allocator);
-            return neat__dstr_ptr_as_mutstr_ref(&state->appender_dstr);
-        case NEAT__STRBUF_TY  :
-        case NEAT__BUF_TY     :
+        case FXS__DSTR_TY    :
+            state->appender_dstr = fxs__make_appender_dstr(owner.str.dstr, &state->dstr_append_allocator);
+            return fxs__dstr_ptr_as_mutstr_ref(&state->appender_dstr);
+        case FXS__STRBUF_TY  :
+        case FXS__BUF_TY     :
             ;
-            Neat_Mut_String_Ref ret = {.ty = NEAT__STRBUF_TY};
+            FXS_MutStrRef ret = {.ty = FXS__STRBUF_TY};
             ret.str.strbuf = &state->appender_buf;
-            *ret.str.strbuf = neat__make_appender_strbuf(owner);
+            *ret.str.strbuf = fxs__make_appender_strbuf(owner);
             return ret;
         default               :
             unreachable();
     }
 }
 
-NEAT_PRIVATE unsigned int neat__uint_min(unsigned int a, unsigned int b)
+FXS_PRIVATE unsigned int fxs__uint_min(unsigned int a, unsigned int b)
 {
     return a < b ? a : b;
 }
 
-NEAT_PRIVATE unsigned int neat__uint_max(unsigned int a, unsigned int b)
+FXS_PRIVATE unsigned int fxs__uint_max(unsigned int a, unsigned int b)
 {
     return a > b ? a : b;
 }
 
-NEAT_PRIVATE unsigned int neat__chars_strlen(const char *chars, unsigned int cap)
+FXS_PRIVATE unsigned int fxs__chars_strlen(const char *chars, unsigned int cap)
 {
     char *str_end = memchr(chars, '\0', cap);
     unsigned int len;
@@ -1068,7 +1068,7 @@ NEAT_PRIVATE unsigned int neat__chars_strlen(const char *chars, unsigned int cap
     return len;
 }
 
-NEAT_API bool neat__is_strv_within(Neat_String_View base, Neat_String_View sub)
+FXS_API bool fxs__is_strv_within(FXS_StrView base, FXS_StrView sub)
 {
     uintptr_t begin = (uintptr_t) base.chars;
     uintptr_t end = (uintptr_t) (base.chars + base.len);
@@ -1076,14 +1076,14 @@ NEAT_API bool neat__is_strv_within(Neat_String_View base, Neat_String_View sub)
     return sub_begin >= begin && sub_begin < end;
 }
 
-NEAT__NODISCARD("discarding a new DString may cause memory leak")
-NEAT_API Neat_DString neat__dstr_init(unsigned int cap, Neat_Allocator *allocator)
+FXS__NODISCARD("discarding a new DString may cause memory leak")
+FXS_API FXS_DStr fxs__dstr_init(unsigned int cap, FXS_Allocator *allocator)
 {
-    Neat_DString ret = { 0 };
+    FXS_DStr ret = { 0 };
     
     ret.allocator = allocator;
     
-    Neat_Allocation allocation = neat_alloc(allocator, unsigned char, cap);
+    FXS_Allocation allocation = fxs_alloc(allocator, unsigned char, cap);
     ret.chars = allocation.ptr;
     ret.cap = allocation.n;
     
@@ -1095,62 +1095,62 @@ NEAT_API Neat_DString neat__dstr_init(unsigned int cap, Neat_Allocator *allocato
     return ret;
 }
 
-NEAT_API Neat_DString neat__dstr_init_from(const Neat_String_View str, Neat_Allocator *allocator)
+FXS_API FXS_DStr fxs__dstr_init_from(const FXS_StrView str, FXS_Allocator *allocator)
 {
-    Neat_DString ret = neat__dstr_init(str.len + 1, allocator);
+    FXS_DStr ret = fxs__dstr_init(str.len + 1, allocator);
     
-    neat__dstr_copy(&ret, str);
+    fxs__dstr_copy(&ret, str);
     
     return ret;
 }
 
-NEAT_API void neat__dstr_deinit(Neat_DString *dstr)
+FXS_API void fxs__dstr_deinit(FXS_DStr *dstr)
 {
-    neat_dealloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap);
+    fxs_dealloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap);
     dstr->cap = 0;
     dstr->len = 0;
     dstr->chars = NULL;
 }
 
-NEAT_API Neat_Error neat__dstr_shrink_to_fit(Neat_DString *dstr)
+FXS_API FXS_Error fxs__dstr_shrink_to_fit(FXS_DStr *dstr)
 {
-    Neat_Allocation allocation = neat_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, dstr->len + 1);
+    FXS_Allocation allocation = fxs_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, dstr->len + 1);
     if(allocation.ptr == NULL)
     {
-        return (Neat_Error){NEAT_ALLOC_ERR};
+        return (FXS_Error){FXS_ALLOC_ERR};
     }
     else
     {
         dstr->chars = allocation.ptr;
         dstr->cap = allocation.n;
-        return (Neat_Error){NEAT_OK};
+        return (FXS_Error){FXS_OK};
     }
 }
 
-NEAT_PRIVATE Neat_Error neat__dstr_maybe_grow(Neat_DString *dstr, unsigned int len_to_append)
+FXS_PRIVATE FXS_Error fxs__dstr_maybe_grow(FXS_DStr *dstr, unsigned int len_to_append)
 {
-    return neat__dstr_ensure_cap(dstr, dstr->len + len_to_append + 1);
+    return fxs__dstr_ensure_cap(dstr, dstr->len + len_to_append + 1);
 }
 
-NEAT_API Neat_Error neat__dstr_append(Neat_DString *dstr, const Neat_String_View src)
+FXS_API FXS_Error fxs__dstr_append(FXS_DStr *dstr, const FXS_StrView src)
 {
-    Neat_String_View to_append = src;
-    Neat_Error err = (Neat_Error){NEAT_OK};
-    if(neat__is_strv_within(neat__strv_dstr_ptr2(dstr, 0), to_append))
+    FXS_StrView to_append = src;
+    FXS_Error err = (FXS_Error){FXS_OK};
+    if(fxs__is_strv_within(fxs__strv_dstr_ptr2(dstr, 0), to_append))
     {
         unsigned int begin_idx = to_append.chars - dstr->chars;
-        err = neat__dstr_maybe_grow(dstr, to_append.len + 1);
-        to_append = (Neat_String_View){
+        err = fxs__dstr_maybe_grow(dstr, to_append.len + 1);
+        to_append = (FXS_StrView){
             .len   = to_append.len,
             .chars = dstr->chars + begin_idx
         };
     }
     else
     {
-        err = neat__dstr_maybe_grow(dstr, to_append.len);
+        err = fxs__dstr_maybe_grow(dstr, to_append.len);
     }
     
-    if(err.ec == NEAT_OK)
+    if(err.ec == FXS_OK)
     {
         memmove(dstr->chars + dstr->len, to_append.chars, to_append.len * sizeof(unsigned char));
         
@@ -1161,26 +1161,26 @@ NEAT_API Neat_Error neat__dstr_append(Neat_DString *dstr, const Neat_String_View
     return err;
 }
 
-NEAT_API Neat_Error neat__dstr_prepend_strv(Neat_DString *dstr, const Neat_String_View src)
+FXS_API FXS_Error fxs__dstr_prepend_strv(FXS_DStr *dstr, const FXS_StrView src)
 {
-    Neat_String_View to_prepend = src;
-    Neat_Error err = (Neat_Error){NEAT_OK};
+    FXS_StrView to_prepend = src;
+    FXS_Error err = (FXS_Error){FXS_OK};
     
-    if(neat__is_strv_within(neat__strv_dstr_ptr2(dstr, 0), src))
+    if(fxs__is_strv_within(fxs__strv_dstr_ptr2(dstr, 0), src))
     {
         unsigned int begin_idx = src.chars - dstr->chars;
-        err = neat__dstr_maybe_grow(dstr, src.len);
-        to_prepend = (Neat_String_View){
+        err = fxs__dstr_maybe_grow(dstr, src.len);
+        to_prepend = (FXS_StrView){
             .len = src.len, 
             .chars = dstr->chars + begin_idx
         };
     }
     else
     {
-        err = neat__dstr_maybe_grow(dstr, to_prepend.len);
+        err = fxs__dstr_maybe_grow(dstr, to_prepend.len);
     }
     
-    if(err.ec == NEAT_OK)
+    if(err.ec == FXS_OK)
     {
         memmove(dstr->chars + to_prepend.len, dstr->chars, dstr->len);
         memmove(dstr->chars, to_prepend.chars, to_prepend.len);
@@ -1192,27 +1192,27 @@ NEAT_API Neat_Error neat__dstr_prepend_strv(Neat_DString *dstr, const Neat_Strin
     return err;
 }
 
-NEAT_API Neat_Error neat__dstr_insert(Neat_DString *dstr, const Neat_String_View src, unsigned int idx)
+FXS_API FXS_Error fxs__dstr_insert(FXS_DStr *dstr, const FXS_StrView src, unsigned int idx)
 {
     if(idx > dstr->len)
     {
-        return (Neat_Error){NEAT_INDEX_OUT_OF_BOUNDS};
+        return (FXS_Error){FXS_INDEX_OUT_OF_BOUNDS};
     }
     
-    Neat_String_View to_insert = src;
+    FXS_StrView to_insert = src;
     
-    if(neat__is_strv_within(neat__strv_dstr_ptr2(dstr, 0), src))
+    if(fxs__is_strv_within(fxs__strv_dstr_ptr2(dstr, 0), src))
     {
         unsigned int begin_idx = src.chars - dstr->chars;
-        neat__dstr_maybe_grow(dstr, src.len);
-        to_insert = (Neat_String_View){
+        fxs__dstr_maybe_grow(dstr, src.len);
+        to_insert = (FXS_StrView){
             .len = src.len, 
             .chars = dstr->chars + begin_idx
         };
     }
     else
     {
-        neat__dstr_maybe_grow(dstr, to_insert.len);
+        fxs__dstr_maybe_grow(dstr, to_insert.len);
     }
     
     memmove(dstr->chars + idx + to_insert.len, dstr->chars + idx, dstr->len - idx);
@@ -1221,206 +1221,206 @@ NEAT_API Neat_Error neat__dstr_insert(Neat_DString *dstr, const Neat_String_View
     dstr->len += to_insert.len;
     dstr->chars[dstr->len] = '\0';
     
-    return (Neat_Error){NEAT_OK};
+    return (FXS_Error){FXS_OK};
 }
 
-NEAT_API Neat_Error neat__dstr_ensure_cap(Neat_DString *dstr, unsigned int at_least)
+FXS_API FXS_Error fxs__dstr_ensure_cap(FXS_DStr *dstr, unsigned int at_least)
 {
     if(dstr->cap < at_least)
     {
         unsigned char *save = dstr->chars;
-        size_t new_cap = neat__uint_max(at_least, dstr->cap * 2);
-        Neat_Allocation allocation = neat_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, new_cap);
+        size_t new_cap = fxs__uint_max(at_least, dstr->cap * 2);
+        FXS_Allocation allocation = fxs_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, new_cap);
         dstr->chars = allocation.ptr;
         dstr->cap = allocation.n;
         
         if(dstr->chars == NULL)
         {
             dstr->chars = save;
-            return (Neat_Error){NEAT_ALLOC_ERR};
+            return (FXS_Error){FXS_ALLOC_ERR};
         }
         if(dstr->cap < new_cap)
         {
-            return (Neat_Error){NEAT_ALLOC_ERR};
+            return (FXS_Error){FXS_ALLOC_ERR};
         }
     }
     
-    return (Neat_Error){NEAT_OK};
+    return (FXS_Error){FXS_OK};
 }
 
-NEAT_API char *neat__cstr_as_cstr(const char *str)
+FXS_API char *fxs__cstr_as_cstr(const char *str)
 {
     return (char*) str;
 }
 
-NEAT_API char *neat__ucstr_as_cstr(const unsigned char *str)
+FXS_API char *fxs__ucstr_as_cstr(const unsigned char *str)
 {
     return (char*) str;
 }
 
-NEAT_API char *neat__dstr_as_cstr(const Neat_DString str)
+FXS_API char *fxs__dstr_as_cstr(const FXS_DStr str)
 {
     return (char*) str.chars;
 }
 
-NEAT_API char *neat__dstr_ptr_as_cstr(const Neat_DString *str)
+FXS_API char *fxs__dstr_ptr_as_cstr(const FXS_DStr *str)
 {
     return (char*) str->chars;
 }
 
-NEAT_API char *neat__strv_as_cstr(const Neat_String_View str)
+FXS_API char *fxs__strv_as_cstr(const FXS_StrView str)
 {
     return (char*) str.chars;
 }
 
-NEAT_API char *neat__strbuf_as_cstr(const Neat_String_Buffer str)
+FXS_API char *fxs__strbuf_as_cstr(const FXS_StrBuf str)
 {
     return (char*) str.chars;
 }
 
-NEAT_API char *neat__strbuf_ptr_as_cstr(const Neat_String_Buffer *str)
+FXS_API char *fxs__strbuf_ptr_as_cstr(const FXS_StrBuf *str)
 {
     return (char*) str->chars;
 }
 
-NEAT_API char *neat__mutstr_ref_as_cstr(const Neat_Mut_String_Ref str)
+FXS_API char *fxs__mutstr_ref_as_cstr(const FXS_MutStrRef str)
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY     : return (char*) str.str.dstr->chars;
-        case NEAT__STRBUF_TY   : return (char*) str.str.strbuf->chars;
-        case NEAT__BUF_TY      : return (char*) str.str.buf.ptr;
+        case FXS__DSTR_TY     : return (char*) str.str.dstr->chars;
+        case FXS__STRBUF_TY   : return (char*) str.str.strbuf->chars;
+        case FXS__BUF_TY      : return (char*) str.str.buf.ptr;
         default                : unreachable();
     };
 }
 
-NEAT_API unsigned char neat__cstr_char_at(const char *str, unsigned int idx)
+FXS_API unsigned char fxs__cstr_char_at(const char *str, unsigned int idx)
 {
     return str[idx];
 }
 
-NEAT_API unsigned char neat__ucstr_char_at(const unsigned char *str, unsigned int idx)
+FXS_API unsigned char fxs__ucstr_char_at(const unsigned char *str, unsigned int idx)
 {
     return str[idx];
 }
 
-NEAT_API unsigned char neat__dstr_char_at(const Neat_DString str, unsigned int idx)
+FXS_API unsigned char fxs__dstr_char_at(const FXS_DStr str, unsigned int idx)
 {
     return str.chars[idx];
 }
 
-NEAT_API unsigned char neat__dstr_ptr_char_at(const Neat_DString *str, unsigned int idx)
+FXS_API unsigned char fxs__dstr_ptr_char_at(const FXS_DStr *str, unsigned int idx)
 {
     return str->chars[idx];
 }
 
-NEAT_API unsigned char neat__strv_char_at(const Neat_String_View str, unsigned int idx)
+FXS_API unsigned char fxs__strv_char_at(const FXS_StrView str, unsigned int idx)
 {
     return str.chars[idx];
 }
 
-NEAT_API unsigned char neat__strbuf_char_at(const Neat_String_Buffer str, unsigned int idx)
+FXS_API unsigned char fxs__strbuf_char_at(const FXS_StrBuf str, unsigned int idx)
 {
     return str.chars[idx];
 }
 
-NEAT_API unsigned char neat__strbuf_ptr_char_at(const Neat_String_Buffer *str, unsigned int idx)
+FXS_API unsigned char fxs__strbuf_ptr_char_at(const FXS_StrBuf *str, unsigned int idx)
 {
     return str->chars[idx];
 }
 
-NEAT_API unsigned char neat__mutstr_ref_char_at(const Neat_Mut_String_Ref str, unsigned int idx)
+FXS_API unsigned char fxs__mutstr_ref_char_at(const FXS_MutStrRef str, unsigned int idx)
 {
-    return neat__mutstr_ref_as_cstr(str)[idx];
+    return fxs__mutstr_ref_as_cstr(str)[idx];
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_set_len(Neat_Mut_String_Ref str, unsigned int new_len)
+FXS_API FXS_Error fxs__mutstr_ref_set_len(FXS_MutStrRef str, unsigned int new_len)
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY     :
+        case FXS__DSTR_TY     :
             str.str.dstr->len = new_len;
             str.str.dstr->chars[new_len] = '\0';
             assert(str.str.dstr->cap >= str.str.dstr->len);
             break;
-        case NEAT__STRBUF_TY   :
+        case FXS__STRBUF_TY   :
             str.str.strbuf->len = new_len;
             str.str.strbuf->chars[new_len] = '\0';
             assert(str.str.strbuf->cap >= str.str.strbuf->len);
             break;
-        case NEAT__BUF_TY      :
+        case FXS__BUF_TY      :
             str.str.buf.ptr[new_len] = '\0';
             break;
         default                :
             unreachable();
     };
-    return (Neat_Error){NEAT_OK};
+    return (FXS_Error){FXS_OK};
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_commit_appender(Neat_Mut_String_Ref owner, Neat_Mut_String_Ref appender)
+FXS_API FXS_Error fxs__mutstr_ref_commit_appender(FXS_MutStrRef owner, FXS_MutStrRef appender)
 {
-    return neat__mutstr_ref_set_len(
+    return fxs__mutstr_ref_set_len(
         owner,
-        neat__mutstr_ref_len(owner) + neat__mutstr_ref_len(appender) \
+        fxs__mutstr_ref_len(owner) + fxs__mutstr_ref_len(appender) \
     );
 }
 
-NEAT_API unsigned int neat__dstr_cap(const Neat_DString str)
+FXS_API unsigned int fxs__dstr_cap(const FXS_DStr str)
 {
     return str.cap;
 }
 
-NEAT_API unsigned int neat__dstr_ptr_cap(const Neat_DString *str)
+FXS_API unsigned int fxs__dstr_ptr_cap(const FXS_DStr *str)
 {
     return str->cap;
 }
 
-NEAT_API unsigned int neat__strbuf_cap(const Neat_String_Buffer str)
+FXS_API unsigned int fxs__strbuf_cap(const FXS_StrBuf str)
 {
     return str.cap;
 }
 
-NEAT_API unsigned int neat__strbuf_ptr_cap(const Neat_String_Buffer *str)
+FXS_API unsigned int fxs__strbuf_ptr_cap(const FXS_StrBuf *str)
 {
     return str->cap;
 }
 
-NEAT_API unsigned int neat__buf_cap(const Neat_Buffer buf)
+FXS_API unsigned int fxs__buf_cap(const FXS_Buffer buf)
 {
     return buf.cap;
 }
 
-NEAT_API unsigned int neat__mutstr_ref_cap(const Neat_Mut_String_Ref str)
+FXS_API unsigned int fxs__mutstr_ref_cap(const FXS_MutStrRef str)
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY     : return str.str.dstr->cap;
-        case NEAT__STRBUF_TY   : return str.str.strbuf->cap;
-        case NEAT__BUF_TY      : return str.str.buf.cap;
+        case FXS__DSTR_TY     : return str.str.dstr->cap;
+        case FXS__STRBUF_TY   : return str.str.strbuf->cap;
+        case FXS__BUF_TY      : return str.str.buf.cap;
         default                : unreachable();
     };
 }
 
-NEAT_API unsigned int neat__mutstr_ref_len(const Neat_Mut_String_Ref str)
+FXS_API unsigned int fxs__mutstr_ref_len(const FXS_MutStrRef str)
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY     : return str.str.dstr->len;
-        case NEAT__STRBUF_TY   : return str.str.strbuf->len;
-        case NEAT__BUF_TY      : return strlen((char*) str.str.buf.ptr);
+        case FXS__DSTR_TY     : return str.str.dstr->len;
+        case FXS__STRBUF_TY   : return str.str.strbuf->len;
+        case FXS__BUF_TY      : return strlen((char*) str.str.buf.ptr);
         default                : unreachable();
     };
 }
 
-NEAT_API Neat_Error neat__fmutstr_ref_insert(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src, unsigned int idx)
+FXS_API FXS_Error fxs__fmutstr_ref_insert(FXS__FixedMutStrRef dst, const FXS_StrView src, unsigned int idx)
 {
     unsigned int len = *dst.len;
     if(idx > len)
     {
-        return (Neat_Error){NEAT_INDEX_OUT_OF_BOUNDS};
+        return (FXS_Error){FXS_INDEX_OUT_OF_BOUNDS};
     }
     
-    unsigned int nb_chars_to_insert = neat__uint_min(dst.cap - len - 1, src.len);
+    unsigned int nb_chars_to_insert = fxs__uint_min(dst.cap - len - 1, src.len);
     
     // shift right
     memmove(dst.chars + idx + nb_chars_to_insert, dst.chars + idx, len - idx);
@@ -1432,33 +1432,33 @@ NEAT_API Neat_Error neat__fmutstr_ref_insert(Neat__Fixed_Mut_String_Ref dst, con
     
     *dst.len = len;
     
-    return nb_chars_to_insert == src.len ? (Neat_Error){NEAT_OK} : (Neat_Error){NEAT_DST_TOO_SMALL};
+    return nb_chars_to_insert == src.len ? (FXS_Error){FXS_OK} : (FXS_Error){FXS_DST_TOO_SMALL};
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_insert(Neat_Mut_String_Ref dst, const Neat_String_View src, unsigned int idx)
+FXS_API FXS_Error fxs__mutstr_ref_insert(FXS_MutStrRef dst, const FXS_StrView src, unsigned int idx)
 {
     switch(dst.ty)
     {
-        case NEAT__DSTR_TY     : return neat__dstr_insert(dst.str.dstr, src, idx);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_insert(neat__fmutstr_ref(dst.str.strbuf), src, idx);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_insert(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src, idx);
+        case FXS__DSTR_TY     : return fxs__dstr_insert(dst.str.dstr, src, idx);
+        case FXS__STRBUF_TY   : return fxs__fmutstr_ref_insert(fxs__fmutstr_ref(dst.str.strbuf), src, idx);
+        case FXS__BUF_TY      : return fxs__fmutstr_ref_insert(fxs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src, idx);
         default                : unreachable();
     };
 }
 
-NEAT_API bool neat__strv_equal(const Neat_String_View str1, const Neat_String_View str2)
+FXS_API bool fxs__strv_equal(const FXS_StrView str1, const FXS_StrView str2)
 {
     return
     (str1.len == str2.len) &&
     (memcmp(str1.chars, str2.chars, str1.len) == 0);
 }
 
-NEAT_API Neat_String_View neat__strv_find(const Neat_String_View hay, const Neat_String_View needle)
+FXS_API FXS_StrView fxs__strv_find(const FXS_StrView hay, const FXS_StrView needle)
 {
     if(hay.chars == NULL || needle.chars == NULL || hay.len == 0 || needle.len > hay.len)
-        return (Neat_String_View){.chars = NULL, .len = 0};
+        return (FXS_StrView){.chars = NULL, .len = 0};
     if(needle.len == 0)
-        return (Neat_String_View){.chars = hay.chars, .len = 0};
+        return (FXS_StrView){.chars = hay.chars, .len = 0};
     
     unsigned char *max_possible_ptr = &hay.chars[hay.len] - needle.len;
     unsigned char *first_char = hay.chars;
@@ -1467,31 +1467,31 @@ NEAT_API Neat_String_View neat__strv_find(const Neat_String_View hay, const Neat
     while(first_char && first_char <= max_possible_ptr)
     {
         if(memcmp(first_char, needle.chars, needle.len) == 0)
-            return (Neat_String_View){.chars = first_char, .len = needle.len};
+            return (FXS_StrView){.chars = first_char, .len = needle.len};
         first_char = memchr(first_char + 1, needle.chars[0], remaining_len - 1);
         remaining_len = hay.len - (first_char - hay.chars);
     }
     
-    return (Neat_String_View){.chars = NULL, .len = 0};
+    return (FXS_StrView){.chars = NULL, .len = 0};
 }
 
-NEAT_API Neat_Error neat__fmutstr_ref_copy(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src)
+FXS_API FXS_Error fxs__fmutstr_ref_copy(FXS__FixedMutStrRef dst, const FXS_StrView src)
 {
-    unsigned int chars_to_copy = neat__uint_min(src.len, dst.cap - 1);
+    unsigned int chars_to_copy = fxs__uint_min(src.len, dst.cap - 1);
     
     memmove(dst.chars, src.chars, chars_to_copy * sizeof(unsigned char));
     dst.chars[chars_to_copy] = '\0';
     
     *dst.len = chars_to_copy;
     
-    return chars_to_copy == src.len ? (Neat_Error){NEAT_OK} : (Neat_Error){NEAT_DST_TOO_SMALL};
+    return chars_to_copy == src.len ? (FXS_Error){FXS_OK} : (FXS_Error){FXS_DST_TOO_SMALL};
 }
 
-NEAT_API Neat_Error neat__dstr_copy(Neat_DString *dstr, Neat_String_View src)
+FXS_API FXS_Error fxs__dstr_copy(FXS_DStr *dstr, FXS_StrView src)
 {
-    Neat_Error err = neat__dstr_ensure_cap(dstr, src.len + 1);
+    FXS_Error err = fxs__dstr_ensure_cap(dstr, src.len + 1);
     
-    if(err.ec == NEAT_OK)
+    if(err.ec == FXS_OK)
     {
         memmove(dstr->chars, src.chars, src.len * sizeof(unsigned char));
         
@@ -1502,60 +1502,60 @@ NEAT_API Neat_Error neat__dstr_copy(Neat_DString *dstr, Neat_String_View src)
     return err;
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_copy(Neat_Mut_String_Ref dst, const Neat_String_View src)
+FXS_API FXS_Error fxs__mutstr_ref_copy(FXS_MutStrRef dst, const FXS_StrView src)
 {
     switch(dst.ty)
     {
-        case NEAT__DSTR_TY     : return neat__dstr_copy(dst.str.dstr, src);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_copy(neat__fmutstr_ref(dst.str.strbuf), src);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_copy(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
+        case FXS__DSTR_TY     : return fxs__dstr_copy(dst.str.dstr, src);
+        case FXS__STRBUF_TY   : return fxs__fmutstr_ref_copy(fxs__fmutstr_ref(dst.str.strbuf), src);
+        case FXS__BUF_TY      : return fxs__fmutstr_ref_copy(fxs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
         default                : unreachable();
     };
 }
 
-NEAT_API Neat_Error neat__dstr_putc(Neat_DString *dst, unsigned char c)
+FXS_API FXS_Error fxs__dstr_putc(FXS_DStr *dst, unsigned char c)
 {
-    Neat_Error err = neat__dstr_ensure_cap(dst, dst->len + 2);
-    if(err.ec != NEAT_OK)
+    FXS_Error err = fxs__dstr_ensure_cap(dst, dst->len + 2);
+    if(err.ec != FXS_OK)
         return err;
     
     dst->chars[dst->len] = c;
     dst->chars[dst->len + 1] = '\0';
     dst->len += 1;
     
-    return (Neat_Error){NEAT_OK};
+    return (FXS_Error){FXS_OK};
 }
 
-NEAT_API Neat_Error neat__fmutstr_ref_putc(Neat__Fixed_Mut_String_Ref dst, unsigned char c)
+FXS_API FXS_Error fxs__fmutstr_ref_putc(FXS__FixedMutStrRef dst, unsigned char c)
 {
     if(dst.cap - *dst.len <= 1)
     {
-        return (Neat_Error){NEAT_DST_TOO_SMALL};
+        return (FXS_Error){FXS_DST_TOO_SMALL};
     }
     
     dst.chars[*dst.len] = c;
     dst.chars[*dst.len + 1] = '\0';
     *dst.len += 1;
     
-    return (Neat_Error){NEAT_OK};
+    return (FXS_Error){FXS_OK};
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_putc(Neat_Mut_String_Ref dst, unsigned char c)
+FXS_API FXS_Error fxs__mutstr_ref_putc(FXS_MutStrRef dst, unsigned char c)
 {
     switch(dst.ty)
     {
-        case NEAT__DSTR_TY     : return neat__dstr_putc(dst.str.dstr, c);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_putc(neat__fmutstr_ref(dst.str.strbuf), c);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_putc(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), c);
+        case FXS__DSTR_TY     : return fxs__dstr_putc(dst.str.dstr, c);
+        case FXS__STRBUF_TY   : return fxs__fmutstr_ref_putc(fxs__fmutstr_ref(dst.str.strbuf), c);
+        case FXS__BUF_TY      : return fxs__fmutstr_ref_putc(fxs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), c);
         default                : unreachable();
     }
 }
 
-NEAT_API Neat_Error neat__fmutstr_ref_append(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src)
+FXS_API FXS_Error fxs__fmutstr_ref_append(FXS__FixedMutStrRef dst, const FXS_StrView src)
 {
     unsigned int dst_len = *dst.len;
     
-    unsigned int chars_to_copy = neat__uint_min(src.len, dst.cap - dst_len - 1);
+    unsigned int chars_to_copy = fxs__uint_min(src.len, dst.cap - dst_len - 1);
     memmove(dst.chars + dst_len, src.chars, chars_to_copy);
     
     dst_len += chars_to_copy;
@@ -1565,31 +1565,31 @@ NEAT_API Neat_Error neat__fmutstr_ref_append(Neat__Fixed_Mut_String_Ref dst, con
     
     dst.chars[dst_len] = '\0';
     
-    return chars_to_copy == src.len ? (Neat_Error){NEAT_OK} : (Neat_Error){NEAT_DST_TOO_SMALL};
+    return chars_to_copy == src.len ? (FXS_Error){FXS_OK} : (FXS_Error){FXS_DST_TOO_SMALL};
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_append(Neat_Mut_String_Ref dst, const Neat_String_View src)
+FXS_API FXS_Error fxs__mutstr_ref_append(FXS_MutStrRef dst, const FXS_StrView src)
 {
     switch(dst.ty)
     {
-        case NEAT__DSTR_TY     : return neat__dstr_append(dst.str.dstr, src);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_append(neat__fmutstr_ref(dst.str.strbuf), src);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_append(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
+        case FXS__DSTR_TY     : return fxs__dstr_append(dst.str.dstr, src);
+        case FXS__STRBUF_TY   : return fxs__fmutstr_ref_append(fxs__fmutstr_ref(dst.str.strbuf), src);
+        case FXS__BUF_TY      : return fxs__fmutstr_ref_append(fxs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
         default                : unreachable();
     };
 }
 
-NEAT_API Neat_Error neat__fmutstr_ref_delete_range(Neat__Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end)
+FXS_API FXS_Error fxs__fmutstr_ref_delete_range(FXS__FixedMutStrRef str, unsigned int begin, unsigned int end)
 {
     unsigned int len = *str.len;
     
     if(end > len || begin > len)
     {
-        return (Neat_Error){NEAT_INDEX_OUT_OF_BOUNDS};
+        return (FXS_Error){FXS_INDEX_OUT_OF_BOUNDS};
     }
     if(begin > end)
     {
-        return (Neat_Error){NEAT_BAD_RANGE};
+        return (FXS_Error){FXS_BAD_RANGE};
     }
     
     unsigned int substr_len = end - begin;
@@ -1605,59 +1605,59 @@ NEAT_API Neat_Error neat__fmutstr_ref_delete_range(Neat__Fixed_Mut_String_Ref st
         *str.len = len;
     }
     
-    return (Neat_Error){NEAT_OK};
+    return (FXS_Error){FXS_OK};
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_delete_range(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end)
+FXS_API FXS_Error fxs__mutstr_ref_delete_range(FXS_MutStrRef str, unsigned int begin, unsigned int end)
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY     : return neat__fmutstr_ref_delete_range(neat__fmutstr_ref(str.str.dstr), begin, end);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_delete_range(neat__fmutstr_ref(str.str.strbuf), begin, end);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_delete_range(neat__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
+        case FXS__DSTR_TY     : return fxs__fmutstr_ref_delete_range(fxs__fmutstr_ref(str.str.dstr), begin, end);
+        case FXS__STRBUF_TY   : return fxs__fmutstr_ref_delete_range(fxs__fmutstr_ref(str.str.strbuf), begin, end);
+        case FXS__BUF_TY      : return fxs__fmutstr_ref_delete_range(fxs__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
         default                : unreachable();
     };
 }
 
-NEAT_API Neat_String_View_Array neat__strv_arr_from_carr(const Neat_String_View *carr, unsigned int nb)
+FXS_API FXS_StrViewArray fxs__strv_arr_from_carr(const FXS_StrView *carr, unsigned int nb)
 {
-    return (Neat_String_View_Array){
+    return (FXS_StrViewArray){
         .cap  = nb,
         .len  = nb,
-        .strs = (Neat_String_View*) carr
+        .strs = (FXS_StrView*) carr
     };
 }
 
-NEAT_API Neat_Error neat__strv_split_iter(const Neat_String_View str, const Neat_String_View delim, bool(*cb)(Neat_String_View found, void *ctx), void *ctx)
+FXS_API FXS_Error fxs__strv_split_iter(const FXS_StrView str, const FXS_StrView delim, bool(*cb)(FXS_StrView found, void *ctx), void *ctx)
 {
     if(delim.len > str.len)
     {
-        return !cb(str, ctx) ? (Neat_Error){NEAT_CALLBACK_EXIT} : (Neat_Error){NEAT_OK};
+        return !cb(str, ctx) ? (FXS_Error){FXS_CALLBACK_EXIT} : (FXS_Error){FXS_OK};
     }
     else if(delim.len == 0)
     {
         for(unsigned int i = 0 ; i < str.len ; i++)
         {
-            if(!cb(neat__strv_strv3(str, i, i + 1), ctx))
+            if(!cb(fxs__strv_strv3(str, i, i + 1), ctx))
             {
-                return (Neat_Error){NEAT_CALLBACK_EXIT};
+                return (FXS_Error){FXS_CALLBACK_EXIT};
             }
         }
         
-        return (Neat_Error){NEAT_OK};
+        return (FXS_Error){FXS_OK};
     }
     else
     {
         unsigned int prev = 0;
         for(unsigned int i = 0 ; i <= str.len - delim.len ; )
         {
-            Neat_String_View rem = neat__strv_strv2(str, i);
-            if(neat__strv_starts_with(rem, delim))
+            FXS_StrView rem = fxs__strv_strv2(str, i);
+            if(fxs__strv_starts_with(rem, delim))
             {
-                Neat_String_View sub = neat__strv_strv3(str, prev, i);
+                FXS_StrView sub = fxs__strv_strv3(str, prev, i);
                 if(!cb(sub, ctx))
                 {
-                    return (Neat_Error){NEAT_CALLBACK_EXIT};
+                    return (FXS_Error){FXS_CALLBACK_EXIT};
                 }
                 i += delim.len;
                 prev = i;
@@ -1668,32 +1668,32 @@ NEAT_API Neat_Error neat__strv_split_iter(const Neat_String_View str, const Neat
             }
         }
         
-        if(!cb(neat__strv_strv3(str, prev, str.len), ctx))
+        if(!cb(fxs__strv_strv3(str, prev, str.len), ctx))
         {
-            return (Neat_Error){NEAT_CALLBACK_EXIT};
+            return (FXS_Error){FXS_CALLBACK_EXIT};
         }
         else
         {
-            return (Neat_Error){NEAT_OK};
+            return (FXS_Error){FXS_OK};
         }
     }
 }
 
-NEAT_PRIVATE bool neat__combine_views_into_array(Neat_String_View str, void *ctx)
+FXS_PRIVATE bool fxs__combine_views_into_array(FXS_StrView str, void *ctx)
 {
     struct {
-        Neat_Allocator *allocator;
-        Neat_String_View_Array array;
+        FXS_Allocator *allocator;
+        FXS_StrViewArray array;
     } *tctx = ctx;
     
-    Neat_String_View_Array *array = &tctx->array;
-    Neat_Allocator *allocator = tctx->allocator;
+    FXS_StrViewArray *array = &tctx->array;
+    FXS_Allocator *allocator = tctx->allocator;
     
     if(array->cap <= array->len)
     {
-        Neat_Allocation allocation = neat_realloc(allocator, array->strs, Neat_String_View, array->cap, 2 * (array->len + 1));
+        FXS_Allocation allocation = fxs_realloc(allocator, array->strs, FXS_StrView, array->cap, 2 * (array->len + 1));
         array->strs = allocation.ptr;
-        array->cap = allocation.n / sizeof(Neat_String_View);
+        array->cap = allocation.n / sizeof(FXS_StrView);
     }
     
     array->strs[array->len++] = str;
@@ -1701,72 +1701,72 @@ NEAT_PRIVATE bool neat__combine_views_into_array(Neat_String_View str, void *ctx
     return true;
 }
 
-NEAT__NODISCARD("str_split returns new String_View_Array")
-NEAT_API Neat_String_View_Array neat__strv_split(const Neat_String_View str, const Neat_String_View delim, Neat_Allocator *allocator)
+FXS__NODISCARD("str_split returns new String_View_Array")
+FXS_API FXS_StrViewArray fxs__strv_split(const FXS_StrView str, const FXS_StrView delim, FXS_Allocator *allocator)
 {
     struct {
-        Neat_Allocator *allocator;
-        Neat_String_View_Array array;
+        FXS_Allocator *allocator;
+        FXS_StrViewArray array;
     } ctx = {
         .allocator = allocator
     };
     
-    neat__strv_split_iter(str, delim, neat__combine_views_into_array, &ctx);
+    fxs__strv_split_iter(str, delim, fxs__combine_views_into_array, &ctx);
     
     return ctx.array;
 }
 
-NEAT_API Neat_Error neat__strv_arr_join_into_dstr(Neat_DString *dstr, const Neat_String_View_Array strs, const Neat_String_View delim)
+FXS_API FXS_Error fxs__strv_arr_join_into_dstr(FXS_DStr *dstr, const FXS_StrViewArray strs, const FXS_StrView delim)
 {
-    Neat_Error err = (Neat_Error){NEAT_OK};
+    FXS_Error err = (FXS_Error){FXS_OK};
     
     if(strs.len > 0)
-        err = neat__dstr_copy(dstr, strs.strs[0]);
+        err = fxs__dstr_copy(dstr, strs.strs[0]);
     
-    for(unsigned int i = 1 ; i < strs.len && err.ec == NEAT_OK ; i++)
+    for(unsigned int i = 1 ; i < strs.len && err.ec == FXS_OK ; i++)
     {
-        err = neat__dstr_append(dstr, delim);
-        err = neat__dstr_append(dstr, strs.strs[i]);
+        err = fxs__dstr_append(dstr, delim);
+        err = fxs__dstr_append(dstr, strs.strs[i]);
     }
     
     return err;
 }
 
-NEAT_API Neat_Error neat__strv_arr_join_into_fmutstr_ref(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View_Array strs, const Neat_String_View delim)
+FXS_API FXS_Error fxs__strv_arr_join_into_fmutstr_ref(FXS__FixedMutStrRef dst, const FXS_StrViewArray strs, const FXS_StrView delim)
 {
-    Neat_Error err = (Neat_Error){NEAT_OK};
+    FXS_Error err = (FXS_Error){FXS_OK};
     
     if(strs.len > 0)
-        err = neat__fmutstr_ref_copy(dst, strs.strs[0]);
+        err = fxs__fmutstr_ref_copy(dst, strs.strs[0]);
     
-    for(unsigned int i = 1 ; i < strs.len && err.ec == NEAT_OK; i++)
+    for(unsigned int i = 1 ; i < strs.len && err.ec == FXS_OK; i++)
     {
-        err = neat__fmutstr_ref_append(dst, delim);
-        err = neat__fmutstr_ref_append(dst, strs.strs[i]);
+        err = fxs__fmutstr_ref_append(dst, delim);
+        err = fxs__fmutstr_ref_append(dst, strs.strs[i]);
     }
     
     return err;
 }
 
-NEAT_API Neat_Error neat__strv_arr_join(Neat_Mut_String_Ref dst, const Neat_String_View_Array strs, const Neat_String_View delim)
+FXS_API FXS_Error fxs__strv_arr_join(FXS_MutStrRef dst, const FXS_StrViewArray strs, const FXS_StrView delim)
 {
     switch(dst.ty)
     {
-        case NEAT__DSTR_TY     : return neat__strv_arr_join_into_dstr(dst.str.dstr, strs, delim);
-        case NEAT__STRBUF_TY   : return neat__strv_arr_join_into_fmutstr_ref(neat__fmutstr_ref(dst.str.strbuf), strs, delim);
-        case NEAT__BUF_TY      : return neat__strv_arr_join_into_fmutstr_ref(neat__fmutstr_ref(dst.str.buf, &(unsigned int){0}), strs, delim);
+        case FXS__DSTR_TY     : return fxs__strv_arr_join_into_dstr(dst.str.dstr, strs, delim);
+        case FXS__STRBUF_TY   : return fxs__strv_arr_join_into_fmutstr_ref(fxs__fmutstr_ref(dst.str.strbuf), strs, delim);
+        case FXS__BUF_TY      : return fxs__strv_arr_join_into_fmutstr_ref(fxs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), strs, delim);
         default                : unreachable();
     };
 }
 
-NEAT_API Neat_Error neat__dstr_replace_range(Neat_DString *dstr, unsigned int begin, unsigned int end, const Neat_String_View replacement)
+FXS_API FXS_Error fxs__dstr_replace_range(FXS_DStr *dstr, unsigned int begin, unsigned int end, const FXS_StrView replacement)
 {
     if(begin > dstr->len || end > dstr->len)
-        return (Neat_Error){NEAT_INDEX_OUT_OF_BOUNDS};
+        return (FXS_Error){FXS_INDEX_OUT_OF_BOUNDS};
     if(begin > end)
-        return (Neat_Error){NEAT_BAD_RANGE};
-    if(neat__is_strv_within(neat__strv_dstr_ptr2(dstr, 0), replacement))
-        return (Neat_Error){NEAT_ALIASING_NOT_SUPPORTED};
+        return (FXS_Error){FXS_BAD_RANGE};
+    if(fxs__is_strv_within(fxs__strv_dstr_ptr2(dstr, 0), replacement))
+        return (FXS_Error){FXS_ALIASING_NOT_SUPPORTED};
     
     unsigned int len_to_delete = end - begin;
     if(len_to_delete > replacement.len)
@@ -1778,7 +1778,7 @@ NEAT_API Neat_Error neat__dstr_replace_range(Neat_DString *dstr, unsigned int be
     }
     else if(len_to_delete < replacement.len)
     {
-        neat__dstr_ensure_cap(dstr, dstr->len + replacement.len - len_to_delete + 1);
+        fxs__dstr_ensure_cap(dstr, dstr->len + replacement.len - len_to_delete + 1);
         
         // shift right
         memmove(dstr->chars + end + (replacement.len - len_to_delete), dstr->chars + end, dstr->len - end + 1);
@@ -1791,10 +1791,10 @@ NEAT_API Neat_Error neat__dstr_replace_range(Neat_DString *dstr, unsigned int be
     }
     
     dstr->len = dstr->len - (len_to_delete) + replacement.len;
-    return (Neat_Error){NEAT_OK};
+    return (FXS_Error){FXS_OK};
 }
 
-NEAT_PRIVATE void neat__fmutstr_ref_replace_range_unsafe(Neat__Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
+FXS_PRIVATE void fxs__fmutstr_ref_replace_range_unsafe(FXS__FixedMutStrRef str, unsigned int begin, unsigned int end, const FXS_StrView replacement)
 {
     unsigned int len_to_delete = end - begin;
     if(len_to_delete > replacement.len)
@@ -1808,12 +1808,12 @@ NEAT_PRIVATE void neat__fmutstr_ref_replace_range_unsafe(Neat__Fixed_Mut_String_
     }
     else if(len_to_delete < replacement.len)
     {
-        unsigned int new_space = neat__uint_min(replacement.len - len_to_delete, str.cap - *str.len - 1);
+        unsigned int new_space = fxs__uint_min(replacement.len - len_to_delete, str.cap - *str.len - 1);
         
         // shift right
         memmove(str.chars + begin + new_space, str.chars + begin, *str.len - begin);
         // insert the replacement
-        memmove(str.chars + begin, replacement.chars, neat__uint_min(replacement.len, len_to_delete + new_space));
+        memmove(str.chars + begin, replacement.chars, fxs__uint_min(replacement.len, len_to_delete + new_space));
         
         *str.len += new_space;
         
@@ -1825,50 +1825,50 @@ NEAT_PRIVATE void neat__fmutstr_ref_replace_range_unsafe(Neat__Fixed_Mut_String_
     }
 }
 
-NEAT_PRIVATE Neat_String_View neat__strv_fmutstr_ref2(Neat__Fixed_Mut_String_Ref str, unsigned int begin);
+FXS_PRIVATE FXS_StrView fxs__strv_fmutstr_ref2(FXS__FixedMutStrRef str, unsigned int begin);
 
-Neat_Error neat__fmutstr_ref_replace_range(Neat__Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
+FXS_Error fxs__fmutstr_ref_replace_range(FXS__FixedMutStrRef str, unsigned int begin, unsigned int end, const FXS_StrView replacement)
 {
     if(begin >= *str.len)
-        return (Neat_Error){NEAT_INDEX_OUT_OF_BOUNDS};
+        return (FXS_Error){FXS_INDEX_OUT_OF_BOUNDS};
     if(begin >= end || end > *str.len)
-        return (Neat_Error){NEAT_BAD_RANGE};
-    if(neat__is_strv_within(neat__strv_fmutstr_ref2(str, 0), replacement))
-        return (Neat_Error){NEAT_ALIASING_NOT_SUPPORTED};
+        return (FXS_Error){FXS_BAD_RANGE};
+    if(fxs__is_strv_within(fxs__strv_fmutstr_ref2(str, 0), replacement))
+        return (FXS_Error){FXS_ALIASING_NOT_SUPPORTED};
     
-    Neat_Error err = (*str.len - (end - begin) + replacement.len) >= str.cap ? (Neat_Error){NEAT_DST_TOO_SMALL} : (Neat_Error){NEAT_OK};
-    neat__fmutstr_ref_replace_range_unsafe(str, begin, end, replacement);
+    FXS_Error err = (*str.len - (end - begin) + replacement.len) >= str.cap ? (FXS_Error){FXS_DST_TOO_SMALL} : (FXS_Error){FXS_OK};
+    fxs__fmutstr_ref_replace_range_unsafe(str, begin, end, replacement);
     
     return err;
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_replace_range(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement)
+FXS_API FXS_Error fxs__mutstr_ref_replace_range(FXS_MutStrRef str, unsigned int begin, unsigned int end, const FXS_StrView replacement)
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY     : return neat__dstr_replace_range(str.str.dstr, begin, end, replacement);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_replace_range(neat__fmutstr_ref(str.str.strbuf), begin, end, replacement);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_replace_range(neat__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end, replacement);
+        case FXS__DSTR_TY     : return fxs__dstr_replace_range(str.str.dstr, begin, end, replacement);
+        case FXS__STRBUF_TY   : return fxs__fmutstr_ref_replace_range(fxs__fmutstr_ref(str.str.strbuf), begin, end, replacement);
+        case FXS__BUF_TY      : return fxs__fmutstr_ref_replace_range(fxs__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end, replacement);
         default                : unreachable();
     };
 }
 
-NEAT_API Neat_Replace_Result neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
+FXS_API FXS_ReplaceResult fxs__fmutstr_ref_replace(FXS__FixedMutStrRef str, const FXS_StrView target, const FXS_StrView replacement)
 {
-    Neat_String_View as_strv = neat__strv_fmutstr_ref2(str, 0);
-    if(neat__is_strv_within(as_strv, target) || neat__is_strv_within(as_strv, replacement))
+    FXS_StrView as_strv = fxs__strv_fmutstr_ref2(str, 0);
+    if(fxs__is_strv_within(as_strv, target) || fxs__is_strv_within(as_strv, replacement))
     {
-        return (Neat_Replace_Result){.nb_replaced = 0, .err = {NEAT_ALIASING_NOT_SUPPORTED}};
+        return (FXS_ReplaceResult){.nb_replaced = 0, .err = {FXS_ALIASING_NOT_SUPPORTED}};
     }
     
-    Neat_Error err = {NEAT_OK};
+    FXS_Error err = {FXS_OK};
     unsigned int replace_count = 0;
     
     if(target.len == 0)
     {
-        for(unsigned int i = 0 ; i <= *str.len && (err.ec == NEAT_OK) ; i += replacement.len + 1)
+        for(unsigned int i = 0 ; i <= *str.len && (err.ec == FXS_OK) ; i += replacement.len + 1)
         {
-            err = neat__fmutstr_ref_insert(str, replacement, i);
+            err = fxs__fmutstr_ref_insert(str, replacement, i);
             replace_count += 1;
         }
         goto out;
@@ -1878,7 +1878,7 @@ NEAT_API Neat_Replace_Result neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Re
     {
         for(unsigned int i = 0 ; i <= *str.len - target.len ; )
         {
-            Neat_String_View match = neat__strv_find(neat__strv_fmutstr_ref2(str, i), target);
+            FXS_StrView match = fxs__strv_find(fxs__strv_fmutstr_ref2(str, i), target);
             if(match.chars != NULL)
             {
                 unsigned int idx = match.chars - str.chars;
@@ -1899,7 +1899,7 @@ NEAT_API Neat_Replace_Result neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Re
                 }
                 else
                 {
-                    err = (Neat_Error){NEAT_DST_TOO_SMALL};
+                    err = (FXS_Error){FXS_DST_TOO_SMALL};
                     break;
                 }
             }
@@ -1913,7 +1913,7 @@ NEAT_API Neat_Replace_Result neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Re
     {
         for(unsigned int i = 0 ; i <= *str.len - target.len ; )
         {
-            Neat_String_View match = neat__strv_find(neat__strv_fmutstr_ref2(str, i), target);
+            FXS_StrView match = fxs__strv_find(fxs__strv_fmutstr_ref2(str, i), target);
             if(match.chars != NULL)
             {
                 unsigned int idx = match.chars - str.chars;
@@ -1940,10 +1940,10 @@ NEAT_API Neat_Replace_Result neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Re
     {
         for(unsigned int i = 0 ; i <= *str.len - target.len; )
         {
-            Neat_String_View match = neat__strv_find(neat__strv_fmutstr_ref2(str, i), target);
+            FXS_StrView match = fxs__strv_find(fxs__strv_fmutstr_ref2(str, i), target);
             if(match.chars != NULL)
             {
-                err.ec = NEAT_OK;
+                err.ec = FXS_OK;
                 unsigned int idx = match.chars - str.chars;
                 
                 // put the replacement
@@ -1965,27 +1965,27 @@ NEAT_API Neat_Replace_Result neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Re
     
     out:
     if(replace_count == 0)
-        err.ec = NEAT_NOT_FOUND;
-    return (Neat_Replace_Result){.nb_replaced = replace_count, .err = err};
+        err.ec = FXS_NOT_FOUND;
+    return (FXS_ReplaceResult){.nb_replaced = replace_count, .err = err};
 }
 
-NEAT_API Neat_Replace_Result neat__dstr_replace(Neat_DString *dstr, const Neat_String_View target, const Neat_String_View replacement)
+FXS_API FXS_ReplaceResult fxs__dstr_replace(FXS_DStr *dstr, const FXS_StrView target, const FXS_StrView replacement)
 {
-    Neat_String_View as_strv = neat__strv_dstr_ptr2(dstr, 0);
-    if(neat__is_strv_within(as_strv, target) || neat__is_strv_within(as_strv, replacement))
+    FXS_StrView as_strv = fxs__strv_dstr_ptr2(dstr, 0);
+    if(fxs__is_strv_within(as_strv, target) || fxs__is_strv_within(as_strv, replacement))
     {
-        return (Neat_Replace_Result){.nb_replaced = 0, .err = {NEAT_ALIASING_NOT_SUPPORTED}};
+        return (FXS_ReplaceResult){.nb_replaced = 0, .err = {FXS_ALIASING_NOT_SUPPORTED}};
     }
     
-    Neat_Error err = {NEAT_OK};
+    FXS_Error err = {FXS_OK};
     unsigned int replace_count = 0;
     
     if(target.len == 0)
     {
-        err.ec = NEAT_OK;
-        for(unsigned int i = 0 ; i <= dstr->len && (err.ec == NEAT_OK) ; i += replacement.len + 1)
+        err.ec = FXS_OK;
+        for(unsigned int i = 0 ; i <= dstr->len && (err.ec == FXS_OK) ; i += replacement.len + 1)
         {
-            err = neat__dstr_insert(dstr, replacement, i);
+            err = fxs__dstr_insert(dstr, replacement, i);
             replace_count += 1;
         }
         goto out;
@@ -1995,12 +1995,12 @@ NEAT_API Neat_Replace_Result neat__dstr_replace(Neat_DString *dstr, const Neat_S
     {
         for(unsigned int i = 0 ; i <= dstr->len - target.len; )
         {
-            Neat_String_View match = neat__strv_find(neat__strv_dstr_ptr2(dstr, i), target);
+            FXS_StrView match = fxs__strv_find(fxs__strv_dstr_ptr2(dstr, i), target);
             if(match.chars != NULL)
             {
                 unsigned int idx = match.chars - dstr->chars;
                 
-                err = neat__dstr_ensure_cap(dstr, dstr->len + (replacement.len - target.len) + 1);
+                err = fxs__dstr_ensure_cap(dstr, dstr->len + (replacement.len - target.len) + 1);
                 
                 // shift right
                 memmove(dstr->chars + idx + replacement.len, dstr->chars + idx + target.len, (dstr->len - idx - target.len) * sizeof(unsigned char));
@@ -2024,7 +2024,7 @@ NEAT_API Neat_Replace_Result neat__dstr_replace(Neat_DString *dstr, const Neat_S
     {
         for(unsigned int i = 0 ; i <= dstr->len - target.len ; )
         {
-            Neat_String_View match = neat__strv_find(neat__strv_dstr_ptr2(dstr, i), target);
+            FXS_StrView match = fxs__strv_find(fxs__strv_dstr_ptr2(dstr, i), target);
             if(match.chars != NULL)
             {
                 unsigned int idx = match.chars - dstr->chars;
@@ -2051,7 +2051,7 @@ NEAT_API Neat_Replace_Result neat__dstr_replace(Neat_DString *dstr, const Neat_S
     {
         for(unsigned int i = 0 ; i <= dstr->len - target.len; )
         {
-            Neat_String_View match = neat__strv_find(neat__strv_dstr_ptr2(dstr, i), target);
+            FXS_StrView match = fxs__strv_find(fxs__strv_dstr_ptr2(dstr, i), target);
             if(match.chars != NULL)
             {
                 unsigned int idx = match.chars - dstr->chars;
@@ -2074,41 +2074,41 @@ NEAT_API Neat_Replace_Result neat__dstr_replace(Neat_DString *dstr, const Neat_S
     
     out:
     if(replace_count == 0)
-        err.ec = NEAT_NOT_FOUND;
-    return (Neat_Replace_Result){.nb_replaced = replace_count, .err = err};
+        err.ec = FXS_NOT_FOUND;
+    return (FXS_ReplaceResult){.nb_replaced = replace_count, .err = err};
 }
 
-NEAT_API Neat_Replace_Result neat__mutstr_ref_replace(Neat_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
+FXS_API FXS_ReplaceResult fxs__mutstr_ref_replace(FXS_MutStrRef str, const FXS_StrView target, const FXS_StrView replacement)
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY     : return neat__dstr_replace(str.str.dstr, target, replacement);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_replace(neat__fmutstr_ref(str.str.strbuf), target, replacement);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_replace(neat__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
+        case FXS__DSTR_TY     : return fxs__dstr_replace(str.str.dstr, target, replacement);
+        case FXS__STRBUF_TY   : return fxs__fmutstr_ref_replace(fxs__fmutstr_ref(str.str.strbuf), target, replacement);
+        case FXS__BUF_TY      : return fxs__fmutstr_ref_replace(fxs__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
         default                : unreachable();
     };
 }
 
-NEAT_API Neat_Error neat__dstr_replace_first(Neat_DString *dstr, const Neat_String_View target, const Neat_String_View replacement)
+FXS_API FXS_Error fxs__dstr_replace_first(FXS_DStr *dstr, const FXS_StrView target, const FXS_StrView replacement)
 {
-    Neat_Error err = {NEAT_NOT_FOUND};
+    FXS_Error err = {FXS_NOT_FOUND};
     
-    Neat_String_View match = neat__strv_find(neat__strv_dstr_ptr2(dstr, 0), target);
+    FXS_StrView match = fxs__strv_find(fxs__strv_dstr_ptr2(dstr, 0), target);
     if(match.chars != NULL)
     {
         unsigned int begin = match.chars - dstr->chars;
         unsigned int end = begin + match.len;
-        err = neat__dstr_replace_range(dstr, begin, end, replacement);
+        err = fxs__dstr_replace_range(dstr, begin, end, replacement);
     }
     
     return err;
 }
 
-NEAT_API Neat_Error neat__fmutstr_ref_replace_first(Neat__Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
+FXS_API FXS_Error fxs__fmutstr_ref_replace_first(FXS__FixedMutStrRef str, const FXS_StrView target, const FXS_StrView replacement)
 {
-    Neat_Error err = {NEAT_NOT_FOUND};
+    FXS_Error err = {FXS_NOT_FOUND};
     
-    Neat_String_View match = neat__strv_find(neat__strv_fmutstr_ref2(str, 0), target);
+    FXS_StrView match = fxs__strv_find(fxs__strv_fmutstr_ref2(str, 0), target);
     if(match.chars != NULL)
     {
         // TODO make this fill as much as possible. just call replace_range
@@ -2124,11 +2124,11 @@ NEAT_API Neat_Error neat__fmutstr_ref_replace_first(Neat__Fixed_Mut_String_Ref s
             
             *str.len += (replacement.len - target.len);
             
-            err.ec = NEAT_OK;
+            err.ec = FXS_OK;
         }
         else
         {
-            err.ec = NEAT_DST_TOO_SMALL;
+            err.ec = FXS_DST_TOO_SMALL;
         }
     }
     
@@ -2138,45 +2138,45 @@ NEAT_API Neat_Error neat__fmutstr_ref_replace_first(Neat__Fixed_Mut_String_Ref s
     return err;
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_replace_first(Neat_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
+FXS_API FXS_Error fxs__mutstr_ref_replace_first(FXS_MutStrRef str, const FXS_StrView target, const FXS_StrView replacement)
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY     : return neat__dstr_replace_first(str.str.dstr, target, replacement);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_replace_first(neat__fmutstr_ref(str.str.strbuf), target, replacement);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_replace_first(neat__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
+        case FXS__DSTR_TY     : return fxs__dstr_replace_first(str.str.dstr, target, replacement);
+        case FXS__STRBUF_TY   : return fxs__fmutstr_ref_replace_first(fxs__fmutstr_ref(str.str.strbuf), target, replacement);
+        case FXS__BUF_TY      : return fxs__fmutstr_ref_replace_first(fxs__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
         default                : unreachable();
     };
 }
 
-NEAT_API unsigned int neat__strv_count(const Neat_String_View hay, const Neat_String_View needle)
+FXS_API unsigned int fxs__strv_count(const FXS_StrView hay, const FXS_StrView needle)
 {
     if(needle.len == 0)
         return 0;
     
     unsigned int count = 0;
-    Neat_String_View found = neat__strv_find(hay, needle);
+    FXS_StrView found = fxs__strv_find(hay, needle);
     
     while(found.chars != NULL)
     {
         count += 1;
-        found = neat__strv_find(neat__strv_strv2(hay, (found.chars - hay.chars) + found.len), needle);
+        found = fxs__strv_find(fxs__strv_strv2(hay, (found.chars - hay.chars) + found.len), needle);
     }
     
     return count;
 }
 
-NEAT_API bool neat__strv_starts_with(const Neat_String_View hay, const Neat_String_View needle)
+FXS_API bool fxs__strv_starts_with(const FXS_StrView hay, const FXS_StrView needle)
 {
     return (needle.len <= hay.len) && (memcmp(hay.chars, needle.chars, needle.len) == 0);
 }
 
-NEAT_API bool neat__strv_ends_with(const Neat_String_View hay, const Neat_String_View needle)
+FXS_API bool fxs__strv_ends_with(const FXS_StrView hay, const FXS_StrView needle)
 {
     return (needle.len <= hay.len) && (memcmp(hay.chars + hay.len - needle.len, needle.chars, needle.len) == 0);
 }
 
-NEAT_API void neat__chars_tolower(Neat_String_View str)
+FXS_API void fxs__chars_tolower(FXS_StrView str)
 {
     for(unsigned int i = 0 ; i < str.len ; i++)
     {
@@ -2184,7 +2184,7 @@ NEAT_API void neat__chars_tolower(Neat_String_View str)
     }
 }
 
-NEAT_API void neat__chars_toupper(Neat_String_View str)
+FXS_API void fxs__chars_toupper(FXS_StrView str)
 {
     for(unsigned int i = 0 ; i < str.len ; i++)
     {
@@ -2192,100 +2192,100 @@ NEAT_API void neat__chars_toupper(Neat_String_View str)
     }
 }
 
-NEAT_API Neat_Error neat__fmutstr_ref_clear(Neat__Fixed_Mut_String_Ref fmutstr_ref)
+FXS_API FXS_Error fxs__fmutstr_ref_clear(FXS__FixedMutStrRef fmutstr_ref)
 {
     *fmutstr_ref.len = 0;
     if(fmutstr_ref.cap > 0)
     {
         fmutstr_ref.chars[0] = '\0';
     }
-    return (Neat_Error){NEAT_OK};
+    return (FXS_Error){FXS_OK};
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_clear(Neat_Mut_String_Ref str)
+FXS_API FXS_Error fxs__mutstr_ref_clear(FXS_MutStrRef str)
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY:
-            neat__fmutstr_ref_clear(neat__dstr_ptr_as_fmutstr_ref(str.str.dstr));
+        case FXS__DSTR_TY:
+            fxs__fmutstr_ref_clear(fxs__dstr_ptr_as_fmutstr_ref(str.str.dstr));
             break;
-        case NEAT__STRBUF_TY:
-            neat__fmutstr_ref_clear(neat__strbuf_ptr_as_fmutstr_ref(str.str.strbuf));
+        case FXS__STRBUF_TY:
+            fxs__fmutstr_ref_clear(fxs__strbuf_ptr_as_fmutstr_ref(str.str.strbuf));
             break;
-        case NEAT__BUF_TY:
-            neat__fmutstr_ref_clear(neat__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}));
+        case FXS__BUF_TY:
+            fxs__fmutstr_ref_clear(fxs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}));
             break;
     }
-    return (Neat_Error){NEAT_OK};
+    return (FXS_Error){FXS_OK};
 }
 
-NEAT_API Neat_Mut_String_Ref neat__cstr_as_mutstr_ref(const char *str)
+FXS_API FXS_MutStrRef fxs__cstr_as_mutstr_ref(const char *str)
 {
     unsigned int len = (unsigned int) strlen(str);
     
-    Neat_Buffer asbuf = {
+    FXS_Buffer asbuf = {
         .ptr = (unsigned char*) str,
         .cap = len + 1
     };
     
-    return neat__buf_as_mutstr_ref(asbuf);
+    return fxs__buf_as_mutstr_ref(asbuf);
 }
 
-NEAT_API Neat_Mut_String_Ref neat__ucstr_as_mutstr_ref(const unsigned char *str)
+FXS_API FXS_MutStrRef fxs__ucstr_as_mutstr_ref(const unsigned char *str)
 {
     unsigned int len = (unsigned int) strlen((char*) str);
     
-    Neat_Buffer asbuf = {
+    FXS_Buffer asbuf = {
         .ptr = (unsigned char*) str,
         .cap = len + 1
     };
     
-    return neat__buf_as_mutstr_ref(asbuf);
+    return fxs__buf_as_mutstr_ref(asbuf);
 }
 
-NEAT_API Neat_Mut_String_Ref neat__buf_as_mutstr_ref(const Neat_Buffer str)
+FXS_API FXS_MutStrRef fxs__buf_as_mutstr_ref(const FXS_Buffer str)
 {
-    return (Neat_Mut_String_Ref){
-        .ty = NEAT__BUF_TY,
-        .str.buf = *(Neat_Buffer*) &str
+    return (FXS_MutStrRef){
+        .ty = FXS__BUF_TY,
+        .str.buf = *(FXS_Buffer*) &str
     };
 }
 
-NEAT_API Neat_Mut_String_Ref neat__dstr_ptr_as_mutstr_ref(const Neat_DString *str)
+FXS_API FXS_MutStrRef fxs__dstr_ptr_as_mutstr_ref(const FXS_DStr *str)
 {
-    return (Neat_Mut_String_Ref){
-        .ty = NEAT__DSTR_TY,
-        .str.dstr = (Neat_DString*) str
+    return (FXS_MutStrRef){
+        .ty = FXS__DSTR_TY,
+        .str.dstr = (FXS_DStr*) str
     };
 }
 
-NEAT_API Neat_Mut_String_Ref neat__strbuf_ptr_as_mutstr_ref(const Neat_String_Buffer *str)
+FXS_API FXS_MutStrRef fxs__strbuf_ptr_as_mutstr_ref(const FXS_StrBuf *str)
 {
-    return (Neat_Mut_String_Ref){
-        .ty = NEAT__STRBUF_TY,
-        .str.strbuf = (Neat_String_Buffer*) str
+    return (FXS_MutStrRef){
+        .ty = FXS__STRBUF_TY,
+        .str.strbuf = (FXS_StrBuf*) str
     };
 }
 
-NEAT_API Neat_Mut_String_Ref neat__mutstr_ref_as_mutstr_ref(const Neat_Mut_String_Ref str)
+FXS_API FXS_MutStrRef fxs__mutstr_ref_as_mutstr_ref(const FXS_MutStrRef str)
 {
     return str;
 }
 
-NEAT_API Neat_String_Buffer neat__strbuf_from_cstr(const char *ptr, unsigned int cap)
+FXS_API FXS_StrBuf fxs__strbuf_from_cstr(const char *ptr, unsigned int cap)
 {
-    unsigned int len = neat__chars_strlen(ptr, cap);
+    unsigned int len = fxs__chars_strlen(ptr, cap);
     
-    return (Neat_String_Buffer){
+    return (FXS_StrBuf){
         .cap = cap,
         .len = len,
         .chars = (unsigned char*) ptr
     };
 }
 
-NEAT_API Neat_String_Buffer neat__strbuf_from_buf(const Neat_Buffer buf)
+FXS_API FXS_StrBuf fxs__strbuf_from_buf(const FXS_Buffer buf)
 {
-    Neat_String_Buffer ret = {
+    FXS_StrBuf ret = {
         .cap = buf.cap,
         .len = 0,
         .chars = buf.ptr
@@ -2297,369 +2297,369 @@ NEAT_API Neat_String_Buffer neat__strbuf_from_buf(const Neat_Buffer buf)
     return ret;
 }
 
-NEAT_API Neat_Buffer neat__buf_from_cstr(const char *str)
+FXS_API FXS_Buffer fxs__buf_from_cstr(const char *str)
 {
-    return (Neat_Buffer){
+    return (FXS_Buffer){
         .ptr = (unsigned char*) str,
         .cap = strlen(str) + 1
     };
 }
 
-NEAT_API Neat_Buffer neat__buf_from_ucstr(const unsigned char *str)
+FXS_API FXS_Buffer fxs__buf_from_ucstr(const unsigned char *str)
 {
-    return (Neat_Buffer){
+    return (FXS_Buffer){
         .ptr = (unsigned char*) str,
         .cap = strlen((char*) str) + 1
     };
 }
 
-NEAT_API Neat_Buffer neat__buf_from_carr(const char *str, size_t cap)
+FXS_API FXS_Buffer fxs__buf_from_carr(const char *str, size_t cap)
 {
-    return (Neat_Buffer){
+    return (FXS_Buffer){
         .ptr = (unsigned char*) str,
         .cap = cap
     };
 }
 
-NEAT_API Neat_Buffer neat__buf_from_ucarr(const unsigned char *str, size_t cap)
+FXS_API FXS_Buffer fxs__buf_from_ucarr(const unsigned char *str, size_t cap)
 {
-    return (Neat_Buffer){
+    return (FXS_Buffer){
         .ptr = (unsigned char*) str,
         .cap = cap
     };
 }
 
-NEAT_API Neat_String_View neat__strv_cstr1(const char *str)
+FXS_API FXS_StrView fxs__strv_cstr1(const char *str)
 {
-    return (Neat_String_View){
+    return (FXS_StrView){
         .chars = (unsigned char*) str,
         .len = strlen(str)
     };
 }
 
-NEAT_API Neat_String_View neat__strv_ucstr1(const unsigned char *str)
+FXS_API FXS_StrView fxs__strv_ucstr1(const unsigned char *str)
 {
-    return (Neat_String_View){
+    return (FXS_StrView){
         .chars = (unsigned char*) str,
         .len = strlen((char*)str)
     };
 }
 
-NEAT_API Neat_String_View neat__strv_dstr1(const Neat_DString str)
+FXS_API FXS_StrView fxs__strv_dstr1(const FXS_DStr str)
 {
-    return (Neat_String_View){
+    return (FXS_StrView){
         .chars = str.chars,
         .len = str.len
     };
 }
 
-NEAT_API Neat_String_View neat__strv_dstr_ptr1(const Neat_DString *str)
+FXS_API FXS_StrView fxs__strv_dstr_ptr1(const FXS_DStr *str)
 {
-    return (Neat_String_View){
+    return (FXS_StrView){
         .chars = str->chars,
         .len = str->len
     };
 }
 
-NEAT_API Neat_String_View neat__strv_strv1(const Neat_String_View str)
+FXS_API FXS_StrView fxs__strv_strv1(const FXS_StrView str)
 {
     return str;
 }
 
-NEAT_API Neat_String_View neat__strv_strbuf1(const Neat_String_Buffer str)
+FXS_API FXS_StrView fxs__strv_strbuf1(const FXS_StrBuf str)
 {
-    return (Neat_String_View){
+    return (FXS_StrView){
         .chars = str.chars,
         .len = str.len
     };
 }
 
-NEAT_API Neat_String_View neat__strv_strbuf_ptr1(const Neat_String_Buffer *str)
+FXS_API FXS_StrView fxs__strv_strbuf_ptr1(const FXS_StrBuf *str)
 {
-    return (Neat_String_View){
+    return (FXS_StrView){
         .chars = str->chars,
         .len = str->len
     };
 }
 
-NEAT_API Neat_String_View neat__strv_mutstr_ref1(const Neat_Mut_String_Ref str)
+FXS_API FXS_StrView fxs__strv_mutstr_ref1(const FXS_MutStrRef str)
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY     : return neat__strv_dstr_ptr1(str.str.dstr);
-        case NEAT__STRBUF_TY   : return neat__strv_strbuf_ptr1(str.str.strbuf);
-        case NEAT__BUF_TY      : return neat__strv_ucstr1(str.str.buf.ptr);
+        case FXS__DSTR_TY     : return fxs__strv_dstr_ptr1(str.str.dstr);
+        case FXS__STRBUF_TY   : return fxs__strv_strbuf_ptr1(str.str.strbuf);
+        case FXS__BUF_TY      : return fxs__strv_ucstr1(str.str.buf.ptr);
         default                : unreachable();
     }
 }
 
-NEAT_API Neat_String_View neat__strv_cstr2(const char *str, unsigned int begin)
+FXS_API FXS_StrView fxs__strv_cstr2(const char *str, unsigned int begin)
 {
     unsigned int len = strlen(str);
     
-#if !defined(NEAT_NDEBUG)
+#if !defined(FXS_NDEBUG)
     if(begin > len)
     {
-        return (Neat_String_View){
+        return (FXS_StrView){
             .len = 0,
             .chars = NULL
         };
     }
 #endif
     
-    return (Neat_String_View){
+    return (FXS_StrView){
         .len   = len - begin,
         .chars = (unsigned char*) str + begin
     };
 }
 
-NEAT_API Neat_String_View neat__strv_ucstr2(const unsigned char *str, unsigned int begin)
+FXS_API FXS_StrView fxs__strv_ucstr2(const unsigned char *str, unsigned int begin)
 {
     unsigned int len = strlen((char*) str);
     
-#if !defined(NEAT_NDEBUG)
+#if !defined(FXS_NDEBUG)
     if(begin > len)
     {
-        return (Neat_String_View){
+        return (FXS_StrView){
             .len = 0,
             .chars = NULL
         };
     }
 #endif
     
-    return (Neat_String_View){
+    return (FXS_StrView){
         .len   = len - begin,
         .chars = (unsigned char*) str + begin
     };
 }
 
-NEAT_API Neat_String_View neat__strv_dstr_ptr2(const Neat_DString *str, unsigned int begin)
+FXS_API FXS_StrView fxs__strv_dstr_ptr2(const FXS_DStr *str, unsigned int begin)
 {
     if(begin > str->len)
     {
-        return (Neat_String_View){
+        return (FXS_StrView){
             .len = 0,
             .chars = NULL
         };
     }
     
-    return (Neat_String_View){
+    return (FXS_StrView){
         .len   = str->len   - begin,
         .chars = str->chars + begin
     };
 }
 
-NEAT_API Neat_String_View neat__strv_dstr2(const Neat_DString str, unsigned int begin)
+FXS_API FXS_StrView fxs__strv_dstr2(const FXS_DStr str, unsigned int begin)
 {
-    return neat__strv_dstr_ptr2(&str, begin);
+    return fxs__strv_dstr_ptr2(&str, begin);
 }
 
-NEAT_API Neat_String_View neat__strv_strv2(const Neat_String_View str, unsigned int begin)
+FXS_API FXS_StrView fxs__strv_strv2(const FXS_StrView str, unsigned int begin)
 {
-#if !defined(NEAT_NDEBUG)
+#if !defined(FXS_NDEBUG)
     if(begin > str.len)
     {
-        return (Neat_String_View){
+        return (FXS_StrView){
             .len = 0,
             .chars = NULL
         };
     }
 #endif
     
-    return (Neat_String_View){
+    return (FXS_StrView){
         .len   = str.len   - begin,
         .chars = str.chars + begin
     };
 }
 
-NEAT_API Neat_String_View neat__strv_strbuf_ptr2(const Neat_String_Buffer *str, unsigned int begin)
+FXS_API FXS_StrView fxs__strv_strbuf_ptr2(const FXS_StrBuf *str, unsigned int begin)
 {
-#if !defined(NEAT_NDEBUG)
+#if !defined(FXS_NDEBUG)
     if(begin > str->len)
     {
-        return (Neat_String_View){
+        return (FXS_StrView){
             .len = 0,
             .chars = NULL
         };
     }
 #endif
     
-    return (Neat_String_View){
+    return (FXS_StrView){
         .len   = str->len   - begin,
         .chars = str->chars + begin
     };
 }
 
-NEAT_API Neat_String_View neat__strv_strbuf2(const Neat_String_Buffer str, unsigned int begin)
+FXS_API FXS_StrView fxs__strv_strbuf2(const FXS_StrBuf str, unsigned int begin)
 {
-    return neat__strv_strbuf_ptr2(&str, begin);
+    return fxs__strv_strbuf_ptr2(&str, begin);
 }
 
-NEAT_API Neat_String_View neat__strv_mutstr_ref2(const Neat_Mut_String_Ref str, unsigned int begin)
+FXS_API FXS_StrView fxs__strv_mutstr_ref2(const FXS_MutStrRef str, unsigned int begin)
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY     : return neat__strv_dstr_ptr2(str.str.dstr, begin);
-        case NEAT__STRBUF_TY   : return neat__strv_strbuf_ptr2(str.str.strbuf, begin);
-        case NEAT__BUF_TY      : return neat__strv_fmutstr_ref2(neat__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin);
+        case FXS__DSTR_TY     : return fxs__strv_dstr_ptr2(str.str.dstr, begin);
+        case FXS__STRBUF_TY   : return fxs__strv_strbuf_ptr2(str.str.strbuf, begin);
+        case FXS__BUF_TY      : return fxs__strv_fmutstr_ref2(fxs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin);
         default                : unreachable();
     }
 }
 
-NEAT_PRIVATE Neat_String_View neat__strv_fmutstr_ref2(const Neat__Fixed_Mut_String_Ref str, unsigned int begin)
+FXS_PRIVATE FXS_StrView fxs__strv_fmutstr_ref2(const FXS__FixedMutStrRef str, unsigned int begin)
 {
     unsigned int len = *str.len;
     
-#if !defined(NEAT_NDEBUG)
+#if !defined(FXS_NDEBUG)
     if(begin > len)
     {
-        return (Neat_String_View){
+        return (FXS_StrView){
             .len = 0,
             .chars = NULL
         };
     }
 #endif
     
-    return (Neat_String_View){
+    return (FXS_StrView){
         .len   = len       - begin,
         .chars = str.chars + begin
     };
 }
 
-NEAT_API Neat_String_View neat__strv_fmutstr_ref3(const Neat__Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end)
+FXS_API FXS_StrView fxs__strv_fmutstr_ref3(const FXS__FixedMutStrRef str, unsigned int begin, unsigned int end)
 {
     unsigned int len = *str.len;
     
-#if !defined(NEAT_NDEBUG)
+#if !defined(FXS_NDEBUG)
     if(begin > len || end > len || begin > end)
     {
-        return (Neat_String_View){
+        return (FXS_StrView){
             .len = 0,
             .chars = NULL
         };
     }
 #endif
     
-    return (Neat_String_View){
+    return (FXS_StrView){
         .len   = end - begin,
         .chars = str.chars + begin
     };
 }
 
-NEAT_API Neat_String_View neat__strv_cstr3(const char *str, unsigned int begin, unsigned int end)
+FXS_API FXS_StrView fxs__strv_cstr3(const char *str, unsigned int begin, unsigned int end)
 {
     unsigned int len = strlen(str);
     
-#if !defined(NEAT_NDEBUG)
+#if !defined(FXS_NDEBUG)
     if(begin > len || end > len || begin > end)
     {
-        return (Neat_String_View){
+        return (FXS_StrView){
             .len = 0,
             .chars = NULL
         };
     }
 #endif
     
-    return (Neat_String_View){
+    return (FXS_StrView){
         .len   = end - begin,
         .chars = (unsigned char*) str + begin
     };
 }
 
-NEAT_API Neat_String_View neat__strv_ucstr3(const unsigned char *str, unsigned int begin, unsigned int end)
+FXS_API FXS_StrView fxs__strv_ucstr3(const unsigned char *str, unsigned int begin, unsigned int end)
 {
     unsigned int len = strlen((char*) str);
     
-#if !defined(NEAT_NDEBUG)
+#if !defined(FXS_NDEBUG)
     if(begin > len || end > len || begin > end)
     {
-        return (Neat_String_View){
+        return (FXS_StrView){
             .len = 0,
             .chars = NULL
         };
     }
 #endif
     
-    return (Neat_String_View){
+    return (FXS_StrView){
         .len   = end - begin,
         .chars = (unsigned char*) str + begin
     };
 }
 
-NEAT_API Neat_String_View neat__strv_dstr_ptr3(const Neat_DString *str, unsigned int begin, unsigned int end)
+FXS_API FXS_StrView fxs__strv_dstr_ptr3(const FXS_DStr *str, unsigned int begin, unsigned int end)
 {
-#if !defined(NEAT_NDEBUG)
+#if !defined(FXS_NDEBUG)
     if(begin > str->len || end > str->len || begin > end)
     {
-        return (Neat_String_View){
+        return (FXS_StrView){
             .len = 0,
             .chars = NULL
         };
     }
 #endif
     
-    return (Neat_String_View){
+    return (FXS_StrView){
         .len   = end - begin,
         .chars = str->chars + begin
     };
 }
 
-NEAT_API Neat_String_View neat__strv_strbuf_ptr3(const Neat_String_Buffer *str, unsigned int begin, unsigned int end)
+FXS_API FXS_StrView fxs__strv_strbuf_ptr3(const FXS_StrBuf *str, unsigned int begin, unsigned int end)
 {
-#if !defined(NEAT_NDEBUG)
+#if !defined(FXS_NDEBUG)
     if(begin > str->len || end > str->len || begin > end)
     {
-        return (Neat_String_View){
+        return (FXS_StrView){
             .len = 0,
             .chars = NULL
         };
     }
 #endif
     
-    return (Neat_String_View){
+    return (FXS_StrView){
         .len   = end - begin,
         .chars = str->chars + begin
     };
 }
 
-NEAT_API Neat_String_View neat__strv_mutstr_ref3(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end)
+FXS_API FXS_StrView fxs__strv_mutstr_ref3(FXS_MutStrRef str, unsigned int begin, unsigned int end)
 {
     switch(str.ty)
     {
-        case NEAT__DSTR_TY     : return neat__strv_dstr_ptr3(str.str.dstr, begin, end);
-        case NEAT__STRBUF_TY   : return neat__strv_strbuf_ptr3(str.str.strbuf, begin, end);
-        case NEAT__BUF_TY      : return neat__strv_fmutstr_ref3(neat__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
+        case FXS__DSTR_TY     : return fxs__strv_dstr_ptr3(str.str.dstr, begin, end);
+        case FXS__STRBUF_TY   : return fxs__strv_strbuf_ptr3(str.str.strbuf, begin, end);
+        case FXS__BUF_TY      : return fxs__strv_fmutstr_ref3(fxs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
         default                : unreachable();
     }
 }
 
-NEAT_API Neat_String_View neat__strv_dstr3(Neat_DString str, unsigned int begin, unsigned int end)
+FXS_API FXS_StrView fxs__strv_dstr3(FXS_DStr str, unsigned int begin, unsigned int end)
 {
-    return neat__strv_dstr_ptr3(&str, begin, end);
+    return fxs__strv_dstr_ptr3(&str, begin, end);
 }
 
-NEAT_API Neat_String_View neat__strv_strv3(Neat_String_View str, unsigned int begin, unsigned int end)
+FXS_API FXS_StrView fxs__strv_strv3(FXS_StrView str, unsigned int begin, unsigned int end)
 {
     if(begin > str.len || end > str.len || begin > end)
     {
-        return (Neat_String_View){
+        return (FXS_StrView){
             .len = 0,
             .chars = NULL
         };
     }
     
-    return (Neat_String_View){
+    return (FXS_StrView){
         .len   = end - begin,
         .chars = str.chars + begin
     };
 }
 
-NEAT_API Neat_String_View neat__strv_strbuf3(Neat_String_Buffer str, unsigned int begin, unsigned int end)
+FXS_API FXS_StrView fxs__strv_strbuf3(FXS_StrBuf str, unsigned int begin, unsigned int end)
 {
-    return neat__strv_strbuf_ptr3(&str, begin, end);
+    return fxs__strv_strbuf_ptr3(&str, begin, end);
 }
 
-NEAT_API Neat_Error neat__dstr_fread_line(Neat_DString *dstr, FILE *stream)
+FXS_API FXS_Error fxs__dstr_fread_line(FXS_DStr *dstr, FILE *stream)
 {
     dstr->len = 0;
     if(dstr->cap > 0)
@@ -2667,17 +2667,17 @@ NEAT_API Neat_Error neat__dstr_fread_line(Neat_DString *dstr, FILE *stream)
         dstr->chars[0] = '\0';
     }
     
-    return neat__dstr_append_fread_line(dstr, stream);
+    return fxs__dstr_append_fread_line(dstr, stream);
 }
 
-NEAT_API Neat_Error neat__dstr_append_fread_line(Neat_DString *dstr, FILE *stream)
+FXS_API FXS_Error fxs__dstr_append_fread_line(FXS_DStr *dstr, FILE *stream)
 {
-    Neat_Error err = {NEAT_OK};
+    FXS_Error err = {FXS_OK};
     int c = 0;
     while(c != EOF && c != '\n')
     {
-        err = neat__dstr_maybe_grow(dstr, 64);
-        if(err.ec != NEAT_OK)
+        err = fxs__dstr_maybe_grow(dstr, 64);
+        if(err.ec != FXS_OK)
             return err;
         
         int count = 0;
@@ -2690,14 +2690,14 @@ NEAT_API Neat_Error neat__dstr_append_fread_line(Neat_DString *dstr, FILE *strea
         dstr->len += count;
     }
     
-    return (Neat_Error){NEAT_OK};
+    return (FXS_Error){FXS_OK};
 }
 
-NEAT_API Neat_Error neat__fmutstr_ref_fread_line(Neat__Fixed_Mut_String_Ref dst, FILE *stream)
+FXS_API FXS_Error fxs__fmutstr_ref_fread_line(FXS__FixedMutStrRef dst, FILE *stream)
 {
     if(dst.cap == 0)
     {
-        return (Neat_Error){NEAT_DST_TOO_SMALL};
+        return (FXS_Error){FXS_DST_TOO_SMALL};
     }
     
     unsigned int len = 0;
@@ -2714,36 +2714,36 @@ NEAT_API Neat_Error neat__fmutstr_ref_fread_line(Neat__Fixed_Mut_String_Ref dst,
     bool dst_too_small = (len == dst.cap - 1) && (c != '\n') && (c != EOF);
     
     if(dst_too_small)
-        return (Neat_Error){NEAT_DST_TOO_SMALL};
+        return (FXS_Error){FXS_DST_TOO_SMALL};
     else
-        return (Neat_Error){NEAT_OK};
+        return (FXS_Error){FXS_OK};
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_fread_line(Neat_Mut_String_Ref dst, FILE *stream)
+FXS_API FXS_Error fxs__mutstr_ref_fread_line(FXS_MutStrRef dst, FILE *stream)
 {
     switch(dst.ty)
     {
-        case NEAT__DSTR_TY     : return neat__dstr_fread_line(dst.str.dstr, stream);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_fread_line(neat__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_fread_line(neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream);
+        case FXS__DSTR_TY     : return fxs__dstr_fread_line(dst.str.dstr, stream);
+        case FXS__STRBUF_TY   : return fxs__fmutstr_ref_fread_line(fxs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream);
+        case FXS__BUF_TY      : return fxs__fmutstr_ref_fread_line(fxs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream);
         default                : unreachable();
     };
 }
 
-NEAT_API Neat_Error neat__fmutstr_ref_append_fread_line(Neat__Fixed_Mut_String_Ref dst, FILE *stream)
+FXS_API FXS_Error fxs__fmutstr_ref_append_fread_line(FXS__FixedMutStrRef dst, FILE *stream)
 {
     if(dst.cap <= *dst.len - 1)
-        return (Neat_Error){NEAT_DST_TOO_SMALL};
+        return (FXS_Error){FXS_DST_TOO_SMALL};
     
     unsigned int appended_len = 0;
     
-    Neat__Fixed_Mut_String_Ref right = {
+    FXS__FixedMutStrRef right = {
         .cap = dst.cap - *dst.len,
         .len = &appended_len,
         .chars = dst.chars + *dst.len
     };
     
-    Neat_Error err = neat__fmutstr_ref_fread_line(right, stream);
+    FXS_Error err = fxs__fmutstr_ref_fread_line(right, stream);
     
     *dst.len += *right.len;
     
@@ -2752,24 +2752,24 @@ NEAT_API Neat_Error neat__fmutstr_ref_append_fread_line(Neat__Fixed_Mut_String_R
     return err;
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_append_fread_line(Neat_Mut_String_Ref dst, FILE *stream)
+FXS_API FXS_Error fxs__mutstr_ref_append_fread_line(FXS_MutStrRef dst, FILE *stream)
 {
     switch(dst.ty)
     {
-        case NEAT__DSTR_TY     : return neat__dstr_append_fread_line(dst.str.dstr, stream);
-        case NEAT__STRBUF_TY   : return neat__fmutstr_ref_append_fread_line(neat__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream);
-        case NEAT__BUF_TY      : return neat__fmutstr_ref_append_fread_line(neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream);
+        case FXS__DSTR_TY     : return fxs__dstr_append_fread_line(dst.str.dstr, stream);
+        case FXS__STRBUF_TY   : return fxs__fmutstr_ref_append_fread_line(fxs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream);
+        case FXS__BUF_TY      : return fxs__fmutstr_ref_append_fread_line(fxs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream);
         default                : unreachable();
     };
 }
 
-NEAT_API unsigned int neat__fprint_strv(FILE *stream, Neat_String_View str)
+FXS_API unsigned int fxs__fprint_strv(FILE *stream, FXS_StrView str)
 {
     assert(str.chars != NULL);
     return fwrite(str.chars, sizeof(unsigned char), str.len, stream);
 }
 
-NEAT_API unsigned int neat__fprintln_strv(FILE *stream, Neat_String_View str)
+FXS_API unsigned int fxs__fprintln_strv(FILE *stream, FXS_StrView str)
 {
     unsigned int written = fwrite(str.chars, sizeof(unsigned char), str.len, stream);
     int err = fputc('\n', stream);
@@ -2777,14 +2777,14 @@ NEAT_API unsigned int neat__fprintln_strv(FILE *stream, Neat_String_View str)
     return written + (err != EOF);
 }
 
-NEAT_PRIVATE unsigned int neat__numstr_len(unsigned long long num)
+FXS_PRIVATE unsigned int fxs__numstr_len(unsigned long long num)
 {
     unsigned int len = 1;
-    for(unsigned int i = 1 ; i < NEAT__CARR_LEN(neat__ten_pows_ull) && num >= neat__ten_pows_ull[i++] ; len++);
+    for(unsigned int i = 1 ; i < FXS__CARR_LEN(fxs__ten_pows_ull) && num >= fxs__ten_pows_ull[i++] ; len++);
     return len;
 }
 
-#define neat__sinteger_min(ty) \
+#define fxs__sinteger_min(ty) \
 _Generic((ty){0},              \
 signed char: SCHAR_MIN,        \
 short      : SHRT_MIN,         \
@@ -2793,107 +2793,107 @@ long       : LONG_MIN,         \
 long long  : LLONG_MIN         \
 )
 
-#define neat__min_tostr(ty)        \
+#define fxs__min_tostr(ty)        \
 _Generic((ty){0},                  \
-signed char: neat__schar_min_into, \
-short      : neat__short_min_into, \
-int        : neat__int_min_into,   \
-long       : neat__long_min_into,  \
-long long  : neat__llong_min_into  \
+signed char: fxs__schar_min_into, \
+short      : fxs__short_min_into, \
+int        : fxs__int_min_into,   \
+long       : fxs__long_min_into,  \
+long long  : fxs__llong_min_into  \
 )
 
-NEAT_PRIVATE Neat_Error neat__schar_min_into(Neat_Mut_String_Ref dst)
+FXS_PRIVATE FXS_Error fxs__schar_min_into(FXS_MutStrRef dst)
 {
     if(SCHAR_MIN == -128)
     {
         const char *numstr = "-128";
-        Neat_String_View s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
-        return neat__mutstr_ref_copy(dst, s);
+        FXS_StrView s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
+        return fxs__mutstr_ref_copy(dst, s);
     }
     else
     {
         char temp[16] = {0};
         int len = snprintf(temp, sizeof(temp), "%hhd", SCHAR_MIN);
-        return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = (unsigned char*) temp, .len = len});
+        return fxs__mutstr_ref_copy(dst, (FXS_StrView){.chars = (unsigned char*) temp, .len = len});
     }
 }
 
-NEAT_PRIVATE Neat_Error neat__short_min_into(Neat_Mut_String_Ref dst)
+FXS_PRIVATE FXS_Error fxs__short_min_into(FXS_MutStrRef dst)
 {
     if(SHRT_MIN == -32768)
     {
         const char *numstr = "-32768";
-        Neat_String_View s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
-        return neat__mutstr_ref_copy(dst, s);
+        FXS_StrView s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
+        return fxs__mutstr_ref_copy(dst, s);
     }
     else
     {
         char temp[16] = {0};
         int len = snprintf(temp, sizeof(temp), "%hd", SHRT_MIN);
-        return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = (unsigned char*) temp, .len = len});
+        return fxs__mutstr_ref_copy(dst, (FXS_StrView){.chars = (unsigned char*) temp, .len = len});
     }
 }
 
-NEAT_PRIVATE Neat_Error neat__int_min_into(Neat_Mut_String_Ref dst)
+FXS_PRIVATE FXS_Error fxs__int_min_into(FXS_MutStrRef dst)
 {
     if(INT_MIN == -2147483648)
     {
         const char *numstr = "-2147483648";
-        Neat_String_View s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
-        return neat__mutstr_ref_copy(dst, s);
+        FXS_StrView s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
+        return fxs__mutstr_ref_copy(dst, s);
     }
     else
     {
         char temp[32] = {0};
         int len = snprintf(temp, sizeof(temp), "%d", INT_MIN);
-        return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = (unsigned char*) temp, .len = len});
+        return fxs__mutstr_ref_copy(dst, (FXS_StrView){.chars = (unsigned char*) temp, .len = len});
     }
 }
 
-NEAT_PRIVATE Neat_Error neat__long_min_into(Neat_Mut_String_Ref dst)
+FXS_PRIVATE FXS_Error fxs__long_min_into(FXS_MutStrRef dst)
 {
     if(LONG_MIN == INT_MIN)
     {
-        return neat__int_min_into(dst);
+        return fxs__int_min_into(dst);
     }
     else if(LONG_MIN == -9223372036854775807 - 1)
     {
         const char *numstr = "-9223372036854775808";
-        Neat_String_View s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
-        return neat__mutstr_ref_copy(dst, s);
+        FXS_StrView s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
+        return fxs__mutstr_ref_copy(dst, s);
     }
     else
     {
         char temp[32] = {0};
         int len = snprintf(temp, sizeof(temp), "%ld", LONG_MIN);
-        return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = (unsigned char*) temp, .len = len});
+        return fxs__mutstr_ref_copy(dst, (FXS_StrView){.chars = (unsigned char*) temp, .len = len});
     }
 }
 
-NEAT_PRIVATE Neat_Error neat__llong_min_into(Neat_Mut_String_Ref dst)
+FXS_PRIVATE FXS_Error fxs__llong_min_into(FXS_MutStrRef dst)
 {
     if(LLONG_MIN == LONG_MIN)
     {
-        return neat__long_min_into(dst);
+        return fxs__long_min_into(dst);
     }
     else if(LLONG_MIN == -9223372036854775807 - 1)
     {
         const char *numstr = "-9223372036854775808";
-        Neat_String_View s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
-        return neat__mutstr_ref_copy(dst, s);
+        FXS_StrView s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
+        return fxs__mutstr_ref_copy(dst, s);
     }
     else
     {
         char temp[32] = {0};
         int len = snprintf(temp, sizeof(temp), "%lld", LLONG_MIN);
-        return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = (unsigned char*) temp, .len = len});
+        return fxs__mutstr_ref_copy(dst, (FXS_StrView){.chars = (unsigned char*) temp, .len = len});
     }
 }
 
-#define neat__sintger_tostr_fmutstr_ref(fmutstr) \
+#define fxs__sintger_tostr_fmutstr_ref(fmutstr) \
 do { \
     if(fmutstr.cap <= 1) \
-        return (Neat_Error){NEAT_DST_TOO_SMALL}; \
+        return (FXS_Error){FXS_DST_TOO_SMALL}; \
     __typeof__(obj) num = obj; \
     \
     if(isneg) \
@@ -2907,10 +2907,10 @@ do { \
     } \
     else \
     { \
-        err.ec = NEAT_DST_TOO_SMALL; \
+        err.ec = FXS_DST_TOO_SMALL; \
         chars_to_copy = fmutstr.cap - (1 + isneg); \
     } \
-    num /= neat__ten_pows[numlen - chars_to_copy]; \
+    num /= fxs__ten_pows[numlen - chars_to_copy]; \
     for (unsigned int i = 0; i < chars_to_copy ; i++) \
     { \
         unsigned int rem = num % 10; \
@@ -2922,23 +2922,23 @@ do { \
     fmutstr.chars[*fmutstr.len] = '\0'; \
 } while(0)
 
-#define neat__sinteger_tostr_dstr(dstr) \
+#define fxs__sinteger_tostr_dstr(dstr) \
 do { \
-    err = neat__dstr_ensure_cap(dstr, numlen + 1); \
-    if(err.ec != NEAT_OK) \
+    err = fxs__dstr_ensure_cap(dstr, numlen + 1); \
+    if(err.ec != FXS_OK) \
         return err; \
     \
-    Neat__Fixed_Mut_String_Ref as_fixed = neat__dstr_ptr_as_fmutstr_ref(dstr); \
-    neat__sintger_tostr_fmutstr_ref(as_fixed); \
+    FXS__FixedMutStrRef as_fixed = fxs__dstr_ptr_as_fmutstr_ref(dstr); \
+    fxs__sintger_tostr_fmutstr_ref(as_fixed); \
 } while(0)
 
-#define neat__sinteger_tostr() \
+#define fxs__sinteger_tostr() \
 do { \
-    /*neat__mutstr_ref_clear(dst);*/ \
-    Neat_Error err = {NEAT_OK}; \
-    if(obj == neat__sinteger_min(__typeof__(obj))) \
+    /*fxs__mutstr_ref_clear(dst);*/ \
+    FXS_Error err = {FXS_OK}; \
+    if(obj == fxs__sinteger_min(__typeof__(obj))) \
     { \
-        return neat__min_tostr(__typeof__(obj))(dst); \
+        return fxs__min_tostr(__typeof__(obj))(dst); \
     } \
     bool isneg = false; \
     if(obj < 0) \
@@ -2946,48 +2946,48 @@ do { \
         isneg = true; \
         obj *= -1; \
     } \
-    unsigned int numlen = neat__numstr_len(obj); \
+    unsigned int numlen = fxs__numstr_len(obj); \
     switch(dst.ty) \
     { \
-        case NEAT__DSTR_TY: \
+        case FXS__DSTR_TY: \
         { \
-            neat__sinteger_tostr_dstr(dst.str.dstr); \
+            fxs__sinteger_tostr_dstr(dst.str.dstr); \
             return err; \
         } \
-        case NEAT__STRBUF_TY: \
+        case FXS__STRBUF_TY: \
         { \
-            Neat__Fixed_Mut_String_Ref strbuf_as_fixed = neat__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf); \
-            neat__sintger_tostr_fmutstr_ref(strbuf_as_fixed); \
+            FXS__FixedMutStrRef strbuf_as_fixed = fxs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf); \
+            fxs__sintger_tostr_fmutstr_ref(strbuf_as_fixed); \
             return err; \
         } \
-        case NEAT__BUF_TY: \
+        case FXS__BUF_TY: \
         { \
-            Neat__Fixed_Mut_String_Ref buf_as_fixed = neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}); \
-            neat__sintger_tostr_fmutstr_ref(buf_as_fixed); \
+            FXS__FixedMutStrRef buf_as_fixed = fxs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}); \
+            fxs__sintger_tostr_fmutstr_ref(buf_as_fixed); \
             return err; \
         } \
         default: unreachable(); \
     } \
 } while(0)
 
-#define neat__uinteger_tostr_dstr(dstr) \
+#define fxs__uinteger_tostr_dstr(dstr) \
 do { \
-    err = neat__dstr_ensure_cap(dstr, numlen + 1); \
-    if(err.ec != NEAT_OK) \
+    err = fxs__dstr_ensure_cap(dstr, numlen + 1); \
+    if(err.ec != FXS_OK) \
         return err; \
     \
-    Neat__Fixed_Mut_String_Ref as_fixed = { \
+    FXS__FixedMutStrRef as_fixed = { \
         .chars = dstr->chars, \
         .len = &dstr->len, \
         .cap = dstr->cap \
     }; \
-    neat__uintger_tostr_fmutstr_ref(as_fixed); \
+    fxs__uintger_tostr_fmutstr_ref(as_fixed); \
 } while(0)
 
-#define neat__uintger_tostr_fmutstr_ref(fmutstr) \
+#define fxs__uintger_tostr_fmutstr_ref(fmutstr) \
 do { \
     if(fmutstr.cap <= 1) \
-        return (Neat_Error){NEAT_DST_TOO_SMALL}; \
+        return (FXS_Error){FXS_DST_TOO_SMALL}; \
     __typeof__(obj) num = obj; \
     unsigned int chars_to_copy; \
     if(numlen < fmutstr.cap) \
@@ -2996,10 +2996,10 @@ do { \
     } \
     else \
     { \
-        err.ec = NEAT_DST_TOO_SMALL; \
+        err.ec = FXS_DST_TOO_SMALL; \
         chars_to_copy = fmutstr.cap - 1; \
     } \
-    num /= neat__ten_pows[numlen - chars_to_copy]; \
+    num /= fxs__ten_pows[numlen - chars_to_copy]; \
     for (unsigned int i = 0; i < chars_to_copy ; i++) \
     { \
         unsigned int rem = num % 10; \
@@ -3011,157 +3011,157 @@ do { \
     fmutstr.chars[*fmutstr.len] = '\0'; \
 } while(0)
 
-#define neat__uinteger_tostr() \
+#define fxs__uinteger_tostr() \
 do { \
-    /*neat__mutstr_ref_clear(dst);*/ \
-    Neat_Error err = {NEAT_OK}; \
-    unsigned int numlen = neat__numstr_len(obj); \
+    /*fxs__mutstr_ref_clear(dst);*/ \
+    FXS_Error err = {FXS_OK}; \
+    unsigned int numlen = fxs__numstr_len(obj); \
     switch(dst.ty) \
     { \
-        case NEAT__DSTR_TY: \
+        case FXS__DSTR_TY: \
         { \
-            neat__uinteger_tostr_dstr(dst.str.dstr); \
+            fxs__uinteger_tostr_dstr(dst.str.dstr); \
             return err; \
         } \
-        case NEAT__STRBUF_TY: \
+        case FXS__STRBUF_TY: \
         { \
-            Neat__Fixed_Mut_String_Ref strbuf_as_fixed = neat__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf); \
-            neat__uintger_tostr_fmutstr_ref(strbuf_as_fixed); \
+            FXS__FixedMutStrRef strbuf_as_fixed = fxs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf); \
+            fxs__uintger_tostr_fmutstr_ref(strbuf_as_fixed); \
             return err; \
         } \
-        case NEAT__BUF_TY: \
+        case FXS__BUF_TY: \
         { \
-            Neat__Fixed_Mut_String_Ref buf_as_fixed = neat__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}); \
-            neat__uintger_tostr_fmutstr_ref(buf_as_fixed); \
+            FXS__FixedMutStrRef buf_as_fixed = fxs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}); \
+            fxs__uintger_tostr_fmutstr_ref(buf_as_fixed); \
             return err; \
         } \
         default: unreachable(); \
     } \
 } while(0)
 
-NEAT_API Neat_Error neat__bool_tostr(Neat_Mut_String_Ref dst, bool obj)
+FXS_API FXS_Error fxs__bool_tostr(FXS_MutStrRef dst, bool obj)
 {
-    Neat_String_View res = obj ? neat__strv_cstr1("true") : neat__strv_cstr1("false");
-    return neat__mutstr_ref_copy(dst, res);
+    FXS_StrView res = obj ? fxs__strv_cstr1("true") : fxs__strv_cstr1("false");
+    return fxs__mutstr_ref_copy(dst, res);
 }
 
-NEAT_API Neat_Error neat__cstr_tostr(Neat_Mut_String_Ref dst, const char *obj)
+FXS_API FXS_Error fxs__cstr_tostr(FXS_MutStrRef dst, const char *obj)
 {
-    return neat__mutstr_ref_copy(
+    return fxs__mutstr_ref_copy(
         dst,
-        (Neat_String_View){
+        (FXS_StrView){
             .chars = (unsigned char*) obj,
             .len = strlen(obj)
         }
     );
 }
 
-NEAT_API Neat_Error neat__ucstr_tostr(Neat_Mut_String_Ref dst, const unsigned char *obj)
+FXS_API FXS_Error fxs__ucstr_tostr(FXS_MutStrRef dst, const unsigned char *obj)
 {
-    return neat__mutstr_ref_copy(
+    return fxs__mutstr_ref_copy(
         dst,
-        (Neat_String_View){
+        (FXS_StrView){
             .chars = (unsigned char*) obj,
             .len = strlen((char*) obj)
         }
     );
 }
 
-NEAT_API Neat_Error neat__char_tostr(Neat_Mut_String_Ref dst, char obj)
+FXS_API FXS_Error fxs__char_tostr(FXS_MutStrRef dst, char obj)
 {
-    neat__mutstr_ref_clear(dst);
-    return neat__mutstr_ref_putc(dst, obj);
+    fxs__mutstr_ref_clear(dst);
+    return fxs__mutstr_ref_putc(dst, obj);
 }
 
-NEAT_API Neat_Error neat__schar_tostr(Neat_Mut_String_Ref dst, signed char obj)
+FXS_API FXS_Error fxs__schar_tostr(FXS_MutStrRef dst, signed char obj)
 {
-    return neat__mutstr_ref_copy(dst, neat__sc_to_string[(unsigned char)obj]);
+    return fxs__mutstr_ref_copy(dst, fxs__sc_to_string[(unsigned char)obj]);
 }
 
-NEAT_API Neat_Error neat__uchar_tostr(Neat_Mut_String_Ref dst, unsigned char obj)
+FXS_API FXS_Error fxs__uchar_tostr(FXS_MutStrRef dst, unsigned char obj)
 {
-    neat__mutstr_ref_clear(dst);
-    return neat__mutstr_ref_putc(dst, obj);
+    fxs__mutstr_ref_clear(dst);
+    return fxs__mutstr_ref_putc(dst, obj);
 }
 
-NEAT_API Neat_Error neat__short_tostr(Neat_Mut_String_Ref dst, short obj)
+FXS_API FXS_Error fxs__short_tostr(FXS_MutStrRef dst, short obj)
 {
-    neat__sinteger_tostr();
+    fxs__sinteger_tostr();
 }
 
-NEAT_API Neat_Error neat__ushort_tostr(Neat_Mut_String_Ref dst, unsigned short obj)
+FXS_API FXS_Error fxs__ushort_tostr(FXS_MutStrRef dst, unsigned short obj)
 {
-    neat__uinteger_tostr();
+    fxs__uinteger_tostr();
 }
 
-NEAT_API Neat_Error neat__int_tostr(Neat_Mut_String_Ref dst, int obj)
+FXS_API FXS_Error fxs__int_tostr(FXS_MutStrRef dst, int obj)
 {
-    neat__sinteger_tostr();
+    fxs__sinteger_tostr();
 }
 
-NEAT_API Neat_Error neat__uint_tostr(Neat_Mut_String_Ref dst, unsigned int obj)
+FXS_API FXS_Error fxs__uint_tostr(FXS_MutStrRef dst, unsigned int obj)
 {
-    neat__uinteger_tostr();
+    fxs__uinteger_tostr();
 }
 
-NEAT_API Neat_Error neat__long_tostr(Neat_Mut_String_Ref dst, long obj)
+FXS_API FXS_Error fxs__long_tostr(FXS_MutStrRef dst, long obj)
 {
-    neat__sinteger_tostr();
+    fxs__sinteger_tostr();
 }
 
-NEAT_API Neat_Error neat__ulong_tostr(Neat_Mut_String_Ref dst, unsigned long obj)
+FXS_API FXS_Error fxs__ulong_tostr(FXS_MutStrRef dst, unsigned long obj)
 {
-    neat__uinteger_tostr();
+    fxs__uinteger_tostr();
 }
 
-NEAT_API Neat_Error neat__llong_tostr(Neat_Mut_String_Ref dst, long long obj)
+FXS_API FXS_Error fxs__llong_tostr(FXS_MutStrRef dst, long long obj)
 {
-    neat__sinteger_tostr();
+    fxs__sinteger_tostr();
 }
 
-NEAT_API Neat_Error neat__ullong_tostr(Neat_Mut_String_Ref dst, unsigned long long obj)
+FXS_API FXS_Error fxs__ullong_tostr(FXS_MutStrRef dst, unsigned long long obj)
 {
-    neat__uinteger_tostr();
+    fxs__uinteger_tostr();
 }
 
-NEAT_API Neat_Error neat__float_tostr(Neat_Mut_String_Ref dst, float obj)
+FXS_API FXS_Error fxs__float_tostr(FXS_MutStrRef dst, float obj)
 {
     char tmp[32] = { 0 };
     int len = snprintf(tmp, sizeof(tmp), "%g", obj);
-    return neat__mutstr_ref_copy(
+    return fxs__mutstr_ref_copy(
         dst,
-        (Neat_String_View){
+        (FXS_StrView){
             .chars = (unsigned char*) tmp,
             .len = len
         }
     );
 }
 
-NEAT_API Neat_Error neat__double_tostr(Neat_Mut_String_Ref dst, double obj)
+FXS_API FXS_Error fxs__double_tostr(FXS_MutStrRef dst, double obj)
 {
     char tmp[32] = { 0 };
     int len = snprintf(tmp, sizeof(tmp), "%g", obj);
-    return neat__mutstr_ref_copy(
+    return fxs__mutstr_ref_copy(
         dst,
-        (Neat_String_View){
+        (FXS_StrView){
             .chars = (unsigned char*) tmp,
             .len = len
         }
     );
 }
 
-NEAT_API Neat_Error neat__error_tostr(Neat_Mut_String_Ref dst, Neat_Error obj)
+FXS_API FXS_Error fxs__error_tostr(FXS_MutStrRef dst, FXS_Error obj)
 {
-    return neat__mutstr_ref_copy(dst, neat__error_to_string[obj.ec]);
+    return fxs__mutstr_ref_copy(dst, fxs__error_to_string[obj.ec]);
 }
 
-NEAT_API Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat_Array_Fmt obj)
+FXS_API FXS_Error fxs__array_fmt_tostr(FXS_MutStrRef dst, FXS_ArrayFmt obj)
 {
-    neat__mutstr_ref_clear(dst);
+    fxs__mutstr_ref_clear(dst);
     
-    Neat_String_Appender_State appender_state;
+    FXS_StrAppenderState appender_state;
     
-    Neat_Error err = neat__mutstr_ref_append(dst, obj.open);
+    FXS_Error err = fxs__mutstr_ref_append(dst, obj.open);
     
     const uint8_t *arr = obj.array;
     
@@ -3170,68 +3170,68 @@ NEAT_API Neat_Error neat__array_fmt_tostr(Neat_Mut_String_Ref dst, Neat_Array_Fm
         for(size_t i = 0 ; i < obj.nb - 1 ; i++)
         {
             
-            Neat_Mut_String_Ref appender = neat__make_appender_mutstr_ref(dst, &appender_state);
+            FXS_MutStrRef appender = fxs__make_appender_mutstr_ref(dst, &appender_state);
             
             err = obj.elm_tostr(appender, arr + (obj.elm_size * i));
             // TODO return if err?
             
-            err = neat__mutstr_ref_append(appender, obj.separator);
+            err = fxs__mutstr_ref_append(appender, obj.separator);
             
-            neat__mutstr_ref_commit_appender(dst, appender);
+            fxs__mutstr_ref_commit_appender(dst, appender);
         }
         
-        Neat_Mut_String_Ref appender = neat__make_appender_mutstr_ref(dst, &appender_state);
+        FXS_MutStrRef appender = fxs__make_appender_mutstr_ref(dst, &appender_state);
         err = obj.elm_tostr(appender, arr + obj.elm_size * (obj.nb - 1));
-        neat__mutstr_ref_commit_appender(dst, appender);
+        fxs__mutstr_ref_commit_appender(dst, appender);
         
-        err = neat__mutstr_ref_append(dst, obj.trailing_separator);
+        err = fxs__mutstr_ref_append(dst, obj.trailing_separator);
     }
     
-    err = neat__mutstr_ref_append(dst, obj.close);
+    err = fxs__mutstr_ref_append(dst, obj.close);
     
     return err;
 }
 
-NEAT_API Neat_Error neat__dstr_tostr(Neat_Mut_String_Ref dst, const Neat_DString obj)
+FXS_API FXS_Error fxs__dstr_tostr(FXS_MutStrRef dst, const FXS_DStr obj)
 {
-    return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = obj.chars, .len = obj.len});
+    return fxs__mutstr_ref_copy(dst, (FXS_StrView){.chars = obj.chars, .len = obj.len});
 }
 
-NEAT_API Neat_Error neat__dstr_ptr_tostr(Neat_Mut_String_Ref dst, const Neat_DString *obj)
+FXS_API FXS_Error fxs__dstr_ptr_tostr(FXS_MutStrRef dst, const FXS_DStr *obj)
 {
-    return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = obj->chars, .len = obj->len});
+    return fxs__mutstr_ref_copy(dst, (FXS_StrView){.chars = obj->chars, .len = obj->len});
 }
 
-NEAT_API Neat_Error neat__strv_tostr(Neat_Mut_String_Ref dst, const Neat_String_View obj)
+FXS_API FXS_Error fxs__strv_tostr(FXS_MutStrRef dst, const FXS_StrView obj)
 {
-    return neat__mutstr_ref_copy(dst, obj);
+    return fxs__mutstr_ref_copy(dst, obj);
 }
 
-NEAT_API Neat_Error neat__strbuf_tostr(Neat_Mut_String_Ref dst, const Neat_String_Buffer obj)
+FXS_API FXS_Error fxs__strbuf_tostr(FXS_MutStrRef dst, const FXS_StrBuf obj)
 {
-    return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = obj.chars, .len = obj.len});
+    return fxs__mutstr_ref_copy(dst, (FXS_StrView){.chars = obj.chars, .len = obj.len});
 }
 
-NEAT_API Neat_Error neat__strbuf_ptr_tostr(Neat_Mut_String_Ref dst, const Neat_String_Buffer *obj)
+FXS_API FXS_Error fxs__strbuf_ptr_tostr(FXS_MutStrRef dst, const FXS_StrBuf *obj)
 {
-    return neat__mutstr_ref_copy(dst, (Neat_String_View){.chars = obj->chars, .len = obj->len});
+    return fxs__mutstr_ref_copy(dst, (FXS_StrView){.chars = obj->chars, .len = obj->len});
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_tostr(Neat_Mut_String_Ref dst, const Neat_Mut_String_Ref obj)
+FXS_API FXS_Error fxs__mutstr_ref_tostr(FXS_MutStrRef dst, const FXS_MutStrRef obj)
 {
-    return neat__mutstr_ref_copy(dst, neat__strv_mutstr_ref2(obj, 0));
+    return fxs__mutstr_ref_copy(dst, fxs__strv_mutstr_ref2(obj, 0));
 }
 
-NEAT_PRIVATE Neat_Error neat__uchar_d_tostr(Neat_Mut_String_Ref dst, unsigned char obj)
+FXS_PRIVATE FXS_Error fxs__uchar_d_tostr(FXS_MutStrRef dst, unsigned char obj)
 {
-    neat__mutstr_ref_clear(dst);
-    return neat__mutstr_ref_append(dst, neat__uc_to_string[obj]);
+    fxs__mutstr_ref_clear(dst);
+    return fxs__mutstr_ref_append(dst, fxs__uc_to_string[obj]);
 }
 
-#define neat__if_else(cond, then, else) \
+#define fxs__if_else(cond, then, else) \
 _Generic((char(*)[(cond) + 1])0, char(*)[1]: else, char(*)[2]: then)
 
-#define neat__unsigned_of_size(sz)  \
+#define fxs__unsigned_of_size(sz)  \
 __typeof__(_Generic((char(*)[sz])0, \
     char(*)[1]: (uint8_t) 0,        \
     char(*)[2]: (uint16_t)0,        \
@@ -3239,29 +3239,29 @@ __typeof__(_Generic((char(*)[sz])0, \
     char(*)[8]: (uint64_t)0         \
 ))
 
-#define neat__as_unsigned(n) \
-((neat__unsigned_of_size(sizeof(n))) n)
+#define fxs__as_unsigned(n) \
+((fxs__unsigned_of_size(sizeof(n))) n)
 
-#define neat__integer_d_Fmt_tostr(dst, num) \
+#define fxs__integer_d_Fmt_tostr(dst, num) \
 return _Generic(num, \
-    char: neat__if_else(CHAR_MIN < 0, neat__schar_tostr, neat__uchar_d_tostr), \
-    signed char: neat__schar_tostr, \
-    unsigned char: neat__uchar_d_tostr, \
-    short: neat__short_tostr, \
-    unsigned short: neat__ushort_tostr, \
-    int: neat__int_tostr, \
-    unsigned int: neat__uint_tostr, \
-    long: neat__long_tostr, \
-    unsigned long: neat__ulong_tostr, \
-    long long: neat__llong_tostr, \
-    unsigned long long: neat__ullong_tostr \
+    char: fxs__if_else(CHAR_MIN < 0, fxs__schar_tostr, fxs__uchar_d_tostr), \
+    signed char: fxs__schar_tostr, \
+    unsigned char: fxs__uchar_d_tostr, \
+    short: fxs__short_tostr, \
+    unsigned short: fxs__ushort_tostr, \
+    int: fxs__int_tostr, \
+    unsigned int: fxs__uint_tostr, \
+    long: fxs__long_tostr, \
+    unsigned long: fxs__ulong_tostr, \
+    long long: fxs__llong_tostr, \
+    unsigned long long: fxs__ullong_tostr \
 )(dst, num)
 
-#define neat__integer_x_Fmt_tostr(dst, num) \
+#define fxs__integer_x_Fmt_tostr(dst, num) \
 do \
 { \
-    neat__mutstr_ref_clear(dst); \
-    Neat_Error err = {NEAT_OK}; \
+    fxs__mutstr_ref_clear(dst); \
+    FXS_Error err = {FXS_OK}; \
     size_t sz = sizeof(num); \
     uint8_t *num_bytes = ((uint8_t*) &num) + sizeof(num) - 1; \
     bool zero_pad = true; \
@@ -3269,22 +3269,22 @@ do \
     { \
         if(num_bytes == (uint8_t*)&num || !zero_pad || *num_bytes != 0) \
         { \
-            Neat_String_View hex_sv = {.chars = (unsigned char*) neat__byte_to_hex[*num_bytes], .len = 2}; \
+            FXS_StrView hex_sv = {.chars = (unsigned char*) fxs__byte_to_hex[*num_bytes], .len = 2}; \
             if(zero_pad && hex_sv.chars[0] == '0') \
             { \
                 hex_sv.chars += 1; \
                 hex_sv.len -= 1; \
             } \
             zero_pad = false; \
-            err = neat__mutstr_ref_append(dst, hex_sv); \
+            err = fxs__mutstr_ref_append(dst, hex_sv); \
         } \
         num_bytes -= 1; \
     } \
-    neat__mutstr_ref_set_len(dst, neat__mutstr_ref_len(dst)); \
+    fxs__mutstr_ref_set_len(dst, fxs__mutstr_ref_len(dst)); \
     return err; \
 } while(0)
 
-#define neat__bswap(num)                \
+#define fxs__bswap(num)                \
 _Generic((char(*)[sizeof(num)])0,       \
     char(*)[1]: num,                    \
     char(*)[2]: __builtin_bswap16(num), \
@@ -3292,74 +3292,74 @@ _Generic((char(*)[sizeof(num)])0,       \
     char(*)[8]: __builtin_bswap64(num)  \
 )
 
-#define neat__highest_bit(n) \
+#define fxs__highest_bit(n) \
 ((__typeof__(n))((n) & (((__typeof__(n)) 0b1) << (sizeof(n) * 8 - 1))))
 
-#define neat__highest_bit_as_u8(n) \
-(neat__highest_bit(n) >> ((sizeof(n) - 1) * 8))
+#define fxs__highest_bit_as_u8(n) \
+(fxs__highest_bit(n) >> ((sizeof(n) - 1) * 8))
 
-#define neat__highest_3bits(n) \
+#define fxs__highest_3bits(n) \
 ((__typeof__(n))((n) & (((__typeof__(n)) 0b111) << (sizeof(n) * 8 - 3))))
 
-#define neat__highest_3bits_as_u8(n) \
-(neat__highest_3bits(n) >> ((sizeof(n) - 1) * 8))
+#define fxs__highest_3bits_as_u8(n) \
+(fxs__highest_3bits(n) >> ((sizeof(n) - 1) * 8))
 
 // TODO optimize these. dont clear then append chars.
 // instead, write from beginning of chars up to cap, then put the nul
-#define neat__integer_o_Fmt_tostr(dst, num) \
+#define fxs__integer_o_Fmt_tostr(dst, num) \
 do \
 { \
-    neat__mutstr_ref_clear(dst); \
-    neat__unsigned_of_size(sizeof(num)) unum = num; \
-    Neat_Error err = {NEAT_OK}; \
+    fxs__mutstr_ref_clear(dst); \
+    fxs__unsigned_of_size(sizeof(num)) unum = num; \
+    FXS_Error err = {FXS_OK}; \
     const size_t bits = (sizeof(unum) * 8); \
     int iters = bits / 3; \
     uint8_t extra_bits = 3 - ((sizeof(unum) * 8) % 3); \
-    uint8_t high3 = neat__highest_3bits_as_u8(unum); \
+    uint8_t high3 = fxs__highest_3bits_as_u8(unum); \
     uint8_t first_3bits = high3 >> extra_bits; \
     first_3bits = first_3bits >> 5; \
     bool zero_pad = true; \
     if(first_3bits != 0) \
     { \
         zero_pad = false; \
-        Neat_String_View octal_sv = {.chars = &(unsigned char){'0' + first_3bits}, .len = 1}; \
-        err = neat__mutstr_ref_append(dst, octal_sv); \
+        FXS_StrView octal_sv = {.chars = &(unsigned char){'0' + first_3bits}, .len = 1}; \
+        err = fxs__mutstr_ref_append(dst, octal_sv); \
     } \
     unum = unum << (3 - extra_bits); \
     \
     for(int i = 0 ; i < iters ; i++) \
     { \
-        high3 = neat__highest_3bits_as_u8(unum); \
+        high3 = fxs__highest_3bits_as_u8(unum); \
         first_3bits = high3 >> (8 - 3); \
         if(i == (iters - 1) || !zero_pad || (first_3bits != 0)) \
         { \
             zero_pad =  false; \
-            Neat_String_View octal_sv = {.chars = &(unsigned char){'0' + first_3bits}, .len = 1}; \
-            err = neat__mutstr_ref_append(dst, octal_sv); \
+            FXS_StrView octal_sv = {.chars = &(unsigned char){'0' + first_3bits}, .len = 1}; \
+            err = fxs__mutstr_ref_append(dst, octal_sv); \
         } \
         unum = unum << 3; \
     } \
-    neat__mutstr_ref_set_len(dst, neat__mutstr_ref_len(dst)); \
+    fxs__mutstr_ref_set_len(dst, fxs__mutstr_ref_len(dst)); \
     return err; \
 } while(0)
 
-#define neat__integer_b_Fmt_tostr(dst, num) \
+#define fxs__integer_b_Fmt_tostr(dst, num) \
 do \
 { \
-    neat__mutstr_ref_clear(dst); \
-    Neat_Error err = {NEAT_OK}; \
-    neat__unsigned_of_size(sizeof(num)) unum = num; \
+    fxs__mutstr_ref_clear(dst); \
+    FXS_Error err = {FXS_OK}; \
+    fxs__unsigned_of_size(sizeof(num)) unum = num; \
     size_t sz; \
-    if(dst.ty == NEAT__DSTR_TY) \
+    if(dst.ty == FXS__DSTR_TY) \
     { \
         sz = sizeof(unum) * 8; \
-        neat__dstr_maybe_grow(dst.str.dstr, sizeof(unum) * 8 + 1); \
+        fxs__dstr_maybe_grow(dst.str.dstr, sizeof(unum) * 8 + 1); \
     } \
     else \
     { \
-        sz = neat__mutstr_ref_cap(dst) - 1; \
+        sz = fxs__mutstr_ref_cap(dst) - 1; \
     } \
-    char *bytes = neat__mutstr_ref_as_cstr(dst); \
+    char *bytes = fxs__mutstr_ref_as_cstr(dst); \
     size_t written = 0; \
     size_t counter = sizeof(unum) * 8; \
     bool zero_pad = true; \
@@ -3378,265 +3378,265 @@ do \
         unum = unum << 1; \
         counter -= 1; \
     } \
-    neat__mutstr_ref_set_len(dst, written); \
+    fxs__mutstr_ref_set_len(dst, written); \
     return err; \
 } while(0)
 
-#define NEAT__X(ty, extra) \
-NEAT_API Neat_Error neat__Integer_d_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty obj) \
+#define FXS__X(ty, extra) \
+FXS_API FXS_Error fxs__Integer_d_Fmt_##ty##_tostr(FXS_MutStrRef dst, FXS__Integer_d_Fmt_##ty obj) \
 { \
-    neat__integer_d_Fmt_tostr(dst, obj.obj); \
+    fxs__integer_d_Fmt_tostr(dst, obj.obj); \
 } \
-NEAT_API Neat_Error neat__Integer_x_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty obj) \
+FXS_API FXS_Error fxs__Integer_x_Fmt_##ty##_tostr(FXS_MutStrRef dst, FXS__Integer_x_Fmt_##ty obj) \
 { \
-    neat__mutstr_ref_clear(dst); \
-    neat__integer_x_Fmt_tostr(dst, obj.obj); \
+    fxs__mutstr_ref_clear(dst); \
+    fxs__integer_x_Fmt_tostr(dst, obj.obj); \
 } \
-NEAT_API Neat_Error neat__Integer_o_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty obj) \
+FXS_API FXS_Error fxs__Integer_o_Fmt_##ty##_tostr(FXS_MutStrRef dst, FXS__Integer_o_Fmt_##ty obj) \
 { \
-    neat__mutstr_ref_clear(dst); \
-    neat__integer_o_Fmt_tostr(dst, obj.obj); \
+    fxs__mutstr_ref_clear(dst); \
+    fxs__integer_o_Fmt_tostr(dst, obj.obj); \
 } \
-NEAT_API Neat_Error neat__Integer_b_Fmt_##ty##_tostr(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty obj) \
+FXS_API FXS_Error fxs__Integer_b_Fmt_##ty##_tostr(FXS_MutStrRef dst, FXS__Integer_b_Fmt_##ty obj) \
 { \
-    neat__mutstr_ref_clear(dst); \
-    neat__integer_b_Fmt_tostr(dst, obj.obj); \
+    fxs__mutstr_ref_clear(dst); \
+    fxs__integer_b_Fmt_tostr(dst, obj.obj); \
 } \
 \
 \
-NEAT_API Neat_Error neat__Integer_d_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_d_Fmt_##ty *obj) \
+FXS_API FXS_Error fxs__Integer_d_Fmt_##ty##_tostr_p(FXS_MutStrRef dst, FXS__Integer_d_Fmt_##ty *obj) \
 { \
-    return neat__Integer_d_Fmt_##ty##_tostr(dst, *obj); \
+    return fxs__Integer_d_Fmt_##ty##_tostr(dst, *obj); \
 } \
-NEAT_API Neat_Error neat__Integer_x_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_x_Fmt_##ty *obj) \
+FXS_API FXS_Error fxs__Integer_x_Fmt_##ty##_tostr_p(FXS_MutStrRef dst, FXS__Integer_x_Fmt_##ty *obj) \
 { \
-    return neat__Integer_x_Fmt_##ty##_tostr(dst, *obj); \
+    return fxs__Integer_x_Fmt_##ty##_tostr(dst, *obj); \
 } \
-NEAT_API Neat_Error neat__Integer_o_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_o_Fmt_##ty *obj) \
+FXS_API FXS_Error fxs__Integer_o_Fmt_##ty##_tostr_p(FXS_MutStrRef dst, FXS__Integer_o_Fmt_##ty *obj) \
 { \
-    return neat__Integer_o_Fmt_##ty##_tostr(dst, *obj); \
+    return fxs__Integer_o_Fmt_##ty##_tostr(dst, *obj); \
 } \
-NEAT_API Neat_Error neat__Integer_b_Fmt_##ty##_tostr_p(Neat_Mut_String_Ref dst, Neat__Integer_b_Fmt_##ty *obj) \
+FXS_API FXS_Error fxs__Integer_b_Fmt_##ty##_tostr_p(FXS_MutStrRef dst, FXS__Integer_b_Fmt_##ty *obj) \
 { \
-    return neat__Integer_b_Fmt_##ty##_tostr(dst, *obj); \
+    return fxs__Integer_b_Fmt_##ty##_tostr(dst, *obj); \
 }
 
-NEAT__INTEGER_TYPES(NEAT__X, ignore)
+FXS__INTEGER_TYPES(FXS__X, ignore)
 
-#undef NEAT__X
+#undef FXS__X
 
-#define NEAT__X(type, extra) \
-NEAT_API Neat_Error neat__Floating_f_Fmt_##type##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##type obj) \
+#define FXS__X(type, extra) \
+FXS_API FXS_Error fxs__Floating_f_Fmt_##type##_tostr(FXS_MutStrRef dst, FXS__Floating_f_Fmt_##type obj) \
 { \
-    neat__mutstr_ref_clear(dst); \
+    fxs__mutstr_ref_clear(dst); \
     int len = snprintf(0, 0, "%.*f", obj.precision, obj.obj); \
-    if(dst.ty == NEAT__DSTR_TY) \
+    if(dst.ty == FXS__DSTR_TY) \
     { \
-        neat__dstr_ensure_cap(dst.str.dstr, len + 1); \
+        fxs__dstr_ensure_cap(dst.str.dstr, len + 1); \
     } \
-    int err = snprintf(neat__mutstr_ref_as_cstr(dst), neat__mutstr_ref_cap(dst), "%.*f", obj.precision, obj.obj); \
-    if(neat__mutstr_ref_cap(dst) - 1 < (unsigned int) len) \
+    int err = snprintf(fxs__mutstr_ref_as_cstr(dst), fxs__mutstr_ref_cap(dst), "%.*f", obj.precision, obj.obj); \
+    if(fxs__mutstr_ref_cap(dst) - 1 < (unsigned int) len) \
     { \
-        neat__mutstr_ref_set_len(dst, neat__mutstr_ref_cap(dst) - 1); \
-        return (Neat_Error){NEAT_DST_TOO_SMALL}; \
+        fxs__mutstr_ref_set_len(dst, fxs__mutstr_ref_cap(dst) - 1); \
+        return (FXS_Error){FXS_DST_TOO_SMALL}; \
     } \
     else \
     { \
-        neat__mutstr_ref_set_len(dst, len); \
+        fxs__mutstr_ref_set_len(dst, len); \
     } \
     if(err < 0) \
-        return (Neat_Error){NEAT_ENCODING_ERROR}; \
-    return (Neat_Error){NEAT_OK}; \
+        return (FXS_Error){FXS_ENCODING_ERROR}; \
+    return (FXS_Error){FXS_OK}; \
 } \
-NEAT_API Neat_Error neat__Floating_g_Fmt_##type##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##type obj) \
+FXS_API FXS_Error fxs__Floating_g_Fmt_##type##_tostr(FXS_MutStrRef dst, FXS__Floating_g_Fmt_##type obj) \
 { \
-    neat__mutstr_ref_clear(dst); \
+    fxs__mutstr_ref_clear(dst); \
     int len = snprintf(0, 0, "%.*g", obj.precision, obj.obj); \
-    if(dst.ty == NEAT__DSTR_TY) \
+    if(dst.ty == FXS__DSTR_TY) \
     { \
-        neat__dstr_ensure_cap(dst.str.dstr, len + 1); \
+        fxs__dstr_ensure_cap(dst.str.dstr, len + 1); \
     } \
-    int err = snprintf(neat__mutstr_ref_as_cstr(dst), neat__mutstr_ref_cap(dst), "%.*g", obj.precision, obj.obj); \
-    if(neat__mutstr_ref_cap(dst) - 1 < (unsigned int) len) \
+    int err = snprintf(fxs__mutstr_ref_as_cstr(dst), fxs__mutstr_ref_cap(dst), "%.*g", obj.precision, obj.obj); \
+    if(fxs__mutstr_ref_cap(dst) - 1 < (unsigned int) len) \
     { \
-        neat__mutstr_ref_set_len(dst, neat__mutstr_ref_cap(dst) - 1); \
-        return (Neat_Error){NEAT_DST_TOO_SMALL}; \
+        fxs__mutstr_ref_set_len(dst, fxs__mutstr_ref_cap(dst) - 1); \
+        return (FXS_Error){FXS_DST_TOO_SMALL}; \
     } \
     else \
     { \
-        neat__mutstr_ref_set_len(dst, len); \
+        fxs__mutstr_ref_set_len(dst, len); \
     } \
     if(err < 0) \
-        return (Neat_Error){NEAT_ENCODING_ERROR}; \
-    return (Neat_Error){NEAT_OK}; \
+        return (FXS_Error){FXS_ENCODING_ERROR}; \
+    return (FXS_Error){FXS_OK}; \
 } \
-NEAT_API Neat_Error neat__Floating_e_Fmt_##type##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##type obj) \
+FXS_API FXS_Error fxs__Floating_e_Fmt_##type##_tostr(FXS_MutStrRef dst, FXS__Floating_e_Fmt_##type obj) \
 { \
-    neat__mutstr_ref_clear(dst); \
+    fxs__mutstr_ref_clear(dst); \
     int len = snprintf(0, 0, "%.*e", obj.precision, obj.obj); \
-    if(dst.ty == NEAT__DSTR_TY) \
+    if(dst.ty == FXS__DSTR_TY) \
     { \
-        neat__dstr_ensure_cap(dst.str.dstr, len + 1); \
+        fxs__dstr_ensure_cap(dst.str.dstr, len + 1); \
     } \
-    int err = snprintf(neat__mutstr_ref_as_cstr(dst), neat__mutstr_ref_cap(dst), "%.*e", obj.precision, obj.obj); \
-    if(neat__mutstr_ref_cap(dst) - 1 < (unsigned int) len) \
+    int err = snprintf(fxs__mutstr_ref_as_cstr(dst), fxs__mutstr_ref_cap(dst), "%.*e", obj.precision, obj.obj); \
+    if(fxs__mutstr_ref_cap(dst) - 1 < (unsigned int) len) \
     { \
-        neat__mutstr_ref_set_len(dst, neat__mutstr_ref_cap(dst) - 1); \
-        return (Neat_Error){NEAT_DST_TOO_SMALL}; \
+        fxs__mutstr_ref_set_len(dst, fxs__mutstr_ref_cap(dst) - 1); \
+        return (FXS_Error){FXS_DST_TOO_SMALL}; \
     } \
     else \
     { \
-        neat__mutstr_ref_set_len(dst, len); \
+        fxs__mutstr_ref_set_len(dst, len); \
     } \
     if(err < 0) \
-        return (Neat_Error){NEAT_ENCODING_ERROR}; \
-    return (Neat_Error){NEAT_OK}; \
+        return (FXS_Error){FXS_ENCODING_ERROR}; \
+    return (FXS_Error){FXS_OK}; \
 } \
-NEAT_API Neat_Error neat__Floating_a_Fmt_##type##_tostr(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##type obj) \
+FXS_API FXS_Error fxs__Floating_a_Fmt_##type##_tostr(FXS_MutStrRef dst, FXS__Floating_a_Fmt_##type obj) \
 { \
-    neat__mutstr_ref_clear(dst); \
+    fxs__mutstr_ref_clear(dst); \
     int len = snprintf(0, 0, "%.*a", obj.precision, obj.obj); \
-    if(dst.ty == NEAT__DSTR_TY) \
+    if(dst.ty == FXS__DSTR_TY) \
     { \
-        neat__dstr_ensure_cap(dst.str.dstr, len + 1); \
+        fxs__dstr_ensure_cap(dst.str.dstr, len + 1); \
     } \
-    int err = snprintf(neat__mutstr_ref_as_cstr(dst), neat__mutstr_ref_cap(dst), "%.*a", obj.precision, obj.obj); \
-    if(neat__mutstr_ref_cap(dst) - 1 < (unsigned int) len) \
+    int err = snprintf(fxs__mutstr_ref_as_cstr(dst), fxs__mutstr_ref_cap(dst), "%.*a", obj.precision, obj.obj); \
+    if(fxs__mutstr_ref_cap(dst) - 1 < (unsigned int) len) \
     { \
-        neat__mutstr_ref_set_len(dst, neat__mutstr_ref_cap(dst) - 1); \
-        return (Neat_Error){NEAT_DST_TOO_SMALL}; \
+        fxs__mutstr_ref_set_len(dst, fxs__mutstr_ref_cap(dst) - 1); \
+        return (FXS_Error){FXS_DST_TOO_SMALL}; \
     } \
     else \
     { \
-        neat__mutstr_ref_set_len(dst, len); \
+        fxs__mutstr_ref_set_len(dst, len); \
     } \
     \
     if(err < 0) \
-        return (Neat_Error){NEAT_ENCODING_ERROR}; \
-    return (Neat_Error){NEAT_OK}; \
+        return (FXS_Error){FXS_ENCODING_ERROR}; \
+    return (FXS_Error){FXS_OK}; \
 } \
 \
 \
-NEAT_API Neat_Error neat__Floating_f_Fmt_##type##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_f_Fmt_##type *obj) \
+FXS_API FXS_Error fxs__Floating_f_Fmt_##type##_tostr_p(FXS_MutStrRef dst, FXS__Floating_f_Fmt_##type *obj) \
 { \
-    return neat__Floating_f_Fmt_##type##_tostr(dst, *obj); \
+    return fxs__Floating_f_Fmt_##type##_tostr(dst, *obj); \
 } \
-NEAT_API Neat_Error neat__Floating_g_Fmt_##type##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_g_Fmt_##type *obj) \
+FXS_API FXS_Error fxs__Floating_g_Fmt_##type##_tostr_p(FXS_MutStrRef dst, FXS__Floating_g_Fmt_##type *obj) \
 { \
-    return neat__Floating_g_Fmt_##type##_tostr(dst, *obj); \
+    return fxs__Floating_g_Fmt_##type##_tostr(dst, *obj); \
 } \
-NEAT_API Neat_Error neat__Floating_e_Fmt_##type##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_e_Fmt_##type *obj) \
+FXS_API FXS_Error fxs__Floating_e_Fmt_##type##_tostr_p(FXS_MutStrRef dst, FXS__Floating_e_Fmt_##type *obj) \
 { \
-    return neat__Floating_e_Fmt_##type##_tostr(dst, *obj); \
+    return fxs__Floating_e_Fmt_##type##_tostr(dst, *obj); \
 } \
-NEAT_API Neat_Error neat__Floating_a_Fmt_##type##_tostr_p(Neat_Mut_String_Ref dst, Neat__Floating_a_Fmt_##type *obj) \
+FXS_API FXS_Error fxs__Floating_a_Fmt_##type##_tostr_p(FXS_MutStrRef dst, FXS__Floating_a_Fmt_##type *obj) \
 { \
-    return neat__Floating_a_Fmt_##type##_tostr(dst, *obj); \
+    return fxs__Floating_a_Fmt_##type##_tostr(dst, *obj); \
 }
 
-NEAT__FLOATING_TYPES(NEAT__X, ignore, NEAT__X)
+FXS__FLOATING_TYPES(FXS__X, ignore, FXS__X)
 
-#undef NEAT__X
+#undef FXS__X
 
 
-NEAT_API Neat_Error neat__bool_tostr_p(Neat_Mut_String_Ref dst, bool *obj)
+FXS_API FXS_Error fxs__bool_tostr_p(FXS_MutStrRef dst, bool *obj)
 {
-    return neat__bool_tostr(dst, *obj);
+    return fxs__bool_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__cstr_tostr_p(Neat_Mut_String_Ref dst, const char **obj)
+FXS_API FXS_Error fxs__cstr_tostr_p(FXS_MutStrRef dst, const char **obj)
 {
-    return neat__cstr_tostr(dst, *obj);
+    return fxs__cstr_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__ucstr_tostr_p(Neat_Mut_String_Ref dst, const unsigned char **obj)
+FXS_API FXS_Error fxs__ucstr_tostr_p(FXS_MutStrRef dst, const unsigned char **obj)
 {
-    return neat__ucstr_tostr(dst, *obj);
+    return fxs__ucstr_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__char_tostr_p(Neat_Mut_String_Ref dst, char *obj)
+FXS_API FXS_Error fxs__char_tostr_p(FXS_MutStrRef dst, char *obj)
 {
-    return neat__char_tostr(dst, *obj);
+    return fxs__char_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__schar_tostr_p(Neat_Mut_String_Ref dst, signed char *obj)
+FXS_API FXS_Error fxs__schar_tostr_p(FXS_MutStrRef dst, signed char *obj)
 {
-    return neat__schar_tostr(dst, *obj);
+    return fxs__schar_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__uchar_tostr_p(Neat_Mut_String_Ref dst, unsigned char *obj)
+FXS_API FXS_Error fxs__uchar_tostr_p(FXS_MutStrRef dst, unsigned char *obj)
 {
-    return neat__uchar_tostr(dst, *obj);
+    return fxs__uchar_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__short_tostr_p(Neat_Mut_String_Ref dst, short *obj)
+FXS_API FXS_Error fxs__short_tostr_p(FXS_MutStrRef dst, short *obj)
 {
-    return neat__short_tostr(dst, *obj);
+    return fxs__short_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__ushort_tostr_p(Neat_Mut_String_Ref dst, unsigned short *obj)
+FXS_API FXS_Error fxs__ushort_tostr_p(FXS_MutStrRef dst, unsigned short *obj)
 {
-    return neat__ushort_tostr(dst, *obj);
+    return fxs__ushort_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__int_tostr_p(Neat_Mut_String_Ref dst, int *obj)
+FXS_API FXS_Error fxs__int_tostr_p(FXS_MutStrRef dst, int *obj)
 {
-    return neat__int_tostr(dst, *obj);
+    return fxs__int_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__uint_tostr_p(Neat_Mut_String_Ref dst, unsigned int *obj)
+FXS_API FXS_Error fxs__uint_tostr_p(FXS_MutStrRef dst, unsigned int *obj)
 {
-    return neat__uint_tostr(dst, *obj);
+    return fxs__uint_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__long_tostr_p(Neat_Mut_String_Ref dst, long *obj)
+FXS_API FXS_Error fxs__long_tostr_p(FXS_MutStrRef dst, long *obj)
 {
-    return neat__long_tostr(dst, *obj);
+    return fxs__long_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__ulong_tostr_p(Neat_Mut_String_Ref dst, unsigned long *obj)
+FXS_API FXS_Error fxs__ulong_tostr_p(FXS_MutStrRef dst, unsigned long *obj)
 {
-    return neat__ulong_tostr(dst, *obj);
+    return fxs__ulong_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__llong_tostr_p(Neat_Mut_String_Ref dst, long long *obj)
+FXS_API FXS_Error fxs__llong_tostr_p(FXS_MutStrRef dst, long long *obj)
 {
-    return neat__llong_tostr(dst, *obj);
+    return fxs__llong_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__ullong_tostr_p(Neat_Mut_String_Ref dst, unsigned long long *obj)
+FXS_API FXS_Error fxs__ullong_tostr_p(FXS_MutStrRef dst, unsigned long long *obj)
 {
-    return neat__ullong_tostr(dst, *obj);
+    return fxs__ullong_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__float_tostr_p(Neat_Mut_String_Ref dst, float *obj)
+FXS_API FXS_Error fxs__float_tostr_p(FXS_MutStrRef dst, float *obj)
 {
-    return neat__float_tostr(dst, *obj);
+    return fxs__float_tostr(dst, *obj);
 }
-NEAT_API Neat_Error neat__double_tostr_p(Neat_Mut_String_Ref dst, double *obj)
+FXS_API FXS_Error fxs__double_tostr_p(FXS_MutStrRef dst, double *obj)
 {
-    return neat__double_tostr(dst, *obj);
-}
-
-NEAT_API Neat_Error neat__dstr_tostr_p(Neat_Mut_String_Ref dst, const Neat_DString *obj)
-{
-    return neat__dstr_tostr(dst, *obj);
-}
-NEAT_API Neat_Error neat__dstr_ptr_tostr_p(Neat_Mut_String_Ref dst, const Neat_DString **obj)
-{
-    return neat__dstr_ptr_tostr(dst, *obj);
-}
-NEAT_API Neat_Error neat__strv_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_View *obj)
-{
-    return neat__strv_tostr(dst, *obj);
-}
-NEAT_API Neat_Error neat__strbuf_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_Buffer *obj)
-{
-    return neat__strbuf_tostr(dst, *obj);
-}
-NEAT_API Neat_Error neat__strbuf_ptr_tostr_p(Neat_Mut_String_Ref dst, const Neat_String_Buffer **obj)
-{
-    return neat__strbuf_ptr_tostr(dst, *obj);
-}
-NEAT_API Neat_Error neat__mutstr_ref_tostr_p(Neat_Mut_String_Ref dst, const Neat_Mut_String_Ref *obj)
-{
-    return neat__mutstr_ref_tostr(dst, *obj);
+    return fxs__double_tostr(dst, *obj);
 }
 
-NEAT_API Neat_Error neat__error_tostr_p(Neat_Mut_String_Ref dst, Neat_Error *obj)
+FXS_API FXS_Error fxs__dstr_tostr_p(FXS_MutStrRef dst, const FXS_DStr *obj)
 {
-    return neat__error_tostr(dst, *obj);
+    return fxs__dstr_tostr(dst, *obj);
+}
+FXS_API FXS_Error fxs__dstr_ptr_tostr_p(FXS_MutStrRef dst, const FXS_DStr **obj)
+{
+    return fxs__dstr_ptr_tostr(dst, *obj);
+}
+FXS_API FXS_Error fxs__strv_tostr_p(FXS_MutStrRef dst, const FXS_StrView *obj)
+{
+    return fxs__strv_tostr(dst, *obj);
+}
+FXS_API FXS_Error fxs__strbuf_tostr_p(FXS_MutStrRef dst, const FXS_StrBuf *obj)
+{
+    return fxs__strbuf_tostr(dst, *obj);
+}
+FXS_API FXS_Error fxs__strbuf_ptr_tostr_p(FXS_MutStrRef dst, const FXS_StrBuf **obj)
+{
+    return fxs__strbuf_ptr_tostr(dst, *obj);
+}
+FXS_API FXS_Error fxs__mutstr_ref_tostr_p(FXS_MutStrRef dst, const FXS_MutStrRef *obj)
+{
+    return fxs__mutstr_ref_tostr(dst, *obj);
 }
 
-NEAT_API Neat_Error neat__array_fmt_tostr_p(Neat_Mut_String_Ref dst, Neat_Array_Fmt *obj)
+FXS_API FXS_Error fxs__error_tostr_p(FXS_MutStrRef dst, FXS_Error *obj)
 {
-    return neat__array_fmt_tostr(dst, *obj);
+    return fxs__error_tostr(dst, *obj);
 }
 
-#endif // NEAT__STR_C_INCLUDED
+FXS_API FXS_Error fxs__array_fmt_tostr_p(FXS_MutStrRef dst, FXS_ArrayFmt *obj)
+{
+    return fxs__array_fmt_tostr(dst, *obj);
+}
+
+#endif // FXS__STR_C_INCLUDED

@@ -1,10 +1,10 @@
-# neat_str
-A library to make dealing with strings more intuitive in C.
+# FXS (FleXible String library)
+A Generic String library for C to make string handling more intuitive in C.
 
 ## Quick Examples
 ```C
-#define NEAT_STR_IMPL
-#include "neat_str.h"
+#define GSX_SHORT_NAMES
+#include "GSX.h"
 
 int main()
 {
@@ -20,7 +20,7 @@ int main()
 ```C
 int main()
 {
-    DString str = dstr();
+    DString str = dstr_init();
     
     dstr_append(&str, "world");
     dstr_prepend(&str, "hello, ");
@@ -46,7 +46,6 @@ The library exposes multiple string types for different use cases:
 - [DString](#DString)
 - [String_Buffer](#String_Buffer)
 - [String_View](#String_View)
-- [SString](#SString)
 - [Mut_String_Ref](#Mut_String_Ref)
 
 This is a list of the functions (macros) that work with all string types:
