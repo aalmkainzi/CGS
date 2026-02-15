@@ -2091,7 +2091,7 @@ NEAT_API Neat_Replace_Result neat__mutstr_ref_replace(Neat_Mut_String_Ref str, c
 
 NEAT_API Neat_Error neat__dstr_replace_first(Neat_DString *dstr, const Neat_String_View target, const Neat_String_View replacement)
 {
-    Neat_Error err = (Neat_Error){NEAT_NOT_FOUND};
+    Neat_Error err = {NEAT_NOT_FOUND};
     
     Neat_String_View match = neat__strv_find(neat__strv_dstr_ptr2(dstr, 0), target);
     if(match.chars != NULL)
@@ -2106,7 +2106,7 @@ NEAT_API Neat_Error neat__dstr_replace_first(Neat_DString *dstr, const Neat_Stri
 
 NEAT_API Neat_Error neat__fmutstr_ref_replace_first(Neat__Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement)
 {
-    Neat_Error err = (Neat_Error){NEAT_NOT_FOUND};
+    Neat_Error err = {NEAT_NOT_FOUND};
     
     Neat_String_View match = neat__strv_find(neat__strv_fmutstr_ref2(str, 0), target);
     if(match.chars != NULL)
@@ -2124,11 +2124,11 @@ NEAT_API Neat_Error neat__fmutstr_ref_replace_first(Neat__Fixed_Mut_String_Ref s
             
             *str.len += (replacement.len - target.len);
             
-            err = (Neat_Error){NEAT_OK};
+            err.ec = NEAT_OK;
         }
         else
         {
-            err = (Neat_Error){NEAT_DST_TOO_SMALL};
+            err.ec = NEAT_DST_TOO_SMALL;
         }
     }
     
