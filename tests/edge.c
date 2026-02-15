@@ -1320,37 +1320,37 @@ void test_string_buffer_edge_cases() {
 }
 
 // ============================================================================
-// Edge Case Tests for str_view
+// Edge Case Tests for strv
 // ============================================================================
 
-void test_str_view_edge_cases() {
-    TEST("str_view: empty range");
+void test_strv_edge_cases() {
+    TEST("strv: empty range");
     {
         char str[] = "test";
-        StrView sv = str_view(str, 2, 2);
+        StrView sv = strv(str, 2, 2);
         ASSERT_EQ(fxs_len(sv), 0);
     }
     
-    TEST("str_view: entire string");
+    TEST("strv: entire string");
     {
         char str[] = "test";
-        StrView sv = str_view(str, 0, 4);
+        StrView sv = strv(str, 0, 4);
         ASSERT_EQ(fxs_len(sv), 4);
         ASSERT_TRUE(fxs_equal(sv, "test"));
     }
     
-    TEST("str_view: invalid range (from > to)");
+    TEST("strv: invalid range (from > to)");
     {
         char str[] = "test";
-        StrView sv = str_view(str, 3, 1);
+        StrView sv = strv(str, 3, 1);
         // Likely returns empty or errors
         ASSERT_TRUE(1);
     }
     
-    TEST("str_view: single character");
+    TEST("strv: single character");
     {
         char str[] = "test";
-        StrView sv = str_view(str, 1, 2);
+        StrView sv = strv(str, 1, 2);
         ASSERT_EQ(fxs_len(sv), 1);
         ASSERT_EQ(fxs_at(sv, 0), 'e');
     }
@@ -1554,7 +1554,7 @@ void test_str_join_edge_cases() {
     TEST("fxs_join: single element");
     {
         char s1[] = "only";
-        StrView views[] = {str_view(s1, 0, 4)};
+        StrView views[] = {strv(s1, 0, 4)};
         StrViewArray arr = {1, 1, views};
         DStr dst = dstr_init(10);
         fxs_join(&dst, arr, ",");
@@ -1566,9 +1566,9 @@ void test_str_join_edge_cases() {
     {
         char s1[] = "a", s2[] = "b", s3[] = "c";
         StrView views[] = {
-            str_view(s1, 0, 1),
-            str_view(s2, 0, 1),
-            str_view(s3, 0, 1)
+            strv(s1, 0, 1),
+            strv(s2, 0, 1),
+            strv(s3, 0, 1)
         };
         StrViewArray arr = {3, 3, views};
         DStr dst = dstr_init(10);
@@ -1581,8 +1581,8 @@ void test_str_join_edge_cases() {
     {
         char s1[] = "a", s2[] = "b";
         StrView views[] = {
-            str_view(s1, 0, 1),
-            str_view(s2, 0, 1)
+            strv(s1, 0, 1),
+            strv(s2, 0, 1)
         };
         StrViewArray arr = {2, 2, views};
         DStr dst = dstr_init(20);
@@ -1595,9 +1595,9 @@ void test_str_join_edge_cases() {
     {
         char s1[] = "", s2[] = "mid", s3[] = "";
         StrView views[] = {
-            str_view(s1, 0, 0),
-            str_view(s2, 0, 3),
-            str_view(s3, 0, 0)
+            strv(s1, 0, 0),
+            strv(s2, 0, 3),
+            strv(s3, 0, 0)
         };
         StrViewArray arr = {3, 3, views};
         DStr dst = dstr_init(20);
@@ -1610,8 +1610,8 @@ void test_str_join_edge_cases() {
     {
         char s1[] = "long", s2[] = "strings";
         StrView views[] = {
-            str_view(s1, 0, 4),
-            str_view(s2, 0, 7)
+            strv(s1, 0, 4),
+            strv(s2, 0, 7)
         };
         StrViewArray arr = {2, 2, views};
         char backing[5];
@@ -1789,7 +1789,7 @@ int main() {
     test_str_insert_prepend_edge_cases();
     test_dstring_edge_cases();
     test_string_buffer_edge_cases();
-    test_str_view_edge_cases();
+    test_strv_edge_cases();
     test_file_io_edge_cases();
     test_appender_edge_cases();
     test_str_join_edge_cases();

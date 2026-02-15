@@ -92,7 +92,7 @@ bool test_str_at_dstring() {
 }
 
 bool test_str_at_string_view() {
-    StrView sv = str_view("example", 0, 7);
+    StrView sv = strv("example", 0, 7);
     ASSERT_EQ(fxs_at(sv, 0), 'e');
     ASSERT_EQ(fxs_at(sv, 6), 'e');
     return true;
@@ -129,7 +129,7 @@ bool test_str_len_dstring() {
 }
 
 bool test_str_len_string_view() {
-    StrView sv = str_view("hello world", 6, 11);
+    StrView sv = strv("hello world", 6, 11);
     ASSERT_EQ(fxs_len(sv), 5);
     return true;
 }
@@ -178,7 +178,7 @@ bool test_str_equal_different() {
 bool test_str_equal_mixed_types() {
     char arr[] = "test";
     DStr ds = dstr_init_from("test");
-    StrView sv = str_view("test", 0, 4);
+    StrView sv = strv("test", 0, 4);
     
     ASSERT(fxs_equal(arr, "test"));
     ASSERT(fxs_equal(ds, "test"));
@@ -853,11 +853,11 @@ bool test_str_split_multi_char_delim() {
 
 bool test_str_join_basic() {
     StrView parts[] = {
-        str_view("one", 0, 3),
-        str_view("two", 0, 3),
-        str_view("three", 0, 5)
+        strv("one", 0, 3),
+        strv("two", 0, 3),
+        strv("three", 0, 5)
     };
-    StrViewArray arr = fxs_str_view_arr_from_carr(parts);
+    StrViewArray arr = fxs_strv_arr_from_carr(parts);
     
     DStr dst = dstr_init();
     ASSERT_OK(fxs_join(&dst, arr, ", "));
@@ -876,8 +876,8 @@ bool test_str_join_empty_array() {
 }
 
 bool test_str_join_single_element() {
-    StrView parts[] = {str_view("only", 0, 4)};
-    StrViewArray arr = fxs_str_view_arr_from_carr(parts);
+    StrView parts[] = {strv("only", 0, 4)};
+    StrViewArray arr = fxs_strv_arr_from_carr(parts);
     
     DStr dst = dstr_init();
     ASSERT_OK(fxs_join(&dst, arr, ","));
@@ -991,32 +991,32 @@ bool test_strbuf_operations() {
 }
 
 // ============================================================================
-// str_view tests
+// strv tests
 // ============================================================================
 
-bool test_str_view_basic() {
-    StrView sv = str_view("hello world", 0, 5);
+bool test_strv_basic() {
+    StrView sv = strv("hello world", 0, 5);
     ASSERT_EQ(fxs_len(sv), 5);
     ASSERT(fxs_equal(sv, "hello"));
     return true;
 }
 
-bool test_str_view_middle() {
-    StrView sv = str_view("hello world", 6, 11);
+bool test_strv_middle() {
+    StrView sv = strv("hello world", 6, 11);
     ASSERT_EQ(fxs_len(sv), 5);
     ASSERT(fxs_equal(sv, "world"));
     return true;
 }
 
-bool test_str_view_empty() {
-    StrView sv = str_view("hello", 2, 2);
+bool test_strv_empty() {
+    StrView sv = strv("hello", 2, 2);
     ASSERT_EQ(fxs_len(sv), 0);
     return true;
 }
 
-bool test_str_view_entire() {
+bool test_strv_entire() {
     const char *s = "test";
-    StrView sv = str_view(s, 0, fxs_len(s));
+    StrView sv = strv(s, 0, fxs_len(s));
     ASSERT(fxs_equal(sv, "test"));
     return true;
 }
@@ -1330,11 +1330,11 @@ int main() {
     TEST(test_strbuf_init_from_buf);
     TEST(test_strbuf_operations);
     
-    // str_view
-    TEST(test_str_view_basic);
-    TEST(test_str_view_middle);
-    TEST(test_str_view_empty);
-    TEST(test_str_view_entire);
+    // strv
+    TEST(test_strv_basic);
+    TEST(test_strv_middle);
+    TEST(test_strv_empty);
+    TEST(test_strv_entire);
     
     // fxs_appender
     TEST(test_str_appender_basic);

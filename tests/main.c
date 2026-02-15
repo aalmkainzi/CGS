@@ -91,38 +91,38 @@ bool expect_sv(StrView sv, void *ctx)
 
 void test_split()
 {
-    fxs_split_iter("a,b,c", ",", expect_sv, &(StrvWalker){fxs_str_view_arr("a","b","c")}); /* ["a","b","c"] */ println(" --- ");
-    fxs_split_iter("abc", ",", expect_sv, &(StrvWalker){fxs_str_view_arr("abc")}); /* ["abc"] */ println(" --- ");
-    fxs_split_iter(",", ",", expect_sv, &(StrvWalker){fxs_str_view_arr("","")}); /* ["",""] */ println(" --- ");
-    fxs_split_iter("", ",", expect_sv, &(StrvWalker){fxs_str_view_arr("")}); /* [""] */ println(" --- ");
+    fxs_split_iter("a,b,c", ",", expect_sv, &(StrvWalker){fxs_strv_arr("a","b","c")}); /* ["a","b","c"] */ println(" --- ");
+    fxs_split_iter("abc", ",", expect_sv, &(StrvWalker){fxs_strv_arr("abc")}); /* ["abc"] */ println(" --- ");
+    fxs_split_iter(",", ",", expect_sv, &(StrvWalker){fxs_strv_arr("","")}); /* ["",""] */ println(" --- ");
+    fxs_split_iter("", ",", expect_sv, &(StrvWalker){fxs_strv_arr("")}); /* [""] */ println(" --- ");
     
-    fxs_split_iter(",a,b", ",", expect_sv, &(StrvWalker){fxs_str_view_arr("","a","b")}); /* ["","a","b"] */ println(" --- ");
-    fxs_split_iter("a,b,", ",", expect_sv, &(StrvWalker){fxs_str_view_arr("a","b","")}); /* ["a","b",""] */ println(" --- ");
-    fxs_split_iter(",a,b,", ",", expect_sv, &(StrvWalker){fxs_str_view_arr("","a","b","")}); /* ["","a","b",""] */ println(" --- ");
+    fxs_split_iter(",a,b", ",", expect_sv, &(StrvWalker){fxs_strv_arr("","a","b")}); /* ["","a","b"] */ println(" --- ");
+    fxs_split_iter("a,b,", ",", expect_sv, &(StrvWalker){fxs_strv_arr("a","b","")}); /* ["a","b",""] */ println(" --- ");
+    fxs_split_iter(",a,b,", ",", expect_sv, &(StrvWalker){fxs_strv_arr("","a","b","")}); /* ["","a","b",""] */ println(" --- ");
     
-    fxs_split_iter("a,,b", ",", expect_sv, &(StrvWalker){fxs_str_view_arr("a","","b")}); /* ["a","","b"] */ println(" --- ");
-    fxs_split_iter(",,", ",", expect_sv, &(StrvWalker){fxs_str_view_arr("","","")}); /* ["","",""] */ println(" --- ");
-    fxs_split_iter("a,,,b", ",", expect_sv, &(StrvWalker){fxs_str_view_arr("a","","","b")}); /* ["a","","","b"] */ println(" --- ");
+    fxs_split_iter("a,,b", ",", expect_sv, &(StrvWalker){fxs_strv_arr("a","","b")}); /* ["a","","b"] */ println(" --- ");
+    fxs_split_iter(",,", ",", expect_sv, &(StrvWalker){fxs_strv_arr("","","")}); /* ["","",""] */ println(" --- ");
+    fxs_split_iter("a,,,b", ",", expect_sv, &(StrvWalker){fxs_strv_arr("a","","","b")}); /* ["a","","","b"] */ println(" --- ");
     
-    fxs_split_iter("aaabaaa", "aa", expect_sv, &(StrvWalker){fxs_str_view_arr("","ab","a")}); /* ["","ab","a"] */ println(" --- ");
-    fxs_split_iter("aaaa", "aa", expect_sv, &(StrvWalker){fxs_str_view_arr("","","")}); /* ["","",""] */ println(" --- ");
-    fxs_split_iter("aaa", "aa", expect_sv, &(StrvWalker){fxs_str_view_arr("","a")}); /* ["","a"] */ println(" --- ");
+    fxs_split_iter("aaabaaa", "aa", expect_sv, &(StrvWalker){fxs_strv_arr("","ab","a")}); /* ["","ab","a"] */ println(" --- ");
+    fxs_split_iter("aaaa", "aa", expect_sv, &(StrvWalker){fxs_strv_arr("","","")}); /* ["","",""] */ println(" --- ");
+    fxs_split_iter("aaa", "aa", expect_sv, &(StrvWalker){fxs_strv_arr("","a")}); /* ["","a"] */ println(" --- ");
     
-    fxs_split_iter("aabaaab", "aa", expect_sv, &(StrvWalker){fxs_str_view_arr("","b","ab")}); /* ["","b","ab"] */ println(" --- ");
+    fxs_split_iter("aabaaab", "aa", expect_sv, &(StrvWalker){fxs_strv_arr("","b","ab")}); /* ["","b","ab"] */ println(" --- ");
     
-    fxs_split_iter("aaaaa", "aaa", expect_sv, &(StrvWalker){fxs_str_view_arr("","aa")}); /* ["","aa"] */ println(" --- ");
-    fxs_split_iter("abababa", "aba", expect_sv, &(StrvWalker){fxs_str_view_arr("","b","")}); /* ["","b",""] */ println(" --- ");
+    fxs_split_iter("aaaaa", "aaa", expect_sv, &(StrvWalker){fxs_strv_arr("","aa")}); /* ["","aa"] */ println(" --- ");
+    fxs_split_iter("abababa", "aba", expect_sv, &(StrvWalker){fxs_strv_arr("","b","")}); /* ["","b",""] */ println(" --- ");
     
-    fxs_split_iter("hello", "xyz", expect_sv, &(StrvWalker){fxs_str_view_arr("hello")}); /* ["hello"] */ println(" --- ");
-    fxs_split_iter("abc", "abc", expect_sv, &(StrvWalker){fxs_str_view_arr("","")}); /* ["",""] */ println(" --- ");
-    fxs_split_iter("abcabc", "abc", expect_sv, &(StrvWalker){fxs_str_view_arr("","","")}); /* ["","",""] */ println(" --- ");
+    fxs_split_iter("hello", "xyz", expect_sv, &(StrvWalker){fxs_strv_arr("hello")}); /* ["hello"] */ println(" --- ");
+    fxs_split_iter("abc", "abc", expect_sv, &(StrvWalker){fxs_strv_arr("","")}); /* ["",""] */ println(" --- ");
+    fxs_split_iter("abcabc", "abc", expect_sv, &(StrvWalker){fxs_strv_arr("","","")}); /* ["","",""] */ println(" --- ");
     
-    fxs_split_iter("a", "aa", expect_sv, &(StrvWalker){fxs_str_view_arr("a")}); /* ["a"] */ println(" --- ");
-    fxs_split_iter("", "aa", expect_sv, &(StrvWalker){fxs_str_view_arr("")}); /* [""] */ println(" --- ");
+    fxs_split_iter("a", "aa", expect_sv, &(StrvWalker){fxs_strv_arr("a")}); /* ["a"] */ println(" --- ");
+    fxs_split_iter("", "aa", expect_sv, &(StrvWalker){fxs_strv_arr("")}); /* [""] */ println(" --- ");
     
-    fxs_split_iter("aaaa", "a", expect_sv, &(StrvWalker){fxs_str_view_arr("","","","","")}); /* ["","","","",""] */ println(" --- ");
-    fxs_split_iter("a", "a", expect_sv, &(StrvWalker){fxs_str_view_arr("","")}); /* ["",""] */ println(" --- ");
-    fxs_split_iter("ba", "a", expect_sv, &(StrvWalker){fxs_str_view_arr("b","")}); /* ["b",""] */ println(" --- ");
+    fxs_split_iter("aaaa", "a", expect_sv, &(StrvWalker){fxs_strv_arr("","","","","")}); /* ["","","","",""] */ println(" --- ");
+    fxs_split_iter("a", "a", expect_sv, &(StrvWalker){fxs_strv_arr("","")}); /* ["",""] */ println(" --- ");
+    fxs_split_iter("ba", "a", expect_sv, &(StrvWalker){fxs_strv_arr("b","")}); /* ["b",""] */ println(" --- ");
 }
 
 
@@ -809,7 +809,7 @@ void test_str_del()
 
 void test_str_count()
 {
-    StrView str = str_view("aaabccdddd");
+    StrView str = strv("aaabccdddd");
     assert(fxs_count(str, "a") == 3);
     assert(fxs_count(str, "b") == 1);
     assert(fxs_count(str, "c") == 2);
@@ -826,7 +826,7 @@ void test_str_count()
 
 void test_str_find()
 {
-    StrView str = fxs_str_view("hello world");
+    StrView str = fxs_strv("hello world");
     StrView empty = fxs_find(str, "");
     
     assert(empty.chars == str.chars && empty.len == 0);
@@ -899,7 +899,7 @@ void test_read2()
     assert(fxs_equal(sb, "this is the first line\n"));
     unsigned int linelen = fxs_len(sb);
     fxs_append_fread_line(&sb, f);
-    assert(fxs_equal(fxs_str_view(sb, linelen, sb.len), "no newline here"));
+    assert(fxs_equal(fxs_strv(sb, linelen, sb.len), "no newline here"));
     
     assert(feof(f));
     

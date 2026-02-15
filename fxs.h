@@ -1,5 +1,5 @@
-#ifndef FXS__STR_H_INCLUDED
-#define FXS__STR_H_INCLUDED
+#ifndef FXS__H_INCLUDED
+#define FXS__H_INCLUDED
 
 #include <stdarg.h>
 #include <stdint.h>
@@ -388,16 +388,16 @@ _Generic(any_str,                                    \
 )(any_str)
 
 #define fxs_equal(anystr1, anystr2) \
-fxs__strv_equal(fxs_str_view(anystr1), fxs_str_view(anystr2))
+fxs__strv_equal(fxs_strv(anystr1), fxs_strv(anystr2))
 
 #define fxs_dup(anystr, ...) \
-fxs__dstr_init_from(fxs_str_view(anystr), FXS__VA_OR(fxs_get_default_allocator(), __VA_ARGS__))
+fxs__dstr_init_from(fxs_strv(anystr), FXS__VA_OR(fxs_get_default_allocator(), __VA_ARGS__))
 
 #define fxs_copy(mutstr_dst, anystr_src) \
 _Generic(mutstr_dst, \
-    FXS_MutStrRef : fxs__mutstr_ref_copy(fxs__coerce(mutstr_dst, FXS_MutStrRef), fxs_str_view(anystr_src)), \
-    FXS_DStr*       : fxs__dstr_copy(fxs__coerce(mutstr_dst, FXS_DStr*), fxs_str_view(anystr_src)), \
-    default             : fxs__fmutstr_ref_copy(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), fxs_str_view(anystr_src)) \
+    FXS_MutStrRef : fxs__mutstr_ref_copy(fxs__coerce(mutstr_dst, FXS_MutStrRef), fxs_strv(anystr_src)), \
+    FXS_DStr*       : fxs__dstr_copy(fxs__coerce(mutstr_dst, FXS_DStr*), fxs_strv(anystr_src)), \
+    default             : fxs__fmutstr_ref_copy(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), fxs_strv(anystr_src)) \
 )
 
 #define fxs_putc(mutstr_dst, c) \
@@ -409,26 +409,26 @@ _Generic(mutstr_dst, \
 
 #define fxs_append(mutstr_dst, anystr_src) \
 _Generic(mutstr_dst, \
-    FXS_MutStrRef : fxs__mutstr_ref_append(fxs__coerce(mutstr_dst, FXS_MutStrRef), fxs_str_view(anystr_src)), \
-    FXS_DStr*       : fxs__dstr_append(fxs__coerce(mutstr_dst, FXS_DStr*), fxs_str_view(anystr_src)), \
-    default             : fxs__fmutstr_ref_append(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), fxs_str_view(anystr_src)) \
+    FXS_MutStrRef : fxs__mutstr_ref_append(fxs__coerce(mutstr_dst, FXS_MutStrRef), fxs_strv(anystr_src)), \
+    FXS_DStr*       : fxs__dstr_append(fxs__coerce(mutstr_dst, FXS_DStr*), fxs_strv(anystr_src)), \
+    default             : fxs__fmutstr_ref_append(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), fxs_strv(anystr_src)) \
 )
 
 #define fxs_insert(mutstr_dst, anystr_src, idx) \
 _Generic(mutstr_dst, \
-    FXS_MutStrRef : fxs__mutstr_ref_insert(fxs__coerce(mutstr_dst, FXS_MutStrRef), fxs_str_view(anystr_src), idx), \
-    FXS_DStr*       : fxs__dstr_insert(fxs__coerce(mutstr_dst, FXS_DStr*), fxs_str_view(anystr_src), idx), \
-    default             : fxs__fmutstr_ref_insert(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), fxs_str_view(anystr_src), idx) \
+    FXS_MutStrRef : fxs__mutstr_ref_insert(fxs__coerce(mutstr_dst, FXS_MutStrRef), fxs_strv(anystr_src), idx), \
+    FXS_DStr*       : fxs__dstr_insert(fxs__coerce(mutstr_dst, FXS_DStr*), fxs_strv(anystr_src), idx), \
+    default             : fxs__fmutstr_ref_insert(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), fxs_strv(anystr_src), idx) \
 )
 
 #define fxs_prepend(mutstr_dst, anystr_src) \
 fxs_insert(mutstr_dst, anystr_src, 0)
 
 #define fxs_find(anystr_hay, anystr_needle) \
-fxs__strv_find(fxs_str_view(anystr_hay), fxs_str_view(anystr_needle))
+fxs__strv_find(fxs_strv(anystr_hay), fxs_strv(anystr_needle))
 
 #define fxs_count(anystr_hay, anystr_needle) \
-fxs__strv_count(fxs_str_view(anystr_hay), fxs_str_view(anystr_needle))
+fxs__strv_count(fxs_strv(anystr_hay), fxs_strv(anystr_needle))
 
 #define fxs_clear(mutstr) \
 _Generic(mutstr, \
@@ -437,49 +437,49 @@ _Generic(mutstr, \
 )
 
 #define fxs_starts_with(anystr_hay, anystr_needle) \
-fxs__strv_starts_with(fxs_str_view(anystr_hay), fxs_str_view(anystr_needle))
+fxs__strv_starts_with(fxs_strv(anystr_hay), fxs_strv(anystr_needle))
 
 #define fxs_ends_with(anystr_hay, anystr_needle) \
-fxs__strv_ends_with(fxs_str_view(anystr_hay), fxs_str_view(anystr_needle))
+fxs__strv_ends_with(fxs_strv(anystr_hay), fxs_strv(anystr_needle))
 
 #define fxs_tolower(mutstr) \
-fxs__chars_tolower(fxs_str_view(mutstr))
+fxs__chars_tolower(fxs_strv(mutstr))
 
 #define fxs_toupper(mutstr) \
-fxs__chars_toupper(fxs_str_view(mutstr))
+fxs__chars_toupper(fxs_strv(mutstr))
 
 #define fxs_replace(mutstr_dst, anystr_target, anystr_replacement) \
 _Generic(mutstr_dst, \
-    MutStrRef : fxs__mutstr_ref_replace(fxs__coerce(mutstr_dst, FXS_MutStrRef), fxs_str_view(anystr_target), fxs_str_view(anystr_replacement)), \
-    FXS_DStr*  : fxs__dstr_replace(fxs__coerce(mutstr_dst, FXS_DStr*), fxs_str_view(anystr_target), fxs_str_view(anystr_replacement)), \
-    default        : fxs__fmutstr_ref_replace(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), fxs_str_view(anystr_target), fxs_str_view(anystr_replacement)) \
+    MutStrRef : fxs__mutstr_ref_replace(fxs__coerce(mutstr_dst, FXS_MutStrRef), fxs_strv(anystr_target), fxs_strv(anystr_replacement)), \
+    FXS_DStr*  : fxs__dstr_replace(fxs__coerce(mutstr_dst, FXS_DStr*), fxs_strv(anystr_target), fxs_strv(anystr_replacement)), \
+    default        : fxs__fmutstr_ref_replace(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), fxs_strv(anystr_target), fxs_strv(anystr_replacement)) \
 )
 
 #define fxs_replace_first(mutstr_dst, anystr_target, anystr_replacement) \
 _Generic(mutstr_dst, \
-    FXS_MutStrRef : fxs__mutstr_ref_replace_first(fxs__coerce(mutstr_dst, FXS_MutStrRef), fxs_str_view(anystr_target), fxs_str_view(anystr_replacement)), \
-    FXS_DStr*       : fxs__dstr_replace_first(fxs__coerce(mutstr_dst, FXS_DStr*), fxs_str_view(anystr_target), fxs_str_view(anystr_replacement)), \
-    default             : fxs__fmutstr_ref_replace_first(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), fxs_str_view(anystr_target), fxs_str_view(anystr_replacement)) \
+    FXS_MutStrRef : fxs__mutstr_ref_replace_first(fxs__coerce(mutstr_dst, FXS_MutStrRef), fxs_strv(anystr_target), fxs_strv(anystr_replacement)), \
+    FXS_DStr*       : fxs__dstr_replace_first(fxs__coerce(mutstr_dst, FXS_DStr*), fxs_strv(anystr_target), fxs_strv(anystr_replacement)), \
+    default             : fxs__fmutstr_ref_replace_first(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), fxs_strv(anystr_target), fxs_strv(anystr_replacement)) \
 )
 
 #define fxs_replace_range(mutstr_dst, begin, end, anystr_replacement) \
 _Generic(mutstr_dst, \
-    FXS_MutStrRef : fxs__mutstr_ref_replace_range(fxs__coerce(mutstr_dst, FXS_MutStrRef), begin, end, fxs_str_view(anystr_replacement)), \
-    FXS_DStr*       : fxs__dstr_replace_range(fxs__coerce(mutstr_dst, FXS_DStr*), begin, end, fxs_str_view(anystr_replacement)), \
-    default             : fxs__fmutstr_ref_replace_range(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), begin, end, fxs_str_view(anystr_replacement)) \
+    FXS_MutStrRef : fxs__mutstr_ref_replace_range(fxs__coerce(mutstr_dst, FXS_MutStrRef), begin, end, fxs_strv(anystr_replacement)), \
+    FXS_DStr*       : fxs__dstr_replace_range(fxs__coerce(mutstr_dst, FXS_DStr*), begin, end, fxs_strv(anystr_replacement)), \
+    default             : fxs__fmutstr_ref_replace_range(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), begin, end, fxs_strv(anystr_replacement)) \
 )
 
 #define fxs_split(anystr, anystr_delim, ...) \
-fxs__strv_split(fxs_str_view(anystr), fxs_str_view(anystr_delim), FXS__VA_OR(fxs_get_default_allocator(), __VA_ARGS__))
+fxs__strv_split(fxs_strv(anystr), fxs_strv(anystr_delim), FXS__VA_OR(fxs_get_default_allocator(), __VA_ARGS__))
 
 #define fxs_split_iter(anystr, anystr_delim, callback, ...) \
-fxs__strv_split_iter(fxs_str_view(anystr), fxs_str_view(anystr_delim), callback, FXS__VA_OR(NULL, __VA_ARGS__));
+fxs__strv_split_iter(fxs_strv(anystr), fxs_strv(anystr_delim), callback, FXS__VA_OR(NULL, __VA_ARGS__));
 
 #define fxs_join(mutstr_dst, strv_arr, anystr_delim) \
 _Generic(mutstr_dst, \
-    FXS_MutStrRef : fxs__strv_arr_join(fxs__coerce(mutstr_dst, FXS_MutStrRef), strv_arr, fxs_str_view(anystr_delim)), \
-    FXS_DStr*       : fxs__strv_arr_join_into_dstr(fxs__coerce(mutstr_dst, FXS_DStr*), strv_arr, fxs_str_view(anystr_delim)), \
-    default             : fxs__strv_arr_join_into_fmutstr_ref(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), strv_arr, fxs_str_view(anystr_delim)) \
+    FXS_MutStrRef : fxs__strv_arr_join(fxs__coerce(mutstr_dst, FXS_MutStrRef), strv_arr, fxs_strv(anystr_delim)), \
+    FXS_DStr*       : fxs__strv_arr_join_into_dstr(fxs__coerce(mutstr_dst, FXS_DStr*), strv_arr, fxs_strv(anystr_delim)), \
+    default             : fxs__strv_arr_join_into_fmutstr_ref(fxs__fmutstr_ref(fxs__coerce_not(mutstr_dst, FXS_MutStrRef, FXS_StrBuf*)), strv_arr, fxs_strv(anystr_delim)) \
 )
 
 // DString branch can call fmutstr_ref version directly (its a shrink-only operation)
@@ -546,13 +546,13 @@ do \
     fxs__sprint_each_setup(__VA_ARGS__); \
 } while(0)
 
-#define fxs_str_view_arr_from_carr(strv_carr, ...) \
+#define fxs_strv_arr_from_carr(strv_carr, ...) \
 fxs__strv_arr_from_carr(strv_carr, FXS__VA_OR(FXS__CARR_LEN(strv_carr), __VA_ARGS__))
 
 #define FXS__STRV_COMMA(anystr) \
-fxs_str_view(anystr),
+fxs_strv(anystr),
 
-#define fxs_str_view_arr(...)                                                                  \
+#define fxs_strv_arr(...)                                                                  \
 (                                                                                              \
 (FXS_StrViewArray) {                                                                      \
     .len  = FXS__CARR_LEN(((FXS_StrView[]){FXS__FOREACH(FXS__STRV_COMMA, __VA_ARGS__)})),  \
@@ -646,7 +646,7 @@ fxs__make_appender_mutstr_ref(fxs_mutstr_ref(mutstr_owner), (appender_state))
 #define fxs_commit_appender(mutstr_owner, appender) \
 fxs__mutstr_ref_commit_appender(fxs_mutstr_ref(mutstr_owner), appender)
 
-#define fxs_str_view(any_str, ...) \
+#define fxs_strv(any_str, ...) \
 __VA_OPT__(fxs__strv2(any_str, __VA_ARGS__)) \
 FXS__IF_EMPTY(fxs__strv1(any_str), __VA_ARGS__)
 
@@ -720,19 +720,19 @@ FXS__IF_EMPTY(                                  \
 fxs__dstr_init((cap), (allocator))
 
 #define fxs_dstr_init_from(anystr_src, ...) \
-fxs__dstr_init_from(fxs_str_view(anystr_src), FXS__VA_OR(fxs_get_default_allocator(), __VA_ARGS__))
+fxs__dstr_init_from(fxs_strv(anystr_src), FXS__VA_OR(fxs_get_default_allocator(), __VA_ARGS__))
 
 #define fxs_dstr_deinit(dstr) \
 fxs__dstr_deinit(dstr)
 
 #define fxs_dstr_append(dstr, anystr_src) \
-fxs__dstr_append(dstr, fxs_str_view(anystr_src))
+fxs__dstr_append(dstr, fxs_strv(anystr_src))
 
 #define fxs_dstr_prepend(dstr, anystr_src) \
-fxs__dstr_prepend_strv(dstr, fxs_str_view(anystr_src))
+fxs__dstr_prepend_strv(dstr, fxs_strv(anystr_src))
 
 #define fxs_dstr_insert(dstr, anystr_src, idx) \
-fxs__dstr_insert(dstr, fxs_str_view(anystr_src), idx)
+fxs__dstr_insert(dstr, fxs_strv(anystr_src), idx)
 
 #define fxs_dstr_fread_line(dstr, stream) \
 fxs__dstr_fread_line(dstr, stream)
@@ -938,10 +938,10 @@ __VA_OPT__(fxs__arrfmt_2) \
     .nb = (nb_), \
     .elm_size = sizeof((array_)[0]), \
     .elm_tostr = (void*) fxs__get_tostr_p_func(__typeof__((array_)[0])), \
-    .open = fxs_str_view("{"), \
-    .close = fxs_str_view("}"), \
-    .separator = fxs_str_view(", "), \
-    .trailing_separator = fxs_str_view("") \
+    .open = fxs_strv("{"), \
+    .close = fxs_strv("}"), \
+    .separator = fxs_strv(", "), \
+    .trailing_separator = fxs_strv("") \
 })
 
 #define fxs__arrfmt_2(array_, nb_, open_, close_, seperator_, ...) \
@@ -950,10 +950,10 @@ __VA_OPT__(fxs__arrfmt_2) \
     .nb = (nb_), \
     .elm_size = sizeof((array_)[0]), \
     .elm_tostr = (void*) fxs__get_tostr_p_func(__typeof__((array_)[0])), \
-    .open = fxs_str_view(open_), \
-    .close = fxs_str_view(close_), \
-    .separator = fxs_str_view(seperator_), \
-    .trailing_separator = fxs_str_view(FXS__VA_OR("", __VA_ARGS__)) \
+    .open = fxs_strv(open_), \
+    .close = fxs_strv(close_), \
+    .separator = fxs_strv(seperator_), \
+    .trailing_separator = fxs_strv(FXS__VA_OR("", __VA_ARGS__)) \
 })
 
 #define FXS__INTEGER_TOSTR_GENERIC_CASE(ty, extra) \
@@ -1388,7 +1388,7 @@ FXS__FLOATING_TYPES(FXS__X, ignore, FXS__X)
 
 #undef FXS__X
 
-#endif /* FXS__STR_H_INCLUDED */
+#endif /* FXS__H_INCLUDED */
 
 #ifdef FXS_SHORT_NAMES
 
@@ -1402,9 +1402,9 @@ typedef FXS_ReplaceResult         ReplaceResult;
 typedef FXS_StrAppenderState      StrAppenderState;
 typedef FXS_ArrayFmt              ArrayFmt;
 
-#define str_view(anystr, ...) fxs_str_view(anystr __VA_OPT__(,) __VA_ARGS__)
-#define str_view_arr(...) fxs_str_view_arr(__VA_ARGS__)
-#define str_view_arr_from_carr(...) fxs_str_view_arr_from_carr(arr __VA_OPT__(,) __VA_ARGS__)
+#define strv(anystr, ...) fxs_strv(anystr __VA_OPT__(,) __VA_ARGS__)
+#define strv_arr(...) fxs_strv_arr(__VA_ARGS__)
+#define strv_arr_from_carr(...) fxs_strv_arr_from_carr(arr __VA_OPT__(,) __VA_ARGS__)
 
 #define strbuf_init_from_cstr(cstr, ...) fxs_strbuf_init_from_cstr(cstr __VA_OPT__(,) __VA_ARGS__)
 #define strbuf_init_from_buf(buf, ...) fxs_strbuf_init_from_buf(buf __VA_OPT__(,) __VA_ARGS__)
@@ -1424,7 +1424,6 @@ typedef FXS_ArrayFmt              ArrayFmt;
 #define dstr_append_read_line(dstr) fxs_dstr_append_read_line(dstr)
 #define dstr_shrink_to_fit(dstr) fxs_dstr_shrink_to_fit(dstr)
 #define dstr_ensure_cap(dstr, new_cap) fxs_dstr_ensure_cap(dstr, new_cap)
-
 
 #define tostr(dst, src) fxs_tostr(dst, src)
 #define tostr_p(dst, srcp) fxs_tostr_p(dst, srcp)
