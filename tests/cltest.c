@@ -350,14 +350,14 @@ bool test_str_ends_with_empty() {
 
 bool test_str_tolower_basic() {
     char arr[50] = "HELLO World";
-    ASSERT_OK(str_tolower(arr));
+    str_tolower(arr);
     ASSERT_STR_EQ(arr, "hello world");
     return true;
 }
 
 bool test_str_tolower_already_lower() {
     DString ds = dstr_init_from("already lowercase");
-    ASSERT_OK(str_tolower(&ds));
+    str_tolower(&ds);
     ASSERT(str_equal(ds, "already lowercase"));
     dstr_deinit(&ds);
     return true;
@@ -365,7 +365,7 @@ bool test_str_tolower_already_lower() {
 
 bool test_str_tolower_mixed() {
     char arr[50] = "HeLLo WoRLd123!@#";
-    ASSERT_OK(str_tolower(arr));
+    str_tolower(arr);
     ASSERT_STR_EQ(arr, "hello world123!@#");
     return true;
 }
@@ -376,14 +376,14 @@ bool test_str_tolower_mixed() {
 
 bool test_str_toupper_basic() {
     char arr[50] = "hello WORLD";
-    ASSERT_OK(str_toupper(arr));
+    str_toupper(arr);
     ASSERT_STR_EQ(arr, "HELLO WORLD");
     return true;
 }
 
 bool test_str_toupper_already_upper() {
     DString ds = dstr_init_from("ALREADY UPPERCASE");
-    ASSERT_OK(str_toupper(&ds));
+    (str_toupper(&ds));
     ASSERT(str_equal(ds, "ALREADY UPPERCASE"));
     dstr_deinit(&ds);
     return true;
@@ -391,7 +391,7 @@ bool test_str_toupper_already_upper() {
 
 bool test_str_toupper_mixed() {
     char arr[50] = "HeLLo WoRLd123!@#";
-    ASSERT_OK(str_toupper(arr));
+    (str_toupper(arr));
     ASSERT_STR_EQ(arr, "HELLO WORLD123!@#");
     return true;
 }
@@ -1150,7 +1150,7 @@ bool test_long_string() {
 bool test_chained_operations() {
     DString ds = dstr_init_from("hello");
     ASSERT_OK(str_append(&ds, " world"));
-    ASSERT_OK(str_toupper(&ds));
+    (str_toupper(&ds));
     ASSERT_OK(str_replace_first(&ds, "WORLD", "UNIVERSE"));
     ASSERT(str_equal(ds, "HELLO UNIVERSE"));
     dstr_deinit(&ds);

@@ -483,8 +483,7 @@ void test_str_case_edge_cases() {
     TEST("str_tolower: empty string");
     {
         DString dstr = dstr_init_from("");
-        Neat_Error err = str_tolower(&dstr);
-        ASSERT_EQ(err.ec, NEAT_OK);
+        str_tolower(&dstr);
         ASSERT_EQ(str_len(&dstr), 0);
         dstr_deinit(&dstr);
     }
@@ -508,8 +507,7 @@ void test_str_case_edge_cases() {
     TEST("str_toupper: empty string");
     {
         DString dstr = dstr_init_from("");
-        Neat_Error err = str_toupper(&dstr);
-        ASSERT_EQ(err.ec, NEAT_OK);
+        str_toupper(&dstr);
         dstr_deinit(&dstr);
     }
     
@@ -521,23 +519,11 @@ void test_str_case_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("str_tolower: non-ASCII characters");
-    {
-        // Test behavior with extended ASCII
-        DString dstr = dstr_init_from("café");
-        Neat_Error err = str_tolower(&dstr);
-        // Behavior is implementation-defined for non-ASCII
-        ASSERT_EQ(err.ec, NEAT_OK);
-        dstr_deinit(&dstr);
-    }
-    
     TEST("str_tolower: on read-only buffer (should fail)");
     {
         char buf[] = "TEST";
-        // Might return error on certain string types
-        Neat_Error err = str_tolower(buf);
-        // Just ensure no crash
-        ASSERT_TRUE(1);
+        str_tolower(buf);
+        ASSERT_TRUE(str_equal(buf, "test"));
     }
 }
 
