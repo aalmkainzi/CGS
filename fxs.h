@@ -99,16 +99,16 @@ _Generic(exp, \
 _Generic(exp,                                  \
     char*                     : exp,           \
     unsigned char*            : exp,           \
-    FXS_DStr               : exp,           \
-    FXS_DStr*              : exp,           \
-    FXS_StrView           : exp,           \
-    FXS_StrBuf         : exp,           \
-    FXS_StrBuf*        : exp,           \
-    FXS_MutStrRef        : exp,           \
+    FXS_DStr                  : exp,           \
+    FXS_DStr*                 : exp,           \
+    FXS_StrView               : exp,           \
+    FXS_StrBuf                : exp,           \
+    FXS_StrBuf*               : exp,           \
+    FXS_MutStrRef             : exp,           \
     const char*               : exp,           \
     const unsigned char*      : exp,           \
-    const FXS_DStr*        : exp,           \
-    const FXS_StrBuf*  : exp,           \
+    const FXS_DStr*           : exp,           \
+    const FXS_StrBuf*         : exp,           \
     default                   : fallback       \
 )
 
@@ -297,20 +297,20 @@ _Generic(&(__typeof__(s)){0}, \
     unsigned char(*)[sizeof(__typeof__(s))] : fxs__buf_as_fmutstr_ref(fxs__buf_from_ucarr(fxs__coerce(s, unsigned char*), sizeof(__typeof__(s))), FXS__VA_OR(&(unsigned int){0}, __VA_ARGS__)) \
 )
 
-#define fxs_at(anystr, idx)                         \
-_Generic(anystr,                                        \
-    char*                     : fxs__cstr_char_at,      \
-    unsigned char*            : fxs__ucstr_char_at,     \
-    FXS_DStr              : fxs__dstr_char_at,       \
-    FXS_DStr*             : fxs__dstr_ptr_char_at,   \
-    FXS_StrView          : fxs__strv_char_at,       \
-    FXS_StrBuf        : fxs__strbuf_char_at,     \
-    FXS_StrBuf*       : fxs__strbuf_ptr_char_at, \
-    FXS_MutStrRef       : fxs__mutstr_ref_char_at, \
-    const char*               : fxs__cstr_char_at,      \
-    const unsigned char*      : fxs__ucstr_char_at,     \
-    const FXS_DStr*       : fxs__dstr_ptr_char_at,   \
-    const FXS_StrBuf* : fxs__strbuf_ptr_char_at  \
+#define fxs_at(anystr, idx)                              \
+_Generic(anystr,                                         \
+    char*                     : fxs__cstr_char_at,       \
+    unsigned char*            : fxs__ucstr_char_at,      \
+    FXS_DStr                  : fxs__dstr_char_at,       \
+    FXS_DStr*                 : fxs__dstr_ptr_char_at,   \
+    FXS_StrView               : fxs__strv_char_at,       \
+    FXS_StrBuf                : fxs__strbuf_char_at,     \
+    FXS_StrBuf*               : fxs__strbuf_ptr_char_at, \
+    FXS_MutStrRef             : fxs__mutstr_ref_char_at, \
+    const char*               : fxs__cstr_char_at,       \
+    const unsigned char*      : fxs__ucstr_char_at,      \
+    const FXS_DStr*           : fxs__dstr_ptr_char_at,   \
+    const FXS_StrBuf*         : fxs__strbuf_ptr_char_at  \
 )((anystr), idx)
 
 #define fxs_len(anystr) \
@@ -349,42 +349,42 @@ static inline unsigned int fxs__strv_len(const FXS_StrView sv)
     return sv.len;
 }
 
-#define fxs_cap(anystr)                                                   \
+#define fxs_cap(anystr)                                                       \
 _Generic((__typeof__(anystr)*){0},                                            \
-    char(*)[sizeof(__typeof__(anystr))]          : fxs__return_32,            \
-    unsigned char(*)[sizeof(__typeof__(anystr))] : fxs__return_32,            \
+    char(*)[sizeof(__typeof__(anystr))]           : fxs__return_32,           \
+    unsigned char(*)[sizeof(__typeof__(anystr))]  : fxs__return_32,           \
     char**                                        : fxs__strlen_plus_one,     \
     unsigned char**                               : fxs__ustrlen_plus_one,    \
-    FXS_StrView*                             : fxs__strv_len,             \
-    FXS_DStr*                                 : fxs__dstr_cap,             \
-    FXS_DStr**                                : fxs__dstr_ptr_cap,         \
-    FXS_StrBuf*                           : fxs__strbuf_cap,           \
-    FXS_StrBuf**                          : fxs__strbuf_ptr_cap,       \
-    FXS_MutStrRef*                          : fxs__mutstr_ref_cap,       \
+    FXS_StrView*                                  : fxs__strv_len,            \
+    FXS_DStr*                                     : fxs__dstr_cap,            \
+    FXS_DStr**                                    : fxs__dstr_ptr_cap,        \
+    FXS_StrBuf*                                   : fxs__strbuf_cap,          \
+    FXS_StrBuf**                                  : fxs__strbuf_ptr_cap,      \
+    FXS_MutStrRef*                                : fxs__mutstr_ref_cap,      \
     const char**                                  : fxs__strlen_plus_one,     \
     const unsigned char**                         : fxs__ustrlen_plus_one,    \
-    const FXS_DStr**                          : fxs__dstr_ptr_cap,         \
-    const FXS_StrBuf**                    : fxs__strbuf_ptr_cap        \
+    const FXS_DStr**                              : fxs__dstr_ptr_cap,        \
+    const FXS_StrBuf**                            : fxs__strbuf_ptr_cap       \
 )(_Generic((__typeof__(anystr)*){0},                                          \
     char(*)[sizeof(__typeof__(anystr))]: sizeof(__typeof__(anystr)),          \
     unsigned char(*)[sizeof(__typeof__(anystr))]: sizeof(__typeof__(anystr)), \
     default: (anystr)                                                         \
 ))
 
-#define fxs_chars(any_str)                          \
-_Generic(any_str,                                       \
-    char*                     : fxs__cstr_as_cstr,      \
-    unsigned char*            : fxs__ucstr_as_cstr,     \
+#define fxs_chars(any_str)                           \
+_Generic(any_str,                                    \
+    char*                 : fxs__cstr_as_cstr,       \
+    unsigned char*        : fxs__ucstr_as_cstr,      \
     FXS_DStr              : fxs__dstr_as_cstr,       \
     FXS_DStr*             : fxs__dstr_ptr_as_cstr,   \
-    FXS_StrView          : fxs__strv_as_cstr,       \
-    FXS_StrBuf        : fxs__strbuf_as_cstr,     \
-    FXS_StrBuf*       : fxs__strbuf_ptr_as_cstr, \
-    FXS_MutStrRef       : fxs__mutstr_ref_as_cstr, \
-    const char*               : fxs__cstr_as_cstr,      \
-    const unsigned char*      : fxs__ucstr_as_cstr,     \
+    FXS_StrView           : fxs__strv_as_cstr,       \
+    FXS_StrBuf            : fxs__strbuf_as_cstr,     \
+    FXS_StrBuf*           : fxs__strbuf_ptr_as_cstr, \
+    FXS_MutStrRef         : fxs__mutstr_ref_as_cstr, \
+    const char*           : fxs__cstr_as_cstr,       \
+    const unsigned char*  : fxs__ucstr_as_cstr,      \
     const FXS_DStr*       : fxs__dstr_ptr_as_cstr,   \
-    const FXS_StrBuf* : fxs__strbuf_ptr_as_cstr  \
+    const FXS_StrBuf*     : fxs__strbuf_ptr_as_cstr  \
 )(any_str)
 
 #define fxs_equal(anystr1, anystr2) \
@@ -650,54 +650,54 @@ fxs__mutstr_ref_commit_appender(fxs_mutstr_ref(mutstr_owner), appender)
 __VA_OPT__(fxs__strv2(any_str, __VA_ARGS__)) \
 FXS__IF_EMPTY(fxs__strv1(any_str), __VA_ARGS__)
 
-#define fxs__strv1(anystr)                             \
-_Generic(anystr,                                       \
-    char*                     : fxs__strv_cstr1,       \
-    unsigned char*            : fxs__strv_ucstr1,      \
-    FXS_DStr               : fxs__strv_dstr1,       \
-    FXS_DStr*              : fxs__strv_dstr_ptr1,   \
-    FXS_StrView                  : fxs__strv_strv1,       \
-    FXS_StrBuf         : fxs__strv_strbuf1,     \
-    FXS_StrBuf*        : fxs__strv_strbuf_ptr1, \
-    FXS_MutStrRef               : fxs__strv_mutstr_ref1, \
-    const char*               : fxs__strv_cstr1,       \
-    const unsigned char*      : fxs__strv_ucstr1,      \
-    const FXS_DStr*        : fxs__strv_dstr_ptr1,   \
-    const FXS_StrBuf*  : fxs__strv_strbuf_ptr1  \
+#define fxs__strv1(anystr)                        \
+_Generic(anystr,                                  \
+    char*                : fxs__strv_cstr1,       \
+    unsigned char*       : fxs__strv_ucstr1,      \
+    FXS_DStr             : fxs__strv_dstr1,       \
+    FXS_DStr*            : fxs__strv_dstr_ptr1,   \
+    FXS_StrView          : fxs__strv_strv1,       \
+    FXS_StrBuf           : fxs__strv_strbuf1,     \
+    FXS_StrBuf*          : fxs__strv_strbuf_ptr1, \
+    FXS_MutStrRef        : fxs__strv_mutstr_ref1, \
+    const char*          : fxs__strv_cstr1,       \
+    const unsigned char* : fxs__strv_ucstr1,      \
+    const FXS_DStr*      : fxs__strv_dstr_ptr1,   \
+    const FXS_StrBuf*    : fxs__strv_strbuf_ptr1  \
 )(anystr)
 
-#define fxs__strv2(anystr, begin, ...)                \
-__VA_OPT__(fxs__strv3(anystr, begin, __VA_ARGS__))    \
-FXS__IF_EMPTY(                                        \
-_Generic(anystr,                                      \
-    char*                    : fxs__strv_cstr2,       \
-    unsigned char*           : fxs__strv_ucstr2,      \
-    FXS_DStr              : fxs__strv_dstr2,       \
-    FXS_DStr*             : fxs__strv_dstr_ptr2,   \
-    FXS_StrView                 : fxs__strv_strv2,       \
-    FXS_StrBuf        : fxs__strv_strbuf2,     \
-    FXS_StrBuf*       : fxs__strv_strbuf_ptr2, \
-    FXS_MutStrRef              : fxs__strv_mutstr_ref2, \
-    const char*              : fxs__strv_cstr2,       \
-    const unsigned char*     : fxs__strv_ucstr2,      \
-    const FXS_DStr*       : fxs__strv_dstr_ptr2,   \
-    const FXS_StrBuf* : fxs__strv_strbuf_ptr2  \
+#define fxs__strv2(anystr, begin, ...)             \
+__VA_OPT__(fxs__strv3(anystr, begin, __VA_ARGS__)) \
+FXS__IF_EMPTY(                                     \
+_Generic(anystr,                                   \
+    char*                : fxs__strv_cstr2,        \
+    unsigned char*       : fxs__strv_ucstr2,       \
+    FXS_DStr             : fxs__strv_dstr2,        \
+    FXS_DStr*            : fxs__strv_dstr_ptr2,    \
+    FXS_StrView          : fxs__strv_strv2,        \
+    FXS_StrBuf           : fxs__strv_strbuf2,      \
+    FXS_StrBuf*          : fxs__strv_strbuf_ptr2,  \
+    FXS_MutStrRef        : fxs__strv_mutstr_ref2,  \
+    const char*          : fxs__strv_cstr2,        \
+    const unsigned char* : fxs__strv_ucstr2,       \
+    const FXS_DStr*      : fxs__strv_dstr_ptr2,    \
+    const FXS_StrBuf*    : fxs__strv_strbuf_ptr2   \
 )(anystr, begin), __VA_ARGS__)
 
-#define fxs__strv3(anystr, begin, end)                \
-_Generic(anystr,                                      \
-    char*                    : fxs__strv_cstr3,       \
-    unsigned char*           : fxs__strv_ucstr3,      \
-    FXS_DStr              : fxs__strv_dstr3,       \
-    FXS_DStr*             : fxs__strv_dstr_ptr3,   \
-    FXS_StrView                 : fxs__strv_strv3,       \
-    FXS_StrBuf        : fxs__strv_strbuf3,     \
-    FXS_StrBuf*       : fxs__strv_strbuf_ptr3, \
-    FXS_MutStrRef              : fxs__strv_mutstr_ref3, \
-    const char*              : fxs__strv_cstr3,       \
-    const unsigned char*     : fxs__strv_ucstr3,      \
-    const FXS_DStr*       : fxs__strv_dstr_ptr3,   \
-    const FXS_StrBuf* : fxs__strv_strbuf_ptr3  \
+#define fxs__strv3(anystr, begin, end)            \
+_Generic(anystr,                                  \
+    char*                : fxs__strv_cstr3,       \
+    unsigned char*       : fxs__strv_ucstr3,      \
+    FXS_DStr             : fxs__strv_dstr3,       \
+    FXS_DStr*            : fxs__strv_dstr_ptr3,   \
+    FXS_StrView          : fxs__strv_strv3,       \
+    FXS_StrBuf           : fxs__strv_strbuf3,     \
+    FXS_StrBuf*          : fxs__strv_strbuf_ptr3, \
+    FXS_MutStrRef        : fxs__strv_mutstr_ref3, \
+    const char*          : fxs__strv_cstr3,       \
+    const unsigned char* : fxs__strv_ucstr3,      \
+    const FXS_DStr*      : fxs__strv_dstr_ptr3,   \
+    const FXS_StrBuf*    : fxs__strv_strbuf_ptr3  \
 )(anystr, begin, end)
 
 #define fxs_dstr_init(...) \
@@ -768,16 +768,16 @@ do                                                          \
     fxs__fprint_strv(fxs__file_stream, _Generic(fxs__x_tmp, \
         char*                     : fxs__strv_cstr1,        \
         unsigned char*            : fxs__strv_ucstr1,       \
-        FXS_DStr              : fxs__strv_dstr1,         \
-        FXS_DStr*             : fxs__strv_dstr_ptr1,     \
-        FXS_StrView          : fxs__strv_strv1,         \
-        FXS_StrBuf        : fxs__strv_strbuf1,       \
-        FXS_StrBuf*       : fxs__strv_strbuf_ptr1,   \
-        FXS_MutStrRef       : fxs__strv_mutstr_ref1,   \
+        FXS_DStr                  : fxs__strv_dstr1,        \
+        FXS_DStr*                 : fxs__strv_dstr_ptr1,    \
+        FXS_StrView               : fxs__strv_strv1,        \
+        FXS_StrBuf                : fxs__strv_strbuf1,      \
+        FXS_StrBuf*               : fxs__strv_strbuf_ptr1,  \
+        FXS_MutStrRef             : fxs__strv_mutstr_ref1,  \
         const char*               : fxs__strv_cstr1,        \
         const unsigned char*      : fxs__strv_ucstr1,       \
-        const FXS_DStr*       : fxs__strv_dstr_ptr1,     \
-        const FXS_StrBuf* : fxs__strv_strbuf_ptr1,   \
+        const FXS_DStr*           : fxs__strv_dstr_ptr1,    \
+        const FXS_StrBuf*         : fxs__strv_strbuf_ptr1,  \
         default                   : fxs__strv_dstr1         \
     )(fxs__coerce_string_type(fxs__x_tmp, (fxs_tostr(&fxs__fprint_tostr_dynamic_buffer, fxs__x_tmp), fxs__fprint_tostr_dynamic_buffer)))); \
     fxs__fprint_tostr_dynamic_buffer.len = 0;               \
@@ -1003,18 +1003,18 @@ long long                 : fxs__llong_tostr,               \
 unsigned long long        : fxs__ullong_tostr,              \
 float                     : fxs__float_tostr,               \
 double                    : fxs__double_tostr,              \
-FXS_DStr              : fxs__dstr_tostr,                 \
-FXS_DStr*             : fxs__dstr_ptr_tostr,             \
-FXS_StrView          : fxs__strv_tostr,                 \
-FXS_StrBuf        : fxs__strbuf_tostr,               \
-FXS_StrBuf*       : fxs__strbuf_ptr_tostr,           \
-FXS_MutStrRef       : fxs__mutstr_ref_tostr,           \
+FXS_DStr                  : fxs__dstr_tostr,                \
+FXS_DStr*                 : fxs__dstr_ptr_tostr,            \
+FXS_StrView               : fxs__strv_tostr,                \
+FXS_StrBuf                : fxs__strbuf_tostr,              \
+FXS_StrBuf*               : fxs__strbuf_ptr_tostr,          \
+FXS_MutStrRef             : fxs__mutstr_ref_tostr,          \
 const char*               : fxs__cstr_tostr,                \
 const unsigned char*      : fxs__ucstr_tostr,               \
-const FXS_DStr*       : fxs__dstr_ptr_tostr,             \
-const FXS_StrBuf* : fxs__strbuf_ptr_tostr,           \
-FXS_Error                : fxs__error_tostr,                \
-FXS_ArrayFmt            : fxs__array_fmt_tostr,            \
+const FXS_DStr*           : fxs__dstr_ptr_tostr,            \
+const FXS_StrBuf*         : fxs__strbuf_ptr_tostr,          \
+FXS_Error                 : fxs__error_tostr,               \
+FXS_ArrayFmt              : fxs__array_fmt_tostr,           \
 FXS__INTEGER_TYPES(FXS__INTEGER_TOSTR_GENERIC_CASE, ignore) \
 FXS__FLOATING_TYPES(FXS__FLOATING_TOSTR_GENERIC_CASE, ignore, FXS__FLOATING_TOSTR_LAST_GENERIC_CASE)
 
@@ -1035,18 +1035,18 @@ long long                 : fxs__llong_tostr_p,               \
 unsigned long long        : fxs__ullong_tostr_p,              \
 float                     : fxs__float_tostr_p,               \
 double                    : fxs__double_tostr_p,              \
-FXS_DStr              : fxs__dstr_tostr_p,                 \
-FXS_DStr*             : fxs__dstr_ptr_tostr_p,             \
-FXS_StrView          : fxs__strv_tostr_p,                 \
-FXS_StrBuf        : fxs__strbuf_tostr_p,               \
-FXS_StrBuf*       : fxs__strbuf_ptr_tostr_p,           \
-FXS_MutStrRef       : fxs__mutstr_ref_tostr_p,           \
+FXS_DStr                  : fxs__dstr_tostr_p,                \
+FXS_DStr*                 : fxs__dstr_ptr_tostr_p,            \
+FXS_StrView               : fxs__strv_tostr_p,                \
+FXS_StrBuf                : fxs__strbuf_tostr_p,              \
+FXS_StrBuf*               : fxs__strbuf_ptr_tostr_p,          \
+FXS_MutStrRef             : fxs__mutstr_ref_tostr_p,          \
 const char*               : fxs__cstr_tostr_p,                \
 const unsigned char*      : fxs__ucstr_tostr_p,               \
-const FXS_DStr*       : fxs__dstr_ptr_tostr_p,             \
-const FXS_StrBuf* : fxs__strbuf_ptr_tostr_p,           \
-FXS_Error                : fxs__error_tostr_p,                \
-FXS_ArrayFmt*           : fxs__array_fmt_tostr_p,            \
+const FXS_DStr*           : fxs__dstr_ptr_tostr_p,            \
+const FXS_StrBuf*         : fxs__strbuf_ptr_tostr_p,          \
+FXS_Error                 : fxs__error_tostr_p,               \
+FXS_ArrayFmt*             : fxs__array_fmt_tostr_p,           \
 FXS__INTEGER_TYPES(FXS__INTEGER_TOSTR_P_GENERIC_CASE, ignore) \
 FXS__FLOATING_TYPES(FXS__FLOATING_TOSTR_P_GENERIC_CASE, ignore, FXS__FLOATING_TOSTR_P_LAST_GENERIC_CASE)
 
