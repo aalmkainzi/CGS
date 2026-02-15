@@ -255,7 +255,7 @@ typedef struct Neat__Fixed_Mut_String_Ref
 
 typedef struct Neat_Array_Fmt
 {
-    const void *array;
+    const void * const array;
     const size_t nb;
     const size_t elm_size;
     
