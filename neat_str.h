@@ -430,9 +430,11 @@ neat__strv_find(neat_str_view(anystr_hay), neat_str_view(anystr_needle))
 #define neat_str_count(anystr_hay, anystr_needle) \
 neat__strv_count(neat_str_view(anystr_hay), neat_str_view(anystr_needle))
 
-// TODO _Generic
 #define neat_str_clear(mutstr) \
-neat__mutstr_ref_clear(neat__mutstr_ref(mutstr))
+_Generic(mutstr, \
+    Neat_Mut_String_Ref : neat__mutstr_ref_clear(neat__coerce(mutstr, Neat_Mut_String_Ref)), \
+    default             : neat__fmutstr_ref_clear(neat__fmutstr_ref(neat__coerce_not(mutstr, Neat_Mut_String_Ref, Neat_String_Buffer*))) \
+)
 
 #define neat_str_starts_with(anystr_hay, anystr_needle) \
 neat__strv_starts_with(neat_str_view(anystr_hay), neat_str_view(anystr_needle))
@@ -440,13 +442,11 @@ neat__strv_starts_with(neat_str_view(anystr_hay), neat_str_view(anystr_needle))
 #define neat_str_ends_with(anystr_hay, anystr_needle) \
 neat__strv_ends_with(neat_str_view(anystr_hay), neat_str_view(anystr_needle))
 
-// TODO _Generic
 #define neat_str_tolower(mutstr) \
-neat__mutstr_ref_tolower(neat_mutstr_ref(mutstr))
+neat__chars_tolower(neat_str_view(mutstr))
 
-// TODO _Generic
 #define neat_str_toupper(mutstr) \
-neat__mutstr_ref_toupper(neat_mutstr_ref(mutstr))
+neat__chars_toupper(neat_str_view(mutstr))
 
 #define neat_str_replace(mutstr_dst, anystr_target, anystr_replacement) \
 _Generic(mutstr_dst, \
@@ -1260,6 +1260,7 @@ NEAT_API Neat_Replace_Result neat__mutstr_ref_replace(Neat_Mut_String_Ref str, c
 NEAT_API Neat_Error neat__mutstr_ref_replace_first(Neat_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement);
 NEAT_API Neat_Error neat__mutstr_ref_replace_range(Neat_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement);
 NEAT_API Neat_Error neat__mutstr_ref_clear(Neat_Mut_String_Ref str);
+NEAT_API Neat_Error neat__strv_arr_join(Neat_Mut_String_Ref dst, Neat_String_View_Array strs, Neat_String_View delim);
 
 NEAT_API Neat_Error neat__fmutstr_ref_putc(Neat__Fixed_Mut_String_Ref dst, unsigned char c);
 NEAT_API Neat_Error neat__fmutstr_ref_copy(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View src);
@@ -1269,6 +1270,7 @@ NEAT_API Neat_Error neat__fmutstr_ref_insert(Neat__Fixed_Mut_String_Ref dst, con
 NEAT_API Neat_Replace_Result neat__fmutstr_ref_replace(Neat__Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement);
 NEAT_API Neat_Error neat__fmutstr_ref_replace_first(Neat__Fixed_Mut_String_Ref str, const Neat_String_View target, const Neat_String_View replacement);
 NEAT_API Neat_Error neat__fmutstr_ref_replace_range(Neat__Fixed_Mut_String_Ref str, unsigned int begin, unsigned int end, const Neat_String_View replacement);
+NEAT_API Neat_Error neat__fmutstr_ref_clear(Neat__Fixed_Mut_String_Ref str);
 NEAT_API Neat_Error neat__strv_arr_join_into_fmutstr_ref(Neat__Fixed_Mut_String_Ref dst, const Neat_String_View_Array strs, const Neat_String_View delim);
 
 NEAT_API Neat_Error neat__dstr_putc(Neat_DString *dst, unsigned char c);
@@ -1278,10 +1280,9 @@ NEAT_API Neat_Error neat__dstr_replace_first(Neat_DString *dstr, const Neat_Stri
 NEAT_API Neat_Error neat__dstr_replace_range(Neat_DString *dstr, unsigned int begin, unsigned int end, const Neat_String_View replacement);
 NEAT_API Neat_Error neat__strv_arr_join_into_dstr(Neat_DString *dstr, const Neat_String_View_Array strs, const Neat_String_View delim);
 
-NEAT__NODISCARD("str_split returns new String_View_Array")
+NEAT__NODISCARD("str_split returns a heap allocated array")
 NEAT_API Neat_String_View_Array neat__strv_split(const Neat_String_View str, const Neat_String_View delim, Neat_Allocator* allocator);
 NEAT_API Neat_Error neat__strv_split_iter(const Neat_String_View str, const Neat_String_View delim, bool(*cb)(Neat_String_View found, void *ctx), void *ctx);
-NEAT_API Neat_Error neat__strv_arr_join(Neat_Mut_String_Ref dst, Neat_String_View_Array strs, Neat_String_View delim);
 
 NEAT_API Neat_String_View_Array neat__strv_arr_from_carr(const Neat_String_View *carr, unsigned int nb);
 
@@ -1291,9 +1292,8 @@ NEAT_API unsigned int neat__strv_count(const Neat_String_View hay, const Neat_St
 NEAT_API bool neat__strv_starts_with(const Neat_String_View hay, const Neat_String_View needle);
 NEAT_API bool neat__strv_ends_with(const Neat_String_View hay, const Neat_String_View needle);
 
-// TODO impl
-NEAT_API Neat_Error neat__mutstr_ref_tolower(Neat_Mut_String_Ref str);
-NEAT_API Neat_Error neat__mutstr_ref_toupper(Neat_Mut_String_Ref str);
+NEAT_API void neat__chars_tolower(Neat_String_View str);
+NEAT_API void neat__chars_toupper(Neat_String_View str);
 
 NEAT_API Neat_Error neat__mutstr_ref_fread_line(Neat_Mut_String_Ref dst, FILE *stream);
 NEAT_API Neat_Error neat__mutstr_ref_append_fread_line(Neat_Mut_String_Ref dst, FILE *stream);

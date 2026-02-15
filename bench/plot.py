@@ -1,8 +1,16 @@
+import sys
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
 
-with open("results.json") as f:
+# Check argument
+if len(sys.argv) < 2:
+    print(f"Usage: {sys.argv[0]} <results.json>")
+    sys.exit(1)
+
+filename = sys.argv[1]
+
+with open(filename) as f:
     data = json.load(f)
 
 benchmarks = data["benchmarks"]

@@ -2176,55 +2176,29 @@ NEAT_API bool neat__strv_ends_with(const Neat_String_View hay, const Neat_String
     return (needle.len <= hay.len) && (memcmp(hay.chars + hay.len - needle.len, needle.chars, needle.len) == 0);
 }
 
-NEAT_PRIVATE void neat__chars_tolower(unsigned char *chars, unsigned int len)
+NEAT_API void neat__chars_tolower(Neat_String_View str)
 {
-    for(unsigned int i = 0 ; i < len ; i++)
+    for(unsigned int i = 0 ; i < str.len ; i++)
     {
-        chars[i] = tolower(chars[i]);
+        str.chars[i] = tolower(str.chars[i]);
     }
 }
 
-NEAT_PRIVATE void neat__chars_toupper(unsigned char *chars, unsigned int len)
+NEAT_API void neat__chars_toupper(Neat_String_View str)
 {
-    for(unsigned int i = 0 ; i < len ; i++)
+    for(unsigned int i = 0 ; i < str.len ; i++)
     {
-        chars[i] = toupper(chars[i]);
+        str.chars[i] = toupper(str.chars[i]);
     }
 }
 
-NEAT_API Neat_Error neat__mutstr_ref_toupper(Neat_Mut_String_Ref str)
+NEAT_API Neat_Error neat__fmutstr_ref_clear(Neat__Fixed_Mut_String_Ref fmutstr_ref)
 {
-    switch(str.ty)
+    *fmutstr_ref.len = 0;
+    if(fmutstr_ref.cap > 0)
     {
-        case NEAT__DSTR_TY:
-            neat__chars_toupper(str.str.dstr->chars, str.str.dstr->len);
-            break;
-        case NEAT__STRBUF_TY:
-            neat__chars_toupper(str.str.strbuf->chars, str.str.strbuf->len);
-            break;
-        case NEAT__BUF_TY:
-            neat__chars_toupper(str.str.buf.ptr, strlen((char*) str.str.buf.ptr));
-            break;
+        fmutstr_ref.chars[0] = '\0';
     }
-    
-    return (Neat_Error){NEAT_OK};
-}
-
-NEAT_API Neat_Error neat__mutstr_ref_tolower(Neat_Mut_String_Ref str)
-{
-    switch(str.ty)
-    {
-        case NEAT__DSTR_TY:
-            neat__chars_tolower(str.str.dstr->chars, str.str.dstr->len);
-            break;
-        case NEAT__STRBUF_TY:
-            neat__chars_tolower(str.str.strbuf->chars, str.str.strbuf->len);
-            break;
-        case NEAT__BUF_TY:
-            neat__chars_tolower(str.str.buf.ptr, strlen((char*) str.str.buf.ptr));
-            break;
-    }
-    
     return (Neat_Error){NEAT_OK};
 }
 
@@ -2233,22 +2207,13 @@ NEAT_API Neat_Error neat__mutstr_ref_clear(Neat_Mut_String_Ref str)
     switch(str.ty)
     {
         case NEAT__DSTR_TY:
-            str.str.dstr->len = 0;
-            if(str.str.dstr->cap > 0)
-            {
-                str.str.dstr->chars[0] = '\0';
-            }
+            neat__fmutstr_ref_clear(neat__dstr_ptr_as_fmutstr_ref(str.str.dstr));
             break;
         case NEAT__STRBUF_TY:
-            str.str.strbuf->len = 0;
-            if(str.str.strbuf->cap > 0)
-            {
-                str.str.strbuf->chars[0] = '\0';
-            }
+            neat__fmutstr_ref_clear(neat__strbuf_ptr_as_fmutstr_ref(str.str.strbuf));
             break;
         case NEAT__BUF_TY:
-            if(str.str.buf.cap > 0)
-                str.str.buf.ptr[0] = '\0';
+            neat__fmutstr_ref_clear(neat__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}));
             break;
     }
     return (Neat_Error){NEAT_OK};
