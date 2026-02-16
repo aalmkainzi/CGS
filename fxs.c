@@ -5,8 +5,12 @@
     #define FXS_API
 #endif
 #ifndef FXS_PRIVATE
-    // for functions only in fxs_str.c
+    // for functions only in fxs.c
     #define FXS_PRIVATE
+#endif
+#ifndef FXS_PRIVATE_VAR
+    // for global variables in fxs.c that user code may access
+    #define FXS_PRIVATE_VAR
 #endif
 
 #include "fxs.h"
@@ -610,7 +614,7 @@ static const FXS_StrView fxs__sc_to_string[] = {
     {.chars = (unsigned char*) "-1", .len = 2}
 };
 
-const char fxs__byte_to_hex[][2] = 
+static const char fxs__byte_to_hex[][2] = 
 {
     {'0', '0'},
     {'0', '1'},
@@ -870,7 +874,7 @@ const char fxs__byte_to_hex[][2] =
     {'f', 'f'}
 };
 
-_Thread_local FXS_DStr fxs__fprint_tostr_dynamic_buffer = {
+FXS_PRIVATE_VAR _Thread_local FXS_DStr fxs__fprint_tostr_dynamic_buffer = {
     .allocator = &fxs__default_allocator
 };
 
@@ -3537,7 +3541,6 @@ FXS_API FXS_Error fxs__Floating_a_Fmt_##type##_tostr_p(FXS_MutStrRef dst, FXS__F
 FXS__FLOATING_TYPES(FXS__X, ignore, FXS__X)
 
 #undef FXS__X
-
 
 FXS_API FXS_Error fxs__bool_tostr_p(FXS_MutStrRef dst, bool *obj)
 {
