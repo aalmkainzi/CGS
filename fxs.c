@@ -6,11 +6,11 @@
 #endif
 #ifndef FXS_PRIVATE
     // for functions only in fxs.c
-    #define FXS_PRIVATE static
+    #define FXS_PRIVATE static inline
 #endif
-#ifndef FXS_PRIVATE_VAR
+#ifndef FXS_GLOBAL_VAR
     // for global variables in fxs.c that user code may access
-    #define FXS_PRIVATE_VAR
+    #define FXS_GLOBAL_VAR
 #endif
 
 #include "fxs.h"
@@ -874,7 +874,7 @@ static const char fxs__byte_to_hex[][2] =
     {'f', 'f'}
 };
 
-FXS_PRIVATE_VAR _Thread_local FXS_DStr fxs__fprint_tostr_dynamic_buffer = {
+FXS_GLOBAL_VAR _Thread_local FXS_DStr fxs__fprint_tostr_dynamic_buffer = {
     .allocator = &fxs__default_allocator
 };
 
