@@ -6,7 +6,7 @@
 #endif
 #ifndef FXS_PRIVATE
     // for functions only in fxs.c
-    #define FXS_PRIVATE
+    #define FXS_PRIVATE static
 #endif
 #ifndef FXS_PRIVATE_VAR
     // for global variables in fxs.c that user code may access
