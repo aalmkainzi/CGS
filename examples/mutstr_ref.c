@@ -1,14 +1,14 @@
-#define NEAT_STR_SHORT_NAMES
-#include "../neat_str.h"
+#define FXS_SHORT_NAMES
+#include "../fxs.h"
 
-void replace_dash(Mut_String_Ref str)
+void replace_dash(MutStrRef str)
 {
-    str_replace(str, "-", " ");
+    fxs_replace(str, "-", " ");
 }
 
 int main()
 {
-    String_Buffer sb = strbuf_init_from_cstr((char[]){"string-buffer"});
+    StrBuf sb = strbuf_init_from_cstr((char[]){"string-buffer"});
     
     char *cstr = calloc(128, sizeof(char));
     strcpy(cstr, "c-string");

@@ -1,9 +1,9 @@
-#define NEAT_STR_SHORT_NAMES
-#include "../neat_str.h"
+#define FXS_SHORT_NAMES
+#include "../fxs.h"
 
 int main()
 {
-    DString str = dstr_init();
+    DStr str = dstr_init();
     
     dstr_append(&str, "world");
     dstr_prepend(&str, "hello, ");

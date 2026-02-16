@@ -21,7 +21,7 @@ typedef struct FXS_Allocation
 } FXS_Allocation;
 
 typedef FXS_Allocation(*fxs_alloc_func)  (struct FXS_Allocator*, size_t alignment, size_t n);
-typedef void           (*fxs_dealloc_func)(struct FXS_Allocator*, void *ptr, size_t n);
+typedef void          (*fxs_dealloc_func)(struct FXS_Allocator*, void *ptr, size_t n);
 typedef FXS_Allocation(*fxs_realloc_func)(struct FXS_Allocator*, void *ptr, size_t alignment, size_t old_size, size_t new_size);
 
 typedef struct FXS_Allocator
@@ -956,25 +956,25 @@ __VA_OPT__(fxs__arrfmt_2) \
     .trailing_separator = fxs_strv(FXS__VA_OR("", __VA_ARGS__)) \
 })
 
-#define FXS__INTEGER_TOSTR_GENERIC_CASE(ty, extra) \
+#define FXS__INTEGER_TOSTR_GENERIC_CASE(ty, extra)         \
 FXS__Integer_d_Fmt_##ty : fxs__Integer_d_Fmt_##ty##_tostr, \
 FXS__Integer_x_Fmt_##ty : fxs__Integer_x_Fmt_##ty##_tostr, \
 FXS__Integer_o_Fmt_##ty : fxs__Integer_o_Fmt_##ty##_tostr, \
 FXS__Integer_b_Fmt_##ty : fxs__Integer_b_Fmt_##ty##_tostr, \
 
-#define FXS__FLOATING_TOSTR_LAST_GENERIC_CASE(ty, extra) \
+#define FXS__FLOATING_TOSTR_LAST_GENERIC_CASE(ty, extra)     \
 FXS__Floating_f_Fmt_##ty : fxs__Floating_f_Fmt_##ty##_tostr, \
 FXS__Floating_g_Fmt_##ty : fxs__Floating_g_Fmt_##ty##_tostr, \
 FXS__Floating_e_Fmt_##ty : fxs__Floating_e_Fmt_##ty##_tostr, \
 FXS__Floating_a_Fmt_##ty : fxs__Floating_a_Fmt_##ty##_tostr
 
-#define FXS__INTEGER_TOSTR_P_GENERIC_CASE(ty, extra) \
+#define FXS__INTEGER_TOSTR_P_GENERIC_CASE(ty, extra)         \
 FXS__Integer_d_Fmt_##ty : fxs__Integer_d_Fmt_##ty##_tostr_p, \
 FXS__Integer_x_Fmt_##ty : fxs__Integer_x_Fmt_##ty##_tostr_p, \
 FXS__Integer_o_Fmt_##ty : fxs__Integer_o_Fmt_##ty##_tostr_p, \
 FXS__Integer_b_Fmt_##ty : fxs__Integer_b_Fmt_##ty##_tostr_p, \
 
-#define FXS__FLOATING_TOSTR_P_LAST_GENERIC_CASE(ty, extra) \
+#define FXS__FLOATING_TOSTR_P_LAST_GENERIC_CASE(ty, extra)     \
 FXS__Floating_f_Fmt_##ty : fxs__Floating_f_Fmt_##ty##_tostr_p, \
 FXS__Floating_g_Fmt_##ty : fxs__Floating_g_Fmt_##ty##_tostr_p, \
 FXS__Floating_e_Fmt_##ty : fxs__Floating_e_Fmt_##ty##_tostr_p, \
@@ -1363,7 +1363,7 @@ FXS_API FXS_Error fxs__Integer_d_Fmt_##ty##_tostr(FXS_MutStrRef dst, FXS__Intege
 FXS_API FXS_Error fxs__Integer_x_Fmt_##ty##_tostr(FXS_MutStrRef dst, FXS__Integer_x_Fmt_##ty obj);    \
 FXS_API FXS_Error fxs__Integer_o_Fmt_##ty##_tostr(FXS_MutStrRef dst, FXS__Integer_o_Fmt_##ty obj);    \
 FXS_API FXS_Error fxs__Integer_b_Fmt_##ty##_tostr(FXS_MutStrRef dst, FXS__Integer_b_Fmt_##ty obj);    \
-                                                                                                           \
+                                                                                                      \
 FXS_API FXS_Error fxs__Integer_d_Fmt_##ty##_tostr_p(FXS_MutStrRef dst, FXS__Integer_d_Fmt_##ty *obj); \
 FXS_API FXS_Error fxs__Integer_x_Fmt_##ty##_tostr_p(FXS_MutStrRef dst, FXS__Integer_x_Fmt_##ty *obj); \
 FXS_API FXS_Error fxs__Integer_o_Fmt_##ty##_tostr_p(FXS_MutStrRef dst, FXS__Integer_o_Fmt_##ty *obj); \

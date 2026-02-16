@@ -1,4 +1,4 @@
-build_cmnd = cc -Wall -Wextra -g -fsanitize=address,undefined ../neat_str.c
+build_cmnd = cc -Wall -Wextra -g -fsanitize=address,undefined ../fxs.c
 
 all: $(wildcard *.c)
 	$(build_cmnd) string_buffer.c -o string_buffer
