@@ -1,9 +1,9 @@
-#define FXS_SHORT_NAMES
-#include "../fxs.h"
+#define SGS_SHORT_NAMES
+#include "../sgs.h"
 
 void replace_dash(MutStrRef str)
 {
-    fxs_replace(str, "-", " ");
+    sgs_replace(str, "-", " ");
 }
 
 int main()

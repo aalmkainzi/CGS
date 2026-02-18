@@ -6,3 +6,5 @@
 *.exe
 *.app
 /tests/files/
+compile_flags.txt
+api.c

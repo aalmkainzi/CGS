@@ -1,5 +1,5 @@
-#define FXS_SHORT_NAMES
-#include "../fxs.h"
+#define SGS_SHORT_NAMES
+#include "../sgs.h"
 
 int main()
 {
