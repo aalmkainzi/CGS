@@ -909,10 +909,10 @@ void test_read2()
     
     DStr line = dstr_init();
     
-    dstr_fread_line(&line, f);
+    sgs_fread_line(&line, f);
     assert(sgs_equal(line, "this is the first line\n"));
     
-    dstr_append_fread_line(&line, f);
+    sgs_append_fread_line(&line, f);
     assert(sgs_equal(line, "this is the first line\nno newline here"));
     
     dstr_deinit(&line);

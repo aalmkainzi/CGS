@@ -725,27 +725,6 @@ sgs__dstr_init_from(sgs_strv(anystr_src), SGS__VA_OR(sgs_get_default_allocator()
 #define sgs_dstr_deinit(dstr) \
 sgs__dstr_deinit(dstr)
 
-#define sgs_dstr_append(dstr, anystr_src) \
-sgs__dstr_append(dstr, sgs_strv(anystr_src))
-
-#define sgs_dstr_prepend(dstr, anystr_src) \
-sgs__dstr_prepend_strv(dstr, sgs_strv(anystr_src))
-
-#define sgs_dstr_insert(dstr, anystr_src, idx) \
-sgs__dstr_insert(dstr, sgs_strv(anystr_src), idx)
-
-#define sgs_dstr_fread_line(dstr, stream) \
-sgs__dstr_fread_line(dstr, stream)
-
-#define sgs_dstr_read_line(dstr) \
-sgs__dstr_fread_line(dstr, stdin)
-
-#define sgs_dstr_append_fread_line(dstr, stream) \
-sgs__dstr_append_fread_line(dstr, stream)
-
-#define sgs_dstr_append_read_line(dstr) \
-sgs__dstr_append_fread_line(dstr, stdin)
-
 #define sgs_dstr_shrink_to_fit(dstr) \
 sgs__dstr_shrink_to_fit(dstr)
 
@@ -1412,18 +1391,10 @@ typedef SGS_ArrayFmt              ArrayFmt;
 #define dstr_init(...) sgs_dstr_init(__VA_ARGS__)
 #define dstr_init_from(anystr, ...) sgs_dstr_init_from(anystr __VA_OPT__(,) __VA_ARGS__)
 #define dstr_deinit(dstr) sgs_dstr_deinit(dstr);
+#define dstr_ensure_cap(dstr, new_cap) sgs_dstr_ensure_cap(dstr, new_cap)
+#define dstr_shrink_to_fit(dstr) sgs_dstr_shrink_to_fit(dstr)
 
 #define mutstr_ref(mutstr, ...) sgs_mutstr_ref(mutstr __VA_OPT__(,) __VA_ARGS__)
-
-#define dstr_append(dstr, anystr) sgs_dstr_append(dstr, anystr)
-#define dstr_prepend(dstr, anystr) sgs_dstr_prepend(dstr, anystr)
-#define dstr_insert(dstr, anystr, idx) sgs_dstr_insert(dstr, anystr, idx)
-#define dstr_fread_line(dstr, stream) sgs_dstr_fread_line(dstr, stream)
-#define dstr_read_line(dstr) sgs_dstr_read_line(dstr)
-#define dstr_append_fread_line(dstr, stream) sgs_dstr_append_fread_line(dstr, stream)
-#define dstr_append_read_line(dstr) sgs_dstr_append_read_line(dstr)
-#define dstr_shrink_to_fit(dstr) sgs_dstr_shrink_to_fit(dstr)
-#define dstr_ensure_cap(dstr, new_cap) sgs_dstr_ensure_cap(dstr, new_cap)
 
 #define tostr(dst, src) sgs_tostr(dst, src)
 #define tostr_p(dst, srcp) sgs_tostr_p(dst, srcp)
