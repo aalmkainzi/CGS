@@ -145,23 +145,13 @@ void test_str_len_edge_cases() {
 // ============================================================================
 
 void test_str_cap_edge_cases() {
-    TEST("sgs_cap: zero capacity DStr");
-    {
-        DStr dstr = dstr_init(0);
-        // Should have at least 1 for null terminator or 0
-        unsigned int cap = sgs_cap(&dstr);
-        ASSERT_TRUE(cap >= 0);
-        dstr_deinit(&dstr);
-    }
-    
     TEST("sgs_cap: raw char array");
     {
         char buf[100];
         // For raw arrays, capacity might not be trackable
         // This tests that it doesn't crash
         unsigned int cap = sgs_cap(buf);
-        (void)cap; // Just ensure no crash
-        ASSERT_TRUE(1);
+        ASSERT_TRUE(cap == 100);
     }
     
     TEST("sgs_cap: StrBuf at exact capacity");
@@ -248,7 +238,7 @@ void test_str_find_edge_cases() {
         StrView result = sgs_find(hay, needle);
         // Finding empty in empty might return start or invalid
         // Check it doesn't crash
-        ASSERT_TRUE(1);
+        ASSERT_TRUE((char*)result.chars == hay);
     }
     
     TEST("sgs_find: empty needle in non-empty haystack");

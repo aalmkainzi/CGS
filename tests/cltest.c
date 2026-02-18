@@ -51,7 +51,6 @@ do { \
 do { \
     if ((err).ec != SGS_OK) { \
         \
-        int ln = __LINE__; \
         printf("    Expected SGS_OK, got error code, %d (line %d )", err.ec, __LINE__); \
         return false; \
     } \
@@ -893,7 +892,6 @@ bool test_str_join_single_element() {
 bool test_dstr_init_default() {
     DStr ds = dstr_init();
     ASSERT_EQ(sgs_len(ds), 0);
-    ASSERT(sgs_cap(ds) >= 0);
     dstr_deinit(&ds);
     return true;
 }

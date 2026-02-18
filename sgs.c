@@ -1459,7 +1459,7 @@ SGS_API bool sgs__strv_equal(const SGS_StrView str1, const SGS_StrView str2)
 
 SGS_API SGS_StrView sgs__strv_find(const SGS_StrView hay, const SGS_StrView needle)
 {
-    if(hay.chars == NULL || needle.chars == NULL || hay.len == 0 || needle.len > hay.len)
+    if(hay.chars == NULL || needle.chars == NULL || needle.len > hay.len)
         return (SGS_StrView){.chars = NULL, .len = 0};
     if(needle.len == 0)
         return (SGS_StrView){.chars = hay.chars, .len = 0};
