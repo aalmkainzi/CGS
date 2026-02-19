@@ -1,4 +1,2 @@
 - Add default precision float fmt structs (maybe not?)
 - Add capital fmt_char structs
-- maybe delete the dstr_* macros that aren't needed
-- change prefix to sgs_ (Seamless Generic Strings)

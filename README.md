@@ -1,5 +1,5 @@
-# FXS (FleXible String library)
-A Generic String library for C to make string handling more intuitive in C.
+# SGS (Seamless Generic Strings)
+A Generic String library to make string handling more intuitive in C.
 
 ## Quick Examples
 ```C
