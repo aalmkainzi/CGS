@@ -1383,14 +1383,14 @@ typedef SGS_ArrayFmt              ArrayFmt;
 
 #define strv(anystr, ...) sgs_strv(anystr __VA_OPT__(,) __VA_ARGS__)
 #define strv_arr(...) sgs_strv_arr(__VA_ARGS__)
-#define strv_arr_from_carr(...) sgs_strv_arr_from_carr(arr __VA_OPT__(,) __VA_ARGS__)
+#define strv_arr_from_carr(arr, ...) sgs_strv_arr_from_carr(arr __VA_OPT__(,) __VA_ARGS__)
 
 #define strbuf_init_from_cstr(cstr, ...) sgs_strbuf_init_from_cstr(cstr __VA_OPT__(,) __VA_ARGS__)
 #define strbuf_init_from_buf(buf, ...) sgs_strbuf_init_from_buf(buf __VA_OPT__(,) __VA_ARGS__)
 
 #define dstr_init(...) sgs_dstr_init(__VA_ARGS__)
 #define dstr_init_from(anystr, ...) sgs_dstr_init_from(anystr __VA_OPT__(,) __VA_ARGS__)
-#define dstr_deinit(dstr) sgs_dstr_deinit(dstr);
+#define dstr_deinit(dstr) sgs_dstr_deinit(dstr)
 #define dstr_ensure_cap(dstr, new_cap) sgs_dstr_ensure_cap(dstr, new_cap)
 #define dstr_shrink_to_fit(dstr) sgs_dstr_shrink_to_fit(dstr)
 
