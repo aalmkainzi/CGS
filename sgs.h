@@ -824,7 +824,11 @@ typedef struct SGS__Integer_o_Fmt_##ty \
 typedef struct SGS__Integer_b_Fmt_##ty \
 { \
     ty obj; \
-} SGS__Integer_b_Fmt_##ty;
+} SGS__Integer_b_Fmt_##ty; \
+typedef struct SGS__Integer_X_Fmt_##ty \
+{ \
+    ty obj; \
+} SGS__Integer_X_Fmt_##ty;
 
 SGS__INTEGER_TYPES(SGS__X, ignore)
 
@@ -851,6 +855,26 @@ typedef struct SGS__Floating_a_Fmt_##ty \
     ty obj; \
     int precision; \
 } SGS__Floating_a_Fmt_##ty; \
+typedef struct SGS__Floating_F_Fmt_##ty \
+{ \
+    ty obj; \
+    int precision; \
+} SGS__Floating_F_Fmt_##ty; \
+typedef struct SGS__Floating_G_Fmt_##ty \
+{ \
+    ty obj; \
+    int precision; \
+} SGS__Floating_G_Fmt_##ty; \
+typedef struct SGS__Floating_E_Fmt_##ty \
+{ \
+    ty obj; \
+    int precision; \
+} SGS__Floating_E_Fmt_##ty; \
+typedef struct SGS__Floating_A_Fmt_##ty \
+{ \
+    ty obj; \
+    int precision; \
+} SGS__Floating_A_Fmt_##ty;
 
 SGS__FLOATING_TYPES(SGS__X, ignore, SGS__X)
 
@@ -876,6 +900,7 @@ char(*)['d']: (SGS__Integer_d_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty)},  \
 char(*)['x']: (SGS__Integer_x_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty)},  \
 char(*)['o']: (SGS__Integer_o_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty)},  \
 char(*)['b']: (SGS__Integer_b_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty)},  \
+char(*)['X']: (SGS__Integer_X_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty)},  \
 default: 0),
 
 #define SGS__3_VA_OR(otherwise, a,b, ...) \
@@ -884,10 +909,14 @@ SGS__VA_OR(otherwise, __VA_ARGS__)
 #define SGS__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra) \
 ty: \
 _Generic((char(*)[SGS__ARG2 extra]){0}, \
-char(*)['f']: (SGS__Floating_f_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty), SGS__MCALL(SGS__3_VA_OR, (6, SGS__EXPAND1 extra))},   \
-char(*)['g']: (SGS__Floating_g_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty), SGS__MCALL(SGS__3_VA_OR, (6, SGS__EXPAND1 extra))},   \
-char(*)['e']: (SGS__Floating_e_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty), SGS__MCALL(SGS__3_VA_OR, (6, SGS__EXPAND1 extra))},   \
-char(*)['a']: (SGS__Floating_a_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty), SGS__MCALL(SGS__3_VA_OR, (-1, SGS__EXPAND1 extra))},  \
+char(*)['f']: (SGS__Floating_f_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty), SGS__MCALL(SGS__3_VA_OR, (6 , SGS__EXPAND1 extra))}, \
+char(*)['g']: (SGS__Floating_g_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty), SGS__MCALL(SGS__3_VA_OR, (6 , SGS__EXPAND1 extra))}, \
+char(*)['e']: (SGS__Floating_e_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty), SGS__MCALL(SGS__3_VA_OR, (6 , SGS__EXPAND1 extra))}, \
+char(*)['a']: (SGS__Floating_a_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty), SGS__MCALL(SGS__3_VA_OR, (-1, SGS__EXPAND1 extra))}, \
+char(*)['F']: (SGS__Floating_F_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty), SGS__MCALL(SGS__3_VA_OR, (6 , SGS__EXPAND1 extra))}, \
+char(*)['G']: (SGS__Floating_G_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty), SGS__MCALL(SGS__3_VA_OR, (6 , SGS__EXPAND1 extra))}, \
+char(*)['E']: (SGS__Floating_E_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty), SGS__MCALL(SGS__3_VA_OR, (6 , SGS__EXPAND1 extra))}, \
+char(*)['A']: (SGS__Floating_A_Fmt_##ty){sgs__coerce(SGS__ARG1 extra, ty), SGS__MCALL(SGS__3_VA_OR, (-1, SGS__EXPAND1 extra))}, \
 default: 0)
 
 #define SGS__FLOATING_FMT_GENERIC_BRANCH(ty, extra) \
@@ -895,7 +924,7 @@ SGS__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 
 #define sgs_tsfmt(x, fmt_chr, ...) \
 ( \
-    sgs__static_assertx( (SGS__IS_FLOATING(x) && (fmt_chr == 'f' || fmt_chr == 'g' || fmt_chr == 'e' || fmt_chr == 'a')  ) || (SGS__IS_INTEGER(x) && (fmt_chr == 'd' || fmt_chr == 'x' || fmt_chr == 'o' || fmt_chr == 'b')), "Incorrect formatting char for the type"), \
+    sgs__static_assertx( (SGS__IS_FLOATING(x) && (fmt_chr == 'f' || fmt_chr == 'g' || fmt_chr == 'e' || fmt_chr == 'a' || fmt_chr == 'F' || fmt_chr == 'G' || fmt_chr == 'E' || fmt_chr == 'A')  ) || (SGS__IS_INTEGER(x) && (fmt_chr == 'd' || fmt_chr == 'x' || fmt_chr == 'o' || fmt_chr == 'b' || fmt_chr == 'X')), "Incorrect formatting char for the type"), \
     sgs__static_assertx((SGS__IS_FLOATING(x) || (1 __VA_OPT__(-1))), "tsfmt Integers dont take a third parameter"), \
     _Generic(x, \
         SGS__INTEGER_TYPES(SGS__INTEGER_FMT_GENERIC_BRANCHES, (x, fmt_chr)) \
@@ -940,24 +969,34 @@ SGS__Integer_d_Fmt_##ty : sgs__Integer_d_Fmt_##ty##_tostr, \
 SGS__Integer_x_Fmt_##ty : sgs__Integer_x_Fmt_##ty##_tostr, \
 SGS__Integer_o_Fmt_##ty : sgs__Integer_o_Fmt_##ty##_tostr, \
 SGS__Integer_b_Fmt_##ty : sgs__Integer_b_Fmt_##ty##_tostr, \
+SGS__Integer_X_Fmt_##ty : sgs__Integer_X_Fmt_##ty##_tostr, \
 
 #define SGS__FLOATING_TOSTR_LAST_GENERIC_CASE(ty, extra)     \
 SGS__Floating_f_Fmt_##ty : sgs__Floating_f_Fmt_##ty##_tostr, \
 SGS__Floating_g_Fmt_##ty : sgs__Floating_g_Fmt_##ty##_tostr, \
 SGS__Floating_e_Fmt_##ty : sgs__Floating_e_Fmt_##ty##_tostr, \
-SGS__Floating_a_Fmt_##ty : sgs__Floating_a_Fmt_##ty##_tostr
+SGS__Floating_a_Fmt_##ty : sgs__Floating_a_Fmt_##ty##_tostr, \
+SGS__Floating_F_Fmt_##ty : sgs__Floating_F_Fmt_##ty##_tostr, \
+SGS__Floating_G_Fmt_##ty : sgs__Floating_G_Fmt_##ty##_tostr, \
+SGS__Floating_E_Fmt_##ty : sgs__Floating_E_Fmt_##ty##_tostr, \
+SGS__Floating_A_Fmt_##ty : sgs__Floating_A_Fmt_##ty##_tostr
 
 #define SGS__INTEGER_TOSTR_P_GENERIC_CASE(ty, extra)         \
 SGS__Integer_d_Fmt_##ty : sgs__Integer_d_Fmt_##ty##_tostr_p, \
 SGS__Integer_x_Fmt_##ty : sgs__Integer_x_Fmt_##ty##_tostr_p, \
 SGS__Integer_o_Fmt_##ty : sgs__Integer_o_Fmt_##ty##_tostr_p, \
 SGS__Integer_b_Fmt_##ty : sgs__Integer_b_Fmt_##ty##_tostr_p, \
+SGS__Integer_X_Fmt_##ty : sgs__Integer_X_Fmt_##ty##_tostr_p,
 
 #define SGS__FLOATING_TOSTR_P_LAST_GENERIC_CASE(ty, extra)     \
 SGS__Floating_f_Fmt_##ty : sgs__Floating_f_Fmt_##ty##_tostr_p, \
 SGS__Floating_g_Fmt_##ty : sgs__Floating_g_Fmt_##ty##_tostr_p, \
 SGS__Floating_e_Fmt_##ty : sgs__Floating_e_Fmt_##ty##_tostr_p, \
-SGS__Floating_a_Fmt_##ty : sgs__Floating_a_Fmt_##ty##_tostr_p
+SGS__Floating_a_Fmt_##ty : sgs__Floating_a_Fmt_##ty##_tostr_p, \
+SGS__Floating_F_Fmt_##ty : sgs__Floating_F_Fmt_##ty##_tostr_p, \
+SGS__Floating_G_Fmt_##ty : sgs__Floating_G_Fmt_##ty##_tostr_p, \
+SGS__Floating_E_Fmt_##ty : sgs__Floating_E_Fmt_##ty##_tostr_p, \
+SGS__Floating_A_Fmt_##ty : sgs__Floating_A_Fmt_##ty##_tostr_p
 
 #define SGS__FLOATING_TOSTR_GENERIC_CASE(ty, extra) \
 SGS__FLOATING_TOSTR_LAST_GENERIC_CASE(ty, extra),
@@ -1342,11 +1381,14 @@ SGS_API SGS_Error sgs__Integer_d_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Intege
 SGS_API SGS_Error sgs__Integer_x_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Integer_x_Fmt_##ty obj);    \
 SGS_API SGS_Error sgs__Integer_o_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Integer_o_Fmt_##ty obj);    \
 SGS_API SGS_Error sgs__Integer_b_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Integer_b_Fmt_##ty obj);    \
+SGS_API SGS_Error sgs__Integer_X_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Integer_X_Fmt_##ty obj);    \
+                                                                                                      \
                                                                                                       \
 SGS_API SGS_Error sgs__Integer_d_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Integer_d_Fmt_##ty *obj); \
 SGS_API SGS_Error sgs__Integer_x_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Integer_x_Fmt_##ty *obj); \
 SGS_API SGS_Error sgs__Integer_o_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Integer_o_Fmt_##ty *obj); \
-SGS_API SGS_Error sgs__Integer_b_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Integer_b_Fmt_##ty *obj);
+SGS_API SGS_Error sgs__Integer_b_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Integer_b_Fmt_##ty *obj); \
+SGS_API SGS_Error sgs__Integer_X_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Integer_X_Fmt_##ty *obj);
 
 SGS__INTEGER_TYPES(SGS__X, ignore)
 
@@ -1357,11 +1399,19 @@ SGS_API SGS_Error sgs__Floating_f_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Float
 SGS_API SGS_Error sgs__Floating_g_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Floating_g_Fmt_##ty obj);    \
 SGS_API SGS_Error sgs__Floating_e_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Floating_e_Fmt_##ty obj);    \
 SGS_API SGS_Error sgs__Floating_a_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Floating_a_Fmt_##ty obj);    \
+SGS_API SGS_Error sgs__Floating_F_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Floating_F_Fmt_##ty obj);    \
+SGS_API SGS_Error sgs__Floating_G_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Floating_G_Fmt_##ty obj);    \
+SGS_API SGS_Error sgs__Floating_E_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Floating_E_Fmt_##ty obj);    \
+SGS_API SGS_Error sgs__Floating_A_Fmt_##ty##_tostr(SGS_MutStrRef dst, SGS__Floating_A_Fmt_##ty obj);    \
                                                                                                         \
 SGS_API SGS_Error sgs__Floating_f_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Floating_f_Fmt_##ty *obj); \
 SGS_API SGS_Error sgs__Floating_g_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Floating_g_Fmt_##ty *obj); \
 SGS_API SGS_Error sgs__Floating_e_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Floating_e_Fmt_##ty *obj); \
-SGS_API SGS_Error sgs__Floating_a_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Floating_a_Fmt_##ty *obj);
+SGS_API SGS_Error sgs__Floating_a_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Floating_a_Fmt_##ty *obj); \
+SGS_API SGS_Error sgs__Floating_F_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Floating_F_Fmt_##ty *obj); \
+SGS_API SGS_Error sgs__Floating_G_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Floating_G_Fmt_##ty *obj); \
+SGS_API SGS_Error sgs__Floating_E_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Floating_E_Fmt_##ty *obj); \
+SGS_API SGS_Error sgs__Floating_A_Fmt_##ty##_tostr_p(SGS_MutStrRef dst, SGS__Floating_A_Fmt_##ty *obj);
 
 SGS__FLOATING_TYPES(SGS__X, ignore, SGS__X)
 
@@ -1371,15 +1421,15 @@ SGS__FLOATING_TYPES(SGS__X, ignore, SGS__X)
 
 #ifdef SGS_SHORT_NAMES
 
-typedef SGS_Allocator             Allocator;
-typedef SGS_DStr                  DStr;
-typedef SGS_StrBuf                StrBuf;
-typedef SGS_StrView               StrView;
-typedef SGS_StrViewArray          StrViewArray;
-typedef SGS_MutStrRef             MutStrRef;
-typedef SGS_ReplaceResult         ReplaceResult;
-typedef SGS_StrAppenderState      StrAppenderState;
-typedef SGS_ArrayFmt              ArrayFmt;
+#define Allocator             SGS_Allocator
+#define DStr                  SGS_DStr
+#define StrBuf                SGS_StrBuf
+#define StrView               SGS_StrView
+#define StrViewArray          SGS_StrViewArray
+#define MutStrRef             SGS_MutStrRef
+#define ReplaceResult         SGS_ReplaceResult
+#define StrAppenderState      SGS_StrAppenderState
+#define ArrayFmt              SGS_ArrayFmt
 
 #define strv(anystr, ...) sgs_strv(anystr __VA_OPT__(,) __VA_ARGS__)
 #define strv_arr(...) sgs_strv_arr(__VA_ARGS__)

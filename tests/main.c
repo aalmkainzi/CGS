@@ -893,7 +893,7 @@ void test_read2()
 {
     StrBuf sb = strbuf_init_from_buf((char[64]){});
     
-    FILE *f = fopen("files/file", "rb");
+    FILE *f = fopen("file", "rb");
     sgs_fread_line(&sb, f);
     println(sb.len, " :: '", sb, "'");
     assert(sgs_equal(sb, "this is the first line\n"));
@@ -905,7 +905,7 @@ void test_read2()
     
     fclose(f);
     
-    f = fopen("files/file", "rb");
+    f = fopen("file", "rb");
     
     DStr line = dstr_init();
     
@@ -1038,6 +1038,9 @@ void tests_memmem()
 
 int main()
 {
+    println(tsfmt(10.0f, 'E', 3));
+    
+    
     test_tostr();
     test_str_del();
     test_str_count();
