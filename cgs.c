@@ -13,7 +13,7 @@
     #define CGS_GLOBAL_VAR
 #endif
 
-#include "sgs.h"
+#include "cgs.h"
 
 #if !defined(CGS__STR_C_INCLUDED)
 #define CGS__STR_C_INCLUDED
