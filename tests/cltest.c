@@ -1025,7 +1025,7 @@ bool test_strv_entire() {
 
 bool test_str_appender_basic() {
     char buf[100] = "hello";
-    MutStrRef appender = cgs_appender(buf, &(StrAppenderState){});
+    MutStrRef appender = cgs_appender(buf, &(AppenderState){});
     
     ASSERT_OK(cgs_append(appender, " world"));
     ASSERT_OK(cgs_commit_appender(buf, appender));

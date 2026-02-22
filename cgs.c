@@ -39,16 +39,16 @@ static CGS_Allocator cgs__default_allocator = {
 };
 
 static const CGS_StrView cgs__error_to_string[] = {
-    [CGS_OK]                     = {.len = sizeof("OK")                     - 1, .chars = (unsigned char*) "OK"},
-    [CGS_DST_TOO_SMALL]          = {.len = sizeof("DST_TOO_SMALL")          - 1, .chars = (unsigned char*) "DST_TOO_SMALL"},
-    [CGS_ALLOC_ERR]              = {.len = sizeof("ALLOC_ERR")              - 1, .chars = (unsigned char*) "ALLOC_ERR"},
-    [CGS_INDEX_OUT_OF_BOUNDS]    = {.len = sizeof("INDEX_OUT_OF_BOUNDS")    - 1, .chars = (unsigned char*) "INDEX_OUT_OF_BOUNDS"},
-    [CGS_BAD_RANGE]              = {.len = sizeof("BAD_RANGE")              - 1, .chars = (unsigned char*) "BAD_RANGE"},
-    [CGS_NOT_FOUND]              = {.len = sizeof("NOT_FOUND")              - 1, .chars = (unsigned char*) "NOT_FOUND"},
-    [CGS_ALIASING_NOT_SUPPORTED] = {.len = sizeof("ALIASING_NOT_SUPPORTED") - 1, .chars = (unsigned char*) "ALIASING_NOT_SUPPORTED"},
-    [CGS_INCORRECT_TYPE]         = {.len = sizeof("INCORRECT_TYPE")         - 1, .chars = (unsigned char*) "INCORRECT_TYPE"},
-    [CGS_ENCODING_ERROR]         = {.len = sizeof("ENCODING_ERROR")         - 1, .chars = (unsigned char*) "ENCODING_ERROR"},
-    [CGS_CALLBACK_EXIT]          = {.len = sizeof("CALLBACK_EXIT")          - 1, .chars = (unsigned char*) "CALLBACK_EXIT"}
+    [CGS_OK]                     = {.len = sizeof("OK")                     - 1, .chars = (char*) "OK"},
+    [CGS_DST_TOO_SMALL]          = {.len = sizeof("DST_TOO_SMALL")          - 1, .chars = (char*) "DST_TOO_SMALL"},
+    [CGS_ALLOC_ERR]              = {.len = sizeof("ALLOC_ERR")              - 1, .chars = (char*) "ALLOC_ERR"},
+    [CGS_INDEX_OUT_OF_BOUNDS]    = {.len = sizeof("INDEX_OUT_OF_BOUNDS")    - 1, .chars = (char*) "INDEX_OUT_OF_BOUNDS"},
+    [CGS_BAD_RANGE]              = {.len = sizeof("BAD_RANGE")              - 1, .chars = (char*) "BAD_RANGE"},
+    [CGS_NOT_FOUND]              = {.len = sizeof("NOT_FOUND")              - 1, .chars = (char*) "NOT_FOUND"},
+    [CGS_ALIASING_NOT_SUPPORTED] = {.len = sizeof("ALIASING_NOT_SUPPORTED") - 1, .chars = (char*) "ALIASING_NOT_SUPPORTED"},
+    [CGS_INCORRECT_TYPE]         = {.len = sizeof("INCORRECT_TYPE")         - 1, .chars = (char*) "INCORRECT_TYPE"},
+    [CGS_ENCODING_ERROR]         = {.len = sizeof("ENCODING_ERROR")         - 1, .chars = (char*) "ENCODING_ERROR"},
+    [CGS_CALLBACK_EXIT]          = {.len = sizeof("CALLBACK_EXIT")          - 1, .chars = (char*) "CALLBACK_EXIT"}
 };
 
 static const long long cgs__ten_pows[] = {
@@ -97,521 +97,521 @@ static const unsigned long long cgs__ten_pows_ull[] = {
 };
 
 static const CGS_StrView cgs__uc_to_string[256] = {
-    {.chars = (unsigned char*) "0", .len = 1},
-    {.chars = (unsigned char*) "1", .len = 1},
-    {.chars = (unsigned char*) "2", .len = 1},
-    {.chars = (unsigned char*) "3", .len = 1},
-    {.chars = (unsigned char*) "4", .len = 1},
-    {.chars = (unsigned char*) "5", .len = 1},
-    {.chars = (unsigned char*) "6", .len = 1},
-    {.chars = (unsigned char*) "7", .len = 1},
-    {.chars = (unsigned char*) "8", .len = 1},
-    {.chars = (unsigned char*) "9", .len = 1},
-    {.chars = (unsigned char*) "10", .len = 2},
-    {.chars = (unsigned char*) "11", .len = 2},
-    {.chars = (unsigned char*) "12", .len = 2},
-    {.chars = (unsigned char*) "13", .len = 2},
-    {.chars = (unsigned char*) "14", .len = 2},
-    {.chars = (unsigned char*) "15", .len = 2},
-    {.chars = (unsigned char*) "16", .len = 2},
-    {.chars = (unsigned char*) "17", .len = 2},
-    {.chars = (unsigned char*) "18", .len = 2},
-    {.chars = (unsigned char*) "19", .len = 2},
-    {.chars = (unsigned char*) "20", .len = 2},
-    {.chars = (unsigned char*) "21", .len = 2},
-    {.chars = (unsigned char*) "22", .len = 2},
-    {.chars = (unsigned char*) "23", .len = 2},
-    {.chars = (unsigned char*) "24", .len = 2},
-    {.chars = (unsigned char*) "25", .len = 2},
-    {.chars = (unsigned char*) "26", .len = 2},
-    {.chars = (unsigned char*) "27", .len = 2},
-    {.chars = (unsigned char*) "28", .len = 2},
-    {.chars = (unsigned char*) "29", .len = 2},
-    {.chars = (unsigned char*) "30", .len = 2},
-    {.chars = (unsigned char*) "31", .len = 2},
-    {.chars = (unsigned char*) "32", .len = 2},
-    {.chars = (unsigned char*) "33", .len = 2},
-    {.chars = (unsigned char*) "34", .len = 2},
-    {.chars = (unsigned char*) "35", .len = 2},
-    {.chars = (unsigned char*) "36", .len = 2},
-    {.chars = (unsigned char*) "37", .len = 2},
-    {.chars = (unsigned char*) "38", .len = 2},
-    {.chars = (unsigned char*) "39", .len = 2},
-    {.chars = (unsigned char*) "40", .len = 2},
-    {.chars = (unsigned char*) "41", .len = 2},
-    {.chars = (unsigned char*) "42", .len = 2},
-    {.chars = (unsigned char*) "43", .len = 2},
-    {.chars = (unsigned char*) "44", .len = 2},
-    {.chars = (unsigned char*) "45", .len = 2},
-    {.chars = (unsigned char*) "46", .len = 2},
-    {.chars = (unsigned char*) "47", .len = 2},
-    {.chars = (unsigned char*) "48", .len = 2},
-    {.chars = (unsigned char*) "49", .len = 2},
-    {.chars = (unsigned char*) "50", .len = 2},
-    {.chars = (unsigned char*) "51", .len = 2},
-    {.chars = (unsigned char*) "52", .len = 2},
-    {.chars = (unsigned char*) "53", .len = 2},
-    {.chars = (unsigned char*) "54", .len = 2},
-    {.chars = (unsigned char*) "55", .len = 2},
-    {.chars = (unsigned char*) "56", .len = 2},
-    {.chars = (unsigned char*) "57", .len = 2},
-    {.chars = (unsigned char*) "58", .len = 2},
-    {.chars = (unsigned char*) "59", .len = 2},
-    {.chars = (unsigned char*) "60", .len = 2},
-    {.chars = (unsigned char*) "61", .len = 2},
-    {.chars = (unsigned char*) "62", .len = 2},
-    {.chars = (unsigned char*) "63", .len = 2},
-    {.chars = (unsigned char*) "64", .len = 2},
-    {.chars = (unsigned char*) "65", .len = 2},
-    {.chars = (unsigned char*) "66", .len = 2},
-    {.chars = (unsigned char*) "67", .len = 2},
-    {.chars = (unsigned char*) "68", .len = 2},
-    {.chars = (unsigned char*) "69", .len = 2},
-    {.chars = (unsigned char*) "70", .len = 2},
-    {.chars = (unsigned char*) "71", .len = 2},
-    {.chars = (unsigned char*) "72", .len = 2},
-    {.chars = (unsigned char*) "73", .len = 2},
-    {.chars = (unsigned char*) "74", .len = 2},
-    {.chars = (unsigned char*) "75", .len = 2},
-    {.chars = (unsigned char*) "76", .len = 2},
-    {.chars = (unsigned char*) "77", .len = 2},
-    {.chars = (unsigned char*) "78", .len = 2},
-    {.chars = (unsigned char*) "79", .len = 2},
-    {.chars = (unsigned char*) "80", .len = 2},
-    {.chars = (unsigned char*) "81", .len = 2},
-    {.chars = (unsigned char*) "82", .len = 2},
-    {.chars = (unsigned char*) "83", .len = 2},
-    {.chars = (unsigned char*) "84", .len = 2},
-    {.chars = (unsigned char*) "85", .len = 2},
-    {.chars = (unsigned char*) "86", .len = 2},
-    {.chars = (unsigned char*) "87", .len = 2},
-    {.chars = (unsigned char*) "88", .len = 2},
-    {.chars = (unsigned char*) "89", .len = 2},
-    {.chars = (unsigned char*) "90", .len = 2},
-    {.chars = (unsigned char*) "91", .len = 2},
-    {.chars = (unsigned char*) "92", .len = 2},
-    {.chars = (unsigned char*) "93", .len = 2},
-    {.chars = (unsigned char*) "94", .len = 2},
-    {.chars = (unsigned char*) "95", .len = 2},
-    {.chars = (unsigned char*) "96", .len = 2},
-    {.chars = (unsigned char*) "97", .len = 2},
-    {.chars = (unsigned char*) "98", .len = 2},
-    {.chars = (unsigned char*) "99", .len = 2},
-    {.chars = (unsigned char*) "100", .len = 3},
-    {.chars = (unsigned char*) "101", .len = 3},
-    {.chars = (unsigned char*) "102", .len = 3},
-    {.chars = (unsigned char*) "103", .len = 3},
-    {.chars = (unsigned char*) "104", .len = 3},
-    {.chars = (unsigned char*) "105", .len = 3},
-    {.chars = (unsigned char*) "106", .len = 3},
-    {.chars = (unsigned char*) "107", .len = 3},
-    {.chars = (unsigned char*) "108", .len = 3},
-    {.chars = (unsigned char*) "109", .len = 3},
-    {.chars = (unsigned char*) "110", .len = 3},
-    {.chars = (unsigned char*) "111", .len = 3},
-    {.chars = (unsigned char*) "112", .len = 3},
-    {.chars = (unsigned char*) "113", .len = 3},
-    {.chars = (unsigned char*) "114", .len = 3},
-    {.chars = (unsigned char*) "115", .len = 3},
-    {.chars = (unsigned char*) "116", .len = 3},
-    {.chars = (unsigned char*) "117", .len = 3},
-    {.chars = (unsigned char*) "118", .len = 3},
-    {.chars = (unsigned char*) "119", .len = 3},
-    {.chars = (unsigned char*) "120", .len = 3},
-    {.chars = (unsigned char*) "121", .len = 3},
-    {.chars = (unsigned char*) "122", .len = 3},
-    {.chars = (unsigned char*) "123", .len = 3},
-    {.chars = (unsigned char*) "124", .len = 3},
-    {.chars = (unsigned char*) "125", .len = 3},
-    {.chars = (unsigned char*) "126", .len = 3},
-    {.chars = (unsigned char*) "127", .len = 3},
-    {.chars = (unsigned char*) "128", .len = 3},
-    {.chars = (unsigned char*) "129", .len = 3},
-    {.chars = (unsigned char*) "130", .len = 3},
-    {.chars = (unsigned char*) "131", .len = 3},
-    {.chars = (unsigned char*) "132", .len = 3},
-    {.chars = (unsigned char*) "133", .len = 3},
-    {.chars = (unsigned char*) "134", .len = 3},
-    {.chars = (unsigned char*) "135", .len = 3},
-    {.chars = (unsigned char*) "136", .len = 3},
-    {.chars = (unsigned char*) "137", .len = 3},
-    {.chars = (unsigned char*) "138", .len = 3},
-    {.chars = (unsigned char*) "139", .len = 3},
-    {.chars = (unsigned char*) "140", .len = 3},
-    {.chars = (unsigned char*) "141", .len = 3},
-    {.chars = (unsigned char*) "142", .len = 3},
-    {.chars = (unsigned char*) "143", .len = 3},
-    {.chars = (unsigned char*) "144", .len = 3},
-    {.chars = (unsigned char*) "145", .len = 3},
-    {.chars = (unsigned char*) "146", .len = 3},
-    {.chars = (unsigned char*) "147", .len = 3},
-    {.chars = (unsigned char*) "148", .len = 3},
-    {.chars = (unsigned char*) "149", .len = 3},
-    {.chars = (unsigned char*) "150", .len = 3},
-    {.chars = (unsigned char*) "151", .len = 3},
-    {.chars = (unsigned char*) "152", .len = 3},
-    {.chars = (unsigned char*) "153", .len = 3},
-    {.chars = (unsigned char*) "154", .len = 3},
-    {.chars = (unsigned char*) "155", .len = 3},
-    {.chars = (unsigned char*) "156", .len = 3},
-    {.chars = (unsigned char*) "157", .len = 3},
-    {.chars = (unsigned char*) "158", .len = 3},
-    {.chars = (unsigned char*) "159", .len = 3},
-    {.chars = (unsigned char*) "160", .len = 3},
-    {.chars = (unsigned char*) "161", .len = 3},
-    {.chars = (unsigned char*) "162", .len = 3},
-    {.chars = (unsigned char*) "163", .len = 3},
-    {.chars = (unsigned char*) "164", .len = 3},
-    {.chars = (unsigned char*) "165", .len = 3},
-    {.chars = (unsigned char*) "166", .len = 3},
-    {.chars = (unsigned char*) "167", .len = 3},
-    {.chars = (unsigned char*) "168", .len = 3},
-    {.chars = (unsigned char*) "169", .len = 3},
-    {.chars = (unsigned char*) "170", .len = 3},
-    {.chars = (unsigned char*) "171", .len = 3},
-    {.chars = (unsigned char*) "172", .len = 3},
-    {.chars = (unsigned char*) "173", .len = 3},
-    {.chars = (unsigned char*) "174", .len = 3},
-    {.chars = (unsigned char*) "175", .len = 3},
-    {.chars = (unsigned char*) "176", .len = 3},
-    {.chars = (unsigned char*) "177", .len = 3},
-    {.chars = (unsigned char*) "178", .len = 3},
-    {.chars = (unsigned char*) "179", .len = 3},
-    {.chars = (unsigned char*) "180", .len = 3},
-    {.chars = (unsigned char*) "181", .len = 3},
-    {.chars = (unsigned char*) "182", .len = 3},
-    {.chars = (unsigned char*) "183", .len = 3},
-    {.chars = (unsigned char*) "184", .len = 3},
-    {.chars = (unsigned char*) "185", .len = 3},
-    {.chars = (unsigned char*) "186", .len = 3},
-    {.chars = (unsigned char*) "187", .len = 3},
-    {.chars = (unsigned char*) "188", .len = 3},
-    {.chars = (unsigned char*) "189", .len = 3},
-    {.chars = (unsigned char*) "190", .len = 3},
-    {.chars = (unsigned char*) "191", .len = 3},
-    {.chars = (unsigned char*) "192", .len = 3},
-    {.chars = (unsigned char*) "193", .len = 3},
-    {.chars = (unsigned char*) "194", .len = 3},
-    {.chars = (unsigned char*) "195", .len = 3},
-    {.chars = (unsigned char*) "196", .len = 3},
-    {.chars = (unsigned char*) "197", .len = 3},
-    {.chars = (unsigned char*) "198", .len = 3},
-    {.chars = (unsigned char*) "199", .len = 3},
-    {.chars = (unsigned char*) "200", .len = 3},
-    {.chars = (unsigned char*) "201", .len = 3},
-    {.chars = (unsigned char*) "202", .len = 3},
-    {.chars = (unsigned char*) "203", .len = 3},
-    {.chars = (unsigned char*) "204", .len = 3},
-    {.chars = (unsigned char*) "205", .len = 3},
-    {.chars = (unsigned char*) "206", .len = 3},
-    {.chars = (unsigned char*) "207", .len = 3},
-    {.chars = (unsigned char*) "208", .len = 3},
-    {.chars = (unsigned char*) "209", .len = 3},
-    {.chars = (unsigned char*) "210", .len = 3},
-    {.chars = (unsigned char*) "211", .len = 3},
-    {.chars = (unsigned char*) "212", .len = 3},
-    {.chars = (unsigned char*) "213", .len = 3},
-    {.chars = (unsigned char*) "214", .len = 3},
-    {.chars = (unsigned char*) "215", .len = 3},
-    {.chars = (unsigned char*) "216", .len = 3},
-    {.chars = (unsigned char*) "217", .len = 3},
-    {.chars = (unsigned char*) "218", .len = 3},
-    {.chars = (unsigned char*) "219", .len = 3},
-    {.chars = (unsigned char*) "220", .len = 3},
-    {.chars = (unsigned char*) "221", .len = 3},
-    {.chars = (unsigned char*) "222", .len = 3},
-    {.chars = (unsigned char*) "223", .len = 3},
-    {.chars = (unsigned char*) "224", .len = 3},
-    {.chars = (unsigned char*) "225", .len = 3},
-    {.chars = (unsigned char*) "226", .len = 3},
-    {.chars = (unsigned char*) "227", .len = 3},
-    {.chars = (unsigned char*) "228", .len = 3},
-    {.chars = (unsigned char*) "229", .len = 3},
-    {.chars = (unsigned char*) "230", .len = 3},
-    {.chars = (unsigned char*) "231", .len = 3},
-    {.chars = (unsigned char*) "232", .len = 3},
-    {.chars = (unsigned char*) "233", .len = 3},
-    {.chars = (unsigned char*) "234", .len = 3},
-    {.chars = (unsigned char*) "235", .len = 3},
-    {.chars = (unsigned char*) "236", .len = 3},
-    {.chars = (unsigned char*) "237", .len = 3},
-    {.chars = (unsigned char*) "238", .len = 3},
-    {.chars = (unsigned char*) "239", .len = 3},
-    {.chars = (unsigned char*) "240", .len = 3},
-    {.chars = (unsigned char*) "241", .len = 3},
-    {.chars = (unsigned char*) "242", .len = 3},
-    {.chars = (unsigned char*) "243", .len = 3},
-    {.chars = (unsigned char*) "244", .len = 3},
-    {.chars = (unsigned char*) "245", .len = 3},
-    {.chars = (unsigned char*) "246", .len = 3},
-    {.chars = (unsigned char*) "247", .len = 3},
-    {.chars = (unsigned char*) "248", .len = 3},
-    {.chars = (unsigned char*) "249", .len = 3},
-    {.chars = (unsigned char*) "250", .len = 3},
-    {.chars = (unsigned char*) "251", .len = 3},
-    {.chars = (unsigned char*) "252", .len = 3},
-    {.chars = (unsigned char*) "253", .len = 3},
-    {.chars = (unsigned char*) "254", .len = 3},
-    {.chars = (unsigned char*) "255", .len = 3},
+    {.chars = (char*) "0", .len = 1},
+    {.chars = (char*) "1", .len = 1},
+    {.chars = (char*) "2", .len = 1},
+    {.chars = (char*) "3", .len = 1},
+    {.chars = (char*) "4", .len = 1},
+    {.chars = (char*) "5", .len = 1},
+    {.chars = (char*) "6", .len = 1},
+    {.chars = (char*) "7", .len = 1},
+    {.chars = (char*) "8", .len = 1},
+    {.chars = (char*) "9", .len = 1},
+    {.chars = (char*) "10", .len = 2},
+    {.chars = (char*) "11", .len = 2},
+    {.chars = (char*) "12", .len = 2},
+    {.chars = (char*) "13", .len = 2},
+    {.chars = (char*) "14", .len = 2},
+    {.chars = (char*) "15", .len = 2},
+    {.chars = (char*) "16", .len = 2},
+    {.chars = (char*) "17", .len = 2},
+    {.chars = (char*) "18", .len = 2},
+    {.chars = (char*) "19", .len = 2},
+    {.chars = (char*) "20", .len = 2},
+    {.chars = (char*) "21", .len = 2},
+    {.chars = (char*) "22", .len = 2},
+    {.chars = (char*) "23", .len = 2},
+    {.chars = (char*) "24", .len = 2},
+    {.chars = (char*) "25", .len = 2},
+    {.chars = (char*) "26", .len = 2},
+    {.chars = (char*) "27", .len = 2},
+    {.chars = (char*) "28", .len = 2},
+    {.chars = (char*) "29", .len = 2},
+    {.chars = (char*) "30", .len = 2},
+    {.chars = (char*) "31", .len = 2},
+    {.chars = (char*) "32", .len = 2},
+    {.chars = (char*) "33", .len = 2},
+    {.chars = (char*) "34", .len = 2},
+    {.chars = (char*) "35", .len = 2},
+    {.chars = (char*) "36", .len = 2},
+    {.chars = (char*) "37", .len = 2},
+    {.chars = (char*) "38", .len = 2},
+    {.chars = (char*) "39", .len = 2},
+    {.chars = (char*) "40", .len = 2},
+    {.chars = (char*) "41", .len = 2},
+    {.chars = (char*) "42", .len = 2},
+    {.chars = (char*) "43", .len = 2},
+    {.chars = (char*) "44", .len = 2},
+    {.chars = (char*) "45", .len = 2},
+    {.chars = (char*) "46", .len = 2},
+    {.chars = (char*) "47", .len = 2},
+    {.chars = (char*) "48", .len = 2},
+    {.chars = (char*) "49", .len = 2},
+    {.chars = (char*) "50", .len = 2},
+    {.chars = (char*) "51", .len = 2},
+    {.chars = (char*) "52", .len = 2},
+    {.chars = (char*) "53", .len = 2},
+    {.chars = (char*) "54", .len = 2},
+    {.chars = (char*) "55", .len = 2},
+    {.chars = (char*) "56", .len = 2},
+    {.chars = (char*) "57", .len = 2},
+    {.chars = (char*) "58", .len = 2},
+    {.chars = (char*) "59", .len = 2},
+    {.chars = (char*) "60", .len = 2},
+    {.chars = (char*) "61", .len = 2},
+    {.chars = (char*) "62", .len = 2},
+    {.chars = (char*) "63", .len = 2},
+    {.chars = (char*) "64", .len = 2},
+    {.chars = (char*) "65", .len = 2},
+    {.chars = (char*) "66", .len = 2},
+    {.chars = (char*) "67", .len = 2},
+    {.chars = (char*) "68", .len = 2},
+    {.chars = (char*) "69", .len = 2},
+    {.chars = (char*) "70", .len = 2},
+    {.chars = (char*) "71", .len = 2},
+    {.chars = (char*) "72", .len = 2},
+    {.chars = (char*) "73", .len = 2},
+    {.chars = (char*) "74", .len = 2},
+    {.chars = (char*) "75", .len = 2},
+    {.chars = (char*) "76", .len = 2},
+    {.chars = (char*) "77", .len = 2},
+    {.chars = (char*) "78", .len = 2},
+    {.chars = (char*) "79", .len = 2},
+    {.chars = (char*) "80", .len = 2},
+    {.chars = (char*) "81", .len = 2},
+    {.chars = (char*) "82", .len = 2},
+    {.chars = (char*) "83", .len = 2},
+    {.chars = (char*) "84", .len = 2},
+    {.chars = (char*) "85", .len = 2},
+    {.chars = (char*) "86", .len = 2},
+    {.chars = (char*) "87", .len = 2},
+    {.chars = (char*) "88", .len = 2},
+    {.chars = (char*) "89", .len = 2},
+    {.chars = (char*) "90", .len = 2},
+    {.chars = (char*) "91", .len = 2},
+    {.chars = (char*) "92", .len = 2},
+    {.chars = (char*) "93", .len = 2},
+    {.chars = (char*) "94", .len = 2},
+    {.chars = (char*) "95", .len = 2},
+    {.chars = (char*) "96", .len = 2},
+    {.chars = (char*) "97", .len = 2},
+    {.chars = (char*) "98", .len = 2},
+    {.chars = (char*) "99", .len = 2},
+    {.chars = (char*) "100", .len = 3},
+    {.chars = (char*) "101", .len = 3},
+    {.chars = (char*) "102", .len = 3},
+    {.chars = (char*) "103", .len = 3},
+    {.chars = (char*) "104", .len = 3},
+    {.chars = (char*) "105", .len = 3},
+    {.chars = (char*) "106", .len = 3},
+    {.chars = (char*) "107", .len = 3},
+    {.chars = (char*) "108", .len = 3},
+    {.chars = (char*) "109", .len = 3},
+    {.chars = (char*) "110", .len = 3},
+    {.chars = (char*) "111", .len = 3},
+    {.chars = (char*) "112", .len = 3},
+    {.chars = (char*) "113", .len = 3},
+    {.chars = (char*) "114", .len = 3},
+    {.chars = (char*) "115", .len = 3},
+    {.chars = (char*) "116", .len = 3},
+    {.chars = (char*) "117", .len = 3},
+    {.chars = (char*) "118", .len = 3},
+    {.chars = (char*) "119", .len = 3},
+    {.chars = (char*) "120", .len = 3},
+    {.chars = (char*) "121", .len = 3},
+    {.chars = (char*) "122", .len = 3},
+    {.chars = (char*) "123", .len = 3},
+    {.chars = (char*) "124", .len = 3},
+    {.chars = (char*) "125", .len = 3},
+    {.chars = (char*) "126", .len = 3},
+    {.chars = (char*) "127", .len = 3},
+    {.chars = (char*) "128", .len = 3},
+    {.chars = (char*) "129", .len = 3},
+    {.chars = (char*) "130", .len = 3},
+    {.chars = (char*) "131", .len = 3},
+    {.chars = (char*) "132", .len = 3},
+    {.chars = (char*) "133", .len = 3},
+    {.chars = (char*) "134", .len = 3},
+    {.chars = (char*) "135", .len = 3},
+    {.chars = (char*) "136", .len = 3},
+    {.chars = (char*) "137", .len = 3},
+    {.chars = (char*) "138", .len = 3},
+    {.chars = (char*) "139", .len = 3},
+    {.chars = (char*) "140", .len = 3},
+    {.chars = (char*) "141", .len = 3},
+    {.chars = (char*) "142", .len = 3},
+    {.chars = (char*) "143", .len = 3},
+    {.chars = (char*) "144", .len = 3},
+    {.chars = (char*) "145", .len = 3},
+    {.chars = (char*) "146", .len = 3},
+    {.chars = (char*) "147", .len = 3},
+    {.chars = (char*) "148", .len = 3},
+    {.chars = (char*) "149", .len = 3},
+    {.chars = (char*) "150", .len = 3},
+    {.chars = (char*) "151", .len = 3},
+    {.chars = (char*) "152", .len = 3},
+    {.chars = (char*) "153", .len = 3},
+    {.chars = (char*) "154", .len = 3},
+    {.chars = (char*) "155", .len = 3},
+    {.chars = (char*) "156", .len = 3},
+    {.chars = (char*) "157", .len = 3},
+    {.chars = (char*) "158", .len = 3},
+    {.chars = (char*) "159", .len = 3},
+    {.chars = (char*) "160", .len = 3},
+    {.chars = (char*) "161", .len = 3},
+    {.chars = (char*) "162", .len = 3},
+    {.chars = (char*) "163", .len = 3},
+    {.chars = (char*) "164", .len = 3},
+    {.chars = (char*) "165", .len = 3},
+    {.chars = (char*) "166", .len = 3},
+    {.chars = (char*) "167", .len = 3},
+    {.chars = (char*) "168", .len = 3},
+    {.chars = (char*) "169", .len = 3},
+    {.chars = (char*) "170", .len = 3},
+    {.chars = (char*) "171", .len = 3},
+    {.chars = (char*) "172", .len = 3},
+    {.chars = (char*) "173", .len = 3},
+    {.chars = (char*) "174", .len = 3},
+    {.chars = (char*) "175", .len = 3},
+    {.chars = (char*) "176", .len = 3},
+    {.chars = (char*) "177", .len = 3},
+    {.chars = (char*) "178", .len = 3},
+    {.chars = (char*) "179", .len = 3},
+    {.chars = (char*) "180", .len = 3},
+    {.chars = (char*) "181", .len = 3},
+    {.chars = (char*) "182", .len = 3},
+    {.chars = (char*) "183", .len = 3},
+    {.chars = (char*) "184", .len = 3},
+    {.chars = (char*) "185", .len = 3},
+    {.chars = (char*) "186", .len = 3},
+    {.chars = (char*) "187", .len = 3},
+    {.chars = (char*) "188", .len = 3},
+    {.chars = (char*) "189", .len = 3},
+    {.chars = (char*) "190", .len = 3},
+    {.chars = (char*) "191", .len = 3},
+    {.chars = (char*) "192", .len = 3},
+    {.chars = (char*) "193", .len = 3},
+    {.chars = (char*) "194", .len = 3},
+    {.chars = (char*) "195", .len = 3},
+    {.chars = (char*) "196", .len = 3},
+    {.chars = (char*) "197", .len = 3},
+    {.chars = (char*) "198", .len = 3},
+    {.chars = (char*) "199", .len = 3},
+    {.chars = (char*) "200", .len = 3},
+    {.chars = (char*) "201", .len = 3},
+    {.chars = (char*) "202", .len = 3},
+    {.chars = (char*) "203", .len = 3},
+    {.chars = (char*) "204", .len = 3},
+    {.chars = (char*) "205", .len = 3},
+    {.chars = (char*) "206", .len = 3},
+    {.chars = (char*) "207", .len = 3},
+    {.chars = (char*) "208", .len = 3},
+    {.chars = (char*) "209", .len = 3},
+    {.chars = (char*) "210", .len = 3},
+    {.chars = (char*) "211", .len = 3},
+    {.chars = (char*) "212", .len = 3},
+    {.chars = (char*) "213", .len = 3},
+    {.chars = (char*) "214", .len = 3},
+    {.chars = (char*) "215", .len = 3},
+    {.chars = (char*) "216", .len = 3},
+    {.chars = (char*) "217", .len = 3},
+    {.chars = (char*) "218", .len = 3},
+    {.chars = (char*) "219", .len = 3},
+    {.chars = (char*) "220", .len = 3},
+    {.chars = (char*) "221", .len = 3},
+    {.chars = (char*) "222", .len = 3},
+    {.chars = (char*) "223", .len = 3},
+    {.chars = (char*) "224", .len = 3},
+    {.chars = (char*) "225", .len = 3},
+    {.chars = (char*) "226", .len = 3},
+    {.chars = (char*) "227", .len = 3},
+    {.chars = (char*) "228", .len = 3},
+    {.chars = (char*) "229", .len = 3},
+    {.chars = (char*) "230", .len = 3},
+    {.chars = (char*) "231", .len = 3},
+    {.chars = (char*) "232", .len = 3},
+    {.chars = (char*) "233", .len = 3},
+    {.chars = (char*) "234", .len = 3},
+    {.chars = (char*) "235", .len = 3},
+    {.chars = (char*) "236", .len = 3},
+    {.chars = (char*) "237", .len = 3},
+    {.chars = (char*) "238", .len = 3},
+    {.chars = (char*) "239", .len = 3},
+    {.chars = (char*) "240", .len = 3},
+    {.chars = (char*) "241", .len = 3},
+    {.chars = (char*) "242", .len = 3},
+    {.chars = (char*) "243", .len = 3},
+    {.chars = (char*) "244", .len = 3},
+    {.chars = (char*) "245", .len = 3},
+    {.chars = (char*) "246", .len = 3},
+    {.chars = (char*) "247", .len = 3},
+    {.chars = (char*) "248", .len = 3},
+    {.chars = (char*) "249", .len = 3},
+    {.chars = (char*) "250", .len = 3},
+    {.chars = (char*) "251", .len = 3},
+    {.chars = (char*) "252", .len = 3},
+    {.chars = (char*) "253", .len = 3},
+    {.chars = (char*) "254", .len = 3},
+    {.chars = (char*) "255", .len = 3},
 };
 
 static const CGS_StrView cgs__sc_to_string[] = {
-    {.chars = (unsigned char*) "0", .len = 1},
-    {.chars = (unsigned char*) "1", .len = 1},
-    {.chars = (unsigned char*) "2", .len = 1},
-    {.chars = (unsigned char*) "3", .len = 1},
-    {.chars = (unsigned char*) "4", .len = 1},
-    {.chars = (unsigned char*) "5", .len = 1},
-    {.chars = (unsigned char*) "6", .len = 1},
-    {.chars = (unsigned char*) "7", .len = 1},
-    {.chars = (unsigned char*) "8", .len = 1},
-    {.chars = (unsigned char*) "9", .len = 1},
-    {.chars = (unsigned char*) "10", .len = 2},
-    {.chars = (unsigned char*) "11", .len = 2},
-    {.chars = (unsigned char*) "12", .len = 2},
-    {.chars = (unsigned char*) "13", .len = 2},
-    {.chars = (unsigned char*) "14", .len = 2},
-    {.chars = (unsigned char*) "15", .len = 2},
-    {.chars = (unsigned char*) "16", .len = 2},
-    {.chars = (unsigned char*) "17", .len = 2},
-    {.chars = (unsigned char*) "18", .len = 2},
-    {.chars = (unsigned char*) "19", .len = 2},
-    {.chars = (unsigned char*) "20", .len = 2},
-    {.chars = (unsigned char*) "21", .len = 2},
-    {.chars = (unsigned char*) "22", .len = 2},
-    {.chars = (unsigned char*) "23", .len = 2},
-    {.chars = (unsigned char*) "24", .len = 2},
-    {.chars = (unsigned char*) "25", .len = 2},
-    {.chars = (unsigned char*) "26", .len = 2},
-    {.chars = (unsigned char*) "27", .len = 2},
-    {.chars = (unsigned char*) "28", .len = 2},
-    {.chars = (unsigned char*) "29", .len = 2},
-    {.chars = (unsigned char*) "30", .len = 2},
-    {.chars = (unsigned char*) "31", .len = 2},
-    {.chars = (unsigned char*) "32", .len = 2},
-    {.chars = (unsigned char*) "33", .len = 2},
-    {.chars = (unsigned char*) "34", .len = 2},
-    {.chars = (unsigned char*) "35", .len = 2},
-    {.chars = (unsigned char*) "36", .len = 2},
-    {.chars = (unsigned char*) "37", .len = 2},
-    {.chars = (unsigned char*) "38", .len = 2},
-    {.chars = (unsigned char*) "39", .len = 2},
-    {.chars = (unsigned char*) "40", .len = 2},
-    {.chars = (unsigned char*) "41", .len = 2},
-    {.chars = (unsigned char*) "42", .len = 2},
-    {.chars = (unsigned char*) "43", .len = 2},
-    {.chars = (unsigned char*) "44", .len = 2},
-    {.chars = (unsigned char*) "45", .len = 2},
-    {.chars = (unsigned char*) "46", .len = 2},
-    {.chars = (unsigned char*) "47", .len = 2},
-    {.chars = (unsigned char*) "48", .len = 2},
-    {.chars = (unsigned char*) "49", .len = 2},
-    {.chars = (unsigned char*) "50", .len = 2},
-    {.chars = (unsigned char*) "51", .len = 2},
-    {.chars = (unsigned char*) "52", .len = 2},
-    {.chars = (unsigned char*) "53", .len = 2},
-    {.chars = (unsigned char*) "54", .len = 2},
-    {.chars = (unsigned char*) "55", .len = 2},
-    {.chars = (unsigned char*) "56", .len = 2},
-    {.chars = (unsigned char*) "57", .len = 2},
-    {.chars = (unsigned char*) "58", .len = 2},
-    {.chars = (unsigned char*) "59", .len = 2},
-    {.chars = (unsigned char*) "60", .len = 2},
-    {.chars = (unsigned char*) "61", .len = 2},
-    {.chars = (unsigned char*) "62", .len = 2},
-    {.chars = (unsigned char*) "63", .len = 2},
-    {.chars = (unsigned char*) "64", .len = 2},
-    {.chars = (unsigned char*) "65", .len = 2},
-    {.chars = (unsigned char*) "66", .len = 2},
-    {.chars = (unsigned char*) "67", .len = 2},
-    {.chars = (unsigned char*) "68", .len = 2},
-    {.chars = (unsigned char*) "69", .len = 2},
-    {.chars = (unsigned char*) "70", .len = 2},
-    {.chars = (unsigned char*) "71", .len = 2},
-    {.chars = (unsigned char*) "72", .len = 2},
-    {.chars = (unsigned char*) "73", .len = 2},
-    {.chars = (unsigned char*) "74", .len = 2},
-    {.chars = (unsigned char*) "75", .len = 2},
-    {.chars = (unsigned char*) "76", .len = 2},
-    {.chars = (unsigned char*) "77", .len = 2},
-    {.chars = (unsigned char*) "78", .len = 2},
-    {.chars = (unsigned char*) "79", .len = 2},
-    {.chars = (unsigned char*) "80", .len = 2},
-    {.chars = (unsigned char*) "81", .len = 2},
-    {.chars = (unsigned char*) "82", .len = 2},
-    {.chars = (unsigned char*) "83", .len = 2},
-    {.chars = (unsigned char*) "84", .len = 2},
-    {.chars = (unsigned char*) "85", .len = 2},
-    {.chars = (unsigned char*) "86", .len = 2},
-    {.chars = (unsigned char*) "87", .len = 2},
-    {.chars = (unsigned char*) "88", .len = 2},
-    {.chars = (unsigned char*) "89", .len = 2},
-    {.chars = (unsigned char*) "90", .len = 2},
-    {.chars = (unsigned char*) "91", .len = 2},
-    {.chars = (unsigned char*) "92", .len = 2},
-    {.chars = (unsigned char*) "93", .len = 2},
-    {.chars = (unsigned char*) "94", .len = 2},
-    {.chars = (unsigned char*) "95", .len = 2},
-    {.chars = (unsigned char*) "96", .len = 2},
-    {.chars = (unsigned char*) "97", .len = 2},
-    {.chars = (unsigned char*) "98", .len = 2},
-    {.chars = (unsigned char*) "99", .len = 2},
-    {.chars = (unsigned char*) "100", .len = 3},
-    {.chars = (unsigned char*) "101", .len = 3},
-    {.chars = (unsigned char*) "102", .len = 3},
-    {.chars = (unsigned char*) "103", .len = 3},
-    {.chars = (unsigned char*) "104", .len = 3},
-    {.chars = (unsigned char*) "105", .len = 3},
-    {.chars = (unsigned char*) "106", .len = 3},
-    {.chars = (unsigned char*) "107", .len = 3},
-    {.chars = (unsigned char*) "108", .len = 3},
-    {.chars = (unsigned char*) "109", .len = 3},
-    {.chars = (unsigned char*) "110", .len = 3},
-    {.chars = (unsigned char*) "111", .len = 3},
-    {.chars = (unsigned char*) "112", .len = 3},
-    {.chars = (unsigned char*) "113", .len = 3},
-    {.chars = (unsigned char*) "114", .len = 3},
-    {.chars = (unsigned char*) "115", .len = 3},
-    {.chars = (unsigned char*) "116", .len = 3},
-    {.chars = (unsigned char*) "117", .len = 3},
-    {.chars = (unsigned char*) "118", .len = 3},
-    {.chars = (unsigned char*) "119", .len = 3},
-    {.chars = (unsigned char*) "120", .len = 3},
-    {.chars = (unsigned char*) "121", .len = 3},
-    {.chars = (unsigned char*) "122", .len = 3},
-    {.chars = (unsigned char*) "123", .len = 3},
-    {.chars = (unsigned char*) "124", .len = 3},
-    {.chars = (unsigned char*) "125", .len = 3},
-    {.chars = (unsigned char*) "126", .len = 3},
-    {.chars = (unsigned char*) "127", .len = 3},
-    {.chars = (unsigned char*) "-128", .len = 4},
-    {.chars = (unsigned char*) "-127", .len = 4},
-    {.chars = (unsigned char*) "-126", .len = 4},
-    {.chars = (unsigned char*) "-125", .len = 4},
-    {.chars = (unsigned char*) "-124", .len = 4},
-    {.chars = (unsigned char*) "-123", .len = 4},
-    {.chars = (unsigned char*) "-122", .len = 4},
-    {.chars = (unsigned char*) "-121", .len = 4},
-    {.chars = (unsigned char*) "-120", .len = 4},
-    {.chars = (unsigned char*) "-119", .len = 4},
-    {.chars = (unsigned char*) "-118", .len = 4},
-    {.chars = (unsigned char*) "-117", .len = 4},
-    {.chars = (unsigned char*) "-116", .len = 4},
-    {.chars = (unsigned char*) "-115", .len = 4},
-    {.chars = (unsigned char*) "-114", .len = 4},
-    {.chars = (unsigned char*) "-113", .len = 4},
-    {.chars = (unsigned char*) "-112", .len = 4},
-    {.chars = (unsigned char*) "-111", .len = 4},
-    {.chars = (unsigned char*) "-110", .len = 4},
-    {.chars = (unsigned char*) "-109", .len = 4},
-    {.chars = (unsigned char*) "-108", .len = 4},
-    {.chars = (unsigned char*) "-107", .len = 4},
-    {.chars = (unsigned char*) "-106", .len = 4},
-    {.chars = (unsigned char*) "-105", .len = 4},
-    {.chars = (unsigned char*) "-104", .len = 4},
-    {.chars = (unsigned char*) "-103", .len = 4},
-    {.chars = (unsigned char*) "-102", .len = 4},
-    {.chars = (unsigned char*) "-101", .len = 4},
-    {.chars = (unsigned char*) "-100", .len = 4},
-    {.chars = (unsigned char*) "-99", .len = 3},
-    {.chars = (unsigned char*) "-98", .len = 3},
-    {.chars = (unsigned char*) "-97", .len = 3},
-    {.chars = (unsigned char*) "-96", .len = 3},
-    {.chars = (unsigned char*) "-95", .len = 3},
-    {.chars = (unsigned char*) "-94", .len = 3},
-    {.chars = (unsigned char*) "-93", .len = 3},
-    {.chars = (unsigned char*) "-92", .len = 3},
-    {.chars = (unsigned char*) "-91", .len = 3},
-    {.chars = (unsigned char*) "-90", .len = 3},
-    {.chars = (unsigned char*) "-89", .len = 3},
-    {.chars = (unsigned char*) "-88", .len = 3},
-    {.chars = (unsigned char*) "-87", .len = 3},
-    {.chars = (unsigned char*) "-86", .len = 3},
-    {.chars = (unsigned char*) "-85", .len = 3},
-    {.chars = (unsigned char*) "-84", .len = 3},
-    {.chars = (unsigned char*) "-83", .len = 3},
-    {.chars = (unsigned char*) "-82", .len = 3},
-    {.chars = (unsigned char*) "-81", .len = 3},
-    {.chars = (unsigned char*) "-80", .len = 3},
-    {.chars = (unsigned char*) "-79", .len = 3},
-    {.chars = (unsigned char*) "-78", .len = 3},
-    {.chars = (unsigned char*) "-77", .len = 3},
-    {.chars = (unsigned char*) "-76", .len = 3},
-    {.chars = (unsigned char*) "-75", .len = 3},
-    {.chars = (unsigned char*) "-74", .len = 3},
-    {.chars = (unsigned char*) "-73", .len = 3},
-    {.chars = (unsigned char*) "-72", .len = 3},
-    {.chars = (unsigned char*) "-71", .len = 3},
-    {.chars = (unsigned char*) "-70", .len = 3},
-    {.chars = (unsigned char*) "-69", .len = 3},
-    {.chars = (unsigned char*) "-68", .len = 3},
-    {.chars = (unsigned char*) "-67", .len = 3},
-    {.chars = (unsigned char*) "-66", .len = 3},
-    {.chars = (unsigned char*) "-65", .len = 3},
-    {.chars = (unsigned char*) "-64", .len = 3},
-    {.chars = (unsigned char*) "-63", .len = 3},
-    {.chars = (unsigned char*) "-62", .len = 3},
-    {.chars = (unsigned char*) "-61", .len = 3},
-    {.chars = (unsigned char*) "-60", .len = 3},
-    {.chars = (unsigned char*) "-59", .len = 3},
-    {.chars = (unsigned char*) "-58", .len = 3},
-    {.chars = (unsigned char*) "-57", .len = 3},
-    {.chars = (unsigned char*) "-56", .len = 3},
-    {.chars = (unsigned char*) "-55", .len = 3},
-    {.chars = (unsigned char*) "-54", .len = 3},
-    {.chars = (unsigned char*) "-53", .len = 3},
-    {.chars = (unsigned char*) "-52", .len = 3},
-    {.chars = (unsigned char*) "-51", .len = 3},
-    {.chars = (unsigned char*) "-50", .len = 3},
-    {.chars = (unsigned char*) "-49", .len = 3},
-    {.chars = (unsigned char*) "-48", .len = 3},
-    {.chars = (unsigned char*) "-47", .len = 3},
-    {.chars = (unsigned char*) "-46", .len = 3},
-    {.chars = (unsigned char*) "-45", .len = 3},
-    {.chars = (unsigned char*) "-44", .len = 3},
-    {.chars = (unsigned char*) "-43", .len = 3},
-    {.chars = (unsigned char*) "-42", .len = 3},
-    {.chars = (unsigned char*) "-41", .len = 3},
-    {.chars = (unsigned char*) "-40", .len = 3},
-    {.chars = (unsigned char*) "-39", .len = 3},
-    {.chars = (unsigned char*) "-38", .len = 3},
-    {.chars = (unsigned char*) "-37", .len = 3},
-    {.chars = (unsigned char*) "-36", .len = 3},
-    {.chars = (unsigned char*) "-35", .len = 3},
-    {.chars = (unsigned char*) "-34", .len = 3},
-    {.chars = (unsigned char*) "-33", .len = 3},
-    {.chars = (unsigned char*) "-32", .len = 3},
-    {.chars = (unsigned char*) "-31", .len = 3},
-    {.chars = (unsigned char*) "-30", .len = 3},
-    {.chars = (unsigned char*) "-29", .len = 3},
-    {.chars = (unsigned char*) "-28", .len = 3},
-    {.chars = (unsigned char*) "-27", .len = 3},
-    {.chars = (unsigned char*) "-26", .len = 3},
-    {.chars = (unsigned char*) "-25", .len = 3},
-    {.chars = (unsigned char*) "-24", .len = 3},
-    {.chars = (unsigned char*) "-23", .len = 3},
-    {.chars = (unsigned char*) "-22", .len = 3},
-    {.chars = (unsigned char*) "-21", .len = 3},
-    {.chars = (unsigned char*) "-20", .len = 3},
-    {.chars = (unsigned char*) "-19", .len = 3},
-    {.chars = (unsigned char*) "-18", .len = 3},
-    {.chars = (unsigned char*) "-17", .len = 3},
-    {.chars = (unsigned char*) "-16", .len = 3},
-    {.chars = (unsigned char*) "-15", .len = 3},
-    {.chars = (unsigned char*) "-14", .len = 3},
-    {.chars = (unsigned char*) "-13", .len = 3},
-    {.chars = (unsigned char*) "-12", .len = 3},
-    {.chars = (unsigned char*) "-11", .len = 3},
-    {.chars = (unsigned char*) "-10", .len = 3},
-    {.chars = (unsigned char*) "-9", .len = 2},
-    {.chars = (unsigned char*) "-8", .len = 2},
-    {.chars = (unsigned char*) "-7", .len = 2},
-    {.chars = (unsigned char*) "-6", .len = 2},
-    {.chars = (unsigned char*) "-5", .len = 2},
-    {.chars = (unsigned char*) "-4", .len = 2},
-    {.chars = (unsigned char*) "-3", .len = 2},
-    {.chars = (unsigned char*) "-2", .len = 2},
-    {.chars = (unsigned char*) "-1", .len = 2}
+    {.chars = (char*) "0", .len = 1},
+    {.chars = (char*) "1", .len = 1},
+    {.chars = (char*) "2", .len = 1},
+    {.chars = (char*) "3", .len = 1},
+    {.chars = (char*) "4", .len = 1},
+    {.chars = (char*) "5", .len = 1},
+    {.chars = (char*) "6", .len = 1},
+    {.chars = (char*) "7", .len = 1},
+    {.chars = (char*) "8", .len = 1},
+    {.chars = (char*) "9", .len = 1},
+    {.chars = (char*) "10", .len = 2},
+    {.chars = (char*) "11", .len = 2},
+    {.chars = (char*) "12", .len = 2},
+    {.chars = (char*) "13", .len = 2},
+    {.chars = (char*) "14", .len = 2},
+    {.chars = (char*) "15", .len = 2},
+    {.chars = (char*) "16", .len = 2},
+    {.chars = (char*) "17", .len = 2},
+    {.chars = (char*) "18", .len = 2},
+    {.chars = (char*) "19", .len = 2},
+    {.chars = (char*) "20", .len = 2},
+    {.chars = (char*) "21", .len = 2},
+    {.chars = (char*) "22", .len = 2},
+    {.chars = (char*) "23", .len = 2},
+    {.chars = (char*) "24", .len = 2},
+    {.chars = (char*) "25", .len = 2},
+    {.chars = (char*) "26", .len = 2},
+    {.chars = (char*) "27", .len = 2},
+    {.chars = (char*) "28", .len = 2},
+    {.chars = (char*) "29", .len = 2},
+    {.chars = (char*) "30", .len = 2},
+    {.chars = (char*) "31", .len = 2},
+    {.chars = (char*) "32", .len = 2},
+    {.chars = (char*) "33", .len = 2},
+    {.chars = (char*) "34", .len = 2},
+    {.chars = (char*) "35", .len = 2},
+    {.chars = (char*) "36", .len = 2},
+    {.chars = (char*) "37", .len = 2},
+    {.chars = (char*) "38", .len = 2},
+    {.chars = (char*) "39", .len = 2},
+    {.chars = (char*) "40", .len = 2},
+    {.chars = (char*) "41", .len = 2},
+    {.chars = (char*) "42", .len = 2},
+    {.chars = (char*) "43", .len = 2},
+    {.chars = (char*) "44", .len = 2},
+    {.chars = (char*) "45", .len = 2},
+    {.chars = (char*) "46", .len = 2},
+    {.chars = (char*) "47", .len = 2},
+    {.chars = (char*) "48", .len = 2},
+    {.chars = (char*) "49", .len = 2},
+    {.chars = (char*) "50", .len = 2},
+    {.chars = (char*) "51", .len = 2},
+    {.chars = (char*) "52", .len = 2},
+    {.chars = (char*) "53", .len = 2},
+    {.chars = (char*) "54", .len = 2},
+    {.chars = (char*) "55", .len = 2},
+    {.chars = (char*) "56", .len = 2},
+    {.chars = (char*) "57", .len = 2},
+    {.chars = (char*) "58", .len = 2},
+    {.chars = (char*) "59", .len = 2},
+    {.chars = (char*) "60", .len = 2},
+    {.chars = (char*) "61", .len = 2},
+    {.chars = (char*) "62", .len = 2},
+    {.chars = (char*) "63", .len = 2},
+    {.chars = (char*) "64", .len = 2},
+    {.chars = (char*) "65", .len = 2},
+    {.chars = (char*) "66", .len = 2},
+    {.chars = (char*) "67", .len = 2},
+    {.chars = (char*) "68", .len = 2},
+    {.chars = (char*) "69", .len = 2},
+    {.chars = (char*) "70", .len = 2},
+    {.chars = (char*) "71", .len = 2},
+    {.chars = (char*) "72", .len = 2},
+    {.chars = (char*) "73", .len = 2},
+    {.chars = (char*) "74", .len = 2},
+    {.chars = (char*) "75", .len = 2},
+    {.chars = (char*) "76", .len = 2},
+    {.chars = (char*) "77", .len = 2},
+    {.chars = (char*) "78", .len = 2},
+    {.chars = (char*) "79", .len = 2},
+    {.chars = (char*) "80", .len = 2},
+    {.chars = (char*) "81", .len = 2},
+    {.chars = (char*) "82", .len = 2},
+    {.chars = (char*) "83", .len = 2},
+    {.chars = (char*) "84", .len = 2},
+    {.chars = (char*) "85", .len = 2},
+    {.chars = (char*) "86", .len = 2},
+    {.chars = (char*) "87", .len = 2},
+    {.chars = (char*) "88", .len = 2},
+    {.chars = (char*) "89", .len = 2},
+    {.chars = (char*) "90", .len = 2},
+    {.chars = (char*) "91", .len = 2},
+    {.chars = (char*) "92", .len = 2},
+    {.chars = (char*) "93", .len = 2},
+    {.chars = (char*) "94", .len = 2},
+    {.chars = (char*) "95", .len = 2},
+    {.chars = (char*) "96", .len = 2},
+    {.chars = (char*) "97", .len = 2},
+    {.chars = (char*) "98", .len = 2},
+    {.chars = (char*) "99", .len = 2},
+    {.chars = (char*) "100", .len = 3},
+    {.chars = (char*) "101", .len = 3},
+    {.chars = (char*) "102", .len = 3},
+    {.chars = (char*) "103", .len = 3},
+    {.chars = (char*) "104", .len = 3},
+    {.chars = (char*) "105", .len = 3},
+    {.chars = (char*) "106", .len = 3},
+    {.chars = (char*) "107", .len = 3},
+    {.chars = (char*) "108", .len = 3},
+    {.chars = (char*) "109", .len = 3},
+    {.chars = (char*) "110", .len = 3},
+    {.chars = (char*) "111", .len = 3},
+    {.chars = (char*) "112", .len = 3},
+    {.chars = (char*) "113", .len = 3},
+    {.chars = (char*) "114", .len = 3},
+    {.chars = (char*) "115", .len = 3},
+    {.chars = (char*) "116", .len = 3},
+    {.chars = (char*) "117", .len = 3},
+    {.chars = (char*) "118", .len = 3},
+    {.chars = (char*) "119", .len = 3},
+    {.chars = (char*) "120", .len = 3},
+    {.chars = (char*) "121", .len = 3},
+    {.chars = (char*) "122", .len = 3},
+    {.chars = (char*) "123", .len = 3},
+    {.chars = (char*) "124", .len = 3},
+    {.chars = (char*) "125", .len = 3},
+    {.chars = (char*) "126", .len = 3},
+    {.chars = (char*) "127", .len = 3},
+    {.chars = (char*) "-128", .len = 4},
+    {.chars = (char*) "-127", .len = 4},
+    {.chars = (char*) "-126", .len = 4},
+    {.chars = (char*) "-125", .len = 4},
+    {.chars = (char*) "-124", .len = 4},
+    {.chars = (char*) "-123", .len = 4},
+    {.chars = (char*) "-122", .len = 4},
+    {.chars = (char*) "-121", .len = 4},
+    {.chars = (char*) "-120", .len = 4},
+    {.chars = (char*) "-119", .len = 4},
+    {.chars = (char*) "-118", .len = 4},
+    {.chars = (char*) "-117", .len = 4},
+    {.chars = (char*) "-116", .len = 4},
+    {.chars = (char*) "-115", .len = 4},
+    {.chars = (char*) "-114", .len = 4},
+    {.chars = (char*) "-113", .len = 4},
+    {.chars = (char*) "-112", .len = 4},
+    {.chars = (char*) "-111", .len = 4},
+    {.chars = (char*) "-110", .len = 4},
+    {.chars = (char*) "-109", .len = 4},
+    {.chars = (char*) "-108", .len = 4},
+    {.chars = (char*) "-107", .len = 4},
+    {.chars = (char*) "-106", .len = 4},
+    {.chars = (char*) "-105", .len = 4},
+    {.chars = (char*) "-104", .len = 4},
+    {.chars = (char*) "-103", .len = 4},
+    {.chars = (char*) "-102", .len = 4},
+    {.chars = (char*) "-101", .len = 4},
+    {.chars = (char*) "-100", .len = 4},
+    {.chars = (char*) "-99", .len = 3},
+    {.chars = (char*) "-98", .len = 3},
+    {.chars = (char*) "-97", .len = 3},
+    {.chars = (char*) "-96", .len = 3},
+    {.chars = (char*) "-95", .len = 3},
+    {.chars = (char*) "-94", .len = 3},
+    {.chars = (char*) "-93", .len = 3},
+    {.chars = (char*) "-92", .len = 3},
+    {.chars = (char*) "-91", .len = 3},
+    {.chars = (char*) "-90", .len = 3},
+    {.chars = (char*) "-89", .len = 3},
+    {.chars = (char*) "-88", .len = 3},
+    {.chars = (char*) "-87", .len = 3},
+    {.chars = (char*) "-86", .len = 3},
+    {.chars = (char*) "-85", .len = 3},
+    {.chars = (char*) "-84", .len = 3},
+    {.chars = (char*) "-83", .len = 3},
+    {.chars = (char*) "-82", .len = 3},
+    {.chars = (char*) "-81", .len = 3},
+    {.chars = (char*) "-80", .len = 3},
+    {.chars = (char*) "-79", .len = 3},
+    {.chars = (char*) "-78", .len = 3},
+    {.chars = (char*) "-77", .len = 3},
+    {.chars = (char*) "-76", .len = 3},
+    {.chars = (char*) "-75", .len = 3},
+    {.chars = (char*) "-74", .len = 3},
+    {.chars = (char*) "-73", .len = 3},
+    {.chars = (char*) "-72", .len = 3},
+    {.chars = (char*) "-71", .len = 3},
+    {.chars = (char*) "-70", .len = 3},
+    {.chars = (char*) "-69", .len = 3},
+    {.chars = (char*) "-68", .len = 3},
+    {.chars = (char*) "-67", .len = 3},
+    {.chars = (char*) "-66", .len = 3},
+    {.chars = (char*) "-65", .len = 3},
+    {.chars = (char*) "-64", .len = 3},
+    {.chars = (char*) "-63", .len = 3},
+    {.chars = (char*) "-62", .len = 3},
+    {.chars = (char*) "-61", .len = 3},
+    {.chars = (char*) "-60", .len = 3},
+    {.chars = (char*) "-59", .len = 3},
+    {.chars = (char*) "-58", .len = 3},
+    {.chars = (char*) "-57", .len = 3},
+    {.chars = (char*) "-56", .len = 3},
+    {.chars = (char*) "-55", .len = 3},
+    {.chars = (char*) "-54", .len = 3},
+    {.chars = (char*) "-53", .len = 3},
+    {.chars = (char*) "-52", .len = 3},
+    {.chars = (char*) "-51", .len = 3},
+    {.chars = (char*) "-50", .len = 3},
+    {.chars = (char*) "-49", .len = 3},
+    {.chars = (char*) "-48", .len = 3},
+    {.chars = (char*) "-47", .len = 3},
+    {.chars = (char*) "-46", .len = 3},
+    {.chars = (char*) "-45", .len = 3},
+    {.chars = (char*) "-44", .len = 3},
+    {.chars = (char*) "-43", .len = 3},
+    {.chars = (char*) "-42", .len = 3},
+    {.chars = (char*) "-41", .len = 3},
+    {.chars = (char*) "-40", .len = 3},
+    {.chars = (char*) "-39", .len = 3},
+    {.chars = (char*) "-38", .len = 3},
+    {.chars = (char*) "-37", .len = 3},
+    {.chars = (char*) "-36", .len = 3},
+    {.chars = (char*) "-35", .len = 3},
+    {.chars = (char*) "-34", .len = 3},
+    {.chars = (char*) "-33", .len = 3},
+    {.chars = (char*) "-32", .len = 3},
+    {.chars = (char*) "-31", .len = 3},
+    {.chars = (char*) "-30", .len = 3},
+    {.chars = (char*) "-29", .len = 3},
+    {.chars = (char*) "-28", .len = 3},
+    {.chars = (char*) "-27", .len = 3},
+    {.chars = (char*) "-26", .len = 3},
+    {.chars = (char*) "-25", .len = 3},
+    {.chars = (char*) "-24", .len = 3},
+    {.chars = (char*) "-23", .len = 3},
+    {.chars = (char*) "-22", .len = 3},
+    {.chars = (char*) "-21", .len = 3},
+    {.chars = (char*) "-20", .len = 3},
+    {.chars = (char*) "-19", .len = 3},
+    {.chars = (char*) "-18", .len = 3},
+    {.chars = (char*) "-17", .len = 3},
+    {.chars = (char*) "-16", .len = 3},
+    {.chars = (char*) "-15", .len = 3},
+    {.chars = (char*) "-14", .len = 3},
+    {.chars = (char*) "-13", .len = 3},
+    {.chars = (char*) "-12", .len = 3},
+    {.chars = (char*) "-11", .len = 3},
+    {.chars = (char*) "-10", .len = 3},
+    {.chars = (char*) "-9", .len = 2},
+    {.chars = (char*) "-8", .len = 2},
+    {.chars = (char*) "-7", .len = 2},
+    {.chars = (char*) "-6", .len = 2},
+    {.chars = (char*) "-5", .len = 2},
+    {.chars = (char*) "-4", .len = 2},
+    {.chars = (char*) "-3", .len = 2},
+    {.chars = (char*) "-2", .len = 2},
+    {.chars = (char*) "-1", .len = 2}
 };
 
 static const char cgs__byte_to_hex[][2] = 
@@ -1225,7 +1225,7 @@ CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_realloc(CGS_Allocator *all
     CGS_DStr *owner = dstr_append_allocator->owner;
     
     assert(old_size == owner->cap - owner->len);
-    assert(((unsigned char*)ptr - owner->chars) == owner->len);
+    assert(((char*)ptr - owner->chars) == owner->len);
     
     cgs_dstr_ensure_cap(owner, owner->cap + (new_size - old_size));
     return (CGS_Allocation){
@@ -1282,11 +1282,11 @@ CGS_PRIVATE CGS_StrBuf cgs__make_appender_strbuf(CGS_MutStrRef owner)
     return (CGS_StrBuf){
         .cap = cgs__mutstr_ref_cap(owner) - cgs__mutstr_ref_len(owner),
         .len = 0,
-        .chars = (unsigned char*) cgs__mutstr_ref_as_cstr(owner) + cgs__mutstr_ref_len(owner)
+        .chars = (char*) cgs__mutstr_ref_as_cstr(owner) + cgs__mutstr_ref_len(owner)
     };
 }
 
-CGS_API CGS_MutStrRef cgs__make_appender_mutstr_ref(CGS_MutStrRef owner, CGS_StrAppenderState *state)
+CGS_API CGS_MutStrRef cgs__make_appender_mutstr_ref(CGS_MutStrRef owner, CGS_AppenderState *state)
 {
     switch(owner.ty)
     {
@@ -1492,7 +1492,7 @@ CGS_API CGS_Error cgs__dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_least)
 {
     if(dstr->cap < at_least)
     {
-        unsigned char *save = dstr->chars;
+        char *save = dstr->chars;
         size_t new_cap = cgs__uint_max(at_least, dstr->cap * 2);
         CGS_Allocation allocation = cgs_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, new_cap);
         dstr->chars = allocation.ptr;
@@ -1524,36 +1524,36 @@ CGS_API char *cgs__ucstr_as_cstr(const unsigned char *str)
 
 CGS_API char *cgs__dstr_as_cstr(const CGS_DStr str)
 {
-    return (char*) str.chars;
+    return str.chars;
 }
 
 CGS_API char *cgs__dstr_ptr_as_cstr(const CGS_DStr *str)
 {
-    return (char*) str->chars;
+    return str->chars;
 }
 
 CGS_API char *cgs__strv_as_cstr(const CGS_StrView str)
 {
-    return (char*) str.chars;
+    return str.chars;
 }
 
 CGS_API char *cgs__strbuf_as_cstr(const CGS_StrBuf str)
 {
-    return (char*) str.chars;
+    return str.chars;
 }
 
 CGS_API char *cgs__strbuf_ptr_as_cstr(const CGS_StrBuf *str)
 {
-    return (char*) str->chars;
+    return str->chars;
 }
 
 CGS_API char *cgs__mutstr_ref_as_cstr(const CGS_MutStrRef str)
 {
     switch(str.ty)
     {
-        case CGS__DSTR_TY     : return (char*) str.str.dstr->chars;
-        case CGS__STRBUF_TY   : return (char*) str.str.strbuf->chars;
-        case CGS__BUF_TY      : return (char*) str.str.buf.ptr;
+        case CGS__DSTR_TY     : return str.str.dstr->chars;
+        case CGS__STRBUF_TY   : return str.str.strbuf->chars;
+        case CGS__BUF_TY      : return str.str.buf.ptr;
         default                : unreachable();
     };
 }
@@ -1671,8 +1671,8 @@ CGS_API unsigned int cgs__mutstr_ref_len(const CGS_MutStrRef str)
     {
         case CGS__DSTR_TY     : return str.str.dstr->len;
         case CGS__STRBUF_TY   : return str.str.strbuf->len;
-        case CGS__BUF_TY      : return strlen((char*) str.str.buf.ptr);
-        default                : unreachable();
+        case CGS__BUF_TY      : return strlen(str.str.buf.ptr);
+        default               : unreachable();
     };
 }
 
@@ -1724,8 +1724,8 @@ CGS_API CGS_StrView cgs__strv_find(const CGS_StrView hay, const CGS_StrView need
     if(needle.len == 0)
         return (CGS_StrView){.chars = hay.chars, .len = 0};
     
-    unsigned char *max_possible_ptr = &hay.chars[hay.len] - needle.len;
-    unsigned char *first_char = hay.chars;
+    char *max_possible_ptr = &hay.chars[hay.len] - needle.len;
+    char *first_char = hay.chars;
     unsigned int remaining_len = hay.len;
     
     while(first_char && first_char <= max_possible_ptr)
@@ -2488,7 +2488,7 @@ CGS_API CGS_MutStrRef cgs__cstr_as_mutstr_ref(const char *str)
     unsigned int len = (unsigned int) strlen(str);
     
     CGS_Buffer asbuf = {
-        .ptr = (unsigned char*) str,
+        .ptr = (char*) str,
         .cap = len + 1
     };
     
@@ -2500,7 +2500,7 @@ CGS_API CGS_MutStrRef cgs__ucstr_as_mutstr_ref(const unsigned char *str)
     unsigned int len = (unsigned int) strlen((char*) str);
     
     CGS_Buffer asbuf = {
-        .ptr = (unsigned char*) str,
+        .ptr = (char*) str,
         .cap = len + 1
     };
     
@@ -2543,7 +2543,7 @@ CGS_API CGS_StrBuf cgs__strbuf_from_cstr(const char *ptr, unsigned int cap)
     return (CGS_StrBuf){
         .cap = cap,
         .len = len,
-        .chars = (unsigned char*) ptr
+        .chars = (char*) ptr
     };
 }
 
@@ -2564,7 +2564,7 @@ CGS_API CGS_StrBuf cgs__strbuf_from_buf(const CGS_Buffer buf)
 CGS_API CGS_Buffer cgs__buf_from_cstr(const char *str)
 {
     return (CGS_Buffer){
-        .ptr = (unsigned char*) str,
+        .ptr = (char*) str,
         .cap = strlen(str) + 1
     };
 }
@@ -2572,7 +2572,7 @@ CGS_API CGS_Buffer cgs__buf_from_cstr(const char *str)
 CGS_API CGS_Buffer cgs__buf_from_ucstr(const unsigned char *str)
 {
     return (CGS_Buffer){
-        .ptr = (unsigned char*) str,
+        .ptr = (char*) str,
         .cap = strlen((char*) str) + 1
     };
 }
@@ -2580,7 +2580,7 @@ CGS_API CGS_Buffer cgs__buf_from_ucstr(const unsigned char *str)
 CGS_API CGS_Buffer cgs__buf_from_carr(const char *str, size_t cap)
 {
     return (CGS_Buffer){
-        .ptr = (unsigned char*) str,
+        .ptr = (char*) str,
         .cap = cap
     };
 }
@@ -2588,7 +2588,7 @@ CGS_API CGS_Buffer cgs__buf_from_carr(const char *str, size_t cap)
 CGS_API CGS_Buffer cgs__buf_from_ucarr(const unsigned char *str, size_t cap)
 {
     return (CGS_Buffer){
-        .ptr = (unsigned char*) str,
+        .ptr = (char*) str,
         .cap = cap
     };
 }
@@ -2596,7 +2596,7 @@ CGS_API CGS_Buffer cgs__buf_from_ucarr(const unsigned char *str, size_t cap)
 CGS_API CGS_StrView cgs__strv_cstr1(const char *str)
 {
     return (CGS_StrView){
-        .chars = (unsigned char*) str,
+        .chars = (char*) str,
         .len = strlen(str)
     };
 }
@@ -2604,7 +2604,7 @@ CGS_API CGS_StrView cgs__strv_cstr1(const char *str)
 CGS_API CGS_StrView cgs__strv_ucstr1(const unsigned char *str)
 {
     return (CGS_StrView){
-        .chars = (unsigned char*) str,
+        .chars = (char*) str,
         .len = strlen((char*)str)
     };
 }
@@ -2650,10 +2650,10 @@ CGS_API CGS_StrView cgs__strv_mutstr_ref1(const CGS_MutStrRef str)
 {
     switch(str.ty)
     {
-        case CGS__DSTR_TY     : return cgs__strv_dstr_ptr1(str.str.dstr);
-        case CGS__STRBUF_TY   : return cgs__strv_strbuf_ptr1(str.str.strbuf);
-        case CGS__BUF_TY      : return cgs__strv_ucstr1(str.str.buf.ptr);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__strv_dstr_ptr1(str.str.dstr);
+        case CGS__STRBUF_TY : return cgs__strv_strbuf_ptr1(str.str.strbuf);
+        case CGS__BUF_TY    : return cgs__strv_cstr1(str.str.buf.ptr);
+        default             : unreachable();
     }
 }
 
@@ -2673,7 +2673,7 @@ CGS_API CGS_StrView cgs__strv_cstr2(const char *str, unsigned int begin)
     
     return (CGS_StrView){
         .len   = len - begin,
-        .chars = (unsigned char*) str + begin
+        .chars = (char*) str + begin
     };
 }
 
@@ -2693,7 +2693,7 @@ CGS_API CGS_StrView cgs__strv_ucstr2(const unsigned char *str, unsigned int begi
     
     return (CGS_StrView){
         .len   = len - begin,
-        .chars = (unsigned char*) str + begin
+        .chars = (char*) str + begin
     };
 }
 
@@ -2826,7 +2826,7 @@ CGS_API CGS_StrView cgs__strv_cstr3(const char *str, unsigned int begin, unsigne
     
     return (CGS_StrView){
         .len   = end - begin,
-        .chars = (unsigned char*) str + begin
+        .chars = (char*) str + begin
     };
 }
 
@@ -2846,7 +2846,7 @@ CGS_API CGS_StrView cgs__strv_ucstr3(const unsigned char *str, unsigned int begi
     
     return (CGS_StrView){
         .len   = end - begin,
-        .chars = (unsigned char*) str + begin
+        .chars = (char*) str + begin
     };
 }
 
@@ -3071,14 +3071,14 @@ CGS_PRIVATE CGS_Error cgs__schar_min_into(CGS_MutStrRef dst)
     if(SCHAR_MIN == -128)
     {
         const char *numstr = "-128";
-        CGS_StrView s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
+        CGS_StrView s = {.chars = (char*) numstr, .len = strlen(numstr)};
         return cgs__mutstr_ref_copy(dst, s);
     }
     else
     {
         char temp[16] = {0};
         int len = snprintf(temp, sizeof(temp), "%hhd", SCHAR_MIN);
-        return cgs__mutstr_ref_copy(dst, (CGS_StrView){.chars = (unsigned char*) temp, .len = len});
+        return cgs__mutstr_ref_copy(dst, (CGS_StrView){.chars = (char*) temp, .len = len});
     }
 }
 
@@ -3087,14 +3087,14 @@ CGS_PRIVATE CGS_Error cgs__short_min_into(CGS_MutStrRef dst)
     if(SHRT_MIN == -32768)
     {
         const char *numstr = "-32768";
-        CGS_StrView s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
+        CGS_StrView s = {.chars = (char*) numstr, .len = strlen(numstr)};
         return cgs__mutstr_ref_copy(dst, s);
     }
     else
     {
         char temp[16] = {0};
         int len = snprintf(temp, sizeof(temp), "%hd", SHRT_MIN);
-        return cgs__mutstr_ref_copy(dst, (CGS_StrView){.chars = (unsigned char*) temp, .len = len});
+        return cgs__mutstr_ref_copy(dst, (CGS_StrView){.chars = (char*) temp, .len = len});
     }
 }
 
@@ -3103,14 +3103,14 @@ CGS_PRIVATE CGS_Error cgs__int_min_into(CGS_MutStrRef dst)
     if(INT_MIN == -2147483648)
     {
         const char *numstr = "-2147483648";
-        CGS_StrView s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
+        CGS_StrView s = {.chars = (char*) numstr, .len = strlen(numstr)};
         return cgs__mutstr_ref_copy(dst, s);
     }
     else
     {
         char temp[32] = {0};
         int len = snprintf(temp, sizeof(temp), "%d", INT_MIN);
-        return cgs__mutstr_ref_copy(dst, (CGS_StrView){.chars = (unsigned char*) temp, .len = len});
+        return cgs__mutstr_ref_copy(dst, (CGS_StrView){.chars = (char*) temp, .len = len});
     }
 }
 
@@ -3123,14 +3123,14 @@ CGS_PRIVATE CGS_Error cgs__long_min_into(CGS_MutStrRef dst)
     else if(LONG_MIN == -9223372036854775807 - 1)
     {
         const char *numstr = "-9223372036854775808";
-        CGS_StrView s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
+        CGS_StrView s = {.chars = (char*) numstr, .len = strlen(numstr)};
         return cgs__mutstr_ref_copy(dst, s);
     }
     else
     {
         char temp[32] = {0};
         int len = snprintf(temp, sizeof(temp), "%ld", LONG_MIN);
-        return cgs__mutstr_ref_copy(dst, (CGS_StrView){.chars = (unsigned char*) temp, .len = len});
+        return cgs__mutstr_ref_copy(dst, (CGS_StrView){.chars = (char*) temp, .len = len});
     }
 }
 
@@ -3143,14 +3143,14 @@ CGS_PRIVATE CGS_Error cgs__llong_min_into(CGS_MutStrRef dst)
     else if(LLONG_MIN == -9223372036854775807 - 1)
     {
         const char *numstr = "-9223372036854775808";
-        CGS_StrView s = {.chars = (unsigned char*) numstr, .len = strlen(numstr)};
+        CGS_StrView s = {.chars = (char*) numstr, .len = strlen(numstr)};
         return cgs__mutstr_ref_copy(dst, s);
     }
     else
     {
         char temp[32] = {0};
         int len = snprintf(temp, sizeof(temp), "%lld", LLONG_MIN);
-        return cgs__mutstr_ref_copy(dst, (CGS_StrView){.chars = (unsigned char*) temp, .len = len});
+        return cgs__mutstr_ref_copy(dst, (CGS_StrView){.chars = (char*) temp, .len = len});
     }
 }
 
@@ -3314,7 +3314,7 @@ CGS_API CGS_Error cgs__cstr_tostr(CGS_MutStrRef dst, const char *obj)
     return cgs__mutstr_ref_copy(
         dst,
         (CGS_StrView){
-            .chars = (unsigned char*) obj,
+            .chars = (char*) obj,
             .len = strlen(obj)
         }
     );
@@ -3325,7 +3325,7 @@ CGS_API CGS_Error cgs__ucstr_tostr(CGS_MutStrRef dst, const unsigned char *obj)
     return cgs__mutstr_ref_copy(
         dst,
         (CGS_StrView){
-            .chars = (unsigned char*) obj,
+            .chars = (char*) obj,
             .len = strlen((char*) obj)
         }
     );
@@ -3395,7 +3395,7 @@ CGS_API CGS_Error cgs__float_tostr(CGS_MutStrRef dst, float obj)
     return cgs__mutstr_ref_copy(
         dst,
         (CGS_StrView){
-            .chars = (unsigned char*) tmp,
+            .chars = (char*) tmp,
             .len = len
         }
     );
@@ -3408,7 +3408,7 @@ CGS_API CGS_Error cgs__double_tostr(CGS_MutStrRef dst, double obj)
     return cgs__mutstr_ref_copy(
         dst,
         (CGS_StrView){
-            .chars = (unsigned char*) tmp,
+            .chars = (char*) tmp,
             .len = len
         }
     );
@@ -3423,7 +3423,7 @@ CGS_API CGS_Error cgs__array_fmt_tostr(CGS_MutStrRef dst, CGS_ArrayFmt obj)
 {
     cgs__mutstr_ref_clear(dst);
     
-    CGS_StrAppenderState appender_state;
+    CGS_AppenderState appender_state;
     
     CGS_Error err = cgs__mutstr_ref_append(dst, obj.open);
     
@@ -3533,7 +3533,7 @@ do \
     { \
         if(num_bytes == (uint8_t*)&num || !zero_pad || *num_bytes != 0) \
         { \
-            CGS_StrView hex_sv = {.chars = (unsigned char*) byte2hex[*num_bytes], .len = 2}; \
+            CGS_StrView hex_sv = {.chars = (char*) byte2hex[*num_bytes], .len = 2}; \
             if(zero_pad && hex_sv.chars[0] == '0') \
             { \
                 hex_sv.chars += 1; \
@@ -3586,7 +3586,7 @@ do \
     if(first_3bits != 0) \
     { \
         zero_pad = false; \
-        CGS_StrView octal_sv = {.chars = &(unsigned char){'0' + first_3bits}, .len = 1}; \
+        CGS_StrView octal_sv = {.chars = &(char){'0' + first_3bits}, .len = 1}; \
         err = cgs__mutstr_ref_append(dst, octal_sv); \
     } \
     unum = unum << (3 - extra_bits); \
@@ -3598,7 +3598,7 @@ do \
         if(i == (iters - 1) || !zero_pad || (first_3bits != 0)) \
         { \
             zero_pad =  false; \
-            CGS_StrView octal_sv = {.chars = &(unsigned char){'0' + first_3bits}, .len = 1}; \
+            CGS_StrView octal_sv = {.chars = &(char){'0' + first_3bits}, .len = 1}; \
             err = cgs__mutstr_ref_append(dst, octal_sv); \
         } \
         unum = unum << 3; \

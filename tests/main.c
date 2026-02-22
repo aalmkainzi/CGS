@@ -29,10 +29,10 @@ CGS_Error fp2str(MutStrRef dst, FILE *s)
 }
 
 #define ADD_TOSTR (S, s2str)
-#include "cgs.h"
+#include "../cgs.h"
 
 #define ADD_TOSTR (FILE*, fp2str)
-#include "cgs.h"
+#include "../cgs.h"
 
 typedef struct MyAllocator
 {
@@ -133,6 +133,8 @@ void test_hex()
     
     // Unsigned char / uint8_t
     tostr(&str, tsfmt((unsigned char)0, 'x'));
+    
+    
     println(str);
     assert(cgs_equal(str, "0"));
     
@@ -1026,19 +1028,168 @@ void test_insert()
 
 void tests_memmem()
 {
-    unsigned char h[] = "hello world";
-    unsigned char w[] = "world";
+    char h[] = "hello world";
+    char w[] = "world";
     StrView found = cgs_find((h), (w));
     assert(found.len == strlen((char*) w) && found.chars == h + 6);
     
-    unsigned char S[] = "-_-_-_-__-_-_";
+    char S[] = "-_-_-_-__-_-_";
     StrView found2 = cgs_find((S), ("-__"));
     assert(found2.len == 3 && found2.chars == S + 6);
 }
 
+bool split_cb(StrView found, void *arg) { (void)found; (void)arg; return true; }
+
+void comp_check()
+{
+    // Mock callback for split_iter
+    // --- 1. SETUP TYPES ---
+    
+    // Raw types
+    char c_arr[] = "hello";
+    unsigned char uc_arr[] = "world";
+    char* c_ptr = c_arr;
+    unsigned char* uc_ptr = uc_arr;
+
+    // Library types
+    DStr d = dstr_init_from("dynamic");
+    StrBuf sb = strbuf_init_from_cstr(c_arr, sizeof(c_arr));
+    StrView sv = strv("view");
+    MutStrRef mr = mutstr_ref(&d);
+
+    // --- 2. CONSTRUCTORS & INITIALIZERS ---
+    
+    // strv combinations
+    StrView v1 = strv(c_arr);               // anystr: char[]
+    StrView v2 = strv(c_ptr, 1, 3);         // anystr: char*
+    StrView v3 = strv(d);                   // anystr: DStr
+    StrView v4 = strv(&d);                  // anystr: DStr*
+    StrView v5 = strv(mr);                  // anystr: MutStrRef
+
+    // strbuf combinations
+    StrBuf sb1 = strbuf_init_from_cstr(c_arr);          // char[]
+    StrBuf sb2 = strbuf_init_from_cstr(uc_ptr, 10);     // unsigned char* + cap
+    StrBuf sb3 = strbuf_init_from_buf(c_ptr, 20);       // char* + cap
+    StrBuf sb4 = strbuf_init_from_buf(c_arr);       // char* + cap
+    StrBuf sb5 = strbuf_init_from_buf(uc_arr);       // char* + cap
+    
+    // dstr combinations
+    DStr d1 = dstr_init();                              // defaults
+    DStr d2 = dstr_init(100);                           // custom cap
+    DStr d3 = dstr_init_from(sv);                       // anystr: StrView
+    DStr d4 = dstr_init_from(&sb);                      // anystr: StrBuf*
+
+    // --- 3. ANYSTR (READ-ONLY) GENERIC DISPATCH ---
+    
+    // We'll use cgs_len and cgs_equal to test anystr variety
+    unsigned int l = 0;
+    l += cgs_len(c_arr);    l += cgs_len(uc_arr);
+    l += cgs_len(c_ptr);    l += cgs_len(uc_ptr);
+    l += cgs_len(sv);       l += cgs_len(d);
+    l += cgs_len(&d);       l += cgs_len(sb);
+    l += cgs_len(&sb);      l += cgs_len(mr);
+
+    bool eq = false;
+    eq = cgs_equal(c_arr, uc_arr);
+    eq = cgs_equal(&d, sv);
+    eq = cgs_equal(mr, sb);
+
+    char c = cgs_at(d, 0);
+    char* raw = cgs_chars(&sb);
+    unsigned int cap = cgs_cap(mr);
+
+    StrView f = cgs_find(d, "needle");
+    unsigned int count = cgs_count(d, "a");
+    bool sw = cgs_starts_with(sv, c_arr);
+    bool ew = cgs_ends_with(&d, uc_ptr);
+    
+    // --- 4. MUTSTR (MUTATING) GENERIC DISPATCH ---
+    
+    // Testing dispatch on char*, char[], DStr*, StrBuf*, MutStrRef
+    cgs_clear(c_ptr);
+    cgs_clear(c_arr);
+    cgs_clear(&d);
+    cgs_clear(&sb);
+    cgs_clear(mr);
+
+    cgs_tolower(c_ptr);
+    cgs_toupper(&d);
+    
+    cgs_copy(&d, sv);                   // mutstr, anystr
+    cgs_putc(mr, '!');                  // mutstr
+    cgs_append(&sb, "tail");            // mutstr, anystr
+    cgs_insert(c_ptr, d, 1);            // mutstr, anystr
+    cgs_prepend(mr, uc_arr);            // mutstr, anystr
+    cgs_del(&d, 0, 2);                  // mutstr
+    
+    cgs_replace(&d, "old", "new");      // mutstr, anystr, anystr
+    cgs_replace_first(mr, sv, "");      // mutstr, anystr, anystr
+    cgs_replace_range(&sb, 1, 2, d);    // mutstr, uint, uint, anystr
+
+    // --- 5. SPLIT & JOIN ---
+
+    StrViewArray arr = cgs_split(d, ",");       // anystr, anystr
+    cgs_split_iter(sv, " ", split_cb, NULL);    // anystr, anystr
+    cgs_join(&d, arr, "::");                    // mutstr, array, anystr
+    free(arr.strs);
+
+    // --- 6. I/O OPERATIONS ---
+
+    // cgs_read_line(&d);
+    // cgs_append_read_line(mr);
+    // cgs_fread_line(&sb, stdin); // Commented to prevent blocking during test run
+
+    // --- 7. VARIADIC & TOSTR (THE "PRINT" FAMILY) ---
+
+    // Types supporting tostr: ints, floats, all strings, Errors, Fmt types
+    int i = 42;
+    double f_val = 3.14;
+    CGS_Error err = {CGS_OK};
+    int int_arr[] = {1, 2, 3};
+    ArrayFmt af = arrfmt(int_arr, 3);
+
+    // Variadic compile check
+    print("Values:", i, f_val, d, sv, err, af, tsfmt(255, 'X'));
+    println(c_arr, uc_ptr, &sb, mr);
+    
+    // Sprint variants
+    cgs_sprint(&d, "Result: ", tsfmt(1.234, 'f', 2));
+    cgs_sprint_append(mr, " more ", i);
+
+    // Explicit tostr calls
+    tostr(&d, i);
+    tostr_p(mr, &f_val);
+    
+    bool has = has_tostr(i);
+
+    // --- 8. ADVANCED / DSTR SPECIFICS ---
+
+    dstr_shrink_to_fit(&d);
+    dstr_ensure_cap(&d, 512);
+    DStr d_dup = cgs_dup(c_arr);
+
+    // Appender pattern
+    AppenderState state;
+    MutStrRef app = cgs_appender(&d, &state);
+    cgs_append(app, "chunk");
+    cgs_commit_appender(&d, app);
+
+    // StrView Array helpers
+    StrViewArray sva = cgs_strv_arr("a", d, sv, c_ptr);
+    StrViewArray sva2 = cgs_strv_arr_from_carr(sva.strs, sva.len);
+
+    // --- 9. CLEANUP ---
+    dstr_deinit(&d);
+    dstr_deinit(&d1);
+    dstr_deinit(&d2);
+    dstr_deinit(&d3);
+    dstr_deinit(&d4);
+    dstr_deinit(&d_dup);
+}
+
 int main()
 {
-    println(tsfmt(10.0f, 'E', 3));
+    comp_check();
     
     
     test_tostr();

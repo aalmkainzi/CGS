@@ -1728,7 +1728,7 @@ void test_appender_edge_cases() {
     TEST("cgs_appender: basic usage");
     {
         DStr dstr = dstr_init_from("start");
-        StrAppenderState state = {};
+        AppenderState state = {};
         MutStrRef appender = cgs_appender(&dstr, &state);
         cgs_append(appender, "end");
         CGS_Error err = cgs_commit_appender(&dstr, appender);
@@ -1740,7 +1740,7 @@ void test_appender_edge_cases() {
     TEST("cgs_appender: without commit");
     {
         DStr dstr = dstr_init_from("start");
-        StrAppenderState state = {};
+        AppenderState state = {};
         MutStrRef appender = cgs_appender(&dstr, &state);
         cgs_append(appender, "lost");
         // Not committed - dstr should be unchanged
@@ -1751,7 +1751,7 @@ void test_appender_edge_cases() {
     TEST("cgs_appender: multiple appends before commit");
     {
         DStr dstr = dstr_init_from("start");
-        StrAppenderState state = {};
+        AppenderState state = {};
         MutStrRef appender = cgs_appender(&dstr, &state);
         cgs_append(appender, "a");
         cgs_append(appender, "b");
@@ -1764,7 +1764,7 @@ void test_appender_edge_cases() {
     TEST("cgs_appender: on empty DStr");
     {
         DStr dstr = dstr_init(10);
-        StrAppenderState state = {};
+        AppenderState state = {};
         MutStrRef appender = cgs_appender(&dstr, &state);
         cgs_append(appender, "first");
         cgs_commit_appender(&dstr, appender);
@@ -1775,7 +1775,7 @@ void test_appender_edge_cases() {
     TEST("cgs_appender: commit without any appends");
     {
         DStr dstr = dstr_init_from("unchanged");
-        StrAppenderState state = {};
+        AppenderState state = {};
         MutStrRef appender = cgs_appender(&dstr, &state);
         CGS_Error err = cgs_commit_appender(&dstr, appender);
         ASSERT_EQ(err.ec, CGS_OK);
@@ -1786,7 +1786,7 @@ void test_appender_edge_cases() {
     TEST("cgs_appender: multiple uses with same state");
     {
         DStr dstr = dstr_init_from("base");
-        StrAppenderState state = {};
+        AppenderState state = {};
         
         MutStrRef app1 = cgs_appender(&dstr, &state);
         cgs_append(app1, "1");
@@ -1804,7 +1804,7 @@ void test_appender_edge_cases() {
     {
         DStr dstr = dstr_init(5);
         cgs_append(&dstr, "x");
-        StrAppenderState state = {};
+        AppenderState state = {};
         MutStrRef appender = cgs_appender(&dstr, &state);
         for (int i = 0; i < 100; i++) {
             cgs_append(appender, "y");
@@ -1823,7 +1823,7 @@ void test_str_join_edge_cases() {
     
     TEST("cgs_join: empty array");
     {
-        StrViewArray arr = {0, 0, NULL};
+        StrViewArray arr = {NULL, 0, 0};
         DStr dst = dstr_init(10);
         cgs_join(&dst, arr, ",");
         ASSERT_TRUE(dst.len == 0); // Should be empty string
@@ -1834,7 +1834,7 @@ void test_str_join_edge_cases() {
     {
         char s1[] = "lonely";
         StrView views[] = { strv(s1, 0, 6) };
-        StrViewArray arr = {1, 1, views};
+        StrViewArray arr = {views, 1, 1};
         DStr dst = dstr_init(10);
         cgs_join(&dst, arr, ",");
         // Should NOT have a trailing delimiter: "lonely", not "lonely,"
@@ -1846,7 +1846,7 @@ void test_str_join_edge_cases() {
     {
         char empty[] = "";
         StrView views[] = { strv(empty, 0, 0), strv(empty, 0, 0) };
-        StrViewArray arr = {2, 2, views};
+        StrViewArray arr = {views, 2, 2};
         DStr dst = dstr_init(10);
         cgs_join(&dst, arr, ",");
         // Should result in exactly the delimiter: ","
@@ -1858,7 +1858,7 @@ void test_str_join_edge_cases() {
     {
         char s1[] = "a", s2[] = "b";
         StrView views[] = { strv(s1, 0, 1), strv(s2, 0, 1) };
-        StrViewArray arr = {2, 2, views};
+        StrViewArray arr = {views, 2, 2};
         DStr dst = dstr_init(10);
         cgs_join(&dst, arr, "");
         // Should just concatenate: "ab"
@@ -1869,7 +1869,7 @@ void test_str_join_edge_cases() {
     // old
     TEST("cgs_join: empty array");
     {
-        StrViewArray arr = {0, 0, NULL};
+        StrViewArray arr = {NULL, 0, 0};
         DStr dst = dstr_init(10);
         CGS_Error err = cgs_join(&dst, arr, ",");
         ASSERT_EQ(err.ec, CGS_OK);
@@ -1881,7 +1881,7 @@ void test_str_join_edge_cases() {
     {
         char s1[] = "only";
         StrView views[] = {strv(s1, 0, 4)};
-        StrViewArray arr = {1, 1, views};
+        StrViewArray arr = {views, 1, 1};
         DStr dst = dstr_init(10);
         cgs_join(&dst, arr, ",");
         ASSERT_TRUE(cgs_equal(&dst, "only"));
@@ -1896,7 +1896,7 @@ void test_str_join_edge_cases() {
             strv(s2, 0, 1),
             strv(s3, 0, 1)
         };
-        StrViewArray arr = {3, 3, views};
+        StrViewArray arr = {views, 3, 3};
         DStr dst = dstr_init(10);
         cgs_join(&dst, arr, "");
         ASSERT_TRUE(cgs_equal(&dst, "abc"));
@@ -1910,7 +1910,7 @@ void test_str_join_edge_cases() {
             strv(s1, 0, 1),
             strv(s2, 0, 1)
         };
-        StrViewArray arr = {2, 2, views};
+        StrViewArray arr = {views, 2, 2};
         DStr dst = dstr_init(20);
         cgs_join(&dst, arr, "::");
         ASSERT_TRUE(cgs_equal(&dst, "a::b"));
@@ -1925,7 +1925,7 @@ void test_str_join_edge_cases() {
             strv(s2, 0, 3),
             strv(s3, 0, 0)
         };
-        StrViewArray arr = {3, 3, views};
+        StrViewArray arr = {views, 3, 3};
         DStr dst = dstr_init(20);
         cgs_join(&dst, arr, ",");
         ASSERT_TRUE(cgs_equal(&dst, ",mid,"));
@@ -1939,7 +1939,7 @@ void test_str_join_edge_cases() {
             strv(s1, 0, 4),
             strv(s2, 0, 7)
         };
-        StrViewArray arr = {2, 2, views};
+        StrViewArray arr = {views, 2, 2};
         char backing[5];
         StrBuf sb = strbuf_init_from_buf(backing, 5);
         cgs_clear(&sb); // Initialize to empty

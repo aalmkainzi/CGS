@@ -73,9 +73,13 @@ cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old
 
 #endif
 
-
-#define cgs__static_assertx(exp, msg) \
+#if defined(__GNUC__) && !defined(__clang__)
+    #define cgs__static_assertx(exp, msg) \
+((void)_Generic((char(*)[!!(exp) + 1])0, char(*)[2]: (msg) && (0)))
+#else
+    #define cgs__static_assertx(exp, msg) \
 ((void)sizeof(struct { _Static_assert(exp, msg); int : 8; }))
+#endif
 
 #define cgs__has_type(exp, t) \
 _Generic(exp, t: true, default: false)
@@ -171,39 +175,39 @@ CGS__ARG1(__VA_ARGS__) CGS__FOREACH(CGS__TYPEOF_ARG, __VA_ARGS__) \
 // Dynamic String
 typedef struct CGS_DStr
 {
+    char *chars;
     CGS_Allocator *allocator;
     unsigned int cap;
     unsigned int len;
-    unsigned char *chars;
 } CGS_DStr;
 
 // Used as a general purpose non-dynamic string buffer
 typedef struct CGS_StrBuf
 {
+    char *chars;
     unsigned int cap;
     unsigned int len;
-    unsigned char *chars;
 } CGS_StrBuf;
 
 // Used to view strings
 typedef struct CGS_StrView
 {
+    char *chars;
     unsigned int len;
-    unsigned char *chars;
 } CGS_StrView;
 
 // An array of the above, returned by cgs_split
 typedef struct CGS_StrViewArray
 {
+    CGS_StrView *strs;
     unsigned int cap;
     unsigned int len;
-    CGS_StrView *strs;
 } CGS_StrViewArray;
 
 // Used for passing `char[]` or `unsigned char[]`, such that it doesn't lose cap information
 typedef struct CGS_Buffer
 {
-    unsigned char *ptr;
+    char *ptr;
     unsigned int cap;
 } CGS_Buffer;
 
@@ -248,7 +252,7 @@ typedef struct CGS_Error
 
 typedef struct CGS__FixedMutStrRef
 {
-    unsigned char *chars;
+    char *chars;
     unsigned int *len;
     unsigned int cap;
 } CGS__FixedMutStrRef;
@@ -273,12 +277,12 @@ typedef struct CGS__DStrAppendAllocator
     struct CGS_DStr *owner;
 } CGS__DStrAppendAllocator;
 
-typedef struct CGS_StrAppenderState
+typedef struct CGS_AppenderState
 {
     CGS_DStr appender_dstr;
     CGS__DStrAppendAllocator dstr_append_allocator;
     CGS_StrBuf appender_buf;
-} CGS_StrAppenderState;
+} CGS_AppenderState;
 
 typedef struct CGS_ReplaceResult
 {
@@ -526,7 +530,7 @@ do \
 
 #define cgs__sprint_each_setup(...) \
 __VA_OPT__( \
-    CGS_StrAppenderState cgs__appender_state = {0}; \
+    CGS_AppenderState cgs__appender_state = {0}; \
     CGS_MutStrRef cgs__appender_mutstr_ref; \
     CGS__FOREACH(cgs__str_print_each, __VA_ARGS__); \
 )
@@ -547,7 +551,7 @@ do \
 } while(0)
 
 #define cgs_strv_arr_from_carr(strv_carr, ...) \
-cgs__strv_arr_from_carr(strv_carr, CGS__VA_OR(CGS__CARR_LEN(strv_carr), __VA_ARGS__))
+cgs__strv_arr_from_carr(strv_carr, CGS__VA_OR((cgs__static_assertx(cgs__is_array_of((strv_carr), CGS_StrView), "Must pass StrView[N] or StrView* with length parameter"), CGS__CARR_LEN(strv_carr)), __VA_ARGS__))
 
 #define CGS__STRV_COMMA(anystr) \
 cgs_strv(anystr),
@@ -569,8 +573,9 @@ cgs_strv(anystr),
 __VA_OPT__(cgs__strbuf_init_from_cstr_2(cstr, __VA_ARGS__)) \
 CGS__IF_EMPTY(cgs__strbuf_init_from_cstr_(cstr), __VA_ARGS__)
 
+// TODO this re-evals param, needs rework
 #define cgs__strbuf_init_from_cstr_(cstr)                             \
-cgs__strbuf_from_cstr(cstr,                                           \
+cgs__strbuf_from_cstr((char*)(cstr),                                  \
 _Generic(&(__typeof__(cstr)){0},                                      \
 char(*)[sizeof(__typeof__(cstr))]         : sizeof(__typeof__(cstr)), \
 unsigned char(*)[sizeof(__typeof__(cstr))]: sizeof(__typeof__(cstr)), \
@@ -579,7 +584,7 @@ unsigned char**                           : strlen((char*) cstr) + 1  \
 ))
 
 #define cgs__strbuf_init_from_cstr_2(cstr, cap) \
-cgs__strbuf_from_cstr(cstr, cap)
+cgs__strbuf_from_cstr(_Generic((cstr), char*:(char*)(cstr), unsigned char*:(char*)(cstr) ), cap)
 
 // Does not call strlen on the buf
 // Sets the first byte to '\0'
@@ -590,20 +595,20 @@ CGS__IF_EMPTY(cgs__strbuf_init_from_buf_(buf), __VA_ARGS__)
 #define cgs__strbuf_init_from_buf_(buf) \
 cgs__strbuf_from_buf( \
 _Generic(&(__typeof__(buf)){0}, \
-    char(*)[sizeof(__typeof__(buf))]: (CGS_Buffer){.ptr = (unsigned char*) (buf), .cap = sizeof(buf)}, \
-    unsigned char(*)[sizeof(__typeof__(buf))]: (CGS_Buffer){.ptr = (unsigned char*) (buf), .cap = sizeof(buf)}, \
+    char(*)[sizeof(__typeof__(buf))]: (CGS_Buffer){.ptr = (char*) (buf), .cap = sizeof(buf)}, \
+    unsigned char(*)[sizeof(__typeof__(buf))]: (CGS_Buffer){.ptr = (char*) (buf), .cap = sizeof(buf)}, \
     CGS_Buffer*: buf \
 ))
 
 #define cgs__strbuf_init_from_buf_2(buf, cap_) \
-cgs__strbuf_from_buf((CGS_Buffer){.ptr = (unsigned char*) _Generic(buf,char*:buf,unsigned char*:buf,void*:buf), .cap = cap_})
+cgs__strbuf_from_buf((CGS_Buffer){.ptr = (char*) _Generic(buf,char*:buf,unsigned char*:buf,void*:buf), .cap = cap_})
 
 #define cgs__cstr_to_buf(carr, ...) \
 ( \
 CGS__IF_EMPTY( \
     _Generic((__typeof__(carr)*){0}, \
-        char(*)[sizeof(__typeof__(carr))]: (CGS_Buffer){.ptr = (unsigned char*) (carr), .cap = sizeof(carr)}, \
-        unsigned char(*)[sizeof(__typeof__(any_str))]: (CGS_Buffer){.ptr = (unsigned char*) (carr), .cap = sizeof(carr)} \
+        char(*)[sizeof(__typeof__(carr))]: (CGS_Buffer){.ptr = (char*) (carr), .cap = sizeof(carr)}, \
+        unsigned char(*)[sizeof(__typeof__(any_str))]: (CGS_Buffer){.ptr = (char*) (carr), .cap = sizeof(carr)} \
     ), \
     __VA_ARGS__ \
 ) \
@@ -617,7 +622,7 @@ __VA_OPT__(cgs__cstr_to_buf2((carr), __VA_ARGS__)) \
     char*: 0, \
     unsigned char*: 0 \
 ), \
-(CGS_Buffer){.ptr = (unsigned char*) (carr_or_ptr), .cap = (cap_)})
+(CGS_Buffer){.ptr = (char*) (carr_or_ptr), .cap = (cap_)})
 
 #define cgs_mutstr_ref(mutstr, ...) \
 CGS__CAT(cgs__mutstr_ref, __VA_OPT__(2))((mutstr) __VA_OPT__(,) __VA_ARGS__)
@@ -632,8 +637,8 @@ CGS_MutStrRef*                               : cgs__mutstr_ref_as_mutstr_ref, \
 char(*)[sizeof(__typeof__(mutstr))]          : cgs__buf_as_mutstr_ref,        \
 unsigned char(*)[sizeof(__typeof__(mutstr))] : cgs__buf_as_mutstr_ref         \
 )(_Generic((__typeof__(mutstr)*){0},                                          \
-    char(*)[sizeof(__typeof__(mutstr))]          : (CGS_Buffer){.ptr = (unsigned char*) cgs__coerce(mutstr, char*),          .cap = sizeof(__typeof__(mutstr))}, \
-    unsigned char(*)[sizeof(__typeof__(mutstr))] : (CGS_Buffer){.ptr =                  cgs__coerce(mutstr, unsigned char*), .cap = sizeof(__typeof__(mutstr))}, \
+    char(*)[sizeof(__typeof__(mutstr))]          : (CGS_Buffer){.ptr =         cgs__coerce(mutstr, char*),          .cap = sizeof(__typeof__(mutstr))}, \
+    unsigned char(*)[sizeof(__typeof__(mutstr))] : (CGS_Buffer){.ptr = (char*) cgs__coerce(mutstr, unsigned char*), .cap = sizeof(__typeof__(mutstr))}, \
     default: (mutstr) \
 ))
 
@@ -1161,7 +1166,7 @@ _Generic((ty){0}, \
 cgs__get_tostr_func(__typeof__(src))(cgs_mutstr_ref(dst), (src))
 
 #define cgs_has_tostr(ty) \
-(!cgs__has_type(cgs__get_tostr_func_ft(ty), cgs__tostr_fail))
+(!cgs__has_type(cgs__get_tostr_func_ft(__typeof__(ty)), cgs__tostr_fail))
 
 #define cgs_tostr_p(dst, src) \
 cgs__get_tostr_p_func(__typeof__(*(src)))(cgs_mutstr_ref(dst), (src))
@@ -1225,7 +1230,7 @@ CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref(CGS_Buffer buf, unsigned int
 CGS_API CGS__FixedMutStrRef cgs__strbuf_ptr_as_fmutstr_ref(CGS_StrBuf *strbuf);
 CGS_API CGS__FixedMutStrRef cgs__dstr_ptr_as_fmutstr_ref(CGS_DStr *dstr);
 
-CGS_API CGS_MutStrRef cgs__make_appender_mutstr_ref(CGS_MutStrRef owner, CGS_StrAppenderState *state);
+CGS_API CGS_MutStrRef cgs__make_appender_mutstr_ref(CGS_MutStrRef owner, CGS_AppenderState *state);
 CGS_API CGS_Error cgs__mutstr_ref_commit_appender(CGS_MutStrRef owner, CGS_MutStrRef appender);
 
 CGS_API char *cgs__cstr_as_cstr(const char *str);
@@ -1428,7 +1433,7 @@ CGS__FLOATING_TYPES(CGS__X, ignore, CGS__X)
 #define StrViewArray          CGS_StrViewArray
 #define MutStrRef             CGS_MutStrRef
 #define ReplaceResult         CGS_ReplaceResult
-#define StrAppenderState      CGS_StrAppenderState
+#define AppenderState         CGS_AppenderState
 #define ArrayFmt              CGS_ArrayFmt
 
 #define strv(anystr, ...) cgs_strv(anystr __VA_OPT__(,) __VA_ARGS__)
