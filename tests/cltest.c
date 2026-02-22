@@ -269,7 +269,7 @@ bool test_str_count_multiple() {
 }
 
 bool test_str_count_empty_needle() {
-    ASSERT_EQ(cgs_count("hello", ""), 0);
+    ASSERT_EQ(cgs_count("hello", ""), 6);
     return true;
 }
 

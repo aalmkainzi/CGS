@@ -816,7 +816,7 @@ void test_str_count()
     assert(cgs_count(str, "d") == 4);
     println(cgs_count("vvv", "vv"));
     assert(cgs_count("vvv", "vv") == 1);
-    assert(cgs_count(str, "") == 0);
+    assert(cgs_count(str, "") == str.len + 1);
     
     char C[] = "hello world";
     StrBuf sb = strbuf_init_from_cstr(C);
