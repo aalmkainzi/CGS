@@ -7,7 +7,7 @@
 #define CGS_API static inline
 #define CGS_PRIVATE static inline
 
-#include "../sgs.c"
+#include "../cgs.c"
 
 typedef struct S
 {
@@ -29,10 +29,10 @@ CGS_Error fp2str(MutStrRef dst, FILE *s)
 }
 
 #define ADD_TOSTR (S, s2str)
-#include "sgs.h"
+#include "cgs.h"
 
 #define ADD_TOSTR (FILE*, fp2str)
-#include "sgs.h"
+#include "cgs.h"
 
 typedef struct MyAllocator
 {
@@ -743,7 +743,7 @@ CGS_Error s22str(MutStrRef dst, S2 s)
 }
 
 #define ADD_TOSTR (S2, s22str)
-#include "sgs.h"
+#include "cgs.h"
 
 #include <assert.h>
 #define _GNU_SOURCE
@@ -773,10 +773,10 @@ CGS_Error bar_tostr(MutStrRef str, struct BAR b)
 }
 
 #define ADD_TOSTR (struct FOO, foo_to_str)
-#include "sgs.h"
+#include "cgs.h"
 
 #define ADD_TOSTR (struct BAR, bar_tostr)
-#include "sgs.h"
+#include "cgs.h"
 
 void test_tostr()
 {

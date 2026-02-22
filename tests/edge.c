@@ -4,7 +4,7 @@
 #include <limits.h>
 
 #define CGS_SHORT_NAMES
-#include "../sgs.c"
+#include "../cgs.c"
 // Forward declaration for appender state
 
 // Test counter
@@ -231,6 +231,54 @@ void test_str_equal_edge_cases() {
 // ============================================================================
 
 void test_str_find_edge_cases() {
+    TEST("cgs_find: basic match");
+    {
+        char hay[] = "hello world";
+        StrView v = cgs_find(hay, "world");
+        // Should return view starting at index 6, length 5
+        ASSERT_TRUE(v.chars == &hay[6]);
+        ASSERT_TRUE(v.len == 5);
+    }
+    
+    TEST("cgs_find: not found");
+    {
+        StrView v = cgs_find("apple", "orange");
+        // Usually returns a null view (chars == NULL) or a view with len 0
+        ASSERT_TRUE(v.chars == NULL || v.len == 0);
+    }
+    
+    TEST("cgs_find: match at start and end");
+    {
+        char hay[] = "bracket";
+        StrView start = cgs_find(hay, "b");
+        StrView end = cgs_find(hay, "t");
+        
+        ASSERT_TRUE(start.chars == &hay[0]);
+        ASSERT_TRUE(end.chars == &hay[6]);
+    }
+    
+    TEST("cgs_find: empty needle");
+    {
+        char hay[] = "abc";
+        StrView v = cgs_find(hay, "");
+        // In most languages, finding "" returns the start of the string
+        ASSERT_TRUE(v.chars == &hay[0]);
+        ASSERT_TRUE(v.len == 0);
+    }
+    
+    TEST("cgs_find: needle equals haystack");
+    {
+        char hay[] = "same";
+        StrView v = cgs_find(hay, "same");
+        ASSERT_TRUE(v.len == 4 && v.chars == &hay[0]);
+    }
+    
+    TEST("cgs_find: needle longer than haystack");
+    {
+        StrView v = cgs_find("short", "much longer needle");
+        ASSERT_TRUE(v.chars == NULL || v.len == 0);
+    }
+    
     TEST("cgs_find: empty needle in empty haystack");
     {
         char hay[] = "";
@@ -247,7 +295,7 @@ void test_str_find_edge_cases() {
         char needle[] = "";
         StrView result = cgs_find(hay, needle);
         // Should probably find at position 0 or be invalid
-        ASSERT_TRUE(1);
+        ASSERT_TRUE(result.chars == hay);
     }
     
     TEST("cgs_find: needle longer than haystack");
@@ -305,14 +353,64 @@ void test_str_find_edge_cases() {
 // ============================================================================
 
 void test_str_count_edge_cases() {
+    TEST("cgs_count: basic count");
+    {
+        unsigned int n = cgs_count("banana", "a");
+        ASSERT_TRUE(n == 3);
+    }
+    
+    TEST("cgs_count: non-overlapping logic");
+    {
+        // "aa" appears in "aaaaa" at:
+        // [aa] [aa] a  <- Non-overlapping (2)
+        //  a [aa] [aa] <- Non-overlapping alternative
+        // Standard behavior is to consume the first match and move on.
+        unsigned int n = cgs_count("aaaaa", "aa");
+        ASSERT_TRUE(n == 2);
+    }
+    
+    TEST("cgs_count: no matches");
+    {
+        unsigned int n = cgs_count("abc", "z");
+        ASSERT_TRUE(n == 0);
+    }
+    
+    TEST("cgs_count: empty needle (Interstitial Gaps)");
+    {
+        // "abc" has gaps: ^ a ^ b ^ c ^ 
+        // Index:        0 1 1 2 2 3 3
+        // Most modern libs (Python, Go, etc.) count len + 1
+        unsigned int n = cgs_count("abc", "");
+        ASSERT_TRUE(n == 4);
+    }
+    
+    TEST("cgs_count: empty haystack");
+    {
+        // "" contains one ""
+        ASSERT_TRUE(cgs_count("", "") == 1);
+        // "" contains zero "a"
+        ASSERT_TRUE(cgs_count("", "a") == 0);
+    }
+    
+    TEST("cgs_count: needle is haystack");
+    {
+        ASSERT_TRUE(cgs_count("test", "test") == 1);
+    }
+    
+    TEST("cgs_count: needle overlaps but is not identical");
+    {
+        // count "ababa" in "abababa"
+        // [ababa] ba -> 1 match
+        unsigned int n = cgs_count("abababa", "ababa");
+        ASSERT_TRUE(n == 1);
+    }
+    
     TEST("cgs_count: empty needle");
     {
         char hay[] = "test";
         char needle[] = "";
         unsigned int count = cgs_count(hay, needle);
-        // Counting empty strings might return 0 or undefined
-        (void)count;
-        ASSERT_TRUE(1);
+        ASSERT_TRUE(count == cgs_len(hay) + 1);
     }
     
     TEST("cgs_count: empty haystack");
@@ -899,6 +997,23 @@ void test_str_replace_first_edge_cases() {
         dstr_deinit(&dstr);
     }
     
+    TEST("cgs_replace_first: empty string target");
+    {
+        DStr s = dstr_init_from("abc");
+        // Replacing the first "" is defined in many libs as an injection at start
+        cgs_replace_first(&s, "", "!");
+        ASSERT_TRUE(cgs_equal(&s, "!abc"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace_first: match at end of string");
+    {
+        DStr s = dstr_init_from("path/to/file");
+        cgs_replace_first(&s, "file", "dir");
+        ASSERT_TRUE(cgs_equal(&s, "path/to/dir"));
+        dstr_deinit(&s);
+    }
+    
     TEST("cgs_replace_first: multiple occurrences");
     {
         DStr dstr = dstr_init_from("test test test");
@@ -916,6 +1031,39 @@ void test_str_replace_first_edge_cases() {
         ASSERT_TRUE(cgs_equal(&dstr, "abcxyz"));
         dstr_deinit(&dstr);
     }
+    
+    TEST("cgs_replace_first: only first occurrence");
+    {
+        DStr s = dstr_init_from("ababab");
+        CGS_Error err = cgs_replace_first(&s, "ab", "X");
+        ASSERT_TRUE(cgs_equal(&s, "Xabab") && err.ec == CGS_OK);
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace_first: target at the very end");
+    {
+        DStr s = dstr_init_from("hello world");
+        CGS_Error err = cgs_replace_first(&s, "world", "C");
+        ASSERT_TRUE(cgs_equal(&s, "hello C"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace_first: target is the whole string");
+    {
+        DStr s = dstr_init_from("match");
+        cgs_replace_first(&s, "match", "replaced");
+        ASSERT_TRUE(cgs_equal(&s, "replaced"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace_first: error when not found");
+    {
+        DStr s = dstr_init_from("abc");
+        CGS_Error err = cgs_replace_first(&s, "z", "x");
+        // Some libs return OK with 0 changes, but CGS_NOT_FOUND is safer for a "First" API
+        ASSERT_TRUE(err.ec == CGS_NOT_FOUND);
+        dstr_deinit(&s);
+    }
 }
 
 // ============================================================================
@@ -923,6 +1071,32 @@ void test_str_replace_first_edge_cases() {
 // ============================================================================
 
 void test_str_replace_range_edge_cases() {
+    TEST("cgs_replace_range: remove last character");
+    {
+        DStr s = dstr_init_from("Hello!");
+        // Range is [5, 6) -> the '!'
+        cgs_replace_range(&s, 5, 6, ""); 
+        ASSERT_TRUE(cgs_equal(&s, "Hello"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace_range: replace inside string with much longer string");
+    {
+        DStr s = dstr_init_from("a[ ]c");
+        // Replace "[ ]" (index 1 to 4) with "long string"
+        cgs_replace_range(&s, 1, 4, "is a very long string");
+        ASSERT_TRUE(cgs_equal(&s, "ais a very long stringc"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace_range: null/empty replacement at specific index (Insertion)");
+    {
+        DStr s = dstr_init_from("ac");
+        cgs_replace_range(&s, 1, 1, "b");
+        ASSERT_TRUE(cgs_equal(&s, "abc"));
+        dstr_deinit(&s);
+    }
+    
     TEST("cgs_replace_range: replace entire string");
     {
         DStr dstr = dstr_init_from("test");
@@ -982,6 +1156,57 @@ void test_str_replace_range_edge_cases() {
         CGS_Error err = cgs_replace_range(&sb, 0, 4, "very long replacement");
         ASSERT_EQ(err.ec, CGS_DST_TOO_SMALL);
     }
+    
+    TEST("cgs_replace_range: replace middle (same size)");
+    {
+        DStr s = dstr_init_from("ABCDE");
+        // Replace "BCD" (indices 1, 2, 3) with "123"
+        CGS_Error err = cgs_replace_range(&s, 1, 4, "123");
+        ASSERT_TRUE(cgs_equal(&s, "A123E"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace_range: grow string (insertion)");
+    {
+        DStr s = dstr_init_from("AB");
+        // Replace nothing at index 1 with "123" -> "A123B"
+        CGS_Error err = cgs_replace_range(&s, 1, 1, "123");
+        ASSERT_TRUE(cgs_equal(&s, "A123B"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace_range: shrink string (deletion)");
+    {
+        DStr s = dstr_init_from("Hello World");
+        // Replace " World" (index 5 to 11) with ""
+        CGS_Error err = cgs_replace_range(&s, 5, 11, "");
+        ASSERT_TRUE(cgs_equal(&s, "Hello"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace_range: replace entire string");
+    {
+        DStr s = dstr_init_from("old");
+        cgs_replace_range(&s, 0, 3, "new");
+        ASSERT_TRUE(cgs_equal(&s, "new"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace_range: out of bounds");
+    {
+        DStr s = dstr_init_from("abc");
+        CGS_Error err = cgs_replace_range(&s, 1, 10, "x");
+        ASSERT_TRUE(err.ec == CGS_INDEX_OUT_OF_BOUNDS);
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace_range: inverted range");
+    {
+        DStr s = dstr_init_from("abc");
+        CGS_Error err = cgs_replace_range(&s, 3, 1, "x");
+        ASSERT_TRUE(err.ec == CGS_BAD_RANGE);
+        dstr_deinit(&s);
+    }
 }
 
 // ============================================================================
@@ -989,26 +1214,90 @@ void test_str_replace_range_edge_cases() {
 // ============================================================================
 
 void test_str_split_edge_cases() {
+    
     TEST("cgs_split: empty string");
     {
         char str[] = "";
         char delim[] = ",";
         StrViewArray arr = cgs_split(str, delim);
         // Should return array with 0 or 1 empty element
-        ASSERT_TRUE(arr.len == 0 || arr.len == 1);
+        ASSERT_TRUE(arr.len == 1 && arr.strs[0].chars == str);
         free(arr.strs);
     }
     
-    TEST("cgs_split: empty delimiter");
+    TEST("Split: No delimiter present in source");
     {
-        char str[] = "test";
-        char delim[] = "";
+        char str[] = "hello world";
+        char delim[] = ",";
         StrViewArray arr = cgs_split(str, delim);
-        // Behavior undefined - might split into characters or return whole string
-        ASSERT_TRUE(1);
+        // Delimiter not found -> 1 element (the whole string)
+        ASSERT_TRUE(arr.len == 1);
+        ASSERT_TRUE(arr.strs[0].len == 11);
+        ASSERT_TRUE(memcmp(arr.strs[0].chars, "hello world", 11) == 0);
         free(arr.strs);
     }
     
+    TEST("cgs_split: empty string with non-empty delimiter");
+    {
+        char str[] = "";
+        StrViewArray arr = cgs_split(str, ",");
+        // Most languages (Java, JS, Python) return [""]
+        ASSERT_TRUE(arr.len == 1);
+        ASSERT_TRUE(arr.strs[0].len == 0);
+        free(arr.strs);
+    }
+    
+    TEST("cgs_split: empty delimiter (Explode behavior)");
+    {
+        char str[] = "abc";
+        StrViewArray arr = cgs_split(str, "");
+        // Explode: "abc" -> ["a", "b", "c"]
+        ASSERT_TRUE(arr.len == 3);
+        ASSERT_TRUE(arr.strs[0].len == 1 && arr.strs[0].chars[0] == 'a');
+        ASSERT_TRUE(arr.strs[2].len == 1 && arr.strs[2].chars[0] == 'c');
+        free(arr.strs);
+    }
+    
+    TEST("cgs_split: consecutive delimiters (Empty fields)");
+    {
+        char str[] = "a,,b";
+        StrViewArray arr = cgs_split(str, ",");
+        // Result: ["a", "", "b"]
+        ASSERT_TRUE(arr.len == 3);
+        ASSERT_TRUE(arr.strs[1].len == 0);
+        free(arr.strs);
+    }
+    
+    TEST("cgs_split: leading and trailing delimiters");
+    {
+        char str[] = ",a,";
+        StrViewArray arr = cgs_split(str, ",");
+        // Result: ["", "a", ""]
+        ASSERT_TRUE(arr.len == 3);
+        ASSERT_TRUE(arr.strs[0].len == 0);
+        ASSERT_TRUE(arr.strs[2].len == 0);
+        free(arr.strs);
+    }
+    
+    TEST("cgs_split: delimiter not present");
+    {
+        char str[] = "hello";
+        StrViewArray arr = cgs_split(str, "|");
+        // Should return the original string as the only element
+        ASSERT_TRUE(arr.len == 1);
+        ASSERT_TRUE(cgs_equal(arr.strs[0], "hello"));
+        free(arr.strs);
+    }
+    
+    TEST("cgs_split: string is exactly the delimiter");
+    {
+        char str[] = "::";
+        StrViewArray arr = cgs_split(str, "::");
+        // Result: ["", ""]
+        ASSERT_TRUE(arr.len == 2);
+        ASSERT_TRUE(arr.strs[0].len == 0 && arr.strs[1].len == 0);
+        free(arr.strs);
+    }    
     TEST("cgs_split: delimiter not in string");
     {
         char str[] = "no delimiters here";
@@ -1531,6 +1820,53 @@ void test_appender_edge_cases() {
 // ============================================================================
 
 void test_str_join_edge_cases() {
+    
+    TEST("cgs_join: empty array");
+    {
+        StrViewArray arr = {0, 0, NULL};
+        DStr dst = dstr_init(10);
+        cgs_join(&dst, arr, ",");
+        ASSERT_TRUE(dst.len == 0); // Should be empty string
+        dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_join: single element");
+    {
+        char s1[] = "lonely";
+        StrView views[] = { strv(s1, 0, 6) };
+        StrViewArray arr = {1, 1, views};
+        DStr dst = dstr_init(10);
+        cgs_join(&dst, arr, ",");
+        // Should NOT have a trailing delimiter: "lonely", not "lonely,"
+        ASSERT_TRUE(cgs_equal(&dst, "lonely"));
+        dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_join: elements are empty strings");
+    {
+        char empty[] = "";
+        StrView views[] = { strv(empty, 0, 0), strv(empty, 0, 0) };
+        StrViewArray arr = {2, 2, views};
+        DStr dst = dstr_init(10);
+        cgs_join(&dst, arr, ",");
+        // Should result in exactly the delimiter: ","
+        ASSERT_TRUE(cgs_equal(&dst, ","));
+        dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_join: empty delimiter");
+    {
+        char s1[] = "a", s2[] = "b";
+        StrView views[] = { strv(s1, 0, 1), strv(s2, 0, 1) };
+        StrViewArray arr = {2, 2, views};
+        DStr dst = dstr_init(10);
+        cgs_join(&dst, arr, "");
+        // Should just concatenate: "ab"
+        ASSERT_TRUE(cgs_equal(&dst, "ab"));
+        dstr_deinit(&dst);
+    }
+    
+    // old
     TEST("cgs_join: empty array");
     {
         StrViewArray arr = {0, 0, NULL};
@@ -1675,6 +2011,52 @@ void test_tostr_edge_cases() {
 // ============================================================================
 
 void test_stress_cases() {
+    TEST("cgs_replace: fixed buffer overflow check");
+    {
+        char buf[10] = "apple"; // capacity 10
+        // Result would be "appleapple", length 10 + 1 for null = 11.
+        // This should return CGS_DST_TOO_SMALL
+        ReplaceResult res = cgs_replace(buf, "apple", "appleapple");
+        ASSERT_TRUE(res.err.ec == CGS_DST_TOO_SMALL);
+    }
+    
+    TEST("cgs_replace_range: invalid indices");
+    {
+        DStr s = dstr_init_from("abc");
+        // Start > End
+        CGS_Error err1 = cgs_replace_range(&s, 2, 1, "x");
+        ASSERT_TRUE(err1.ec == CGS_BAD_RANGE);
+        
+        // Start out of bounds
+        CGS_Error err2 = cgs_replace_range(&s, 5, 6, "x");
+        ASSERT_TRUE(err2.ec == CGS_INDEX_OUT_OF_BOUNDS);
+        
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace: fixed buffer overflow check");
+    {
+        char buf[10] = "apple"; // capacity 10
+        // Result would be "appleapple", length 10 + 1 for null = 11.
+        // This should return CGS_DST_TOO_SMALL
+        ReplaceResult res = cgs_replace(buf, "apple", "appleapple");
+        ASSERT_TRUE(res.err.ec == CGS_DST_TOO_SMALL);
+    }
+    
+    TEST("cgs_replace_range: invalid indices");
+    {
+        DStr s = dstr_init_from("abc");
+        // Start > End
+        CGS_Error err1 = cgs_replace_range(&s, 2, 1, "x");
+        ASSERT_TRUE(err1.ec == CGS_BAD_RANGE);
+        
+        // Start out of bounds
+        CGS_Error err2 = cgs_replace_range(&s, 5, 6, "x");
+        ASSERT_TRUE(err2.ec == CGS_INDEX_OUT_OF_BOUNDS);
+        
+        dstr_deinit(&s);
+    }
+    
     TEST("stress: many allocations and deallocations");
     {
         for (int i = 0; i < 100; i++) {
@@ -1750,6 +2132,86 @@ void test_special_characters() {
     }
 }
 
+void test_replace_all()
+{
+    TEST("cgs_replace: standard multiple replacement");
+    {
+        DStr s = dstr_init_from("banana");
+        ReplaceResult res = cgs_replace(&s, "a", "o");
+        // Result: "bonono", count: 3
+        ASSERT_TRUE(res.nb_replaced == 3 && cgs_equal(&s, "bonono"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace: empty target (Injection behavior)");
+    {
+        DStr s = dstr_init_from("abc");
+        // Standard behavior (Python/JS): Replace "" with "-"
+        // This usually results in "-a-b-c-"
+        ReplaceResult res = cgs_replace(&s, "", "-");
+        ASSERT_TRUE(cgs_equal(&s, "-a-b-c-"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace: replacement contains target (No infinite loop)");
+    {
+        DStr s = dstr_init_from("a");
+        // Replacing "a" with "aa" should only happen once per original match
+        ReplaceResult res = cgs_replace(&s, "a", "aa");
+        ASSERT_TRUE(res.nb_replaced == 1 && cgs_equal(&s, "aa"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace: non-overlapping counts");
+    {
+        DStr s = dstr_init_from("aaaaa"); 
+        ReplaceResult res = cgs_replace(&s, "aa", "b");
+        // Result must be "bba", count must be 2
+        ASSERT_TRUE(res.nb_replaced == 2);
+        ASSERT_TRUE(cgs_equal(&s, "bba"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace: target longer than source");
+    {
+        DStr s = dstr_init_from("abc");
+        ReplaceResult res = cgs_replace(&s, "abcd", "x");
+        ASSERT_TRUE(res.nb_replaced == 0 && cgs_equal(&s, "abc"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace: multiple replacements with different lengths");
+    {
+        DStr s = dstr_init_from("1-2-3");
+        // Growing the string: "1" -> "one"
+        ReplaceResult res = cgs_replace(&s, "-", "---");
+        ASSERT_TRUE(cgs_equal(&s, "1---2---3"));
+        dstr_deinit(&s);
+    }
+    
+    TEST("cgs_replace: fixed buffer too small");
+    {
+        char buf[5] = "abc"; // Small fixed buffer
+        ReplaceResult res = cgs_replace(buf, "b", "verylongstring");
+        ASSERT_TRUE(res.err.ec == CGS_DST_TOO_SMALL);
+    }
+    
+    TEST("cgs_replace_first: fixed buffer too small");
+    {
+        char buf[5] = "abc"; // Small fixed buffer
+        CGS_Error res = cgs_replace_first(buf, "b", "verylongstring");
+        ASSERT_TRUE(res.ec == CGS_DST_TOO_SMALL);
+    }
+    
+    TEST("cgs_replace: target not found");
+    {
+        DStr s = dstr_init_from("hello");
+        ReplaceResult res = cgs_replace(&s, "world", "earth");
+        ASSERT_TRUE(res.nb_replaced == 0 && res.err.ec == CGS_NOT_FOUND);
+        dstr_deinit(&s);
+    }
+}
+
 // ============================================================================
 // Main
 // ============================================================================
@@ -1786,6 +2248,7 @@ int main() {
     test_tostr_edge_cases();
     test_stress_cases();
     test_special_characters();
+    test_replace_all();
     
     printf("\n========================================\n");
     printf("Test Results: %d/%d passed\n", passed_count, test_count);

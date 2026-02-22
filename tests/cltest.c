@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #define CGS_SHORT_NAMES
-#include "../sgs.c"
+#include "../cgs.c"
 
 // Test counter
 static int tests_run = 0;

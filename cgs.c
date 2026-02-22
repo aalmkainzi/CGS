@@ -1894,7 +1894,7 @@ CGS_API CGS_StrViewArray cgs__strv_arr_from_carr(const CGS_StrView *carr, unsign
 
 CGS_API CGS_Error cgs__strv_split_iter(const CGS_StrView str, const CGS_StrView delim, bool(*cb)(CGS_StrView found, void *ctx), void *ctx)
 {
-    if(delim.len > str.len)
+    if(delim.len > str.len || str.len == 0)
     {
         return !cb(str, ctx) ? (CGS_Error){CGS_CALLBACK_EXIT} : (CGS_Error){CGS_OK};
     }
@@ -2228,7 +2228,7 @@ CGS_API CGS_ReplaceResult cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, cons
         str.chars[*str.len] = '\0';
     
     out:
-    if(replace_count == 0)
+    if(replace_count == 0 && err.ec == CGS_OK)
         err.ec = CGS_NOT_FOUND;
     return (CGS_ReplaceResult){.nb_replaced = replace_count, .err = err};
 }
@@ -2416,7 +2416,7 @@ CGS_API CGS_Error cgs__mutstr_ref_replace_first(CGS_MutStrRef str, const CGS_Str
 CGS_API unsigned int cgs__strv_count(const CGS_StrView hay, const CGS_StrView needle)
 {
     if(needle.len == 0)
-        return 0;
+        return hay.len + 1;
     
     unsigned int count = 0;
     CGS_StrView found = cgs__strv_find(hay, needle);
