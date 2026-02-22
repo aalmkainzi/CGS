@@ -1,13 +1,13 @@
-#define SGS_SHORT_NAMES
-#include "../sgs.h"
+#define CGS_SHORT_NAMES
+#include "../cgs.h"
 
 int main()
 {
-    StrViewArray splitted = sgs_split("1 XX 2 XX 3 XX 4 XX 5 XX 6", " XX ");
+    StrViewArray splitted = cgs_split("1 XX 2 XX 3 XX 4 XX 5 XX 6", " XX ");
 
     char c[128];
     StrBuf dst = strbuf_init_from_buf(c);
-    sgs_join(&dst, splitted, ", ");
+    cgs_join(&dst, splitted, ", ");
 
     println("the joined string: \n", dst);
 

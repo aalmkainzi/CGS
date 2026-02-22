@@ -1,5 +1,5 @@
-#define SGS_SHORT_NAMES
-#include "../sgs.h"
+#define CGS_SHORT_NAMES
+#include "../cgs.h"
 
 int main()
 {

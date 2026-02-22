@@ -1,5 +1,5 @@
-#define SGS_SHORT_NAMES
-#include "../sgs.h"
+#define CGS_SHORT_NAMES
+#include "../cgs.h"
 
 int main()
 {
@@ -7,9 +7,9 @@ int main()
     char c[128] = {0};
     StrBuf mystr = strbuf_init_from_buf(c);
     
-    sgs_sprint(&mystr, "hello, world", "\n", 123);
+    cgs_sprint(&mystr, "hello, world", "\n", 123);
     
-    sgs_append(&mystr, "456");
+    cgs_append(&mystr, "456");
     
     println(mystr);
     // example 1 end
@@ -19,7 +19,7 @@ int main()
     strcpy(cstr, "hello, world");
     StrBuf mystr2 = strbuf_init_from_cstr(cstr, 64);
     
-    sgs_replace(&mystr2, ", ", " -- ");
+    cgs_replace(&mystr2, ", ", " -- ");
     
     println(mystr2);
     

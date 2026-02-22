@@ -1,9 +1,9 @@
-#define SGS_SHORT_NAMES
-#include "../sgs.h"
+#define CGS_SHORT_NAMES
+#include "../cgs.h"
 
 void replace_dash(MutStrRef str)
 {
-    sgs_replace(str, "-", " ");
+    cgs_replace(str, "-", " ");
 }
 
 int main()
