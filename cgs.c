@@ -2536,7 +2536,19 @@ CGS_API CGS_MutStrRef cgs__mutstr_ref_as_mutstr_ref(const CGS_MutStrRef str)
     return str;
 }
 
-CGS_API CGS_StrBuf cgs__strbuf_from_cstr(const char *ptr, unsigned int cap)
+CGS_API CGS_StrBuf cgs__strbuf_from_cstr(const char *ptr)
+{
+    unsigned int len = strlen(ptr);
+    unsigned int cap = len + 1;
+    
+    return (CGS_StrBuf){
+        .cap = cap,
+        .len = len,
+        .chars = (char*) ptr
+    };
+}
+
+CGS_API CGS_StrBuf cgs__strbuf_from_cstr_cap(const char *ptr, unsigned int cap)
 {
     unsigned int len = cgs__chars_strlen(ptr, cap);
     

@@ -573,18 +573,16 @@ cgs_strv(anystr),
 __VA_OPT__(cgs__strbuf_init_from_cstr_2(cstr, __VA_ARGS__)) \
 CGS__IF_EMPTY(cgs__strbuf_init_from_cstr_(cstr), __VA_ARGS__)
 
-// TODO this re-evals param, needs rework
-#define cgs__strbuf_init_from_cstr_(cstr)                             \
-cgs__strbuf_from_cstr((char*)(cstr),                                  \
-_Generic(&(__typeof__(cstr)){0},                                      \
-char(*)[sizeof(__typeof__(cstr))]         : sizeof(__typeof__(cstr)), \
-unsigned char(*)[sizeof(__typeof__(cstr))]: sizeof(__typeof__(cstr)), \
-char**                                    : strlen((char*) cstr) + 1, \
-unsigned char**                           : strlen((char*) cstr) + 1  \
-))
+#define cgs__strbuf_init_from_cstr_(cstr) \
+_Generic(&(__typeof__(cstr)){0},          \
+    char(*)[sizeof(__typeof__(cstr))]         : cgs__strbuf_from_cstr_cap((const char*)(cstr), sizeof(__typeof__(cstr))), \
+    unsigned char(*)[sizeof(__typeof__(cstr))]: cgs__strbuf_from_cstr_cap((const char*)(cstr), sizeof(__typeof__(cstr))), \
+    char**                                    : cgs__strbuf_from_cstr((const char*)(cstr)), \
+    unsigned char**                           : cgs__strbuf_from_cstr((const char*)(cstr))  \
+)
 
 #define cgs__strbuf_init_from_cstr_2(cstr, cap) \
-cgs__strbuf_from_cstr(_Generic((cstr), char*:(char*)(cstr), unsigned char*:(char*)(cstr) ), cap)
+cgs__strbuf_from_cstr_cap(_Generic((cstr), char*:(char*)(cstr), unsigned char*:(char*)(cstr) ), cap)
 
 // Does not call strlen on the buf
 // Sets the first byte to '\0'
@@ -1211,7 +1209,8 @@ CGS_API CGS_StrView cgs__strv_strbuf3(const CGS_StrBuf str, unsigned int begin, 
 CGS_API CGS_StrView cgs__strv_strbuf_ptr3(const CGS_StrBuf *str, unsigned int begin, unsigned int end);
 CGS_API CGS_StrView cgs__strv_mutstr_ref3(const CGS_MutStrRef str, unsigned int begin, unsigned int end);
 
-CGS_API CGS_StrBuf cgs__strbuf_from_cstr(const char *ptr, unsigned int cap);
+CGS_API CGS_StrBuf cgs__strbuf_from_cstr_cap(const char *ptr, unsigned int cap);
+CGS_API CGS_StrBuf cgs__strbuf_from_cstr(const char *ptr);
 CGS_API CGS_StrBuf cgs__strbuf_from_buf(const CGS_Buffer buf);
 
 CGS_API CGS_Buffer cgs__buf_from_cstr(const char *str);
