@@ -15,6 +15,10 @@ CGS_Error                       dstr_shrink_to_fit(DStr *dstr);
 
 MutStrRef                       mutstr_ref(mutstr str);
 
+StrViewArray                    strv_arr(...anystr);
+StrViewArray                    strv_arr_from_carr(StrView strs[N]);
+StrViewArray                    strv_arr_from_carr(StrView *strs, unsigned int len);
+
 char                            cgs_at(anystr, unsigned int idx);
 unsigned int                    cgs_len(anystr);
 unsigned int                    cgs_cap(anystr);
@@ -49,8 +53,6 @@ CGS_Error                       cgs_append_read_line(mutstr dst);
 CGS_Error                       dstr_ensure_cap(DStr *dstr, unsigned int at_least);
 MutStrRef                       cgs_appender(mutstr owner, AppenderState *state);
 CGS_Error                       cgs_commit_appender(mutstr owner, MutStrRef appender);
-StrViewArray                    cgs_strv_arr(...anystr);
-StrViewArray                    cgs_strv_arr_from_carr(StrView strs[]);
 CGS_Error                       tostr(mutstr dst, T val);
 CGS_Error                       tostr_p(mutstr dst, T *val);
 bool                            has_tostr(T);
