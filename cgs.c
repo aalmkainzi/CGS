@@ -1212,6 +1212,10 @@ CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *ctx, vo
 
 CGS_PRIVATE CGS_Allocation cgs__print_buffer_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t align, size_t old_size, size_t new_size)
 {
+    (void)ctx;
+    (void)align;
+    (void)old_size;
+    
     if(cgs__fprint_dynamic_buffer.chars == &cgs__nul)
     {
         return (CGS_Allocation){.ptr = malloc(new_size), .n = new_size};

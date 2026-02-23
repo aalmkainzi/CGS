@@ -1,14 +1,14 @@
 #define CGS_SHORT_NAMES
-#include "../cgs.c"
+#include "../cgs.h"
 
 int main()
 {
-    DStr d = dstr_init();
-    cgs_copy(&d, "hello_");
+    StrBuf buf = strbuf_init_from_buf((char[64]){});
+    cgs_copy(&buf, "hello_");
     
-    MutStrRef app = cgs_appender(&d, &(AppenderState){});
+    MutStrRef app = cgs_appender(&buf, &(AppenderState){});
     cgs_append(app, "world");
-    cgs_commit_appender(&d, app);
+    cgs_commit_appender(&buf, app);
     
-    println(d);
+    println(buf);
 }

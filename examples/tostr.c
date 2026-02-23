@@ -1,5 +1,5 @@
 #define CGS_SHORT_NAMES
-#include "cgs.h"
+#include "../cgs.h"
 
 struct FOO {
     char n;
@@ -14,7 +14,7 @@ CGS_Error foo_to_str(MutStrRef dst, struct FOO foo)
 #define ADD_TOSTR \
 (struct FOO, foo_to_str)
 
-#include "cgs.h"
+#include "../cgs.h"
 
 int main()
 {
