@@ -217,7 +217,7 @@ void f(DStr *s1, StrBuf *s2, char *s3)
 
 ## tostr
 
-You can convert any type to string by using `tostr`:
+Used to convert values to string:
 
 ```C
 CGS_Error tostr(mutstr dst, T val);
@@ -233,21 +233,31 @@ int main()
 
 You can add your own tostr functions for types by defining `ADD_TOSTR Ty, Ty2str` and re-including the `neat_str.h` header:
 ```C
-#include "neat_str.h"
+#define CGS_SHORT_NAMES
+#include "cgs.h"
 
 struct FOO {
     char n;
 };
 
-DString foo_to_str( struct FOO *f )
+CGS_Error foo_to_str(MutStrRef dst, struct FOO *f )
 {
-    DString ret = dstr();
-    dstr_append_tostr(&ret, f->n);
-    return ret;
+    DStr ret = dstr_init();
+    CGS_Error err = cgs_putc(&ret, f->n);
+    
+    return err;
 }
 
-#define ADD_TOSTR struct FOO, foo_to_str
-#include "neat_str.h"
+#define ADD_TOSTR \
+(struct FOO, foo_to_str)
+
+#include "cgs.h"
+
+int main()
+{
+    struct FOO f = {'a'};
+    println( f ); // can now use `struct FOO` variables in contexts that require a type with tostr
+}
 ```
 
 ## tostr_into

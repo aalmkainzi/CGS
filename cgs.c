@@ -1135,7 +1135,7 @@ static const char cgs__byte_to_heX[][2] =
 };
 
 CGS_GLOBAL_VAR _Thread_local CGS_DStr cgs__fprint_tostr_dynamic_buffer = {
-    .allocator = &cgs__default_allocator
+    .allocator = &cgs__default_allocator,
 };
 
 CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref(CGS_Buffer buf, unsigned int *len_ptr)
@@ -1787,7 +1787,7 @@ CGS_API CGS_Error cgs__dstr_putc(CGS_DStr *dst, unsigned char c)
     dst->chars[dst->len + 1] = '\0';
     dst->len += 1;
     
-    return (CGS_Error){CGS_OK};
+    return err;
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_putc(CGS__FixedMutStrRef dst, unsigned char c)

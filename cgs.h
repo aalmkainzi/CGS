@@ -290,6 +290,9 @@ typedef struct CGS_ReplaceResult
     CGS_Error err;
 } CGS_ReplaceResult;
 
+#define cgs_ok \
+(CGS_Error){CGS_OK}
+
 #define cgs__fmutstr_ref(s, ...) \
 _Generic(&(__typeof__(s)){0}, \
     CGS_DStr**                              : cgs__dstr_ptr_as_fmutstr_ref(cgs__coerce(s, CGS_DStr*)), \
@@ -734,12 +737,24 @@ cgs__dstr_shrink_to_fit(dstr)
 #define cgs_dstr_ensure_cap(dstr, new_cap) \
 cgs__dstr_ensure_cap(dstr, new_cap)
 
+static inline void cgs__ensure_dynamic_buffer_is_not_null()
+{
+    extern _Thread_local CGS_DStr cgs__fprint_tostr_dynamic_buffer;
+    if(cgs__fprint_tostr_dynamic_buffer.chars == NULL)
+    {
+        CGS_DStr cgs__dstr_init(unsigned int, CGS_Allocator*);
+        CGS_Allocator *cgs_get_default_allocator();
+        cgs__fprint_tostr_dynamic_buffer = cgs__dstr_init(1, cgs_get_default_allocator());
+    }
+}
+
 #define cgs_fprint(f, ...)                       \
 do                                               \
 {                                                \
     FILE *cgs__file_stream = f;                  \
     (void) cgs__file_stream;                     \
     extern _Thread_local CGS_DStr cgs__fprint_tostr_dynamic_buffer; \
+    cgs__ensure_dynamic_buffer_is_not_null(); \
     CGS__FOREACH(cgs__fprint_each, __VA_ARGS__); \
 } while(0)
 
