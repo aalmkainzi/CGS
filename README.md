@@ -1,253 +1,213 @@
-# SGS (Seamless Generic Strings)
+# CGS - C Generic Strings
 A Generic String library to make string handling more intuitive in C.
 
 ## Quick Examples
 ```C
-#define GSX_SHORT_NAMES
-#include "GSX.h"
+#define CGS_SHORT_NAMES
+#include "cgs.h"
 
 int main()
 {
-    char C[64] = {0};
-    String_Buffer str = strbuf(C);
+    StrView s     = strv("hello, world");
+    StrView hello = strv(s, 0, 5);
+    StrView world = strv(s, 7);
     
-    // sprintf replacement
-    str_print(&str, "he", 110, " world", "\n");
-    
-    println("generated string: ", str);
+    println(hello);
+    println(world);
 }
+
 ```
 ```C
+#define CGS_SHORT_NAMES
+#include "cgs.h"
+
 int main()
 {
-    DString str = dstr_init();
+    DStr str = dstr_init();
     
-    dstr_append(&str, "world");
-    dstr_prepend(&str, "hello, ");
+    cgs_append(&str, "world");
+    cgs_prepend(&str, "hello, ");
     
     println(str);
     
     dstr_deinit(&str);
 }
+
 ```
+
+## Short names
+if you define the macro `CGS_SHORT_NAMES` before including the `cgs.h` header, unprefixed variants of the following identifiers will be `#define`d:
 ```C
-int main()
-{
-    String_View s     = strv("hello, world");
-    String_View hello = strv(s, 0, 5);
-    String_View world = strv(s, 7);
-    
-    println(hello);
-    println(world);
-}
+CGS_Allocator
+CGS_DStr
+CGS_StrBuf
+CGS_StrView
+CGS_StrViewArray
+CGS_MutStrRef
+CGS_ReplaceResult
+CGS_AppenderState
+CGS_ArrayFmt
+
+cgs_strv
+cgs_strv_arr
+cgs_strv_arr_from_carr
+
+cgs_strbuf_init_from_cstr
+cgs_strbuf_init_from_buf
+
+cgs_dstr_init
+cgs_dstr_init_from
+cgs_dstr_deinit
+cgs_dstr_ensure_cap
+cgs_dstr_shrink_to_fit
+
+cgs_mutstr_ref
+
+cgs_tostr
+cgs_tostr_p
+cgs_has_tostr
+
+cgs_print
+cgs_println
+cgs_fprint
+cgs_fprintln
+
+cgs_tsfmt
+cgs_tsfmt_t
+cgs_arrfmt
 ```
+
 ## Features
 The library exposes multiple string types for different use cases:
-- [DString](#DString)
-- [String_Buffer](#String_Buffer)
-- [String_View](#String_View)
-- [Mut_String_Ref](#Mut_String_Ref)
+- [DStr](DStr)
+- [StrBuf](StrBuf)
+- [StrView](StrView)
+- [MutStrRef](MutStrRef)
 
-This is a list of the functions (macros) that work with all string types:
+All of which are null terminated, except for `StrView`.
+
+There are two categories of string types:
+- anystr: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `StrView`, `DStr`, `DStr*`, `StrBuf`, `StrBuf*`, `MutStrRef`)
+- mutstr: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `DStr*`, `StrBuf*`, `MutStrRef`)
+
+This is a list of all the utility macros CGS provides:
 ```C
-unsigned int      str_len(any_str);
-unsigned int      str_cap(any_str);
-bool              str_equal(any_str1, any_str2);
-char*             str_cstr(any_str);
-char              str_at(any_str, idx);
+StrView                         strv(anystr str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
 
-// Returns a String_View of arg1 where arg2 was found
-String_View       str_find(any_str_hay, any_str_needle);
+StrBuf                          strbuf_init_from_cstr([unsigned] char *cstr, unsigned int cap = strlen(cstr) + 1);
+StrBuf                          strbuf_init_from_cstr([unsigned] char cstr[], unsigned int cap = sizeof(cstr));
+StrBuf                          strbuf_init_from_buf([unsigned] char *buf, unsigned int cap);
+StrBuf                          strbuf_init_from_buf([unsigned] char buf[], unsigned int cap = sizeof(buf));
 
-// Returns how many times arg2 was found in arg1
-unsigned int      str_count(any_str_hay, any_str_needle);
+DStr                            dstr_init(unsigned int initial_cap = 0, Allocator *allocator = cgs_get_default_allocator());
+DStr                            dstr_init_from(anystr src, Allocator *allocator = cgs_get_default_allocator());
+void                            dstr_deinit(DStr *dstr);
+CGS_Error                       dstr_shrink_to_fit(DStr *dstr);
+CGS_Error                       dstr_ensure_cap(DStr *dstr, unsigned int at_least);
 
-bool              str_starts_with(any_str_hay, any_str_needle);
-bool              str_ends_with(any_str_hay, any_str_needle);
+MutStrRef                       mutstr_ref(mutstr str);
 
-void              str_toupper(any_str);
-void              str_tolower(any_str);
+StrViewArray                    strv_arr(...anystr);
+StrViewArray                    strv_arr_from_carr(StrView strs[N]);
+StrViewArray                    strv_arr_from_carr(StrView *strs, unsigned int len);
 
-// Copies arg2 into arg1. If it doesn't fit, it copies as many chars as can fit. Returns how many chars were copied
-unsigned int      str_copy(mut_str_dst, any_str_src);
-
-// Concats arg2 into arg1. If it doesn't fit, it concats as many chars as can fit. Returns how many chars were concated
-unsigned int      str_concat(cap_str_dst, any_str_src);
-
-// Insert into arg1 the string arg2 at a specific index. If it doesn't fit, it inserts as many chars as can fit. Returns how many chars were inserted
-unsigned int      str_insert(cap_str_dst, any_str_src, idx);
-
-// Same as calling the above with index 0
-unsigned int      str_prepend(cap_str_dst, any_str_src);
-
-// Replaces all occurrence of arg2 inside arg1 with the replacement arg3. Returns how many replaced
-unsigned int      str_replace(mut_str, any_str_target, any_str_replacement);
-
-// Replaces the first occurance of arg2 inside arg1 with the replacement arg3. Returns whether it was found and replaced
-bool              str_replace_first(mut_str, any_str_target, any_str_replacement);
-
-// Deletes the characters specified by the range [begin, end). Returns false if the range is invalid, true otherwise
-bool              str_del(mut_str, begin, end);
-
-// Returns a new String_View_Array containing arg1 splitted using the delimiter arg2
-String_View_Array str_split(any_str, any_str_delim);
-
-// Same as above except specify the allocator in arg3
-String_View_Array str_split(any_str, any_str_delim, allocator);
-
-// Joins the String_View_Array in arg3 using the delimiter in arg2, store the resulting string in arg1. Returns how many chars were copied
-unsigned int      str_join(mut_str_dst, any_str_delim, strv_arr);
-
-// Same as above except returns a new DString containing the joined string
-DString           str_join_new(any_str_delim, strv_arr);
-
-// Same as above except specify the allocator in arg3
-DString           str_join_new(any_str_delim, strv_arr, allocator);
-
-// sprintf replacement. Store into arg1 the tostr_into of all the va args (e.g. `str_print( mystr, 10, "\n", "hello", "world" );`
-void              str_print(mut_str, ...);
-
-// Same as above except return a new DString containing the tostr of all args
-DString           str_print_new(...);
-
-// Same as above except specify the allocator in arg1
-DString           str_print_new(allocator, ...);
-
-// Reads a line from file stream arg2 into string arg1. If it doesn't fit, it reads as many chars as can fit. Returns how many chars were read and copied
-unsigned int      str_fread_line(mut_str, stream);
-
-// Same as above except concats into string arg1 rather than copy
-unsigned int      str_concat_fread_line(cap_str, stream);
-
-// Same as str_fread_line(any_str, stdio)
-unsigned int      str_read_line(mut_str);
-
-// Same as str_concat_fread_line(any_str, stdio)
-unsigned int      str_concat_read_line(cap_str);
+char                            cgs_at(anystr, unsigned int idx);
+unsigned int                    cgs_len(anystr);
+unsigned int                    cgs_cap(anystr);
+bool                            cgs_equal(anystr a, anystr b);
+char*                           cgs_chars(anystr);
+StrView                         cgs_find(anystr hay, anystr needle);
+unsigned int                    cgs_count(anystr hay, anystr needle);
+CGS_Error                       cgs_clear(mutstr);
+bool                            cgs_starts_with(anystr hay, anystr needle);
+bool                            cgs_ends_with(anystr hay, anystr needle);
+void                            cgs_tolower(mutstr);
+void                            cgs_toupper(mutstr);
+CGS_Error                       cgs_copy(mutstr dst, anystr src);
+CGS_Error                       cgs_putc(mutstr dst, char c);
+DStr                            cgs_dup(anystr src, Allocator *allocator = cgs_get_default_allocator());
+CGS_Error                       cgs_append(mutstr dst, anystr src);
+CGS_Error                       cgs_insert(mutstr dst, anystr src, unsigned int pos);
+CGS_Error                       cgs_prepend(mutstr dst, anystr src);
+CGS_Error                       cgs_del(mutstr, unsigned int from, unsigned int to_exclusive);
+ReplaceResult                   cgs_replace(mutstr dst, anystr target, anystr replacement);
+CGS_Error                       cgs_replace_first(mutstr dst, anystr target, anystr replacement);
+CGS_Error                       cgs_replace_range(mutstr dst, unsigned int from, unsigned int to_exclusive, anystr replacement);
+StrViewArray                    cgs_split(anystr str, anystr delim, Allocator *allocator = cgs_get_default_allocator());
+CGS_Error                       cgs_split_iter(anystr str, anystr delim, bool(*callback)(StrView found, void *arg), void *arg = NULL);
+CGS_Error                       cgs_join(mutstr dst, StrViewArray arr, anystr delim);
+CGS_Error                       cgs_fread_line(mutstr dst, FILE *stream);
+CGS_Error                       cgs_append_fread_line(mutstr dst, FILE *stream);
+CGS_Error                       cgs_read_line(mutstr dst);
+CGS_Error                       cgs_append_read_line(mutstr dst);
+                                cgs_sprint(mutstr dst, ...args with tostr);
+                                cgs_sprint_append(mutstr dst, ...args with tostr);
+MutStrRef                       cgs_appender(mutstr owner, AppenderState *state);
+CGS_Error                       cgs_commit_appender(mutstr owner, MutStrRef appender);
+CGS_Error                       tostr(mutstr dst, T val);
+CGS_Error                       tostr_p(mutstr dst, T *val);
+bool                            has_tostr(T);
+                                print(...args with tostr);
+                                println(...args with tostr);
+                                fprint(FILE *stream, ...args with tostr);
+                                fprintln(FILE *stream, ...args with tostr);
+tsfmt_t(integer_T, fmt_char)    tsfmt(integer_T value, int fmt_char);
+tsfmt_t(float/double, fmt_char) tsfmt(float/double value, int fmt_char, int precision = (fmt_char == 'a' ? -1 : 6));
+ArrayFmt                        arrfmt(T *array, size_t len);
+ArrayFmt                        arrfmt(T *array, size_t len, anystr open, anystr close, anystr delim, anystr trailing_delim = "");
 ```
-Note some of these macros require a mutable string type (e.g. `str_replace`), that includes all string types except `String_View`.
 
-And some require a string with cap information (e.g. `str_concat`), that includes all string types except `String_View` and `[unsigned] char*`
-
-## DString
+## DStr
 
 Dynamic String.
 
-to initialize / deinit:
+Constructed with:
 ```C
-DString dstr();
-DString dstr(cap);
-DString dstr(allocator);
-DString dstr(cap, allocator);
-
-void dstr_deinit(dstr);
-```
-utility:
-```C
-void         dstr_append(dstr, any_str);
-void         dstr_append_tostr(dstr, stringable);
-void         dstr_append_tostr_p(dstr, stringable*);
-
-void         dstr_prepend(dstr, any_str);
-void         dstr_prepend_tostr(dstr, stringable);
-void         dstr_prepend_tostr_p(dstr, stringable*);
-
-bool         dstr_insert(dstr, any_str, idx);
-bool         dstr_insert_tostr(dstr, stringable, idx);
-bool         dstr_insert_tostr_p(dstr, stringable*, idx);
-
-unsigned int dstr_fread_line(dstr, stream);
-unsigned int dstr_read_line(dstr);
-unsigned int dstr_append_fread_line(dstr, stream);
-unsigned int dstr_append_read_line(dstr);
-
-void         dstr_shrink_to_fit(dstr);
-void         dstr_ensure_cap(dstr, new_cap);
+DStr dstr_init(unsigned int initial_cap = 0, Allocator *allocator = cgs_get_default_allocator());
+DStr dstr_init_from(anystr src, Allocator *allocator = cgs_get_default_allocator());
 ```
 
-## String_Buffer
+## StrBuf
 
 Used as a general purpose string buffer, it's defined like this:
 ```C
-typedef struct String_Buffer
+typedef struct CGS_StrBuf
 {
-    unsigned int cap;
+    char *chars;
+    unsigned int cap; // including the nul
     unsigned int len;
-    unsigned char *chars;
-} String_Buffer;
-```
-to initialize:
-```C
-String_Buffer strbuf(carr);
-String_Buffer strbuf(cstr, cap);
-String_Buffer strbuf(cap);
-String_Buffer strbuf(cap, allocator);
+} CGS_StrBuf;
 ```
 
-## String_View
+You can construct by calling `strbuf_init_from_*` macros, or by constructing it yourself.
+
+## StrView
 
 Used to view into other strings.
 
 to initialize:
 ```C
-String_View strv(any_str);
-String_View strv(any_str, begin_idx);
-String_View strv(any_str, begin_idx, end_idx);
+StrView strv(any_str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
 ```
 
-## String_View_Array
+## MutStrRef
 
-An array of `String_View`. This type is returned from `str_split` and is passed to `str_join`
+This type can be used as a reference to any mutable string type (all string types except `String_View`).
 
 to initialize:
 ```C
-String_View_Array strv_arr(...any_str);
-
-// arg1 is String_View[N]
-String_View_Array strv_arr_carr(carr);
-
-// arg 1 is String_View*. arg2 is how many elements in the array
-String_View_Array strv_arr_carr(ptr, nb);
-```
-## SString
-
-Static/Small String. Can be stored on the stack or inside structs.
-
-To pass it around to functions, you can use `SString_Ref`:
-```C
-SString_Ref sstr_ref(sstr_ptr);
-```
-
-Used like this:
-```C
-NEAT_DECL_SSTRING(16); // not necessary as of C23
-
-void foo()
-{
-    SString(16) mystr = {0};
-    SString_Ref ref = sstr_ref(&mystr);
-    // can now use ref with any function (macro) that starts with str_
-}
-```
-
-## Mut_String_Ref
-
-This type can be used as a mutable reference to any mutable string type (all string types except `String_View`).
-
-to initialize:
-```C
-Mut_String_Ref mutstr_ref(mut_str);
-Mut_String_Ref mutstr_ref(cstr, cap);
+MutStrRef mutstr_ref(mutstr);
+MutStrRef mutstr_ref(cstr, cap);
 ```
 
 for example:
 ```C
-void set_to_bar(Mut_String_Ref str)
+void set_to_bar(MutStrRef str)
 {
-    str_copy(str, "bar");
+    cgs_copy(str, "bar");
 }
 
-void foo(SString_Ref s1, String_Buffer *s2, char *s3)
+void f(DStr *s1, StrBuf *s2, char *s3)
 {
     set_to_bar( mutstr_ref(s1) );
     set_to_bar( mutstr_ref(s2) );
@@ -260,18 +220,18 @@ void foo(SString_Ref s1, String_Buffer *s2, char *s3)
 You can convert any type to string by using `tostr`:
 
 ```C
-DString tostr(stringable);
-DString tostr_p(stringable*);
+CGS_Error tostr(mutstr dst, T val);
 ```
 e.g.
 ```C
 int main()
 {
-    DString num = tostr(10);
+    DStr num = dstr_init();
+    tostr(&num, 10);
 }
 ```
 
-You can add your own Stringable types by defining `ADD_TOSTR Ty, Ty2str` and re-including the `neat_str.h` header:
+You can add your own tostr functions for types by defining `ADD_TOSTR Ty, Ty2str` and re-including the `neat_str.h` header:
 ```C
 #include "neat_str.h"
 

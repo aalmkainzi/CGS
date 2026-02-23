@@ -12,6 +12,7 @@ DStr                            dstr_init(unsigned int initial_cap = 0, Allocato
 DStr                            dstr_init_from(anystr src, Allocator *allocator = cgs_get_default_allocator());
 void                            dstr_deinit(DStr *dstr);
 CGS_Error                       dstr_shrink_to_fit(DStr *dstr);
+CGS_Error                       dstr_ensure_cap(DStr *dstr, unsigned int at_least);
 
 MutStrRef                       mutstr_ref(mutstr str);
 
@@ -50,7 +51,6 @@ CGS_Error                       cgs_read_line(mutstr dst);
 CGS_Error                       cgs_append_read_line(mutstr dst);
                                 cgs_sprint(mutstr dst, ...args with tostr);
                                 cgs_sprint_append(mutstr dst, ...args with tostr);
-CGS_Error                       dstr_ensure_cap(DStr *dstr, unsigned int at_least);
 MutStrRef                       cgs_appender(mutstr owner, AppenderState *state);
 CGS_Error                       cgs_commit_appender(mutstr owner, MutStrRef appender);
 CGS_Error                       tostr(mutstr dst, T val);
