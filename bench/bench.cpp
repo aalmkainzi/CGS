@@ -6,7 +6,7 @@ extern "C"
     size_t nsbm(size_t);
     size_t stdbm(size_t);
     size_t std_it2str(size_t i);
-    size_t neat_it2str(size_t i);
+    size_t cgs_it2str(size_t i);
 }
 
 static void BM_neat(benchmark::State& state) {
@@ -33,7 +33,7 @@ static void BM_neat2(benchmark::State& state) {
     
     std::cerr << nsbm(v) << std::endl;
     for (auto _ : state) {
-        size_t s = neat_it2str(v);
+        size_t s = cgs_it2str(v);
         benchmark::DoNotOptimize(s);
     }
 }

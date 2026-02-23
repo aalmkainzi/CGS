@@ -1,8 +1,8 @@
 
-#define NEAT_PRIVATE static inline
-#define NEAT_API     static inline
-#define NEAT_STR_SHORT_NAMES
-#include "../neat_str.c"
+#define CGS_PRIVATE static inline
+#define CGS_API     static inline
+#define CGS_SHORT_NAMES
+#include "../cgs.c"
 
 constexpr int asize = 1048576;
 
@@ -20,7 +20,7 @@ size_t nsbm(size_t bsize)
 {
     srand(bsize);
     int *arr = make_rand_arr(bsize);
-    String_Buffer sb = strbuf_init_from_buf(malloc(asize), asize);
+    StrBuf sb = strbuf_init_from_buf(malloc(asize), asize);
     tostr(&sb, arrfmt(arr, bsize, "[[", "]]", ", "));
     
     println(sb);
@@ -59,7 +59,7 @@ size_t std_it2str(size_t i)
     return strlen(C);
 }
 
-size_t neat_it2str(size_t i)
+size_t cgs_it2str(size_t i)
 {
     char C[32];
     tostr(C, i);
