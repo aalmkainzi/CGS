@@ -72,6 +72,9 @@ cgs_println
 cgs_fprint
 cgs_fprintln
 
+cgs_sprint
+cgs_sprint_append
+
 cgs_tsfmt
 cgs_tsfmt_t
 cgs_arrfmt
@@ -140,8 +143,6 @@ CGS_Error                       cgs_fread_line(mutstr dst, FILE *stream);
 CGS_Error                       cgs_append_fread_line(mutstr dst, FILE *stream);
 CGS_Error                       cgs_read_line(mutstr dst);
 CGS_Error                       cgs_append_read_line(mutstr dst);
-                                cgs_sprint(mutstr dst, ...args with tostr);
-                                cgs_sprint_append(mutstr dst, ...args with tostr);
 MutStrRef                       cgs_appender(mutstr owner, AppenderState *state);
 CGS_Error                       cgs_commit_appender(mutstr owner, MutStrRef appender);
 CGS_Error                       tostr(mutstr dst, T val);
@@ -151,6 +152,8 @@ bool                            has_tostr(T);
                                 println(...args with tostr);
                                 fprint(FILE *stream, ...args with tostr);
                                 fprintln(FILE *stream, ...args with tostr);
+                                sprint(mutstr dst, ...args with tostr);
+                                sprint_append(mutstr dst, ...args with tostr);
 tsfmt_t(integer_T, fmt_char)    tsfmt(integer_T value, int fmt_char);
 tsfmt_t(float/double, fmt_char) tsfmt(float/double value, int fmt_char, int precision = (fmt_char == 'a' ? -1 : 6));
 ArrayFmt                        arrfmt(T *array, size_t len);
@@ -260,67 +263,42 @@ int main()
 }
 ```
 
-## tostr_into
+## fprint and sprint
 
-Similar to `tostr`, except it writes to a string instead of returning a new `DString`:
+Types that have a `tostr` defined can use `fprint`/`sprint` and their variants:
+
 ```C
-void tostr_into(mut_str, stringable);
-void tostr_into_p(mut_str, stringable*);
-```
+fprint(stream, ...args with tostr);
+fprintln(stream, ...args with tostr);
+print(...args with tostr);
+println(...args with tostr);
 
-Example to add your own ```tostr_into```
-```C
-#include "neat_str.h"
-
-typedef struct {
-    char c;
-    float f;
-} FOO;
-
-void foo_to_str_into(Mut_String_Ref dst, FOO *foo)
-{
-    str_print(dst, "FOO{", ".c=", foo->c, ", .f=", foo->f, "}");
-}
-
-#define ADD_TOSTR_INTO FOO, foo_to_str_into
-#include "neat_str.h"
-```
-
-now that `FOO` has a `tostr_into` it can be used in `str_print` like this:
-```C
-FOO foo = {.c = 'X', .f = 1.5f};
-
-str_print(&mystr, foo);
-
-println(mystr); // prints 'FOO{.c=X, .f=1.5}'
-```
-
-## print
-
-Any Stringable type can be printed with these macros:
-```C
-fprint(stream, ...);
-fprintln(stream, ...);
-print(...);
-println(...);
+sprint(mutstr dst, ...args with tostr);
+sprint_append(mutstr dst, ...args with tostr);
 ```
 
 e.g:
 ```C
+#define CGS_SHORT_NAMES
+#include "cgs.h"
+
 int main()
 {
     println("hello", 123, "\n", 15.3);
+    
+    char buf[64];
+    sprint(buf, "hello", 123);
 }
 ```
 
-## Namespacing
+## tsfmt and arrfmt
 
-You can choose to prefix the entire lib like this:
+These macros return a format object that has a `tostr`. For example:
+
 ```C
-#define NEAT_STR_PREFIX
-#include "neat_str.h"
+println( tsfmt(10, 'X') ); // prints "A"
 ```
-this will prefix all macro definitions with `neat_` and all types with `Neat_`
-After which you'll find static and dynamic versions of the library inside `./bin`.
 
-then include the headers in `./include` to your project.
+Note that `tsfmt` is type-safe, you cannot use chars other than:
+- For integers: `'d'`, `'x'`, `'o'`, `'b'`, `'X'`
+- For float/double: `'f'`, `'g'`, `'e'`, `'a'`, `'F'`, `'G'`, `'E'`, `'A'`

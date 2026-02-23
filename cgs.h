@@ -932,7 +932,7 @@ CGS__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 ( \
     cgs__static_assertx( (CGS__IS_FLOATING(x) && (fmt_chr == 'f' || fmt_chr == 'g' || fmt_chr == 'e' || fmt_chr == 'a' || fmt_chr == 'F' || fmt_chr == 'G' || fmt_chr == 'E' || fmt_chr == 'A')  ) || (CGS__IS_INTEGER(x) && (fmt_chr == 'd' || fmt_chr == 'x' || fmt_chr == 'o' || fmt_chr == 'b' || fmt_chr == 'X')), "Incorrect formatting char for the type"), \
     cgs__static_assertx((CGS__IS_FLOATING(x) || (1 __VA_OPT__(-1))), "tsfmt Integers dont take a third parameter"), \
-    _Generic(x, \
+    _Generic((x), \
         CGS__INTEGER_TYPES(CGS__INTEGER_FMT_GENERIC_BRANCHES, (x, fmt_chr)) \
         CGS__FLOATING_TYPES(CGS__FLOATING_FMT_GENERIC_BRANCH, (x, fmt_chr __VA_OPT__(,) __VA_ARGS__), CGS__FLOATING_FMT_LAST_GENERIC_BRANCH) \
     ) \
@@ -1456,6 +1456,9 @@ CGS__FLOATING_TYPES(CGS__X, ignore, CGS__X)
 #define tostr(dst, src) cgs_tostr(dst, src)
 #define tostr_p(dst, srcp) cgs_tostr_p(dst, srcp)
 #define has_tostr(T) cgs_has_tostr(T)
+
+#define sprint(dst, ...) cgs_sprint(dst __VA_OPT__(,) __VA_ARGS__)
+#define sprint_append(dst, ...) cgs_sprint_append(dst __VA_OPT__(,) __VA_ARGS__)
 
 #define print(...) cgs_print(__VA_ARGS__)
 #define println(...) cgs_println(__VA_ARGS__)
