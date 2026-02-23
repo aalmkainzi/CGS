@@ -42,13 +42,13 @@ CGS_API CGS_Allocation cgs__allocator_invoke_realloc(CGS_Allocator *allocator, v
 CGS_API CGS_Allocator *cgs_get_default_allocator();
 
 #define cgs_alloc(allocator, T, n) \
-cgs__allocator_invoke_alloc(allocator, _Alignof(T), sizeof(T), (n))
+cgs__allocator_invoke_alloc(allocator, _Alignof(T), sizeof((T){0}), (n))
 
 #define cgs_dealloc(allocator, ptr, T, n) \
-cgs__allocator_invoke_dealloc((allocator), (ptr), sizeof(T), (n))
+cgs__allocator_invoke_dealloc((allocator), (ptr), sizeof((T){0}), (n))
 
 #define cgs_realloc(allocator, ptr, T, old_n, new_n) \
-cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(T), sizeof(T), (old_n), (new_n))
+cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(T), sizeof((T){0}), (old_n), (new_n))
 
 #define cgs_alloc_bytes(allocator, n) \
 cgs__allocator_invoke_alloc((allocator), _Alignof(max_align_t), 1, (n))
@@ -737,24 +737,12 @@ cgs__dstr_shrink_to_fit(dstr)
 #define cgs_dstr_ensure_cap(dstr, new_cap) \
 cgs__dstr_ensure_cap(dstr, new_cap)
 
-static inline void cgs__ensure_dynamic_buffer_is_not_null()
-{
-    extern _Thread_local CGS_DStr cgs__fprint_tostr_dynamic_buffer;
-    if(cgs__fprint_tostr_dynamic_buffer.chars == NULL)
-    {
-        CGS_DStr cgs__dstr_init(unsigned int, CGS_Allocator*);
-        CGS_Allocator *cgs_get_default_allocator();
-        cgs__fprint_tostr_dynamic_buffer = cgs__dstr_init(1, cgs_get_default_allocator());
-    }
-}
-
 #define cgs_fprint(f, ...)                       \
 do                                               \
 {                                                \
     FILE *cgs__file_stream = f;                  \
     (void) cgs__file_stream;                     \
-    extern _Thread_local CGS_DStr cgs__fprint_tostr_dynamic_buffer; \
-    cgs__ensure_dynamic_buffer_is_not_null(); \
+    extern _Thread_local CGS_DStr cgs__fprint_dynamic_buffer; \
     CGS__FOREACH(cgs__fprint_each, __VA_ARGS__); \
 } while(0)
 
@@ -776,8 +764,8 @@ do                                                          \
         const CGS_DStr*           : cgs__strv_dstr_ptr1,    \
         const CGS_StrBuf*         : cgs__strv_strbuf_ptr1,  \
         default                   : cgs__strv_dstr1         \
-    )(cgs__coerce_string_type(cgs__x_tmp, (cgs_tostr(&cgs__fprint_tostr_dynamic_buffer, cgs__x_tmp), cgs__fprint_tostr_dynamic_buffer)))); \
-    cgs__fprint_tostr_dynamic_buffer.len = 0;               \
+    )(cgs__coerce_string_type(cgs__x_tmp, (cgs_tostr(&cgs__fprint_dynamic_buffer, cgs__x_tmp), cgs__fprint_dynamic_buffer)))); \
+    cgs__fprint_dynamic_buffer.len = 0;               \
 } while(0);
 
 #define cgs_print(...) \

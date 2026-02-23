@@ -28,9 +28,9 @@
     #endif
 #endif
 
-CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *ctx, size_t alignment, size_t n);
+CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *ctx, size_t align, size_t n);
 CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *ctx, void *ptr, size_t n);
-CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size);
+CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t align, size_t old_size, size_t new_size);
 
 static CGS_Allocator cgs__default_allocator = {
     .alloc   = cgs__default_allocator_alloc,
@@ -1134,8 +1134,19 @@ static const char cgs__byte_to_heX[][2] =
     {'F', 'F'},
 };
 
-CGS_GLOBAL_VAR _Thread_local CGS_DStr cgs__fprint_tostr_dynamic_buffer = {
-    .allocator = &cgs__default_allocator,
+CGS_PRIVATE CGS_Allocation cgs__print_buffer_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t align, size_t old_size, size_t new_size);
+
+static char cgs__nul = '\0';
+static CGS_Allocator cgs__fprint_buffer_allocator =
+{
+    .alloc = NULL,
+    .realloc = cgs__print_buffer_allocator_realloc,
+    .dealloc = cgs__default_allocator_dealloc
+};
+
+CGS_GLOBAL_VAR _Thread_local CGS_DStr cgs__fprint_dynamic_buffer = {
+    .allocator = &cgs__fprint_buffer_allocator,
+    .chars = &cgs__nul
 };
 
 CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref(CGS_Buffer buf, unsigned int *len_ptr)
@@ -1169,9 +1180,9 @@ CGS_API CGS__FixedMutStrRef cgs__dstr_ptr_as_fmutstr_ref(CGS_DStr *dstr)
     return ret;
 }
 
-CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *ctx, size_t alignment, size_t n)
+CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *ctx, size_t align, size_t n)
 {
-    (void) alignment;
+    (void) align;
     (void) ctx;
     void *mem = malloc(n);
     return (CGS_Allocation){
@@ -1187,10 +1198,10 @@ CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *ctx, void *ptr, s
     free(ptr);
 }
 
-CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t alignment, size_t old_size, size_t new_size)
+CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t align, size_t old_size, size_t new_size)
 {
     (void) ctx;
-    (void) alignment;
+    (void) align;
     (void) old_size;
     void *mem = realloc(ptr, new_size);
     return (CGS_Allocation){
@@ -1199,11 +1210,23 @@ CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *ctx, vo
     };
 }
 
-CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_alloc(CGS_Allocator *allocator, size_t alignment, size_t n)
+CGS_PRIVATE CGS_Allocation cgs__print_buffer_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t align, size_t old_size, size_t new_size)
+{
+    if(cgs__fprint_dynamic_buffer.chars == &cgs__nul)
+    {
+        return (CGS_Allocation){.ptr = malloc(new_size), .n = new_size};
+    }
+    else
+    {
+        return (CGS_Allocation){.ptr = realloc(ptr, new_size), .n = new_size};
+    }
+}
+
+CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n)
 {
     assert(0); // this should never get called
     (void) allocator;
-    (void) alignment;
+    (void) align;
     (void) n;
     return (CGS_Allocation){0};
 }
@@ -1216,9 +1239,9 @@ CGS_PRIVATE void cgs__dstr_append_allocator_dealloc(CGS_Allocator *allocator, vo
     (void) n;
 }
 
-CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t alignment, size_t old_size, size_t new_size)
+CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t align, size_t old_size, size_t new_size)
 {
-    (void) alignment;
+    (void) align;
     
     CGS__DStrAppendAllocator *dstr_append_allocator = (__typeof__(dstr_append_allocator)) allocator;
     
@@ -1234,9 +1257,9 @@ CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_realloc(CGS_Allocator *all
     };
 }
 
-CGS_API CGS_Allocation cgs__allocator_invoke_alloc(CGS_Allocator *allocator, size_t alignment, size_t obj_size, size_t nb)
+CGS_API CGS_Allocation cgs__allocator_invoke_alloc(CGS_Allocator *allocator, size_t align, size_t obj_size, size_t nb)
 {
-    return allocator->alloc(allocator, alignment, nb * obj_size);
+    return allocator->alloc(allocator, align, nb * obj_size);
 }
 
 CGS_API void cgs__allocator_invoke_dealloc(CGS_Allocator *allocator, void *ptr, size_t obj_size, size_t nb)
@@ -1244,9 +1267,9 @@ CGS_API void cgs__allocator_invoke_dealloc(CGS_Allocator *allocator, void *ptr, 
     allocator->dealloc(allocator, ptr, nb * obj_size);
 }
 
-CGS_API CGS_Allocation cgs__allocator_invoke_realloc(CGS_Allocator *allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb)
+CGS_API CGS_Allocation cgs__allocator_invoke_realloc(CGS_Allocator *allocator, void *ptr, size_t align, size_t obj_size, size_t old_nb, size_t new_nb)
 {
-    return allocator->realloc(allocator, ptr, alignment, old_nb * obj_size, new_nb * obj_size);
+    return allocator->realloc(allocator, ptr, align, old_nb * obj_size, new_nb * obj_size);
 }
 
 CGS_API CGS_Allocator *cgs_get_default_allocator()
@@ -1724,16 +1747,17 @@ CGS_API CGS_StrView cgs__strv_find(const CGS_StrView hay, const CGS_StrView need
     if(needle.len == 0)
         return (CGS_StrView){.chars = hay.chars, .len = 0};
     
-    char *max_possible_ptr = &hay.chars[hay.len] - needle.len;
-    char *first_char = hay.chars;
+    unsigned int scan_end = hay.len - needle.len;
+    const char *max_possible_ptr = &hay.chars[scan_end];
+    const char *first_char = hay.chars;
     unsigned int remaining_len = hay.len;
     
     while(first_char && first_char <= max_possible_ptr)
     {
         if(memcmp(first_char, needle.chars, needle.len) == 0)
-            return (CGS_StrView){.chars = first_char, .len = needle.len};
-        first_char = memchr(first_char + 1, needle.chars[0], remaining_len - 1);
-        remaining_len = hay.len - (first_char - hay.chars);
+            return (CGS_StrView){.chars = (char*) first_char, .len = needle.len};
+        remaining_len = scan_end - (first_char - hay.chars);
+        first_char = memchr(first_char + 1, needle.chars[0], remaining_len);
     }
     
     return (CGS_StrView){.chars = NULL, .len = 0};
