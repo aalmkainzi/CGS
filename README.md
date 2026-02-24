@@ -268,8 +268,8 @@ int main()
 Types that have a `tostr` defined can use `fprint`/`sprint` and their variants:
 
 ```C
-fprint(stream, ...args with tostr);
-fprintln(stream, ...args with tostr);
+fprint(FILE *stream, ...args with tostr);
+fprintln(FILE *stream, ...args with tostr);
 print(...args with tostr);
 println(...args with tostr);
 
