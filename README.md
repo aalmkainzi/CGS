@@ -114,7 +114,6 @@ StrViewArray                    strv_arr(...anystr);
 StrViewArray                    strv_arr_from_carr(StrView strs[N]);
 StrViewArray                    strv_arr_from_carr(StrView *strs, unsigned int len);
 
-char                            cgs_at(anystr, unsigned int idx);
 unsigned int                    cgs_len(anystr);
 unsigned int                    cgs_cap(anystr);
 bool                            cgs_equal(anystr a, anystr b);
