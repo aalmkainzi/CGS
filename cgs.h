@@ -290,9 +290,6 @@ typedef struct CGS_ReplaceResult
     CGS_Error err;
 } CGS_ReplaceResult;
 
-#define cgs_ok \
-(CGS_Error){CGS_OK}
-
 #define cgs__fmutstr_ref(s, ...) \
 _Generic(&(__typeof__(s)){0}, \
     CGS_DStr**                              : cgs__dstr_ptr_as_fmutstr_ref(cgs__coerce(s, CGS_DStr*)), \
@@ -303,22 +300,6 @@ _Generic(&(__typeof__(s)){0}, \
     char(*)[sizeof(__typeof__(s))]          : cgs__buf_as_fmutstr_ref(cgs__buf_from_carr(cgs__coerce(s, char*), sizeof(__typeof__(s))), CGS__VA_OR(&(unsigned int){0}, __VA_ARGS__)), \
     unsigned char(*)[sizeof(__typeof__(s))] : cgs__buf_as_fmutstr_ref(cgs__buf_from_ucarr(cgs__coerce(s, unsigned char*), sizeof(__typeof__(s))), CGS__VA_OR(&(unsigned int){0}, __VA_ARGS__)) \
 )
-
-#define cgs_at(anystr, idx)                              \
-_Generic(anystr,                                         \
-    char*                     : cgs__cstr_char_at,       \
-    unsigned char*            : cgs__ucstr_char_at,      \
-    CGS_DStr                  : cgs__dstr_char_at,       \
-    CGS_DStr*                 : cgs__dstr_ptr_char_at,   \
-    CGS_StrView               : cgs__strv_char_at,       \
-    CGS_StrBuf                : cgs__strbuf_char_at,     \
-    CGS_StrBuf*               : cgs__strbuf_ptr_char_at, \
-    CGS_MutStrRef             : cgs__mutstr_ref_char_at, \
-    const char*               : cgs__cstr_char_at,       \
-    const unsigned char*      : cgs__ucstr_char_at,      \
-    const CGS_DStr*           : cgs__dstr_ptr_char_at,   \
-    const CGS_StrBuf*         : cgs__strbuf_ptr_char_at  \
-)((anystr), idx)
 
 #define cgs_len(anystr) \
 _Generic(anystr, \
@@ -336,19 +317,19 @@ _Generic(anystr, \
     const CGS_StrBuf*    : ((void)0, cgs__coerce(anystr, const CGS_StrBuf*)->len) \
 )
 
-static inline unsigned int cgs__return_32(unsigned int a)
+static inline unsigned int cgs__return_32(size_t a)
 {
-    return a;
+    return (unsigned int) a;
 }
 
 static inline unsigned int cgs__strlen_plus_one(const char *s)
 {
-    return strlen(s) + 1;
+    return (unsigned int) strlen(s) + 1;
 }
 
 static inline unsigned int cgs__ustrlen_plus_one(const unsigned char *s)
 {
-    return strlen((const char*) s) + 1;
+    return (unsigned int) strlen((const char*) s) + 1;
 }
 
 static inline unsigned int cgs__strv_len(const CGS_StrView sv)
@@ -448,6 +429,9 @@ cgs__strv_starts_with(cgs_strv(anystr_hay), cgs_strv(anystr_needle))
 
 #define cgs_ends_with(anystr_hay, anystr_needle) \
 cgs__strv_ends_with(cgs_strv(anystr_hay), cgs_strv(anystr_needle))
+
+#define cgs_map_chars(mutstr, map_func, ...) \
+cgs__map_chars(cgs_strv(mutstr), map_func, CGS__VA_OR(NULL, __VA_ARGS__))
 
 #define cgs_tolower(mutstr) \
 cgs__chars_tolower(cgs_strv(mutstr))
@@ -1252,15 +1236,6 @@ CGS_API unsigned int cgs__buf_cap(const CGS_Buffer buf);
 CGS_API unsigned int cgs__mutstr_ref_cap(const CGS_MutStrRef str);
 CGS_API unsigned int cgs__mutstr_ref_len(const CGS_MutStrRef str);
 
-CGS_API unsigned char cgs__cstr_char_at(const char *str, unsigned int idx);
-CGS_API unsigned char cgs__ucstr_char_at(const unsigned char *str, unsigned int idx);
-CGS_API unsigned char cgs__dstr_char_at(const CGS_DStr str, unsigned int idx);
-CGS_API unsigned char cgs__dstr_ptr_char_at(const CGS_DStr *str, unsigned int idx);
-CGS_API unsigned char cgs__strv_char_at(const CGS_StrView str, unsigned int idx);
-CGS_API unsigned char cgs__strbuf_char_at(const CGS_StrBuf str, unsigned int idx);
-CGS_API unsigned char cgs__strbuf_ptr_char_at(const CGS_StrBuf *str, unsigned int idx);
-CGS_API unsigned char cgs__mutstr_ref_char_at(const CGS_MutStrRef str, unsigned int idx);
-
 CGS_API bool cgs__is_strv_within(CGS_StrView base, CGS_StrView sub);
 
 CGS__NODISCARD("discarding a new DString may cause a memory leak")
@@ -1276,7 +1251,7 @@ CGS_API CGS_Error cgs__dstr_append_fread_line(CGS_DStr *dstr, FILE *stream);
 CGS_API CGS_Error cgs__dstr_shrink_to_fit(CGS_DStr *dstr);
 CGS_API CGS_Error cgs__dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_least);
 
-CGS_API CGS_Error cgs__mutstr_ref_putc(CGS_MutStrRef dst, unsigned char c);
+CGS_API CGS_Error cgs__mutstr_ref_putc(CGS_MutStrRef dst, char c);
 CGS_API CGS_Error cgs__mutstr_ref_copy(CGS_MutStrRef dst, const CGS_StrView src);
 CGS_API CGS_Error cgs__mutstr_ref_append(CGS_MutStrRef dst, const CGS_StrView src);
 CGS_API CGS_Error cgs__mutstr_ref_delete_range(CGS_MutStrRef str, unsigned int begin, unsigned int end);
@@ -1287,7 +1262,7 @@ CGS_API CGS_Error cgs__mutstr_ref_replace_range(CGS_MutStrRef str, unsigned int 
 CGS_API CGS_Error cgs__mutstr_ref_clear(CGS_MutStrRef str);
 CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, CGS_StrViewArray strs, CGS_StrView delim);
 
-CGS_API CGS_Error cgs__fmutstr_ref_putc(CGS__FixedMutStrRef dst, unsigned char c);
+CGS_API CGS_Error cgs__fmutstr_ref_putc(CGS__FixedMutStrRef dst, char c);
 CGS_API CGS_Error cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, const CGS_StrView src);
 CGS_API CGS_Error cgs__fmutstr_ref_append(CGS__FixedMutStrRef dst, const CGS_StrView src);
 CGS_API CGS_Error cgs__fmutstr_ref_delete_range(CGS__FixedMutStrRef str, unsigned int begin, unsigned int end);
@@ -1298,7 +1273,7 @@ CGS_API CGS_Error cgs__fmutstr_ref_replace_range(CGS__FixedMutStrRef str, unsign
 CGS_API CGS_Error cgs__fmutstr_ref_clear(CGS__FixedMutStrRef str);
 CGS_API CGS_Error cgs__strv_arr_join_into_fmutstr_ref(CGS__FixedMutStrRef dst, const CGS_StrViewArray strs, const CGS_StrView delim);
 
-CGS_API CGS_Error cgs__dstr_putc(CGS_DStr *dst, unsigned char c);
+CGS_API CGS_Error cgs__dstr_putc(CGS_DStr *dst, char c);
 CGS_API CGS_Error cgs__dstr_copy(CGS_DStr *dstr, const CGS_StrView src);
 CGS_API CGS_ReplaceResult cgs__dstr_replace(CGS_DStr *dstr, const CGS_StrView target, const CGS_StrView replacement);
 CGS_API CGS_Error cgs__dstr_replace_first(CGS_DStr *dstr, const CGS_StrView target, const CGS_StrView replacement);
@@ -1317,6 +1292,7 @@ CGS_API unsigned int cgs__strv_count(const CGS_StrView hay, const CGS_StrView ne
 CGS_API bool cgs__strv_starts_with(const CGS_StrView hay, const CGS_StrView needle);
 CGS_API bool cgs__strv_ends_with(const CGS_StrView hay, const CGS_StrView needle);
 
+CGS_API CGS_Error cgs__map_chars(CGS_StrView str, bool(*map)(char *c,void *arg), void *arg);
 CGS_API void cgs__chars_tolower(CGS_StrView str);
 CGS_API void cgs__chars_toupper(CGS_StrView str);
 

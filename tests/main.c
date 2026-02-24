@@ -590,9 +590,9 @@ cgs_clear(&str);
         fclose(f);
         
         assert(cgs_len(str) == 5001);
-        assert(cgs_at(str, 0) == 'a');
-        assert(cgs_at(str, 4999) == 'a');
-        assert(cgs_at(str, 5000) == '\n');
+        assert(str.chars[ 0] == 'a');
+        assert(str.chars[ 4999] == 'a');
+        assert(str.chars[ 5000] == '\n');
     }
 cgs_clear(&str);
     
@@ -706,9 +706,9 @@ cgs_clear(&str);
         fclose(f);
         
         assert(cgs_len(str) == 5006);
-        assert(cgs_at(str, 0) == 'a');
-        assert(cgs_at(str, 5) == 'b');
-        assert(cgs_at(str, 5005) == '\n');
+        assert(str.chars[ 0] == 'a');
+        assert(str.chars[ 5] == 'b');
+        assert(str.chars[ 5005] == '\n');
         
         cgs_clear(&str);
     }
@@ -926,7 +926,7 @@ void test_misc()
     StrBuf sb = strbuf_init_from_buf((char[128]){0});
     for(unsigned i = 0, len = cgs_len(s) ; i < len ; i++)
     {
-        cgs_sprint_append(&sb, cgs_at(s, i));
+        cgs_sprint_append(&sb, (s[ i ]));
     }
     println("sb == ", sb);
     assert(cgs_equal(sb, "this is my cstr"));
@@ -1094,7 +1094,7 @@ void comp_check()
     eq = cgs_equal(&d, sv);
     eq = cgs_equal(mr, sb);
 
-    char c = cgs_at(d, 0);
+    char c = d.chars[ 0];
     char* raw = cgs_chars(&sb);
     unsigned int cap = cgs_cap(mr);
 

@@ -68,32 +68,18 @@ do { \
 // cgs_at tests
 // ============================================================================
 
-bool test_str_at_cstr() {
-    const char *s = "hello";
-    ASSERT_EQ(cgs_at(s, 0), 'h');
-    ASSERT_EQ(cgs_at(s, 4), 'o');
-    return true;
-}
-
-bool test_str_at_array() {
-    char s[] = "world";
-    ASSERT_EQ(cgs_at(s, 0), 'w');
-    ASSERT_EQ(cgs_at(s, 2), 'r');
-    return true;
-}
-
 bool test_str_at_dstring() {
     DStr ds = dstr_init_from("test");
-    ASSERT_EQ(cgs_at(ds, 0), 't');
-    ASSERT_EQ(cgs_at(ds, 3), 't');
+    ASSERT_EQ(ds.chars[ 0], 't');
+    ASSERT_EQ(ds.chars[ 3], 't');
     dstr_deinit(&ds);
     return true;
 }
 
 bool test_str_at_string_view() {
     StrView sv = strv("example", 0, 7);
-    ASSERT_EQ(cgs_at(sv, 0), 'e');
-    ASSERT_EQ(cgs_at(sv, 6), 'e');
+    ASSERT_EQ(sv.chars[ 0], 'e');
+    ASSERT_EQ(sv.chars[ 6], 'e');
     return true;
 }
 
@@ -1171,8 +1157,6 @@ int main() {
     printf("==================================\n\n");
     
     // cgs_at
-    TEST(test_str_at_cstr);
-    TEST(test_str_at_array);
     TEST(test_str_at_dstring);
     TEST(test_str_at_string_view);
     

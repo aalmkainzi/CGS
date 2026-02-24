@@ -68,43 +68,6 @@ do { \
 } while(0)
 
 // ============================================================================
-// Edge Case Tests for cgs_at
-// ============================================================================
-
-void test_str_at_edge_cases() {
-    TEST("cgs_at: at exactly length boundary");
-    {
-        char buf[] = "test";
-        // Accessing at index 4 (length) should be '\0'
-        ASSERT_EQ(cgs_at(buf, 4), '\0');
-        // Accessing beyond should also return '\0' (likely implementation dependent)
-        // ASSERT_EQ(cgs_at(buf, 100), '\0');
-    }
-    
-    TEST("cgs_at: empty string");
-    {
-        char buf[] = "";
-        ASSERT_EQ(cgs_at(buf, 0), '\0');
-        // ASSERT_EQ(cgs_at(buf, 1), '\0');
-    }
-    
-    TEST("cgs_at: with embedded nulls");
-    {
-        char buf[10] = {'a', 'b', '\0', 'c', 'd', '\0'};
-        ASSERT_EQ(cgs_at(buf, 0), 'a');
-        ASSERT_EQ(cgs_at(buf, 1), 'b');
-        ASSERT_EQ(cgs_at(buf, 2), '\0');
-        // After first null, behavior depends on implementation
-    }
-    
-    TEST("cgs_at: UINT_MAX index");
-    {
-        char buf[] = "test";
-        // ASSERT_EQ(cgs_at(buf, UINT_MAX), '\0');
-    }
-}
-
-// ============================================================================
 // Edge Case Tests for cgs_len
 // ============================================================================
 
@@ -1631,7 +1594,7 @@ void test_strv_edge_cases() {
         char str[] = "test";
         StrView sv = strv(str, 1, 2);
         ASSERT_EQ(cgs_len(sv), 1);
-        ASSERT_EQ(cgs_at(sv, 0), 'e');
+        ASSERT_EQ(sv.chars[0], 'e');
     }
 }
 
@@ -2221,7 +2184,6 @@ int main() {
     printf("String Library Edge Case Test Suite\n");
     printf("========================================\n\n");
     
-    test_str_at_edge_cases();
     test_str_len_edge_cases();
     test_str_cap_edge_cases();
     test_str_equal_edge_cases();

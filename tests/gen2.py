@@ -46,7 +46,7 @@ fn_counter = [0]
 
 def begin_fn():
     fn_counter[0] += 1
-    emit(f"static void test_{fn_counter[0]:04d}(void) {{")
+    emit(f"void test_{fn_counter[0]:04d}(void) {{")
 
 def end_fn():
     emit("}")
@@ -74,7 +74,7 @@ emit("#include <stdio.h>")
 emit("#include <stdbool.h>")
 emit("#include <string.h>")
 emit('#define CGS_SHORT_NAMES')
-emit('#include "../cgs.h"   /* adjust include path as needed */')
+emit('#include "../cgs.c"')
 emit()
 
 # ---------------------------------------------------------------------------
@@ -170,11 +170,10 @@ emit("/* ===== single-arg read ops (anystr) ===== */")
 for _, aname, _ in ANYSTR_VARS:
     begin_fn()
     setup(aname)
-    emit(f"    char         c   = cgs_at({aname}, 0);")
     emit(f"    unsigned int len = cgs_len({aname});")
     emit(f"    unsigned int cap = cgs_cap({aname});")
     emit(f"    char        *ch  = cgs_chars({aname});")
-    emit(f"    (void)c; (void)len; (void)cap; (void)ch;")
+    emit(f"    (void)len; (void)cap; (void)ch;")
     end_fn()
 
 emit("/* ===== two-arg read ops (anystr x anystr) ===== */")
@@ -195,14 +194,28 @@ for _, an1, _ in ANYSTR_VARS:
 # ---------------------------------------------------------------------------
 
 emit("/* ===== cgs_clear / cgs_tolower / cgs_toupper / cgs_putc (mutstr) ===== */")
+# Note: cgs_tolower and cgs_toupper return void, not CGS_Error
 for _, mname, _ in MUTSTR_VARS:
     begin_fn()
     setup(mname)
     emit(f"    CGS_Error e1 = cgs_clear({mname});")
     emit(f"    cgs_tolower({mname});")
     emit(f"    cgs_toupper({mname});")
-    emit(f"    CGS_Error e4 = cgs_putc({mname}, 'x');")
-    emit(f"    (void)e1; (void)e4;")
+    emit(f"    CGS_Error e2 = cgs_putc({mname}, 'x');")
+    emit(f"    (void)e1; (void)e2;")
+    end_fn()
+
+# ---------------------------------------------------------------------------
+# cgs_map_chars(mutstr, bool(*)(char*, void*), void*)  — mutstr only
+# ---------------------------------------------------------------------------
+
+emit("/* ===== cgs_map_chars (mutstr x callback) ===== */")
+emit("static bool map_chars_cb(char *c, void *arg) { (void)c; (void)arg; return true; }")
+for _, mname, _ in MUTSTR_VARS:
+    begin_fn()
+    setup(mname)
+    emit(f"    CGS_Error e = cgs_map_chars({mname}, map_chars_cb, NULL);")
+    emit(f"    (void)e;")
     end_fn()
 
 # ---------------------------------------------------------------------------
@@ -435,16 +448,39 @@ end_fn()
 # tsfmt / arrfmt
 # ---------------------------------------------------------------------------
 
-emit("/* ===== tsfmt / arrfmt ===== */")
+emit("/* ===== tsfmt / arrfmt — construction and tostr ===== */")
 begin_fn()
-emit("    tsfmt_t(int, 'x')   hex_val = tsfmt(255, 'x');")
-emit("    tsfmt_t(float, 'e') sci_val = tsfmt(3.14f, 'e', 2);")
-emit("    (void)hex_val; (void)sci_val;")
+# tsfmt: integer and float variants
+emit("    tsfmt_t(int, 'x')   hex_val  = tsfmt(255, 'x');")
+emit("    tsfmt_t(int, 'o')   oct_val  = tsfmt(255, 'o');")
+emit("    tsfmt_t(float, 'e') sci_valf = tsfmt(3.14f, 'e', 2);")
+emit("    tsfmt_t(double,'a') hex_vald = tsfmt(3.14, 'a');")
+# arrfmt: with and without custom delimiters
 emit("    int arr_data[] = {1, 2, 3};")
 emit('    ArrayFmt af1 = arrfmt(arr_data, 3);')
 emit('    ArrayFmt af2 = arrfmt(arr_data, 3, "[", "]", ", ", ",");')
-emit("    (void)af1; (void)af2;")
+# Pass them to print/println (they have tostr)
+emit('    print(hex_val, " ", oct_val, " ", sci_valf, " ", hex_vald);')
+emit('    println(af1, " ", af2);')
+emit('    fprint(stdout, hex_val, " ", af1);')
+emit('    fprintln(stdout, oct_val, " ", af2);')
 end_fn()
+
+# tsfmt/arrfmt via tostr/cgs_sprint — cover all mutstr dst types
+emit("/* ===== tsfmt / arrfmt via tostr / cgs_sprint (mutstr) ===== */")
+for _, mname, _ in MUTSTR_VARS:
+    begin_fn()
+    setup(mname)
+    emit("    tsfmt_t(int, 'x') hex_v = tsfmt(255, 'x');")
+    emit("    tsfmt_t(double, 'e') sci_v = tsfmt(1.5, 'e', 3);")
+    emit("    int arr_d[] = {1, 2, 3};")
+    emit("    ArrayFmt af = arrfmt(arr_d, 3);")
+    emit(f"    {{ CGS_Error e = tostr({mname}, hex_v); (void)e; }}")
+    emit(f"    {{ CGS_Error e = tostr({mname}, sci_v); (void)e; }}")
+    emit(f"    {{ CGS_Error e = tostr({mname}, af);    (void)e; }}")
+    emit(f"    cgs_sprint({mname}, hex_v, \" \", sci_v, \" \", af);")
+    emit(f"    cgs_sprint_append({mname}, af, \" \", hex_v);")
+    end_fn()
 
 # ---------------------------------------------------------------------------
 # main
