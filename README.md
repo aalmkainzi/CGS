@@ -82,10 +82,10 @@ cgs_arrfmt
 
 ## Features
 The library exposes multiple string types for different use cases:
-- [DStr](DStr)
-- [StrBuf](StrBuf)
-- [StrView](StrView)
-- [MutStrRef](MutStrRef)
+- [DStr](#DStr)
+- [StrBuf](#StrBuf)
+- [StrView](#StrView)
+- [MutStrRef](#MutStrRef)
 
 All of which are null terminated, except for `StrView`.
 
