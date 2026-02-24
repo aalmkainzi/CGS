@@ -1,12 +1,12 @@
-#define NEAT_STR_IMPL
-#include "../neat_str.h"
+#define CGS_SHORT_NAMES
+#include "../cgs.h"
 
 int main()
 {
-    DString str = dstr();
+    DStr str = dstr_init();
     
-    dstr_append(&str, "world");
-    dstr_prepend(&str, "hello, ");
+    cgs_append(&str, "world");
+    cgs_prepend(&str, "hello, ");
     
     println(str);
     

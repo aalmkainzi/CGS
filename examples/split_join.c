@@ -1,13 +1,13 @@
-#define NEAT_STR_IMPL
-#include "../neat_str.h"
+#define CGS_SHORT_NAMES
+#include "../cgs.h"
 
 int main()
 {
-    String_View_Array splitted = str_split("1 XX 2 XX 3 XX 4 XX 5 XX 6", " XX ");
+    StrViewArray splitted = cgs_split("1 XX 2 XX 3 XX 4 XX 5 XX 6", " XX ");
 
     char c[128];
-    String_Buffer dst = strbuf(c);
-    str_join(&dst, splitted, ", ");
+    StrBuf dst = strbuf_init_from_buf(c);
+    cgs_join(&dst, splitted, ", ");
 
     println("the joined string: \n", dst);
 

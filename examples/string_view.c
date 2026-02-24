@@ -1,11 +1,11 @@
-#define NEAT_STR_IMPL
-#include "../neat_str.h"
+#define CGS_SHORT_NAMES
+#include "../cgs.h"
 
 int main()
 {
-    String_View s     = strv("hello, world");
-    String_View hello = strv(s, 0, 5);
-    String_View world = strv(s, 7);
+    StrView s     = strv("hello, world");
+    StrView hello = strv(s, 0, 5);
+    StrView world = strv(s, 7);
     
     println(hello);
     println(world);
