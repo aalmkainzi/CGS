@@ -29,3 +29,18 @@ void bench_cgs_append_dynamic(int* int_pool, unsigned count) {
 void bench_cgs_fprint(FILE* f, int i, double d, const char* s) {
     fprint(f, "i=", i, " d=", d, " s=", s, "\n");
 }
+
+#undef cgs_fprint
+#define cgs_fprint(f, ...)                       \
+do                                               \
+{                                                \
+    FILE *cgs__file_stream = f;                  \
+    (void) cgs__file_stream;                     \
+    extern _Thread_local CGS_DStr cgs__fprint_dynamic_buffer; \
+    CGS__FOREACH(cgs__fprint_each, __VA_ARGS__); \
+} while(0)
+
+void bench_cgs_fprint_old(FILE* f, int i, double d, const char* s)
+{
+    fprint(f, "i=", i, " d=", d, " s=", s, "\n");
+}

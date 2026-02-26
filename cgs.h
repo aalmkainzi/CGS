@@ -727,7 +727,8 @@ do                                               \
     FILE *cgs__file_stream = f;                  \
     (void) cgs__file_stream;                     \
     extern _Thread_local CGS_DStr cgs__fprint_dynamic_buffer; \
-    CGS__FOREACH(cgs__fprint_each, __VA_ARGS__); \
+    __VA_OPT__(cgs_sprint(&cgs__fprint_dynamic_buffer, __VA_ARGS__);) \
+    cgs__fprint_strv(cgs__file_stream, cgs_strv(cgs__fprint_dynamic_buffer)); \
 } while(0)
 
 #define cgs__fprint_each(x)                                 \

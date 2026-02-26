@@ -13,6 +13,8 @@
 
 #include "bridge.h"
 
+// TODO change fprint to combine all into dynamic_fprint_buffer and fwrite at once
+
 // --- Data Generation ---
 
 struct TestParams {
@@ -133,6 +135,20 @@ static void BM_CGS_fprint(benchmark::State& state) {
     std::fclose(tf);
 }
 BENCHMARK(BM_CGS_fprint);
+
+static void BM_CGS_fprint_old(benchmark::State& state) {
+    InitializeTestData();
+    FILE* tf = std::tmpfile();
+    size_t idx = 0;
+    for (auto _ : state) {
+        const auto& p = G_DATA[idx++ % POOL_SIZE];
+        bench_cgs_fprint_old(tf, p.i, p.d, p.s.c_str());
+        std::fflush(tf);
+        std::fseek(tf, 0, SEEK_SET);
+    }
+    std::fclose(tf);
+}
+BENCHMARK(BM_CGS_fprint_old);
 
 static void BM_STD_fprint(benchmark::State& state) {
     InitializeTestData();
