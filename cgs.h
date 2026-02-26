@@ -218,17 +218,26 @@ enum CGS__MutStrType
     CGS__BUF_TY
 };
 
-// This is a tagged union for all mutable string types (i.e. all except String_View)
+typedef struct CGS__MutStrInterface
+{
+    struct CGS_Error (*append)    (void *ctx, const char *bytes, unsigned int n);
+    struct CGS_Error (*insert)    (void *ctx, const char *bytes, unsigned int n, size_t idx);
+    unsigned int     (*len)       (void *ctx);
+    void             (*set_len)   (void *ctx, unsigned int len);
+    void             (*ensure_cap)(void *ctx, unsigned int at_least);
+    char*            (*cstr)      (void *ctx);
+} CGS__MutStrInterface;
+
+// Write interface
 typedef struct CGS_MutStrRef
 {
     union
     {
+        CGS_Buffer buffer;
         CGS_DStr *dstr;
         CGS_StrBuf *strbuf;
-        CGS_Buffer buf;
     } str;
-    
-    uint8_t ty; // enum CGS__MutStrType
+    uint8_t tag;
 } CGS_MutStrRef;
 
 enum CGS__Error_Value
