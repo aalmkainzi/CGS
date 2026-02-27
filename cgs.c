@@ -3277,32 +3277,23 @@ CGS_PRIVATE CGS_Error cgs__llong_min_into(CGS_Writer writer)
     }
 }
 
-#define cgs__sintger_tostr_fmutstr_ref(fmutstr) \
+#define cgs__sintger_tostr_fmutstr_ref() \
 do { \
-    if(fmutstr.cap <= 1) \
-        return (CGS_Error){CGS_DST_TOO_SMALL}; \
     __typeof__(obj) num = obj; \
     \
     if(isneg) \
     { \
-        fmutstr.chars[0] = '-'; \
+        writer.append(writer.ctx, (CGS_StrView){.chars = &(char){'-'}, .len = 1}); \
     } \
-    unsigned int chars_to_copy; \
-    if(fmutstr.cap > numlen) \
-    { \
-        chars_to_copy = numlen; \
-    } \
-    else \
-    { \
-        err.ec = CGS_DST_TOO_SMALL; \
-        chars_to_copy = fmutstr.cap - (1 + isneg); \
-    } \
+    unsigned int chars_to_copy = numlen; \
     num /= (__typeof__(num)) cgs__ten_pows[numlen - chars_to_copy]; \
     for (unsigned int i = 0; i < chars_to_copy ; i++) \
     { \
         unsigned char rem = (unsigned char)(num % 10); \
         num = num / 10; \
         fmutstr.chars[isneg + chars_to_copy - (i + 1)] = (char)(rem + '0'); \
+        CGS_StrView digit = {.chars = (char)(rem + '0'), .len = 1}; \
+        writer.append(writer.ctx, digit); \
     } \
     \
     *fmutstr.len = chars_to_copy + isneg; \
@@ -3319,6 +3310,7 @@ do { \
     cgs__sintger_tostr_fmutstr_ref(as_fixed); \
 } while(0)
 
+// TODO can optimize in case of dstr by checking if .append is cgs__idstr_append
 #define cgs__sinteger_tostr() \
 do { \
     CGS_Error err = {CGS_OK}; \
@@ -3333,27 +3325,7 @@ do { \
         obj *= -1; \
     } \
     unsigned int numlen = cgs__numstr_len((unsigned long long) obj); \
-    switch(dst.ty) \
-    { \
-        case CGS__DSTR_TY: \
-        { \
-            cgs__sinteger_tostr_dstr(dst.str.dstr); \
-            return err; \
-        } \
-        case CGS__STRBUF_TY: \
-        { \
-            CGS__FixedMutStrRef strbuf_as_fixed = cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf); \
-            cgs__sintger_tostr_fmutstr_ref(strbuf_as_fixed); \
-            return err; \
-        } \
-        case CGS__BUF_TY: \
-        { \
-            CGS__FixedMutStrRef buf_as_fixed = cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}); \
-            cgs__sintger_tostr_fmutstr_ref(buf_as_fixed); \
-            return err; \
-        } \
-        default: unreachable(); \
-    } \
+    cgs__sintger_tostr_fmutstr_ref() \
 } while(0)
 
 #define cgs__uinteger_tostr_dstr(dstr) \
