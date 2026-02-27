@@ -3059,6 +3059,27 @@ CGS_API unsigned int cgs__fprintln_strv(FILE *stream, CGS_StrView str)
     return written + (err != EOF);
 }
 
+struct CGS_Error cgs__idstr_append      (void *ctx, const char *bytes, unsigned int n);
+struct CGS_Error cgs__idstr_insert      (void *ctx, const char *bytes, unsigned int n, size_t idx);
+unsigned int     cgs__idstr_len         (void *ctx);
+void             cgs__idstr_set_len     (void *ctx, unsigned int len);
+void             cgs__idstr_ensure_cap  (void *ctx, unsigned int at_least);
+char*            cgs__idstr_cstr        (void *ctx);
+
+struct CGS_Error cgs__istrbuf_append    (void *ctx, const char *bytes, unsigned int n);
+struct CGS_Error cgs__istrbuf_insert    (void *ctx, const char *bytes, unsigned int n, size_t idx);
+unsigned int     cgs__istrbuf_len       (void *ctx);
+void             cgs__istrbuf_set_len   (void *ctx, unsigned int len);
+void             cgs__istrbuf_ensure_cap(void *ctx, unsigned int at_least);
+char*            cgs__istrbuf_cstr      (void *ctx);
+
+struct CGS_Error cgs__ibuf_append       (void *ctx, const char *bytes, unsigned int n);
+struct CGS_Error cgs__ibuf_insert       (void *ctx, const char *bytes, unsigned int n, size_t idx);
+unsigned int     cgs__ibuf_len          (void *ctx);
+void             cgs__ibuf_set_len      (void *ctx, unsigned int len);
+void             cgs__ibuf_ensure_cap   (void *ctx, unsigned int at_least);
+char*            cgs__ibuf_cstr         (void *ctx);
+
 CGS_PRIVATE unsigned int cgs__numstr_len(unsigned long long num)
 {
     unsigned int len = 1;

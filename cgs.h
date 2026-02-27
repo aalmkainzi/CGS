@@ -213,10 +213,21 @@ typedef struct CGS_Buffer
 
 enum CGS__MutStrType
 {
-    CGS__DSTR_TY = 1,
+    CGS__DSTR_TY = 0,
     CGS__STRBUF_TY,
     CGS__BUF_TY
 };
+
+typedef struct CGS_MutStrRef
+{
+    union
+    {
+        CGS_Buffer buffer;
+        CGS_DStr *dstr;
+        CGS_StrBuf *strbuf;
+    } str;
+    uint8_t tag;
+} CGS_MutStrRef;
 
 typedef struct CGS__MutStrInterface
 {
@@ -228,17 +239,54 @@ typedef struct CGS__MutStrInterface
     char*            (*cstr)      (void *ctx);
 } CGS__MutStrInterface;
 
-// Write interface
-typedef struct CGS_MutStrRef
+struct CGS_Error cgs__idstr_append      (void *ctx, const char *bytes, unsigned int n);
+struct CGS_Error cgs__idstr_insert      (void *ctx, const char *bytes, unsigned int n, size_t idx);
+unsigned int     cgs__idstr_len         (void *ctx);
+void             cgs__idstr_set_len     (void *ctx, unsigned int len);
+void             cgs__idstr_ensure_cap  (void *ctx, unsigned int at_least);
+char*            cgs__idstr_cstr        (void *ctx);
+
+struct CGS_Error cgs__istrbuf_append    (void *ctx, const char *bytes, unsigned int n);
+struct CGS_Error cgs__istrbuf_insert    (void *ctx, const char *bytes, unsigned int n, size_t idx);
+unsigned int     cgs__istrbuf_len       (void *ctx);
+void             cgs__istrbuf_set_len   (void *ctx, unsigned int len);
+void             cgs__istrbuf_ensure_cap(void *ctx, unsigned int at_least);
+char*            cgs__istrbuf_cstr      (void *ctx);
+
+struct CGS_Error cgs__ibuf_append       (void *ctx, const char *bytes, unsigned int n);
+struct CGS_Error cgs__ibuf_insert       (void *ctx, const char *bytes, unsigned int n, size_t idx);
+unsigned int     cgs__ibuf_len          (void *ctx);
+void             cgs__ibuf_set_len      (void *ctx, unsigned int len);
+void             cgs__ibuf_ensure_cap   (void *ctx, unsigned int at_least);
+char*            cgs__ibuf_cstr         (void *ctx);
+
+static const CGS__MutStrInterface cgs__mutstr_ref_interfaces[] = 
 {
-    union
-    {
-        CGS_Buffer buffer;
-        CGS_DStr *dstr;
-        CGS_StrBuf *strbuf;
-    } str;
-    uint8_t tag;
-} CGS_MutStrRef;
+    [CGS__DSTR_TY] = {
+        cgs__idstr_append,
+        cgs__idstr_insert,
+        cgs__idstr_len,
+        cgs__idstr_set_len,
+        cgs__idstr_ensure_cap,
+        cgs__idstr_cstr
+    },
+    [CGS__STRBUF_TY] = {
+        cgs__istrbuf_append,
+        cgs__istrbuf_insert,
+        cgs__istrbuf_len,
+        cgs__istrbuf_set_len,
+        cgs__istrbuf_ensure_cap,
+        cgs__istrbuf_cstr
+    },
+    [CGS__BUF_TY] = {
+        cgs__ibuf_append,
+        cgs__ibuf_insert,
+        cgs__ibuf_len,
+        cgs__ibuf_set_len,
+        cgs__ibuf_ensure_cap,
+        cgs__ibuf_cstr
+    }
+};
 
 enum CGS__Error_Value
 {
