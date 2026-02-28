@@ -10,16 +10,16 @@ extern "C" {
 void cgs_init_once(void);
 
 // Scenario 1: Raw Integer to Buffer
-void bench_cgs_tostr_int(char* buf, int val);
+void bench_cgs_tostr_llong(char* buf, long long val);
 
 // Scenario 2: Fixed Buffer Multi-argument
-void bench_cgs_sprint_fixed(char* buf, unsigned cap, int i, double d, const char* s);
+void bench_cgs_sprint_fixed(char* buf, unsigned cap, long long i, double d, const char* s, const char* s2);
 
 // Scenario 3: Dynamic Appending (now takes the data as input to be fair)
-void bench_cgs_append_dynamic(int* int_pool, unsigned count);
+void bench_cgs_append_dynamic(long long* llong_pool, unsigned count);
 
 // Scenario 4: File Output
-void bench_cgs_fprint(FILE* f, int i, double d, const char* s);
+void bench_cgs_fprint(FILE* f, long long i, double d, const char* s, const char* s2, long long computed_val);
 
 #ifdef __cplusplus
 }

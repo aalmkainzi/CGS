@@ -2098,7 +2098,7 @@ void test_tostr_edge_cases() {
         // Assuming cgs_print signature is something like:
         // CGS_Error cgs_print(void* str_buf, ...);
         // And it uses tostr internally for numbers.
-        cgs_sprint(&dstr, 123, " ", "test", " ", tsfmt(456.78f, 'f', 2), "!", -99);
+        cgs_sprint(&dstr, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
         // For floats/doubles, you might need to adjust precision in the expected string
         // depending on how your tostr macro formats them.
         ASSERT_TRUE(cgs_equal(&dstr, "123 test 456.78!-99")); // Adjust "456.780000" based on your tostr's float precision
@@ -2113,11 +2113,11 @@ void test_tostr_edge_cases() {
         cgs_sprint(&sb, 1, " ", "long_string_here"); // This should exceed 9 chars + null
     }
     
-    TEST("tsfmt: various format characters");
+    TEST("nfmt: various format characters");
     {
         DStr dstr = dstr_init(30);
         // Test hex, octal, etc.
-        tostr(&dstr, tsfmt(255, 'x'));
+        tostr(&dstr, nfmt(255, 'x'));
         ASSERT_TRUE(cgs_equal(dstr, "ff"));
         dstr_deinit(&dstr);
     }

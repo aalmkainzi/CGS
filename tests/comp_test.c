@@ -12060,12 +12060,12 @@ void test_1451(void) {
     fprintln(stdout, 1, 2, 3);
 }
 
-/* ===== tsfmt / arrfmt — construction and tostr ===== */
+/* ===== nfmt / arrfmt — construction and tostr ===== */
 void test_1452(void) {
-    tsfmt_t(int, 'x')   hex_val  = tsfmt(255, 'x');
-    tsfmt_t(int, 'o')   oct_val  = tsfmt(255, 'o');
-    tsfmt_t(float, 'e') sci_valf = tsfmt(3.14f, 'e', 2);
-    tsfmt_t(double,'a') hex_vald = tsfmt(3.14, 'a');
+    nfmt_t(int, 'x')   hex_val  = nfmt(255, 'x');
+    nfmt_t(int, 'o')   oct_val  = nfmt(255, 'o');
+    nfmt_t(float, 'e') sci_valf = nfmt(3.14f, 'e', 2);
+    nfmt_t(double,'a') hex_vald = nfmt(3.14, 'a');
     int arr_data[] = {1, 2, 3};
     ArrayFmt af1 = arrfmt(arr_data, 3);
     ArrayFmt af2 = arrfmt(arr_data, 3, "[", "]", ", ", ",");
@@ -12075,11 +12075,11 @@ void test_1452(void) {
     fprintln(stdout, oct_val, " ", af2);
 }
 
-/* ===== tsfmt / arrfmt via tostr / cgs_sprint (mutstr) ===== */
+/* ===== nfmt / arrfmt via tostr / cgs_sprint (mutstr) ===== */
 void test_1453(void) {
     char cstr_ptr_buf[] = "hello"; char *cstr_ptr = cstr_ptr_buf;
-    tsfmt_t(int, 'x') hex_v = tsfmt(255, 'x');
-    tsfmt_t(double, 'e') sci_v = tsfmt(1.5, 'e', 3);
+    nfmt_t(int, 'x') hex_v = nfmt(255, 'x');
+    nfmt_t(double, 'e') sci_v = nfmt(1.5, 'e', 3);
     int arr_d[] = {1, 2, 3};
     ArrayFmt af = arrfmt(arr_d, 3);
     { CGS_Error e = tostr(cstr_ptr, hex_v); (void)e; }
@@ -12091,8 +12091,8 @@ void test_1453(void) {
 
 void test_1454(void) {
     unsigned char ucstr_ptr_buf[] = {'h','i',0}; unsigned char *ucstr_ptr = ucstr_ptr_buf;
-    tsfmt_t(int, 'x') hex_v = tsfmt(255, 'x');
-    tsfmt_t(double, 'e') sci_v = tsfmt(1.5, 'e', 3);
+    nfmt_t(int, 'x') hex_v = nfmt(255, 'x');
+    nfmt_t(double, 'e') sci_v = nfmt(1.5, 'e', 3);
     int arr_d[] = {1, 2, 3};
     ArrayFmt af = arrfmt(arr_d, 3);
     { CGS_Error e = tostr(ucstr_ptr, hex_v); (void)e; }
@@ -12104,8 +12104,8 @@ void test_1454(void) {
 
 void test_1455(void) {
     char cstr_arr[] = "hello";
-    tsfmt_t(int, 'x') hex_v = tsfmt(255, 'x');
-    tsfmt_t(double, 'e') sci_v = tsfmt(1.5, 'e', 3);
+    nfmt_t(int, 'x') hex_v = nfmt(255, 'x');
+    nfmt_t(double, 'e') sci_v = nfmt(1.5, 'e', 3);
     int arr_d[] = {1, 2, 3};
     ArrayFmt af = arrfmt(arr_d, 3);
     { CGS_Error e = tostr(cstr_arr, hex_v); (void)e; }
@@ -12117,8 +12117,8 @@ void test_1455(void) {
 
 void test_1456(void) {
     unsigned char ucstr_arr[] = {'h','i',0};
-    tsfmt_t(int, 'x') hex_v = tsfmt(255, 'x');
-    tsfmt_t(double, 'e') sci_v = tsfmt(1.5, 'e', 3);
+    nfmt_t(int, 'x') hex_v = nfmt(255, 'x');
+    nfmt_t(double, 'e') sci_v = nfmt(1.5, 'e', 3);
     int arr_d[] = {1, 2, 3};
     ArrayFmt af = arrfmt(arr_d, 3);
     { CGS_Error e = tostr(ucstr_arr, hex_v); (void)e; }
@@ -12130,8 +12130,8 @@ void test_1456(void) {
 
 void test_1457(void) {
     DStr dstr_ptr_obj = dstr_init_from("hello", NULL); DStr *dstr_ptr = &dstr_ptr_obj;
-    tsfmt_t(int, 'x') hex_v = tsfmt(255, 'x');
-    tsfmt_t(double, 'e') sci_v = tsfmt(1.5, 'e', 3);
+    nfmt_t(int, 'x') hex_v = nfmt(255, 'x');
+    nfmt_t(double, 'e') sci_v = nfmt(1.5, 'e', 3);
     int arr_d[] = {1, 2, 3};
     ArrayFmt af = arrfmt(arr_d, 3);
     { CGS_Error e = tostr(dstr_ptr, hex_v); (void)e; }
@@ -12143,8 +12143,8 @@ void test_1457(void) {
 
 void test_1458(void) {
     char strbuf_ptr_buf[64] = "hello"; StrBuf strbuf_ptr_obj = strbuf_init_from_cstr(strbuf_ptr_buf, 64); StrBuf *strbuf_ptr = &strbuf_ptr_obj;
-    tsfmt_t(int, 'x') hex_v = tsfmt(255, 'x');
-    tsfmt_t(double, 'e') sci_v = tsfmt(1.5, 'e', 3);
+    nfmt_t(int, 'x') hex_v = nfmt(255, 'x');
+    nfmt_t(double, 'e') sci_v = nfmt(1.5, 'e', 3);
     int arr_d[] = {1, 2, 3};
     ArrayFmt af = arrfmt(arr_d, 3);
     { CGS_Error e = tostr(strbuf_ptr, hex_v); (void)e; }
@@ -12156,8 +12156,8 @@ void test_1458(void) {
 
 void test_1459(void) {
     char msr_buf[64] = "hello"; MutStrRef msr = mutstr_ref(msr_buf);
-    tsfmt_t(int, 'x') hex_v = tsfmt(255, 'x');
-    tsfmt_t(double, 'e') sci_v = tsfmt(1.5, 'e', 3);
+    nfmt_t(int, 'x') hex_v = nfmt(255, 'x');
+    nfmt_t(double, 'e') sci_v = nfmt(1.5, 'e', 3);
     int arr_d[] = {1, 2, 3};
     ArrayFmt af = arrfmt(arr_d, 3);
     { CGS_Error e = tostr(msr, hex_v); (void)e; }

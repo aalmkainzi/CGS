@@ -1036,18 +1036,18 @@ default: 0)
 #define CGS__FLOATING_FMT_GENERIC_BRANCH(ty, extra) \
 CGS__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 
-#define cgs_tsfmt(x, fmt_chr, ...) \
+#define cgs_nfmt(x, fmt_chr, ...) \
 ( \
     cgs__static_assertx( (CGS__IS_FLOATING(x) && (fmt_chr == 'f' || fmt_chr == 'g' || fmt_chr == 'e' || fmt_chr == 'a' || fmt_chr == 'F' || fmt_chr == 'G' || fmt_chr == 'E' || fmt_chr == 'A')  ) || (CGS__IS_INTEGER(x) && (fmt_chr == 'd' || fmt_chr == 'x' || fmt_chr == 'o' || fmt_chr == 'b' || fmt_chr == 'X')), "Incorrect formatting char for the type"), \
-    cgs__static_assertx((CGS__IS_FLOATING(x) || (1 __VA_OPT__(-1))), "tsfmt Integers dont take a third parameter"), \
+    cgs__static_assertx((CGS__IS_FLOATING(x) || (1 __VA_OPT__(-1))), "nfmt Integers dont take a third parameter"), \
     _Generic((x), \
         CGS__INTEGER_TYPES(CGS__INTEGER_FMT_GENERIC_BRANCHES, (x, fmt_chr)) \
         CGS__FLOATING_TYPES(CGS__FLOATING_FMT_GENERIC_BRANCH, (x, fmt_chr __VA_OPT__(,) __VA_ARGS__), CGS__FLOATING_FMT_LAST_GENERIC_BRANCH) \
     ) \
 )
 
-#define cgs_tsfmt_t(ty, fmt_chr) \
-__typeof__(cgs_tsfmt((ty)0, fmt_chr))
+#define cgs_nfmt_t(ty, fmt_chr) \
+__typeof__(cgs_nfmt((ty)0, fmt_chr))
 
 #define cgs_arrfmt(array, nb, ...) \
 CGS__IF_EMPTY(cgs__arrfmt_, __VA_ARGS__) \
@@ -1570,8 +1570,8 @@ static inline CGS_MutStrRef cgs__clear_and_return(CGS_MutStrRef dst)
 #define fprint(stream, ...) cgs_fprint(stream, __VA_ARGS__)
 #define fprintln(stream, ...) cgs_fprintln(stream, __VA_ARGS__)
 
-#define tsfmt(exp, fmt_char, ...) cgs_tsfmt(exp, fmt_char __VA_OPT__(,) __VA_ARGS__)
-#define tsfmt_t(T, fmt_char, ...) cgs_tsfmt_t(T, fmt_char __VA_OPT__(,) __VA_ARGS__)
+#define nfmt(exp, fmt_char, ...) cgs_nfmt(exp, fmt_char __VA_OPT__(,) __VA_ARGS__)
+#define nfmt_t(T, fmt_char, ...) cgs_nfmt_t(T, fmt_char __VA_OPT__(,) __VA_ARGS__)
 #define arrfmt(arr, n, ...) cgs_arrfmt(arr, n, __VA_ARGS__)
 
 #endif // CGS_SHORT_NAMES

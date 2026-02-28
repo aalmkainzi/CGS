@@ -1050,33 +1050,33 @@ bool test_tostr_error() {
 }
 
 // ============================================================================
-// tsfmt tests
+// nfmt tests
 // ============================================================================
 
-bool test_tsfmt_int_decimal() {
+bool test_nfmt_int_decimal() {
     char buf[50];
-    ASSERT_OK(tostr(buf, tsfmt(42, 'd')));
+    ASSERT_OK(tostr(buf, nfmt(42, 'd')));
     ASSERT_STR_EQ(buf, "42");
     return true;
 }
 
-bool test_tsfmt_int_hex() {
+bool test_nfmt_int_hex() {
     char buf[50];
-    ASSERT_OK(tostr(buf, tsfmt(255, 'x')));
+    ASSERT_OK(tostr(buf, nfmt(255, 'x')));
     ASSERT_STR_EQ(buf, "ff");
     return true;
 }
 
-bool test_tsfmt_int_HEX() {
+bool test_nfmt_int_HEX() {
     char buf[50];
-    ASSERT_OK(tostr(buf, tsfmt(255, 'x')));
+    ASSERT_OK(tostr(buf, nfmt(255, 'x')));
     ASSERT_STR_EQ(buf, "ff");
     return true;
 }
 
-bool test_tsfmt_float() {
+bool test_nfmt_float() {
     char buf[50];
-    ASSERT_OK(tostr(buf, tsfmt(3.14159, 'f', 2)));
+    ASSERT_OK(tostr(buf, nfmt(3.14159, 'f', 2)));
     ASSERT_STR_EQ(buf, "3.14");
     return true;
 }
@@ -1326,11 +1326,11 @@ int main() {
     TEST(test_tostr_string);
     TEST(test_tostr_error);
     
-    // tsfmt
-    TEST(test_tsfmt_int_decimal);
-    TEST(test_tsfmt_int_hex);
-    TEST(test_tsfmt_int_HEX);
-    TEST(test_tsfmt_float);
+    // nfmt
+    TEST(test_nfmt_int_decimal);
+    TEST(test_nfmt_int_hex);
+    TEST(test_nfmt_int_HEX);
+    TEST(test_nfmt_float);
     
     // arrfmt
     TEST(test_arrfmt_basic);

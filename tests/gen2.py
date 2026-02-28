@@ -445,16 +445,16 @@ emit('    fprintln(stdout, 1, 2, 3);')
 end_fn()
 
 # ---------------------------------------------------------------------------
-# tsfmt / arrfmt
+# nfmt / arrfmt
 # ---------------------------------------------------------------------------
 
-emit("/* ===== tsfmt / arrfmt — construction and tostr ===== */")
+emit("/* ===== nfmt / arrfmt — construction and tostr ===== */")
 begin_fn()
-# tsfmt: integer and float variants
-emit("    tsfmt_t(int, 'x')   hex_val  = tsfmt(255, 'x');")
-emit("    tsfmt_t(int, 'o')   oct_val  = tsfmt(255, 'o');")
-emit("    tsfmt_t(float, 'e') sci_valf = tsfmt(3.14f, 'e', 2);")
-emit("    tsfmt_t(double,'a') hex_vald = tsfmt(3.14, 'a');")
+# nfmt: integer and float variants
+emit("    nfmt_t(int, 'x')   hex_val  = nfmt(255, 'x');")
+emit("    nfmt_t(int, 'o')   oct_val  = nfmt(255, 'o');")
+emit("    nfmt_t(float, 'e') sci_valf = nfmt(3.14f, 'e', 2);")
+emit("    nfmt_t(double,'a') hex_vald = nfmt(3.14, 'a');")
 # arrfmt: with and without custom delimiters
 emit("    int arr_data[] = {1, 2, 3};")
 emit('    ArrayFmt af1 = arrfmt(arr_data, 3);')
@@ -466,13 +466,13 @@ emit('    fprint(stdout, hex_val, " ", af1);')
 emit('    fprintln(stdout, oct_val, " ", af2);')
 end_fn()
 
-# tsfmt/arrfmt via tostr/cgs_sprint — cover all mutstr dst types
-emit("/* ===== tsfmt / arrfmt via tostr / cgs_sprint (mutstr) ===== */")
+# nfmt/arrfmt via tostr/cgs_sprint — cover all mutstr dst types
+emit("/* ===== nfmt / arrfmt via tostr / cgs_sprint (mutstr) ===== */")
 for _, mname, _ in MUTSTR_VARS:
     begin_fn()
     setup(mname)
-    emit("    tsfmt_t(int, 'x') hex_v = tsfmt(255, 'x');")
-    emit("    tsfmt_t(double, 'e') sci_v = tsfmt(1.5, 'e', 3);")
+    emit("    nfmt_t(int, 'x') hex_v = nfmt(255, 'x');")
+    emit("    nfmt_t(double, 'e') sci_v = nfmt(1.5, 'e', 3);")
     emit("    int arr_d[] = {1, 2, 3};")
     emit("    ArrayFmt af = arrfmt(arr_d, 3);")
     emit(f"    {{ CGS_Error e = tostr({mname}, hex_v); (void)e; }}")

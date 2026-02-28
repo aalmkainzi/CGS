@@ -132,68 +132,68 @@ void test_hex()
     StrBuf str = strbuf_init_from_buf(C);
     
     // Unsigned char / uint8_t
-    tostr(&str, tsfmt((unsigned char)0, 'x'));
+    tostr(&str, nfmt((unsigned char)0, 'x'));
     
     
     println(str);
     assert(cgs_equal(str, "0"));
     
-    tostr(&str, tsfmt((uint8_t)255, 'x'));
+    tostr(&str, nfmt((uint8_t)255, 'x'));
     println(str);
     assert(cgs_equal(str, "ff"));
     
     // Signed char / int8_t (Two's complement)
-    tostr(&str, tsfmt((int8_t)-1, 'x'));
+    tostr(&str, nfmt((int8_t)-1, 'x'));
     println(str);
     assert(cgs_equal(str, "ff"));
     
-    tostr(&str, tsfmt((int8_t)-128, 'x')); // SCHAR_MIN
+    tostr(&str, nfmt((int8_t)-128, 'x')); // SCHAR_MIN
     println(str);
     assert(cgs_equal(str, "80"));
     
     
-    tostr(&str, tsfmt((unsigned short)0xABCD, 'x'));
+    tostr(&str, nfmt((unsigned short)0xABCD, 'x'));
     println(str);
     assert(cgs_equal(str, "abcd"));
     
-    tostr(&str, tsfmt((int16_t)-2, 'x'));
+    tostr(&str, nfmt((int16_t)-2, 'x'));
     println(str);
     assert(cgs_equal(str, "fffe"));
     
-    tostr(&str, tsfmt((uint16_t)65535, 'x')); // USHRT_MAX
+    tostr(&str, nfmt((uint16_t)65535, 'x')); // USHRT_MAX
     println(str);
     assert(cgs_equal(str, "ffff"));
     
-    tostr(&str, tsfmt(0, 'x'));
+    tostr(&str, nfmt(0, 'x'));
     println(str);
     assert(cgs_equal(str, "0"));
     
-    tostr(&str, tsfmt(2147483647, 'x')); // INT_MAX (32-bit)
+    tostr(&str, nfmt(2147483647, 'x')); // INT_MAX (32-bit)
     println(str);
     assert(cgs_equal(str, "7fffffff"));
     
-    tostr(&str, tsfmt(-1, 'x')); // int -1
+    tostr(&str, nfmt(-1, 'x')); // int -1
     println(str);
     assert(cgs_equal(str, "ffffffff"));
     
-    tostr(&str, tsfmt(0x12345678, 'x'));
+    tostr(&str, nfmt(0x12345678, 'x'));
     println(str);
     assert(cgs_equal(str, "12345678"));
     
-    tostr(&str, tsfmt(0xFFFFFFFFFFFFFFFFULL, 'x'));
+    tostr(&str, nfmt(0xFFFFFFFFFFFFFFFFULL, 'x'));
     println(str);
     assert(cgs_equal(str, "ffffffffffffffff"));
     
     // 64-bit signed
-    tostr(&str, tsfmt(-1LL, 'x'));
+    tostr(&str, nfmt(-1LL, 'x'));
     println(str);
     assert(cgs_equal(str, "ffffffffffffffff"));
     
-    tostr(&str, tsfmt(9223372036854775807LL, 'x')); // LLONG_MAX
+    tostr(&str, nfmt(9223372036854775807LL, 'x')); // LLONG_MAX
     println(str);
     assert(cgs_equal(str, "7fffffffffffffff"));
     
-    tostr(&str, tsfmt(-9223372036854775807LL - 1LL, 'x')); // LLONG_MIN
+    tostr(&str, nfmt(-9223372036854775807LL - 1LL, 'x')); // LLONG_MIN
     assert(cgs_equal(str, "8000000000000000"));
     
     println(str);
@@ -205,80 +205,80 @@ void test_octal()
     StrBuf str = strbuf_init_from_buf(C);
     
     // --- Basic Positive Tests (Common for all types) ---
-    tostr(&str, tsfmt(0, 'o'));
+    tostr(&str, nfmt(0, 'o'));
     println(str);
     assert(cgs_equal(str, "0"));
     
-    tostr(&str, tsfmt(10, 'o'));
+    tostr(&str, nfmt(10, 'o'));
     println(str);
     assert(cgs_equal(str, "12"));
     
-    tostr(&str, tsfmt(64, 'o'));
+    tostr(&str, nfmt(64, 'o'));
     println(str);
     assert(cgs_equal(str, "100"));
     
-    tostr(&str, tsfmt(511, 'o'));
+    tostr(&str, nfmt(511, 'o'));
     println(str);
     assert(cgs_equal(str, "777"));
     
     // --- 8-bit types (int8_t / uint8_t) ---
-    tostr(&str, tsfmt((uint8_t)255, 'o'));
+    tostr(&str, nfmt((uint8_t)255, 'o'));
     println(str);
     assert(cgs_equal(str, "377"));
     
-    tostr(&str, tsfmt((int8_t)-1, 'o'));
+    tostr(&str, nfmt((int8_t)-1, 'o'));
     println(str);
     assert(cgs_equal(str, "377")); // -1 in 8-bit two's complement
     
-    tostr(&str, tsfmt((int8_t)-128, 'o'));
+    tostr(&str, nfmt((int8_t)-128, 'o'));
     println(str);
     assert(cgs_equal(str, "200")); // -128 is 0x80
     
     // --- 16-bit types (int16_t / uint16_t) ---
-    tostr(&str, tsfmt((uint16_t)65535, 'o'));
+    tostr(&str, nfmt((uint16_t)65535, 'o'));
     println(str);
     assert(cgs_equal(str, "177777"));
     
-    tostr(&str, tsfmt((int16_t)-1, 'o'));
+    tostr(&str, nfmt((int16_t)-1, 'o'));
     println(str);
     assert(cgs_equal(str, "177777"));
     
-    tostr(&str, tsfmt((int16_t)4096, 'o'));
+    tostr(&str, nfmt((int16_t)4096, 'o'));
     println(str);
     assert(cgs_equal(str, "10000"));
     
     // --- 32-bit types (int32_t / uint32_t) ---
-    tostr(&str, tsfmt((uint32_t)4294967295U, 'o'));
+    tostr(&str, nfmt((uint32_t)4294967295U, 'o'));
     println(str);
     assert(cgs_equal(str, "37777777777"));
     
-    tostr(&str, tsfmt((int32_t)-1, 'o'));
+    tostr(&str, nfmt((int32_t)-1, 'o'));
     println(str);
     assert(cgs_equal(str, "37777777777"));
     
-    tostr(&str, tsfmt((int32_t)123456, 'o'));
+    tostr(&str, nfmt((int32_t)123456, 'o'));
     println(str);
     assert(cgs_equal(str, "361100"));
     
     // --- 64-bit types (int64_t / uint64_t) ---
-    tostr(&str, tsfmt((uint64_t)18446744073709551615ULL, 'o'));
+    tostr(&str, nfmt((uint64_t)18446744073709551615ULL, 'o'));
     println(str);
     assert(cgs_equal(str, "1777777777777777777777"));
     
-    tostr(&str, tsfmt((int64_t)-1, 'o'));
+    tostr(&str, nfmt((int64_t)-1, 'o'));
     println(str);
     assert(cgs_equal(str, "1777777777777777777777"));
     
-    tostr(&str, tsfmt((int64_t)0x123456789ABCDEFLL, 'o'));
+    tostr(&str, nfmt((int64_t)0x123456789ABCDEFLL, 'o'));
     println(str);
     assert(cgs_equal(str, "4432126361152746757"));
     
     // --- Size types (size_t / ssize_t) ---
-    tostr(&str, tsfmt((size_t)1024, 'o'));
+    tostr(&str, nfmt((size_t)1024, 'o'));
     println(str);
     assert(cgs_equal(str, "2000"));
     
-    tostr(&str, tsfmt((long long)-2, 'o'));
+    tostr(&str, nfmt((long long)-2, 'o'));
     println(str);
     // On 64-bit: 1777777777777777777776. On 32-bit: 37777777776.
     // Adjust this assertion if you are testing on a specific architecture.
@@ -289,11 +289,11 @@ void test_octal()
     #endif
     
     // --- Edge cases for Signed/Unsigned logic ---
-    tostr(&str, tsfmt((unsigned char)8, 'o'));
+    tostr(&str, nfmt((unsigned char)8, 'o'));
     println(str);
     assert(cgs_equal(str, "10"));
     
-    tostr(&str, tsfmt((long long)0, 'o'));
+    tostr(&str, nfmt((long long)0, 'o'));
     println(str);
     assert(cgs_equal(str, "0"));
 }
@@ -305,82 +305,82 @@ void test_bin()
     // --- uint8_t Tests ---
     
     // Zero should return a single "0"
-    tostr(&str, tsfmt((uint8_t)0, 'b'));
+    tostr(&str, nfmt((uint8_t)0, 'b'));
     println(str);
     assert(cgs_equal(str, "0"));
     
     // Single bit (no padding)
-    tostr(&str, tsfmt((uint8_t)1, 'b'));
+    tostr(&str, nfmt((uint8_t)1, 'b'));
     println(str);
     assert(cgs_equal(str, "1"));
     
     // Value 10 (binary 1010)
-    tostr(&str, tsfmt((uint8_t)10, 'b'));
+    tostr(&str, nfmt((uint8_t)10, 'b'));
     println(str);
     assert(cgs_equal(str, "1010"));
     
     // Max uint8 (255)
-    tostr(&str, tsfmt((uint8_t)255, 'b'));
+    tostr(&str, nfmt((uint8_t)255, 'b'));
     println(str);
     assert(cgs_equal(str, "11111111"));
     
     // --- int8_t Tests (Two's Complement) ---
     
     // Negative 1 in 8-bit is 11111111
-    tostr(&str, tsfmt((int8_t)-1, 'b'));
+    tostr(&str, nfmt((int8_t)-1, 'b'));
     println(str);
     assert(cgs_equal(str, "11111111"));
     
     // Positive 127 is 01111111, without padding it is seven 1s
-    tostr(&str, tsfmt((int8_t)127, 'b'));
+    tostr(&str, nfmt((int8_t)127, 'b'));
     println(str);
     assert(cgs_equal(str, "1111111"));
     
     // Minimum negative value (-128) is 10000000
-    tostr(&str, tsfmt((int8_t)-128, 'b'));
+    tostr(&str, nfmt((int8_t)-128, 'b'));
     println(str);
     assert(cgs_equal(str, "10000000"));
     
     // --- uint16_t Tests ---
     
     // 256 is 1 followed by eight 0s
-    tostr(&str, tsfmt((uint16_t)256, 'b'));
+    tostr(&str, nfmt((uint16_t)256, 'b'));
     println(str);
     assert(cgs_equal(str, "100000000"));
     
     // 1024 is 1 followed by ten 0s
-    tostr(&str, tsfmt((uint16_t)1024, 'b'));
+    tostr(&str, nfmt((uint16_t)1024, 'b'));
     println(str);
     assert(cgs_equal(str, "10000000000"));
     
     // --- int16_t Tests ---
     
     // -2 in 16-bit is 1111111111111110 (15 ones)
-    tostr(&str, tsfmt((int16_t)-2, 'b'));
+    tostr(&str, nfmt((int16_t)-2, 'b'));
     println(str);
     assert(cgs_equal(str, "1111111111111110"));
     
     // --- uint32_t Tests ---
     
     // Power of 2 (2^31)
-    tostr(&str, tsfmt((uint32_t)0x80000000, 'b'));
+    tostr(&str, nfmt((uint32_t)0x80000000, 'b'));
     println(str);
     assert(cgs_equal(str, "10000000000000000000000000000000"));
     
     // A random small value in a large type (checks no padding)
-    tostr(&str, tsfmt((uint32_t)42, 'b'));
+    tostr(&str, nfmt((uint32_t)42, 'b'));
     println(str);
     assert(cgs_equal(str, "101010"));
     
     // --- uint64_t Tests ---
     
     // 64-bit Max (64 ones)
-    tostr(&str, tsfmt((uint64_t)-1, 'b'));
+    tostr(&str, nfmt((uint64_t)-1, 'b'));
     println(str);
     assert(cgs_equal(str, "1111111111111111111111111111111111111111111111111111111111111111"));
     
     // Large 64-bit number (1 followed by 60 zeros)
-    tostr(&str, tsfmt((uint64_t)1ULL << 60, 'b'));
+    tostr(&str, nfmt((uint64_t)1ULL << 60, 'b'));
     println(str);
     assert(cgs_equal(str, "1000000000000000000000000000000000000000000000000000000000000"));
 }
@@ -395,38 +395,38 @@ void test_ffmt()
     double d;
     CGS_Error er;
     
-    er = tostr(&str, tsfmt(10.5f, 'f'));
+    er = tostr(&str, nfmt(10.5f, 'f'));
     println(er);
     println(str);
     f = strtof((char*)str.chars, NULL);
     assert(fabsf(10.5f - f) < f_eps);
     
     // 2. Negative Fixed-point
-    tostr(&str, tsfmt(-123.456f, 'f'));
+    tostr(&str, nfmt(-123.456f, 'f'));
     println(str);
     f = strtof((char*)str.chars, NULL);
     assert(fabsf(-123.456f - f) < f_eps);
     
     // 3. Scientific Notation (Small)
-    tostr(&str, tsfmt(0.0000123f, 'e'));
+    tostr(&str, nfmt(0.0000123f, 'e'));
     println(str);
     f = strtof((char*)str.chars, NULL);
     assert(fabsf(0.0000123f - f) < 1e-10f);
     
     // 4. Scientific Notation (Large)
-    tostr(&str, tsfmt(1234567.0f, 'e'));
+    tostr(&str, nfmt(1234567.0f, 'e'));
     println(str);
     f = strtof((char*)str.chars, NULL);
     assert(fabsf(1234567.0f - f) < 1.0f);
     
     // 5. Shortest Representation (No trailing zeros)
-    tostr(&str, tsfmt(100.0f, 'g'));
+    tostr(&str, nfmt(100.0f, 'g'));
     println(str);
     f = strtof((char*)str.chars, NULL);
     assert(fabsf(100.0f - f) < f_eps);
     
     // 6. Hex-Float (Exact representation)
-    tostr(&str, tsfmt(10.5f, 'a'));
+    tostr(&str, nfmt(10.5f, 'a'));
     println(str);
     f = strtof((char*)str.chars, NULL);
     assert(10.5f == f); 
@@ -434,19 +434,19 @@ void test_ffmt()
     // --- DOUBLE TESTS ---
     
     // 7. Double Precision Fixed
-    tostr(&str, tsfmt(3.14159265358979, 'f'));
+    tostr(&str, nfmt(3.14159265358979, 'f'));
     println(str);
     d = strtod((char*)str.chars, NULL);
     assert(fabs(3.14159265358979 - d) < d_eps);
     
     // 8. Double Precision Scientific
-    tostr(&str, tsfmt(1.2345678901234e-20, 'e'));
+    tostr(&str, nfmt(1.2345678901234e-20, 'e'));
     println(str);
     d = strtod((char*)str.chars, NULL);
     assert(fabs(1.2345678901234e-20 - d) < d_eps);
     
     // 9. Double Hex-Float
-    tostr(&str, tsfmt(0.1, 'a'));
+    tostr(&str, nfmt(0.1, 'a'));
     println(str);
     d = strtod((char*)str.chars, NULL);
     printf("printf: %a\n", 0.1);
@@ -455,50 +455,50 @@ void test_ffmt()
     // --- SPECIAL CASES ---
     
     // 10. Positive Zero
-    tostr(&str, tsfmt(0.0f, 'f'));
+    tostr(&str, nfmt(0.0f, 'f'));
     println(str);
     f = strtof((char*)str.chars, NULL);
     assert(f == 0.0f);
     
     // 11. Negative Zero (Must show '-' sign)
-    tostr(&str, tsfmt(-0.0f, 'f'));
+    tostr(&str, nfmt(-0.0f, 'f'));
     println(str);
     f = strtof((char*)str.chars, NULL);
     assert(f == 0.0f && signbit(f));
     
     // 12. Infinity
-    tostr(&str, tsfmt(INFINITY, 'f'));
+    tostr(&str, nfmt(INFINITY, 'f'));
     println(str);
     f = strtof((char*)str.chars, NULL);
     assert(isinf(f) && f > 0);
     
     // 13. Negative Infinity
-    tostr(&str, tsfmt(-INFINITY, 'f'));
+    tostr(&str, nfmt(-INFINITY, 'f'));
     println(str);
     f = strtof((char*)str.chars, NULL);
     assert(isinf(f) && f < 0);
     
     // 14. NaN
-    tostr(&str, tsfmt(NAN, 'f'));
+    tostr(&str, nfmt(NAN, 'f'));
     println(str);
     f = strtof((char*)str.chars, NULL);
     assert(isnan(f));
     
     // 15. FLT_MAX
-    tostr(&str, tsfmt(FLT_MAX, 'e', 8));
+    tostr(&str, nfmt(FLT_MAX, 'e', 8));
     println(str);
     f = strtof((char*)str.chars, NULL);
     assert(fabs(f - FLT_MAX) <= (f_eps));
     
     // 16. DBL_MIN
-    tostr(&str, tsfmt(DBL_MIN, 'e'));
+    tostr(&str, nfmt(DBL_MIN, 'e'));
     println(str);
     d = strtod((char*)str.chars, NULL);
     assert(fabs(d - DBL_MIN) <= (d_eps));
     
-    tostr(&str, tsfmt(100, 'x'));
+    tostr(&str, nfmt(100, 'x'));
     
-    // auto fobj = tsfmt(100L, 'o');
+    // auto fobj = nfmt(100L, 'o');
     // size_t sz = sizeof(fobj);
 }
 
@@ -1149,11 +1149,11 @@ void comp_check()
     ArrayFmt af = arrfmt(int_arr, 3);
 
     // Variadic compile check
-    print("Values:", i, f_val, d, sv, err, af, tsfmt(255, 'X'));
+    print("Values:", i, f_val, d, sv, err, af, nfmt(255, 'X'));
     println(c_arr, uc_ptr, &sb, mr);
     
     // Sprint variants
-    cgs_sprint(&d, "Result: ", tsfmt(1.234, 'f', 2));
+    cgs_sprint(&d, "Result: ", nfmt(1.234, 'f', 2));
     cgs_sprint_append(mr, " more ", i);
 
     // Explicit tostr calls
