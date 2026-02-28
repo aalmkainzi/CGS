@@ -14,7 +14,7 @@ CGS_Error foo_to_str(CGS_Writer dst, struct FOO foo)
 #define ADD_TOSTR \
 (struct FOO, foo_to_str)
 
-#include "../cgs.h"
+#include "cgs.h"
 
 int main()
 {

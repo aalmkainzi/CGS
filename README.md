@@ -90,12 +90,13 @@ The library exposes multiple string types for different use cases:
 All of which are null terminated, except for `StrView`.
 
 There are two categories of string types:
-- anystr: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `StrView`, `DStr`, `DStr*`, `StrBuf`, `StrBuf*`, `MutStrRef`)
-- mutstr: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `DStr*`, `StrBuf*`, `MutStrRef`)
+- anystr_t: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `StrView`, `DStr`, `DStr*`, `StrBuf`, `StrBuf*`, `MutStrRef`)
+- mutstr_t: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `DStr*`, `StrBuf*`, `MutStrRef`)
+- writer_t: mutstr_t, `CGS_Writer`
 
 This is a list of all the utility macros CGS provides:
 ```C
-StrView                        strv(anystr str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
+StrView                        strv(anystr_t str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
                                
 StrBuf                         strbuf_init_from_cstr([unsigned] char *cstr, unsigned int cap = strlen(cstr) + 1);
 StrBuf                         strbuf_init_from_cstr([unsigned] char cstr[], unsigned int cap = sizeof(cstr));
@@ -103,60 +104,64 @@ StrBuf                         strbuf_init_from_buf([unsigned] char *buf, unsign
 StrBuf                         strbuf_init_from_buf([unsigned] char buf[], unsigned int cap = sizeof(buf));
                                
 DStr                           dstr_init(unsigned int initial_cap = 0, Allocator *allocator = cgs_get_default_allocator());
-DStr                           dstr_init_from(anystr src, Allocator *allocator = cgs_get_default_allocator());
+DStr                           dstr_init_from(anystr_t src, Allocator *allocator = cgs_get_default_allocator());
 void                           dstr_deinit(DStr *dstr);
 CGS_Error                      dstr_shrink_to_fit(DStr *dstr);
 CGS_Error                      dstr_ensure_cap(DStr *dstr, unsigned int at_least);
                                
-MutStrRef                      mutstr_ref(mutstr str);
+MutStrRef                      mutstr_ref(mutstr_t str);
                                
-StrViewArray                   strv_arr(...anystr);
+CGS_Writer                     cgs_writer(writer_t);
+CGS_Writer                     cgs_writer(FILE*);
+                               
+StrViewArray                   strv_arr(...anystr_t);
 StrViewArray                   strv_arr_from_carr(StrView strs[N]);
 StrViewArray                   strv_arr_from_carr(StrView *strs, unsigned int len);
                                
-unsigned int                   cgs_len(anystr);
-unsigned int                   cgs_cap(anystr);
-bool                           cgs_equal(anystr a, anystr b);
-char*                          cgs_chars(anystr);
-StrView                        cgs_find(anystr hay, anystr needle);
-unsigned int                   cgs_count(anystr hay, anystr needle);
-CGS_Error                      cgs_clear(mutstr);
-bool                           cgs_starts_with(anystr hay, anystr needle);
-bool                           cgs_ends_with(anystr hay, anystr needle);
-void                           cgs_tolower(mutstr);
-void                           cgs_toupper(mutstr);
-CGS_Error                      cgs_copy(mutstr dst, anystr src);
-CGS_Error                      cgs_putc(mutstr dst, char c);
-DStr                           cgs_dup(anystr src, Allocator *allocator = cgs_get_default_allocator());
-CGS_Error                      cgs_append(mutstr dst, anystr src);
-CGS_Error                      cgs_insert(mutstr dst, anystr src, unsigned int pos);
-CGS_Error                      cgs_prepend(mutstr dst, anystr src);
-CGS_Error                      cgs_del(mutstr, unsigned int from, unsigned int to_exclusive);
-ReplaceResult                  cgs_replace(mutstr dst, anystr target, anystr replacement);
-CGS_Error                      cgs_replace_first(mutstr dst, anystr target, anystr replacement);
-CGS_Error                      cgs_replace_range(mutstr dst, unsigned int from, unsigned int to_exclusive, anystr replacement);
-StrViewArray                   cgs_split(anystr str, anystr delim, Allocator *allocator = cgs_get_default_allocator());
-CGS_Error                      cgs_split_iter(anystr str, anystr delim, bool(*callback)(StrView found, void *arg), void *arg = NULL);
-CGS_Error                      cgs_join(mutstr dst, StrViewArray arr, anystr delim);
-CGS_Error                      cgs_fread_line(mutstr dst, FILE *stream);
-CGS_Error                      cgs_append_fread_line(mutstr dst, FILE *stream);
-CGS_Error                      cgs_read_line(mutstr dst);
-CGS_Error                      cgs_append_read_line(mutstr dst);
-MutStrRef                      cgs_appender(mutstr owner, AppenderState *state);
-CGS_Error                      cgs_commit_appender(mutstr owner, MutStrRef appender);
-CGS_Error                      tostr(mutstr dst, T val);
-CGS_Error                      tostr_p(mutstr dst, T *val);
+unsigned int                   cgs_len(anystr_t);
+unsigned int                   cgs_cap(anystr_t);
+bool                           cgs_equal(anystr_t a, anystr_t b);
+char*                          cgs_chars(anystr_t);
+StrView                        cgs_find(anystr_t hay, anystr_t needle);
+unsigned int                   cgs_count(anystr_t hay, anystr_t needle);
+CGS_Error                      cgs_clear(mutstr_t);
+bool                           cgs_starts_with(anystr_t hay, anystr_t needle);
+bool                           cgs_ends_with(anystr_t hay, anystr_t needle);
+void                           cgs_tolower(mutstr_t);
+void                           cgs_toupper(mutstr_t);
+CGS_Error                      cgs_copy(mutstr_t dst, anystr_t src);
+CGS_Error                      cgs_putc(writer_t dst, char c);
+DStr                           cgs_dup(anystr_t src, Allocator *allocator = cgs_get_default_allocator());
+CGS_Error                      cgs_append(writer_t dst, anystr_t src);
+CGS_Error                      cgs_insert(mutstr_t dst, anystr_t src, unsigned int pos);
+CGS_Error                      cgs_prepend(mutstr_t dst, anystr_t src);
+CGS_Error                      cgs_del(mutstr_t, unsigned int from, unsigned int to_exclusive);
+ReplaceResult                  cgs_replace(mutstr_t dst, anystr_t target, anystr_t replacement);
+CGS_Error                      cgs_replace_first(mutstr_t dst, anystr_t target, anystr_t replacement);
+CGS_Error                      cgs_replace_range(mutstr_t dst, unsigned int from, unsigned int to_exclusive, anystr_t replacement);
+StrViewArray                   cgs_split(anystr_t str, anystr_t delim, Allocator *allocator = cgs_get_default_allocator());
+CGS_Error                      cgs_split_iter(anystr_t str, anystr_t delim, bool(*callback)(StrView found, void *arg), void *arg = NULL);
+CGS_Error                      cgs_join(mutstr_t dst, StrViewArray arr, anystr_t delim);
+CGS_Error                      cgs_fread_line(mutstr_t dst, FILE *stream);
+CGS_Error                      cgs_append_fread_line(mutstr_t dst, FILE *stream);
+CGS_Error                      cgs_read_line(mutstr_t dst);
+CGS_Error                      cgs_append_read_line(mutstr_t dst);
+MutStrRef                      cgs_appender(mutstr_t owner, AppenderState *state);
+CGS_Error                      cgs_commit_appender(mutstr_t owner, MutStrRef appender);
+CGS_Error                      tostr(mutstr_t dst, T val);
+CGS_Error                      tostr_append(writer_t dst, T val);
+CGS_Error                      tostr_p(mutstr_t dst, T *val);
 bool                           has_tostr(T);
                                print(...args with tostr);
                                println(...args with tostr);
                                fprint(FILE *stream, ...args with tostr);
                                fprintln(FILE *stream, ...args with tostr);
-                               sprint(mutstr dst, ...args with tostr);
-                               sprint_append(mutstr dst, ...args with tostr);
+                               sprint(mutstr_t dst, ...args with tostr);
+                               sprint_append(writer_t dst, ...args with tostr);
 nfmt_t(integer_T, fmt_char)    nfmt(integer_T value, int fmt_char);
 nfmt_t(float/double, fmt_char) nfmt(float/double value, int fmt_char, int precision = (fmt_char == 'a' ? -1 : 6));
 ArrayFmt                       arrfmt(T *array, size_t len);
-ArrayFmt                       arrfmt(T *array, size_t len, anystr open, anystr close, anystr delim, anystr trailing_delim = "");
+ArrayFmt                       arrfmt(T *array, size_t len, anystr_t open, anystr_t close, anystr_t delim, anystr_t trailing_delim = "");
 ```
 
 ## DStr
@@ -166,7 +171,7 @@ Dynamic String.
 Constructed with:
 ```C
 DStr dstr_init(unsigned int initial_cap = 0, Allocator *allocator = cgs_get_default_allocator());
-DStr dstr_init_from(anystr src, Allocator *allocator = cgs_get_default_allocator());
+DStr dstr_init_from(anystr_t src, Allocator *allocator = cgs_get_default_allocator());
 ```
 
 ## StrBuf
@@ -198,7 +203,7 @@ This type can be used as a reference to any mutable string type (all string type
 
 to initialize:
 ```C
-MutStrRef mutstr_ref(mutstr);
+MutStrRef mutstr_ref(mutstr_t);
 MutStrRef mutstr_ref(cstr, cap);
 ```
 
@@ -222,7 +227,8 @@ void f(DStr *s1, StrBuf *s2, char *s3)
 Used to convert values to string:
 
 ```C
-CGS_Error tostr(mutstr dst, T val);
+CGS_Error tostr(mutstr_t dst, T val);
+CGS_Error tostr_append(writer_t dst, T val);
 ```
 e.g.
 ```C
@@ -242,11 +248,9 @@ struct FOO {
     char n;
 };
 
-CGS_Error foo_to_str(MutStrRef dst, struct FOO *f )
+CGS_Error foo_to_str(CGS_Writer dst, struct FOO *f )
 {
-    DStr ret = dstr_init();
-    CGS_Error err = cgs_putc(&ret, f->n);
-    
+    CGS_Error err = cgs_putc(dst, f->n);
     return err;
 }
 
@@ -258,7 +262,7 @@ CGS_Error foo_to_str(MutStrRef dst, struct FOO *f )
 int main()
 {
     struct FOO f = {'a'};
-    println( f ); // can now use `struct FOO` variables in contexts that require a type with tostr
+    println(f); // can now use `struct FOO` in contexts that require a type with tostr
 }
 ```
 
@@ -272,8 +276,8 @@ fprintln(FILE *stream, ...args with tostr);
 print(...args with tostr);
 println(...args with tostr);
 
-sprint(mutstr dst, ...args with tostr);
-sprint_append(mutstr dst, ...args with tostr);
+sprint(mutstr_t dst, ...args with tostr);
+sprint_append(writer_t dst, ...args with tostr);
 ```
 
 e.g:

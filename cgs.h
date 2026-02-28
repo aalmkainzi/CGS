@@ -394,26 +394,6 @@ _Generic(anystr, \
     const CGS_StrBuf*    : ((void)0, cgs__coerce(anystr, const CGS_StrBuf*)->len) \
 )
 
-static inline unsigned int cgs__return_32(size_t a)
-{
-    return (unsigned int) a;
-}
-
-static inline unsigned int cgs__strlen_plus_one(const char *s)
-{
-    return (unsigned int) strlen(s) + 1;
-}
-
-static inline unsigned int cgs__ustrlen_plus_one(const unsigned char *s)
-{
-    return (unsigned int) strlen((const char*) s) + 1;
-}
-
-static inline unsigned int cgs__strv_len(const CGS_StrView sv)
-{
-    return sv.len;
-}
-
 #define cgs_cap(anystr)                                                       \
 _Generic((__typeof__(anystr)*){0},                                            \
     char(*)[sizeof(__typeof__(anystr))]           : cgs__return_32,           \
@@ -473,22 +453,12 @@ _Generic(mutstr_dst, \
     default       : cgs__fmutstr_ref_putc(cgs__fmutstr_ref(cgs__coerce_not_mutstr_ref_or_writer(mutstr_dst)), c) \
 )
 
-static inline CGS_Error cgs__invoke_writer(CGS_Writer writer, const CGS_StrView str)
-{
-    return writer.append(writer.ctx, str);
-}
-
-static inline CGS_Error cgs__writer_putc(CGS_Writer writer, char c)
-{
-    return writer.append(writer.ctx, (CGS_StrView){.chars = &c, .len = 1});
-}
-
 #define cgs_append(mutstr_dst, anystr_src) \
 _Generic(mutstr_dst, \
     CGS_MutStrRef : cgs__mutstr_ref_append(cgs__coerce(mutstr_dst, CGS_MutStrRef), cgs_strv(anystr_src)), \
     CGS_DStr*     : cgs__dstr_append(cgs__coerce(mutstr_dst, CGS_DStr*), cgs_strv(anystr_src)), \
     CGS_Writer    : cgs__invoke_writer(cgs__coerce(mutstr_dst, CGS_Writer), cgs_strv(anystr_src)), \
-    default       : cgs__fmutstr_ref_append(cgs__fmutstr_ref(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), cgs_strv(anystr_src)) \
+    default       : cgs__fmutstr_ref_append(cgs__fmutstr_ref(cgs__coerce_not_mutstr_ref_or_writer(mutstr_dst)), cgs_strv(anystr_src)) \
 )
 
 #define cgs_insert(mutstr_dst, anystr_src, idx) \
@@ -623,7 +593,7 @@ _Generic((__typeof__(mutstr)*){0}, \
     default                                      : mutstr \
 )
 
-#define cgs__writer(mutstr) \
+#define cgs_writer(mutstr) \
 _Generic(mutstr, \
     CGS_Writer: mutstr, \
     default: \
@@ -648,7 +618,7 @@ __VA_OPT__( \
 #define cgs_sprint_append(mutstr_dst, ...) \
 do \
 { \
-    CGS_Writer cgs__as_writer = cgs__writer(mutstr_dst); \
+    CGS_Writer cgs__as_writer = cgs_writer(mutstr_dst); \
     cgs__sprint_each_setup(__VA_ARGS__); \
 } while(0)
 
@@ -656,7 +626,7 @@ do \
 do \
 { \
     cgs_clear(mutstr_dst); \
-    CGS_Writer cgs__as_writer = cgs__writer(mutstr_dst); \
+    CGS_Writer cgs__as_writer = cgs_writer(mutstr_dst); \
     cgs__sprint_each_setup(__VA_ARGS__); \
 } while(0)
 
@@ -849,7 +819,7 @@ cgs__dstr_ensure_cap(dstr, new_cap)
 do                                                                \
 {                                                                 \
     FILE *cgs__file_stream = f;                                   \
-    CGS_Writer cgs__file_writer = cgs__writer(cgs__file_stream);  \
+    CGS_Writer cgs__file_writer = cgs_writer(cgs__file_stream);  \
     (void) cgs__file_writer;                                      \
     __VA_OPT__(cgs_sprint_append(cgs__file_writer, __VA_ARGS__);) \
 } while(0)
@@ -1272,13 +1242,16 @@ _Generic((ty){0}, \
 )
 
 #define cgs_tostr(dst, src) \
-cgs__get_tostr_func(__typeof__(src))(cgs__writer(cgs__clear_and_return(cgs_mutstr_ref(dst))), (src))
+cgs__get_tostr_func(__typeof__(src))(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(dst))), (src))
+
+#define cgs_tostr_append(dst, src) \
+cgs__get_tostr_func(__typeof__(src))(cgs_writer(dst), (src))
 
 #define cgs_has_tostr(ty) \
 (!cgs__has_type(cgs__get_tostr_func_ft(__typeof__(ty)), cgs__tostr_fail))
 
 #define cgs_tostr_p(dst, src) \
-cgs__get_tostr_p_func(__typeof__(*(src)))(cgs__writer(dst), (src))
+cgs__get_tostr_p_func(__typeof__(*(src)))(cgs_writer(dst), (src))
 
 #define CGS__DECL_TOSTR_FUNC(n) \
 typedef __typeof__(CGS__MCALL(CGS__ARG1, ADD_TOSTR)) cgs__tostr_type_##n; \
@@ -1529,6 +1502,36 @@ static inline CGS_MutStrRef cgs__clear_and_return(CGS_MutStrRef dst)
     return dst;
 }
 
+static inline unsigned int cgs__return_32(size_t a)
+{
+    return (unsigned int) a;
+}
+
+static inline unsigned int cgs__strlen_plus_one(const char *s)
+{
+    return (unsigned int) strlen(s) + 1;
+}
+
+static inline unsigned int cgs__ustrlen_plus_one(const unsigned char *s)
+{
+    return (unsigned int) strlen((const char*) s) + 1;
+}
+
+static inline unsigned int cgs__strv_len(const CGS_StrView sv)
+{
+    return sv.len;
+}
+
+static inline CGS_Error cgs__invoke_writer(CGS_Writer writer, const CGS_StrView str)
+{
+    return writer.append(writer.ctx, str);
+}
+
+static inline CGS_Error cgs__writer_putc(CGS_Writer writer, char c)
+{
+    return writer.append(writer.ctx, (CGS_StrView){.chars = &c, .len = 1});
+}
+
 #endif /* CGS__H_INCLUDED */
 
 #ifdef CGS_SHORT_NAMES
@@ -1559,6 +1562,7 @@ static inline CGS_MutStrRef cgs__clear_and_return(CGS_MutStrRef dst)
 #define mutstr_ref(mutstr, ...) cgs_mutstr_ref(mutstr __VA_OPT__(,) __VA_ARGS__)
 
 #define tostr(dst, src) cgs_tostr(dst, src)
+#define tostr_append(dst, src) cgs_tostr_append(dst, src)
 #define tostr_p(dst, srcp) cgs_tostr_p(dst, srcp)
 #define has_tostr(T) cgs_has_tostr(T)
 
