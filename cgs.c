@@ -3369,8 +3369,8 @@ CGS_API CGS_Error cgs__bool_tostr(CGS_Writer writer, bool obj)
 
 CGS_API CGS_Error cgs__cstr_tostr(CGS_Writer writer, const char *obj)
 {
-    return writer.append(
-        writer.ctx,
+    return cgs__invoke_writer(
+        writer,
         (CGS_StrView){
             .chars = (char*) obj,
             .len = (unsigned int) strlen(obj)
@@ -3380,8 +3380,8 @@ CGS_API CGS_Error cgs__cstr_tostr(CGS_Writer writer, const char *obj)
 
 CGS_API CGS_Error cgs__ucstr_tostr(CGS_Writer writer, const unsigned char *obj)
 {
-    return writer.append(
-        writer.ctx,
+    return cgs__invoke_writer(
+        writer,
         (CGS_StrView){
             .chars = (char*) obj,
             .len = (unsigned int) strlen((char*) obj)
@@ -3570,8 +3570,7 @@ do \
     bool zero_pad = true; \
     while(sz--) \
     { \
-        /* TODO optimization, check !zero_pad first */ \
-        if(num_bytes == (uint8_t*)&num || !zero_pad || *num_bytes != 0) \
+        if(!zero_pad || num_bytes == (uint8_t*)&num || *num_bytes != 0) \
         { \
             CGS_StrView hex_sv = {.chars = (char*) byte2hex[*num_bytes], .len = 2}; \
             if(zero_pad && hex_sv.chars[0] == '0') \
