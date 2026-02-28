@@ -1,5 +1,5 @@
 CC := cc
-CFLAGS := -Wall -Wextra -g -fsanitize=address,undefined ../cgs.c
+CFLAGS := -Wall -Wextra -g -fsanitize=address,undefined ../cgs.c -I..
 SRCS := $(wildcard *.c)
 BINS := $(SRCS:.c=)
 

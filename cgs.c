@@ -3060,98 +3060,98 @@ CGS_API unsigned int cgs__fprintln_strv(FILE *stream, CGS_StrView str)
     return written + (err != EOF);
 }
 
-struct CGS_Error cgs__idstr_append(void *ctx, const CGS_StrView str)
+CGS_API CGS_Error cgs__idstr_append(void *ctx, const CGS_StrView str)
 {
     CGS_DStr *dstr = ctx;
     return cgs__dstr_append(dstr, str);
 }
 
-struct CGS_Error cgs__idstr_insert(void *ctx, const CGS_StrView str, unsigned int idx)
+CGS_API CGS_Error cgs__idstr_insert(void *ctx, const CGS_StrView str, unsigned int idx)
 {
     CGS_DStr *dstr = ctx;
     return cgs__dstr_insert(dstr, str, idx);
 }
 
-unsigned int cgs__idstr_len(void *ctx)
+CGS_API unsigned int cgs__idstr_len(void *ctx)
 {
     CGS_DStr *dstr = ctx;
     return dstr->len;
 }
 
-void cgs__idstr_set_len(void *ctx, unsigned int len)
+CGS_API void cgs__idstr_set_len(void *ctx, unsigned int len)
 {
     CGS_DStr *dstr = ctx;
     dstr->len = len;
 }
 
-CGS_Error cgs__idstr_ensure_cap(void *ctx, unsigned int at_least)
+CGS_API CGS_Error cgs__idstr_ensure_cap(void *ctx, unsigned int at_least)
 {
     CGS_DStr *dstr = ctx;
     return cgs__dstr_ensure_cap(dstr, at_least);
 }
 
-char *cgs__idstr_cstr(void *ctx)
+CGS_API char *cgs__idstr_cstr(void *ctx)
 {
     CGS_DStr *dstr = ctx;
     return dstr->chars;
 }
 
-struct CGS_Error cgs__istrbuf_append(void *ctx, const CGS_StrView str)
+CGS_API CGS_Error cgs__istrbuf_append(void *ctx, const CGS_StrView str)
 {
     CGS_StrBuf *strbuf = ctx;
     return cgs__fmutstr_ref_append(cgs__fmutstr_ref(strbuf), str);
 }
 
-struct CGS_Error cgs__istrbuf_insert(void *ctx, const CGS_StrView str, unsigned int idx)
+CGS_API CGS_Error cgs__istrbuf_insert(void *ctx, const CGS_StrView str, unsigned int idx)
 {
     CGS_StrBuf *strbuf = ctx;
     return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(strbuf), str, idx);
 }
 
-unsigned int cgs__istrbuf_len(void *ctx)
+CGS_API unsigned int cgs__istrbuf_len(void *ctx)
 {
     CGS_StrBuf *strbuf = ctx;
     return strbuf->len;
 }
 
-void cgs__istrbuf_set_len(void *ctx, unsigned int len)
+CGS_API void cgs__istrbuf_set_len(void *ctx, unsigned int len)
 {
     CGS_StrBuf *strbuf = ctx;
     strbuf->len = len;
 }
 
-CGS_Error cgs__istrbuf_ensure_cap(void *ctx, unsigned int at_least)
+CGS_API CGS_Error cgs__istrbuf_ensure_cap(void *ctx, unsigned int at_least)
 {
     (void)ctx;
     (void)at_least;
     return (CGS_Error){CGS_WRONG_TYPE};
 }
 
-char *cgs__istrbuf_cstr(void *ctx)
+CGS_API char *cgs__istrbuf_cstr(void *ctx)
 {
     CGS_StrBuf *strbuf = ctx;
     return strbuf->chars;
 }
 
-struct CGS_Error cgs__ibuf_append(void *ctx, const CGS_StrView str)
+CGS_API CGS_Error cgs__ibuf_append(void *ctx, const CGS_StrView str)
 {
     CGS_Buffer *buf = ctx;
     return cgs__fmutstr_ref_append(cgs__fmutstr_ref(*buf), str);
 }
 
-struct CGS_Error cgs__ibuf_insert(void *ctx, const CGS_StrView str, unsigned int idx)
+CGS_API CGS_Error cgs__ibuf_insert(void *ctx, const CGS_StrView str, unsigned int idx)
 {
     CGS_Buffer *buf = ctx;
     return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(*buf), str, idx);
 }
 
-unsigned int cgs__ibuf_len(void *ctx)
+CGS_API unsigned int cgs__ibuf_len(void *ctx)
 {
     CGS_Buffer *buf = ctx;
     return cgs__chars_strlen(buf->ptr, buf->cap);
 }
 
-void cgs__ibuf_set_len(void *ctx, unsigned int len)
+CGS_API void cgs__ibuf_set_len(void *ctx, unsigned int len)
 {
     (void)ctx;
     (void)len;
@@ -3159,20 +3159,20 @@ void cgs__ibuf_set_len(void *ctx, unsigned int len)
     return;
 }
 
-CGS_Error cgs__ibuf_ensure_cap(void *ctx, unsigned int at_least)
+CGS_API CGS_Error cgs__ibuf_ensure_cap(void *ctx, unsigned int at_least)
 {
     (void)ctx;
     (void)at_least;
     return (CGS_Error){CGS_WRONG_TYPE};
 }
 
-char *cgs__ibuf_cstr(void *ctx)
+CGS_API char *cgs__ibuf_cstr(void *ctx)
 {
     CGS_Buffer *buf = ctx;
     return buf->ptr;
 }
 
-CGS_Error cgs__file_append(void *ctx, const CGS_StrView str)
+CGS_API CGS_Error cgs__file_append(void *ctx, const CGS_StrView str)
 {
     FILE *f = ctx;
     unsigned int ret = cgs__fprint_strv(f, str);

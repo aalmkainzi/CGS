@@ -276,28 +276,28 @@ typedef struct CGS__MutStrInterface
     char*            (*cstr)      (void *ctx);
 } CGS__MutStrInterface;
 
-CGS_Error        cgs__idstr_append      (void *ctx, const CGS_StrView str);
-CGS_Error        cgs__idstr_insert      (void *ctx, const CGS_StrView str, unsigned int idx);
-unsigned int     cgs__idstr_len         (void *ctx);
-void             cgs__idstr_set_len     (void *ctx, unsigned int len);
-CGS_Error        cgs__idstr_ensure_cap  (void *ctx, unsigned int at_least);
-char*            cgs__idstr_cstr        (void *ctx);
+CGS_API CGS_Error    cgs__idstr_append      (void *ctx, const CGS_StrView str);
+CGS_API CGS_Error    cgs__idstr_insert      (void *ctx, const CGS_StrView str, unsigned int idx);
+CGS_API unsigned int cgs__idstr_len         (void *ctx);
+CGS_API void         cgs__idstr_set_len     (void *ctx, unsigned int len);
+CGS_API CGS_Error    cgs__idstr_ensure_cap  (void *ctx, unsigned int at_least);
+CGS_API char*        cgs__idstr_cstr        (void *ctx);
 
-CGS_Error        cgs__istrbuf_append    (void *ctx, const CGS_StrView str);
-CGS_Error        cgs__istrbuf_insert    (void *ctx, const CGS_StrView str, unsigned int idx);
-unsigned int     cgs__istrbuf_len       (void *ctx);
-void             cgs__istrbuf_set_len   (void *ctx, unsigned int len);
-CGS_Error        cgs__istrbuf_ensure_cap(void *ctx, unsigned int at_least);
-char*            cgs__istrbuf_cstr      (void *ctx);
+CGS_API CGS_Error    cgs__istrbuf_append    (void *ctx, const CGS_StrView str);
+CGS_API CGS_Error    cgs__istrbuf_insert    (void *ctx, const CGS_StrView str, unsigned int idx);
+CGS_API unsigned int cgs__istrbuf_len       (void *ctx);
+CGS_API void         cgs__istrbuf_set_len   (void *ctx, unsigned int len);
+CGS_API CGS_Error    cgs__istrbuf_ensure_cap(void *ctx, unsigned int at_least);
+CGS_API char*        cgs__istrbuf_cstr      (void *ctx);
 
-CGS_Error        cgs__ibuf_append       (void *ctx, const CGS_StrView str);
-CGS_Error        cgs__ibuf_insert       (void *ctx, const CGS_StrView str, unsigned int idx);
-unsigned int     cgs__ibuf_len          (void *ctx);
-void             cgs__ibuf_set_len      (void *ctx, unsigned int len);
-CGS_Error        cgs__ibuf_ensure_cap   (void *ctx, unsigned int at_least);
-char*            cgs__ibuf_cstr         (void *ctx);
+CGS_API CGS_Error    cgs__ibuf_append       (void *ctx, const CGS_StrView str);
+CGS_API CGS_Error    cgs__ibuf_insert       (void *ctx, const CGS_StrView str, unsigned int idx);
+CGS_API unsigned int cgs__ibuf_len          (void *ctx);
+CGS_API void         cgs__ibuf_set_len      (void *ctx, unsigned int len);
+CGS_API CGS_Error    cgs__ibuf_ensure_cap   (void *ctx, unsigned int at_least);
+CGS_API char*        cgs__ibuf_cstr         (void *ctx);
 
-CGS_Error        cgs__file_append       (void *ctx, const CGS_StrView str);
+CGS_API CGS_Error    cgs__file_append       (void *ctx, const CGS_StrView str);
 
 static const CGS__MutStrInterface cgs__mutstr_ref_interfaces[] = 
 {

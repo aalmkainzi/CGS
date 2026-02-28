@@ -1,5 +1,5 @@
 #define CGS_SHORT_NAMES
-#include "../cgs.h"
+#include "cgs.h"
 
 struct FOO {
     char n;
@@ -21,13 +21,13 @@ int main()
     struct FOO f = {'a'};
     println(f); // can now use `struct FOO` variables in contexts that require a type with tostr
     
-    println("hello", 123, "\n", tsfmt(15.3, 'E', 2));
+    println("hello", 123, "\n", nfmt(15.3, 'E', 2));
     
     char buf[64];
     sprint(buf, "hello-", f);
     
     println(buf);
     
-    tsfmt_t(int,'X') a = tsfmt(10,'X');
+    nfmt_t(int,'X') a = nfmt(10,'X');
     println(a);
 }

@@ -1,5 +1,5 @@
 #define CGS_SHORT_NAMES
-#include "../cgs.h"
+#include "cgs.h"
 
 void replace_dash(MutStrRef str)
 {
