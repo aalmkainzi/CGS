@@ -3212,13 +3212,13 @@ CGS_PRIVATE CGS_Error cgs__schar_min_into(CGS_Writer writer)
     {
         const char *numstr = "-128";
         CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
-        return writer.append(writer.ctx, s);
+        return cgs__invoke_writer(writer, s);
     }
     else
     {
         char temp[16] = {0};
         int len = snprintf(temp, sizeof(temp), "%hhd", SCHAR_MIN);
-        return writer.append(writer.ctx, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
+        return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
     }
 }
 
@@ -3228,13 +3228,13 @@ CGS_PRIVATE CGS_Error cgs__short_min_into(CGS_Writer writer)
     {
         const char *numstr = "-32768";
         CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
-        return writer.append(writer.ctx, s);
+        return cgs__invoke_writer(writer, s);
     }
     else
     {
         char temp[16] = {0};
         int len = snprintf(temp, sizeof(temp), "%hd", SHRT_MIN);
-        return writer.append(writer.ctx, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
+        return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
     }
 }
 
@@ -3244,13 +3244,13 @@ CGS_PRIVATE CGS_Error cgs__int_min_into(CGS_Writer writer)
     {
         const char *numstr = "-2147483648";
         CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
-        return writer.append(writer.ctx, s);
+        return cgs__invoke_writer(writer, s);
     }
     else
     {
         char temp[32] = {0};
         int len = snprintf(temp, sizeof(temp), "%d", INT_MIN);
-        return writer.append(writer.ctx, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
+        return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
     }
 }
 
@@ -3264,13 +3264,13 @@ CGS_PRIVATE CGS_Error cgs__long_min_into(CGS_Writer writer)
     {
         const char *numstr = "-9223372036854775808";
         CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
-        return writer.append(writer.ctx, s);
+        return cgs__invoke_writer(writer, s);
     }
     else
     {
         char temp[32] = {0};
         int len = snprintf(temp, sizeof(temp), "%ld", LONG_MIN);
-        return writer.append(writer.ctx, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
+        return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
     }
 }
 
@@ -3284,13 +3284,13 @@ CGS_PRIVATE CGS_Error cgs__llong_min_into(CGS_Writer writer)
     {
         const char *numstr = "-9223372036854775808";
         CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
-        return writer.append(writer.ctx, s);
+        return cgs__invoke_writer(writer, s);
     }
     else
     {
         char temp[32] = {0};
         int len = snprintf(temp, sizeof(temp), "%lld", LLONG_MIN);
-        return writer.append(writer.ctx, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
+        return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
     }
 }
 
@@ -3319,7 +3319,7 @@ do { \
         num = num / 10; \
         cgs__tmp_buf[chars_to_copy - (i + 1)] = (char)(rem + '0'); \
     } \
-    return writer.append(writer.ctx, (CGS_StrView){.chars = cgs__tmp_buf, .len = chars_to_copy}); \
+    return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = chars_to_copy}); \
 } while(0)
 
 // TODO can optimize in case of dstr by checking if .append is cgs__idstr_append
@@ -3352,7 +3352,7 @@ do { \
         num = num / 10; \
         cgs__tmp_buf[chars_to_copy - (i + 1)] = (char)(rem + '0'); \
     } \
-    return writer.append(writer.ctx, (CGS_StrView){.chars = cgs__tmp_buf, .len = chars_to_copy}); \
+    return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = chars_to_copy}); \
 } while(0)
 
 #define cgs__uinteger_tostr() \
@@ -3364,7 +3364,7 @@ do { \
 CGS_API CGS_Error cgs__bool_tostr(CGS_Writer writer, bool obj)
 {
     CGS_StrView res = obj ? cgs__strv_cstr1("true") : cgs__strv_cstr1("false");
-    return writer.append(writer.ctx, res);
+    return cgs__invoke_writer(writer, res);
 }
 
 CGS_API CGS_Error cgs__cstr_tostr(CGS_Writer writer, const char *obj)
@@ -3391,17 +3391,17 @@ CGS_API CGS_Error cgs__ucstr_tostr(CGS_Writer writer, const unsigned char *obj)
 
 CGS_API CGS_Error cgs__char_tostr(CGS_Writer writer, char obj)
 {
-    return writer.append(writer.ctx, (CGS_StrView){.chars = &obj, .len = 1});
+    return cgs__invoke_writer(writer, (CGS_StrView){.chars = &obj, .len = 1});
 }
 
 CGS_API CGS_Error cgs__schar_tostr(CGS_Writer writer, signed char obj)
 {
-    return writer.append(writer.ctx, cgs__sc_to_string[(unsigned char)obj]);
+    return cgs__invoke_writer(writer, cgs__sc_to_string[(unsigned char)obj]);
 }
 
 CGS_API CGS_Error cgs__uchar_tostr(CGS_Writer writer, unsigned char obj)
 {
-    return writer.append(writer.ctx, (CGS_StrView){.chars = (char*) &obj, .len = 1});
+    return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) &obj, .len = 1});
 }
 
 CGS_API CGS_Error cgs__short_tostr(CGS_Writer writer, short obj)
