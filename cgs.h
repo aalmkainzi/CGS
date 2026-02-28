@@ -230,13 +230,13 @@ enum CGS__MutStrType
 
 typedef struct CGS_MutStrRef
 {
+    uint8_t ty;
     union
     {
         CGS_Buffer buf;
         CGS_DStr *dstr;
         CGS_StrBuf *strbuf;
     } str;
-    uint8_t ty;
 } CGS_MutStrRef;
 
 enum CGS__Error_Value
@@ -618,8 +618,8 @@ static inline void *cgs__mutstr_ref_ctx(CGS_MutStrRef ref, CGS_Buffer *buffer_op
 #define cgs__mutstr_ctx(mutstr) \
 _Generic((__typeof__(mutstr)*){0}, \
     CGS_MutStrRef*                               : cgs__mutstr_ref_ctx(cgs__coerce(mutstr, CGS_MutStrRef), &(CGS_Buffer){0}), \
-    char(*)         [sizeof(__typeof__(mutstr))] : &(CGS_Buffer){.ptr = (char*) mutstr, .cap = sizeof(__typeof__(mutstr))}, \
-    unsigned char(*)[sizeof(__typeof__(mutstr))] : &(CGS_Buffer){.ptr = (char*) mutstr, .cap = sizeof(__typeof__(mutstr))}, \
+    char(*)         [sizeof(__typeof__(mutstr))] : &(CGS_Buffer){.ptr = (char*) cgs__coerce_not_mutstr_ref(mutstr), .cap = sizeof(__typeof__(mutstr))}, \
+    unsigned char(*)[sizeof(__typeof__(mutstr))] : &(CGS_Buffer){.ptr = (char*) cgs__coerce_not_mutstr_ref(mutstr), .cap = sizeof(__typeof__(mutstr))}, \
     default                                      : mutstr \
 )
 
@@ -648,8 +648,7 @@ __VA_OPT__( \
 #define cgs_sprint_append(mutstr_dst, ...) \
 do \
 { \
-    __typeof__(mutstr_dst) cgs__tmp_mutstr_dst = mutstr_dst; \
-    CGS_Writer cgs__as_writer = cgs__writer(cgs__tmp_mutstr_dst); \
+    CGS_Writer cgs__as_writer = cgs__writer(mutstr_dst); \
     cgs__sprint_each_setup(__VA_ARGS__); \
 } while(0)
 
@@ -1273,13 +1272,13 @@ _Generic((ty){0}, \
 )
 
 #define cgs_tostr(dst, src) \
-cgs__get_tostr_func(__typeof__(src))(cgs_mutstr_ref(dst), (src))
+cgs__get_tostr_func(__typeof__(src))(cgs__writer(cgs__clear_and_return(cgs_mutstr_ref(dst))), (src))
 
 #define cgs_has_tostr(ty) \
 (!cgs__has_type(cgs__get_tostr_func_ft(__typeof__(ty)), cgs__tostr_fail))
 
 #define cgs_tostr_p(dst, src) \
-cgs__get_tostr_p_func(__typeof__(*(src)))(cgs_mutstr_ref(dst), (src))
+cgs__get_tostr_p_func(__typeof__(*(src)))(cgs__writer(dst), (src))
 
 #define CGS__DECL_TOSTR_FUNC(n) \
 typedef __typeof__(CGS__MCALL(CGS__ARG1, ADD_TOSTR)) cgs__tostr_type_##n; \
@@ -1523,6 +1522,12 @@ CGS_API CGS_Error cgs__Floating_A_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Flo
 CGS__FLOATING_TYPES(CGS__X, ignore, CGS__X)
 
 #undef CGS__X
+
+static inline CGS_MutStrRef cgs__clear_and_return(CGS_MutStrRef dst)
+{
+    cgs_clear(dst);
+    return dst;
+}
 
 #endif /* CGS__H_INCLUDED */
 

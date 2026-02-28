@@ -5,7 +5,7 @@ struct FOO {
     char n;
 };
 
-CGS_Error foo_to_str(MutStrRef dst, struct FOO foo)
+CGS_Error foo_to_str(CGS_Writer dst, struct FOO foo)
 {
     CGS_Error err = cgs_putc(dst, foo.n);
     return err;

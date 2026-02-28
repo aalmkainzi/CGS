@@ -15,16 +15,16 @@ typedef struct S
     int i;
 } S;
 
-CGS_Error s2str(MutStrRef dst, S s)
+CGS_Error s2str(CGS_Writer dst, S s)
 {
-    cgs_sprint(dst, s.f, " -- ", s.i);
+    cgs_sprint_append(dst, s.f, " -- ", s.i);
     return (CGS_Error){CGS_OK};
 }
 
-CGS_Error fp2str(MutStrRef dst, FILE *s)
+CGS_Error fp2str(CGS_Writer dst, FILE *s)
 {
     (void )s;
-    cgs_sprint(dst, "FILE_PTR");
+    cgs_sprint_append(dst, "FILE_PTR");
     return (CGS_Error){CGS_OK};
 }
 
@@ -738,9 +738,9 @@ typedef struct S2
     float f;
 } S2;
 
-CGS_Error s22str(MutStrRef dst, S2 s)
+CGS_Error s22str(CGS_Writer dst, S2 s)
 {
-    cgs_sprint(dst, s.c, "--", s.f);
+    cgs_sprint_append(dst, s.c, "--", s.f);
     return (CGS_Error){CGS_OK};
 }
 
@@ -757,9 +757,9 @@ struct FOO {
     char drive;
 };
 
-CGS_Error foo_to_str(MutStrRef dst, struct FOO f )
+CGS_Error foo_to_str(CGS_Writer dst, struct FOO f )
 {
-    cgs_sprint(dst, "FOO{ .drive=", f.drive, ":/", ", .capacity=", f.capacity, "}");
+    cgs_sprint_append(dst, "FOO{ .drive=", f.drive, ":/", ", .capacity=", f.capacity, "}");
     return (CGS_Error){CGS_OK};
 }
 
@@ -768,9 +768,9 @@ struct BAR {
     int i;
 };
 
-CGS_Error bar_tostr(MutStrRef str, struct BAR b)
+CGS_Error bar_tostr(CGS_Writer str, struct BAR b)
 {
-    cgs_sprint(str, "BAR{ b=", b.b, ", i=", b.i, " }");
+    cgs_sprint_append(str, "BAR{ b=", b.b, ", i=", b.i, " }");
     return (CGS_Error){CGS_OK};
 }
 
