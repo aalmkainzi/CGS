@@ -3302,14 +3302,13 @@ _Generic((char(*)[sizeof(ty)])0,           \
     char(*)[8]: 32                         \
 )
 
-#define cgs__sintger_tostr_fmutstr_ref() \
+#define cgs__sinteger_tostr_fmutstr_ref() \
 do { \
     __typeof__(obj) num = obj; \
     \
     if(isneg) \
     { \
-        /* TODO do something about the error returned here */ \
-        writer.append(writer.ctx, (CGS_StrView){.chars = &(char){'-'}, .len = 1}); \
+        cgs__invoke_writer(writer, (CGS_StrView){.chars = &(char){'-'}, .len = 1}); \
     } \
     unsigned int chars_to_copy = numlen; \
     num /= (__typeof__(num)) cgs__ten_pows[numlen - chars_to_copy]; \
@@ -3337,7 +3336,7 @@ do { \
         obj *= -1; \
     } \
     unsigned int numlen = cgs__numstr_len((unsigned long long) obj); \
-    cgs__sintger_tostr_fmutstr_ref(); \
+    cgs__sinteger_tostr_fmutstr_ref(); \
 } while(0)
 
 #define cgs__uintger_tostr_fmutstr_ref() \

@@ -1916,55 +1916,209 @@ void test_str_join_edge_cases() {
 // ============================================================================
 
 void test_tostr_edge_cases() {
-    TEST("tostr: integer boundary values");
+    TEST("tostr: integer boundary values (INT_MAX)");
     {
         DStr dstr = dstr_init(30);
         CGS_Error err = tostr(&dstr, INT_MAX);
         ASSERT_EQ(err.ec, CGS_OK);
+        char expected_int_max[32]; // Max 2^31-1 is 10 digits, plus sign and null. 32 is safe.
+        sprintf(expected_int_max, "%d", INT_MAX);
+        ASSERT_TRUE(cgs_equal(&dstr, expected_int_max));
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: negative integers");
+    TEST("tostr: integer boundary values (INT_MIN)");
     {
         DStr dstr = dstr_init(30);
-        tostr(&dstr, INT_MIN);
-        ASSERT_TRUE(cgs_len(&dstr) > 0);
+        CGS_Error err = tostr(&dstr, INT_MIN);
+        ASSERT_EQ(err.ec, CGS_OK);
+        char expected_int_min[32]; // Max -2^31 is 10 digits, plus sign and null. 32 is safe.
+        sprintf(expected_int_min, "%d", INT_MIN);
+        ASSERT_TRUE(cgs_equal(&dstr, expected_int_min));
         dstr_deinit(&dstr);
     }
     
     TEST("tostr: zero");
     {
         DStr dstr = dstr_init(10);
-        tostr(&dstr, 0);
+        CGS_Error err = tostr(&dstr, 0);
+        ASSERT_EQ(err.ec, CGS_OK);
         ASSERT_TRUE(cgs_equal(&dstr, "0"));
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: buffer too small");
+    TEST("tostr: positive integer");
     {
-        char backing[3];
+        DStr dstr = dstr_init(10);
+        CGS_Error err = tostr(&dstr, 12345);
+        ASSERT_EQ(err.ec, CGS_OK);
+        ASSERT_TRUE(cgs_equal(&dstr, "12345"));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("tostr: negative integer");
+    {
+        DStr dstr = dstr_init(10);
+        CGS_Error err = tostr(&dstr, -6789);
+        ASSERT_EQ(err.ec, CGS_OK);
+        ASSERT_TRUE(cgs_equal(&dstr, "-6789"));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("tostr: long long boundary values (LLONG_MAX)");
+    {
+        DStr dstr = dstr_init(30);
+        CGS_Error err = tostr(&dstr, LLONG_MAX);
+        ASSERT_EQ(err.ec, CGS_OK);
+        char expected_llong_max[64]; // Long long can be up to 19 digits + sign. 64 is very safe.
+        sprintf(expected_llong_max, "%lld", LLONG_MAX);
+        ASSERT_TRUE(cgs_equal(&dstr, expected_llong_max));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("tostr: unsigned int (UINT_MAX)");
+    {
+        DStr dstr = dstr_init(30);
+        CGS_Error err = tostr(&dstr, UINT_MAX);
+        ASSERT_EQ(err.ec, CGS_OK);
+        char expected_uint_max[32];
+        sprintf(expected_uint_max, "%u", UINT_MAX);
+        ASSERT_TRUE(cgs_equal(&dstr, expected_uint_max));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("tostr: unsigned long long (ULLONG_MAX)");
+    {
+        DStr dstr = dstr_init(30);
+        CGS_Error err = tostr(&dstr, ULLONG_MAX);
+        ASSERT_EQ(err.ec, CGS_OK);
+        char expected_ullong_max[64];
+        sprintf(expected_ullong_max, "%llu", ULLONG_MAX);
+        ASSERT_TRUE(cgs_equal(&dstr, expected_ullong_max));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("tostr: float (positive)");
+    {
+        DStr dstr = dstr_init(30);
+        float val = 123.456f;
+        CGS_Error err = tostr(&dstr, val);
+        ASSERT_EQ(err.ec, CGS_OK);
+        char expected_float[30];
+        sprintf(expected_float, "%.6g", val); // Use appropriate precision for floats
+        ASSERT_TRUE(cgs_equal(&dstr, expected_float));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("tostr: float (negative)");
+    {
+        DStr dstr = dstr_init(30);
+        float val = -987.65f;
+        CGS_Error err = tostr(&dstr, val);
+        ASSERT_EQ(err.ec, CGS_OK);
+        char expected_float[30];
+        sprintf(expected_float, "%.6g", val);
+        ASSERT_TRUE(cgs_equal(&dstr, expected_float));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("tostr: float zero");
+    {
+        DStr dstr = dstr_init(30);
+        float val = 0.0f;
+        CGS_Error err = tostr(&dstr, val);
+        ASSERT_EQ(err.ec, CGS_OK);
+        char expected_float[30];
+        sprintf(expected_float, "%.6g", val);
+        ASSERT_TRUE(cgs_equal(&dstr, expected_float));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("tostr: double (positive)");
+    {
+        DStr dstr = dstr_init(50);
+        double val = 12345.67890123;
+        CGS_Error err = tostr(&dstr, val);
+        ASSERT_EQ(err.ec, CGS_OK);
+        char expected_double[50];
+        sprintf(expected_double, "%g", val); // Use appropriate precision for doubles
+        ASSERT_TRUE(cgs_equal(&dstr, expected_double));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("tostr: double (negative)");
+    {
+        DStr dstr = dstr_init(50);
+        double val = -98765.43210987;
+        CGS_Error err = tostr(&dstr, val);
+        ASSERT_EQ(err.ec, CGS_OK);
+        char expected_double[50];
+        sprintf(expected_double, "%g", val);
+        ASSERT_TRUE(cgs_equal(&dstr, expected_double));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("tostr: double zero");
+    {
+        DStr dstr = dstr_init(30);
+        double val = 0.0;
+        CGS_Error err = tostr(&dstr, val);
+        ASSERT_EQ(err.ec, CGS_OK);
+        char expected_double[30];
+        sprintf(expected_double, "%.12g", val);
+        ASSERT_TRUE(cgs_equal(&dstr, expected_double));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("tostr: buffer too small for integer");
+    {
+        char backing[3]; // Can hold "12" + null terminator
         StrBuf sb = strbuf_init_from_buf(backing, 3);
-        cgs_clear(&sb); // Initialize to empty
-        CGS_Error err = tostr(&sb, 123456);
+        cgs_clear(&sb);
+        CGS_Error err = tostr(&sb, 123456); // Requires more than 2 characters + null
         ASSERT_EQ(err.ec, CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_print: multiple arguments");
+    TEST("tostr: buffer too small for double");
+    {
+        char backing[5]; // Can hold "0.0" + null. Try to fit something bigger.
+        StrBuf sb = strbuf_init_from_buf(backing, 5);
+        cgs_clear(&sb);
+        CGS_Error err = tostr(&sb, 123.456);
+        ASSERT_EQ(err.ec, CGS_DST_TOO_SMALL);
+    }
+    
+    // You could add tests for:
+    // - Scientific notation for very large/small floats/doubles if your tostr supports it.
+    // - Special float values: INFINITY, -INFINITY, NaN (if tostr handles them gracefully).
+    
+    TEST("cgs_print: multiple arguments (concatenation)");
     {
         DStr dstr = dstr_init(50);
-        // Assuming cgs_print can take multiple args
-        // cgs_print(&dstr, 123, " ", "test", " ", 456);
-        // Test would verify concatenation
-        ASSERT_TRUE(1);
+        // Assuming cgs_print signature is something like:
+        // CGS_Error cgs_print(void* str_buf, ...);
+        // And it uses tostr internally for numbers.
+        cgs_sprint(&dstr, 123, " ", "test", " ", tsfmt(456.78f, 'f', 2), "!", -99);
+        // For floats/doubles, you might need to adjust precision in the expected string
+        // depending on how your tostr macro formats them.
+        ASSERT_TRUE(cgs_equal(&dstr, "123 test 456.78!-99")); // Adjust "456.780000" based on your tostr's float precision
         dstr_deinit(&dstr);
+    }
+    
+    TEST("cgs_print: multiple arguments, buffer too small");
+    {
+        char backing[10];
+        StrBuf sb = strbuf_init_from_buf(backing, 10);
+        cgs_clear(&sb);
+        cgs_sprint(&sb, 1, " ", "long_string_here"); // This should exceed 9 chars + null
     }
     
     TEST("tsfmt: various format characters");
     {
         DStr dstr = dstr_init(30);
         // Test hex, octal, etc.
-        // tostr(&dstr, tsfmt(255, 'x'));
-        ASSERT_TRUE(1);
+        tostr(&dstr, tsfmt(255, 'x'));
+        ASSERT_TRUE(cgs_equal(dstr, "ff"));
         dstr_deinit(&dstr);
     }
 }
@@ -2039,6 +2193,10 @@ void test_stress_cases() {
             for (int j = 0; j < 100; j++) {
                 cgs_putc(&dstr, 'x');
             }
+            char x[101];
+            memset(x, 'x', sizeof(x));
+            x[sizeof(x) - 1] = 0;
+            assert(cgs_equal(dstr, x));
             cgs_clear(&dstr);
         }
         dstr_deinit(&dstr);
@@ -2054,8 +2212,8 @@ void test_stress_cases() {
             cgs_replace(&dstr, "middle", "end");
             cgs_replace(&dstr, "end", "start");
         }
+        ASSERT_TRUE(cgs_equal(&dstr, "start"));
         dstr_deinit(&dstr);
-        ASSERT_TRUE(1);
     }
 }
 

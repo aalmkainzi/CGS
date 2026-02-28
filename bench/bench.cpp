@@ -67,7 +67,7 @@ static void BM_STD_format_int(benchmark::State& state) {
         benchmark::DoNotOptimize(buf);
     }
 }
-BENCHMARK(BM_STD_format_int);
+// BENCHMARK(BM_STD_format_int);
 
 // --- SCENARIO 2: Multi-arg Fixed Buffer ---
 
@@ -94,7 +94,7 @@ static void BM_STD_format_fixed(benchmark::State& state) {
         benchmark::DoNotOptimize(buf);
     }
 }
-BENCHMARK(BM_STD_format_fixed);
+// BENCHMARK(BM_STD_format_fixed);
 
 // --- SCENARIO 3: Dynamic Append ---
 
@@ -118,7 +118,7 @@ static void BM_STD_append_dynamic(benchmark::State& state) {
         benchmark::DoNotOptimize(s);
     }
 }
-//BENCHMARK(BM_STD_append_dynamic);
+//// BENCHMARK(BM_STD_append_dynamic);
 
 // --- SCENARIO 4: File Output ---
 
@@ -135,20 +135,6 @@ static void BM_CGS_fprint(benchmark::State& state) {
     std::fclose(tf);
 }
 BENCHMARK(BM_CGS_fprint);
-
-static void BM_CGS_fprint_old(benchmark::State& state) {
-    InitializeTestData();
-    FILE* tf = std::tmpfile();
-    size_t idx = 0;
-    for (auto _ : state) {
-        const auto& p = G_DATA[idx++ % POOL_SIZE];
-        bench_cgs_fprint_old(tf, p.i, p.d, p.s.c_str());
-        std::fflush(tf);
-        std::fseek(tf, 0, SEEK_SET);
-    }
-    std::fclose(tf);
-}
-BENCHMARK(BM_CGS_fprint_old);
 
 static void BM_STD_fprint(benchmark::State& state) {
     InitializeTestData();
@@ -171,6 +157,6 @@ static void BM_STD_fprint(benchmark::State& state) {
     }
     std::fclose(tf);
 }
-BENCHMARK(BM_STD_fprint);
+// BENCHMARK(BM_STD_fprint);
 
 BENCHMARK_MAIN();

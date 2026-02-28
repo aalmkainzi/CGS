@@ -21,9 +21,6 @@ void bench_cgs_append_dynamic(int* int_pool, unsigned count);
 // Scenario 4: File Output
 void bench_cgs_fprint(FILE* f, int i, double d, const char* s);
 
-
-void bench_cgs_fprint_old(FILE* f, int i, double d, const char* s);
-
 #ifdef __cplusplus
 }
 #endif
