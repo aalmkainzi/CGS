@@ -2105,7 +2105,8 @@ void test_tostr_edge_cases() {
         char backing[10];
         StrBuf sb = strbuf_init_from_buf(backing, 10);
         cgs_clear(&sb);
-        cgs_sprint(&sb, 1, " ", "long_string_here"); // This should exceed 9 chars + null
+        cgs_sprint(&sb, 1, " ", "long_string_here");
+        ASSERT_TRUE(cgs_equal(sb, "1 long_st"));
     }
     
     TEST("nfmt: various format characters");
