@@ -126,6 +126,7 @@ unsigned int                   cgs_count(anystr_t hay, anystr_t needle);
 CGS_Error                      cgs_clear(mutstr_t);
 bool                           cgs_starts_with(anystr_t hay, anystr_t needle);
 bool                           cgs_ends_with(anystr_t hay, anystr_t needle);
+CGS_Error                      cgs_map_chars(mutstr_t, bool(*map_func)(char *c, void *arg), void *arg = NULL);
 void                           cgs_tolower(mutstr_t);
 void                           cgs_toupper(mutstr_t);
 CGS_Error                      cgs_copy(mutstr_t dst, anystr_t src);
