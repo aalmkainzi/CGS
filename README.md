@@ -194,7 +194,7 @@ Used to view into other strings.
 
 to initialize:
 ```C
-StrView strv(any_str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
+StrView strv(anystr_t, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
 ```
 
 ## MutStrRef
