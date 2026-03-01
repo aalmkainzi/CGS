@@ -75,7 +75,7 @@ static void BM_STD_format_llong(benchmark::State& state) {
         benchmark::DoNotOptimize(buf);
     }
 }
-// BENCHMARK(BM_STD_format_llong);
+BENCHMARK(BM_STD_format_llong);
 
 // --- SCENARIO 2: Multi-arg Fixed Buffer ---
 
@@ -105,7 +105,7 @@ static void BM_STD_format_fixed(benchmark::State& state) {
         benchmark::DoNotOptimize(buf);
     }
 }
-// BENCHMARK(BM_STD_format_fixed);
+BENCHMARK(BM_STD_format_fixed);
 
 // --- SCENARIO 3: Dynamic Append ---
 
@@ -173,6 +173,6 @@ static void BM_STD_fprint(benchmark::State& state) {
     }
     std::fclose(tf);
 }
-// BENCHMARK(BM_STD_fprint);
+BENCHMARK(BM_STD_fprint);
 
 BENCHMARK_MAIN();
