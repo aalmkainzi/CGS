@@ -3310,7 +3310,7 @@ do { \
     cgs__sinteger_tostr_fmutstr_ref(); \
 } while(0)
 
-#define cgs__uintger_tostr_fmutstr_ref() \
+#define cgs__uinteger_tostr_fmutstr_ref() \
 do { \
     __typeof__(obj) num = obj; \
     \
@@ -3329,7 +3329,7 @@ do { \
 #define cgs__uinteger_tostr() \
 do { \
     unsigned int numlen = cgs__numstr_len(obj); \
-    cgs__uintger_tostr_fmutstr_ref(); \
+    cgs__uinteger_tostr_fmutstr_ref(); \
 } while(0)
 
 CGS_API CGS_Error cgs__bool_tostr(CGS_Writer writer, bool obj)

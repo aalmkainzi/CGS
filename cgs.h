@@ -1240,7 +1240,7 @@ _Generic((ty){0}, \
     CGS__TOSTR_P_FUNCS_GENERIC_BRANCHES \
 )
 
-// TODO optimization idea, check if dst is a string type here, 
+// TODO optimization idea, check if whether dst is a string type, and src is a default tostr type, if so, then call an optimized tostr function that writes directly to buffer
 #define cgs_tostr(dst, src) \
 cgs__get_tostr_func(__typeof__(src))(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(dst))), (src))
 
