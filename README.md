@@ -239,7 +239,7 @@ int main()
 }
 ```
 
-You can add your own tostr functions for types by defining `ADD_TOSTR Ty, Ty2str` and re-including the `neat_str.h` header:
+You can add your own tostr functions for types by defining `ADD_TOSTR (Ty, Ty2str)` and re-including the `cgs.h` header:
 ```C
 #define CGS_SHORT_NAMES
 #include "cgs.h"
