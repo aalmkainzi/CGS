@@ -445,20 +445,20 @@ _Generic(mutstr_dst, \
     default       : cgs__fmutstr_ref_copy(cgs__fmutstr_ref(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), cgs_strv(anystr_src)) \
 )
 
-#define cgs_putc(mutstr_dst, c) \
-_Generic(mutstr_dst, \
-    CGS_MutStrRef : cgs__mutstr_ref_putc(cgs__coerce(mutstr_dst, CGS_MutStrRef), c), \
-    CGS_DStr*     : cgs__dstr_putc(cgs__coerce(mutstr_dst, CGS_DStr*), c), \
-    CGS_Writer    : cgs__writer_putc(cgs__coerce(mutstr_dst, CGS_Writer), c), \
-    default       : cgs__fmutstr_ref_putc(cgs__fmutstr_ref(cgs__coerce_not_mutstr_ref_or_writer(mutstr_dst)), c) \
+#define cgs_putc(writer_dst, c) \
+_Generic(writer_dst, \
+    CGS_MutStrRef : cgs__mutstr_ref_putc(cgs__coerce(writer_dst, CGS_MutStrRef), c), \
+    CGS_DStr*     : cgs__dstr_putc(cgs__coerce(writer_dst, CGS_DStr*), c), \
+    CGS_Writer    : cgs__writer_putc(cgs__coerce(writer_dst, CGS_Writer), c), \
+    default       : cgs__fmutstr_ref_putc(cgs__fmutstr_ref(cgs__coerce_not_mutstr_ref_or_writer(writer_dst)), c) \
 )
 
-#define cgs_append(mutstr_dst, anystr_src) \
-_Generic(mutstr_dst, \
-    CGS_MutStrRef : cgs__mutstr_ref_append(cgs__coerce(mutstr_dst, CGS_MutStrRef), cgs_strv(anystr_src)), \
-    CGS_DStr*     : cgs__dstr_append(cgs__coerce(mutstr_dst, CGS_DStr*), cgs_strv(anystr_src)), \
-    CGS_Writer    : cgs__invoke_writer(cgs__coerce(mutstr_dst, CGS_Writer), cgs_strv(anystr_src)), \
-    default       : cgs__fmutstr_ref_append(cgs__fmutstr_ref(cgs__coerce_not_mutstr_ref_or_writer(mutstr_dst)), cgs_strv(anystr_src)) \
+#define cgs_append(writer_dst, anystr_src) \
+_Generic(writer_dst, \
+    CGS_MutStrRef : cgs__mutstr_ref_append(cgs__coerce(writer_dst, CGS_MutStrRef), cgs_strv(anystr_src)), \
+    CGS_DStr*     : cgs__dstr_append(cgs__coerce(writer_dst, CGS_DStr*), cgs_strv(anystr_src)), \
+    CGS_Writer    : cgs__invoke_writer(cgs__coerce(writer_dst, CGS_Writer), cgs_strv(anystr_src)), \
+    default       : cgs__fmutstr_ref_append(cgs__fmutstr_ref(cgs__coerce_not_mutstr_ref_or_writer(writer_dst)), cgs_strv(anystr_src)) \
 )
 
 #define cgs_insert(mutstr_dst, anystr_src, idx) \
