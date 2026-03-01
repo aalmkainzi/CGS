@@ -1240,6 +1240,7 @@ _Generic((ty){0}, \
     CGS__TOSTR_P_FUNCS_GENERIC_BRANCHES \
 )
 
+// TODO optimization idea, check if dst is a string type here, 
 #define cgs_tostr(dst, src) \
 cgs__get_tostr_func(__typeof__(src))(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(dst))), (src))
 
