@@ -33,7 +33,7 @@ CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *ctx, size
 CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *ctx, void *ptr, size_t n);
 CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t align, size_t old_size, size_t new_size);
 
-static CGS_Allocator cgs__default_allocator = {
+static const CGS_Allocator cgs__default_allocator = {
     .alloc   = cgs__default_allocator_alloc,
     .dealloc = cgs__default_allocator_dealloc,
     .realloc = cgs__default_allocator_realloc,
@@ -1248,7 +1248,7 @@ CGS_API CGS_Allocation cgs__allocator_invoke_realloc(CGS_Allocator *allocator, v
 
 CGS_API CGS_Allocator *cgs_get_default_allocator()
 {
-    return &cgs__default_allocator;
+    return (CGS_Allocator*) &cgs__default_allocator;
 }
 
 CGS_PRIVATE void cgs__make_dstr_append_allocator(CGS_DStr *dstr, CGS__DStrAppendAllocator *out)
@@ -1913,7 +1913,7 @@ CGS_PRIVATE bool cgs__combine_views_into_array(CGS_StrView str, void *ctx)
     
     if(array->cap <= array->len)
     {
-        CGS_Allocation allocation = cgs_realloc(allocator, array->strs, CGS_StrView, array->cap, 2 * (array->len + 1));
+        CGS_Allocation allocation = cgs_realloc(allocator, array->strs, CGS_StrView, array->cap, (size_t) 2 * (array->len + 1));
         array->strs = allocation.ptr;
         array->cap = (unsigned int) (allocation.n / sizeof(CGS_StrView));
     }
@@ -1947,7 +1947,7 @@ CGS_API CGS_Error cgs__strv_arr_join_into_dstr(CGS_DStr *dstr, const CGS_StrView
     
     for(unsigned int i = 1 ; i < strs.len && err.ec == CGS_OK ; i++)
     {
-        err = cgs__dstr_append(dstr, delim);
+        cgs__dstr_append(dstr, delim);
         err = cgs__dstr_append(dstr, strs.strs[i]);
     }
     
@@ -1963,7 +1963,7 @@ CGS_API CGS_Error cgs__strv_arr_join_into_fmutstr_ref(CGS__FixedMutStrRef dst, c
     
     for(unsigned int i = 1 ; i < strs.len && err.ec == CGS_OK; i++)
     {
-        err = cgs__fmutstr_ref_append(dst, delim);
+        cgs__fmutstr_ref_append(dst, delim);
         err = cgs__fmutstr_ref_append(dst, strs.strs[i]);
     }
     
@@ -2455,6 +2455,8 @@ CGS_API CGS_Error cgs__mutstr_ref_clear(CGS_MutStrRef str)
         case CGS__BUF_TY:
             cgs__fmutstr_ref_clear(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}));
             break;
+        default:
+            unreachable();
     }
     return (CGS_Error){CGS_OK};
 }
@@ -3153,7 +3155,8 @@ CGS_API CGS_Error cgs__file_append(void *ctx, const CGS_StrView str)
 CGS_PRIVATE unsigned int cgs__numstr_len(unsigned long long num)
 {
     unsigned int len = 1;
-    for(unsigned int i = 1 ; i < CGS__CARR_LEN(cgs__ten_pows_ull) && num >= cgs__ten_pows_ull[i++] ; len++);
+    for(unsigned int i = 1 ; i < CGS__CARR_LEN(cgs__ten_pows_ull) && num >= cgs__ten_pows_ull[i] ; len++)
+        i++;
     return len;
 }
 
@@ -3442,7 +3445,9 @@ CGS_API CGS_Error cgs__error_tostr(CGS_Writer writer, CGS_Error obj)
 
 CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer writer, CGS_ArrayFmt obj)
 {
-    CGS_Error err = cgs__invoke_writer(writer, obj.open);
+    CGS_Error err;
+    
+    cgs__invoke_writer(writer, obj.open);
     
     const uint8_t *arr = obj.array;
     
@@ -3450,15 +3455,13 @@ CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer writer, CGS_ArrayFmt obj)
     {
         for(size_t i = 0 ; i < obj.nb - 1 ; i++)
         {
-            err = obj.elm_tostr(writer, arr + (obj.elm_size * i));
-            // TODO return if err?
-            
-            err = cgs__invoke_writer(writer, obj.separator);
+            obj.elm_tostr(writer, arr + (obj.elm_size * i));            
+            cgs__invoke_writer(writer, obj.separator);
         }
         
-        err = obj.elm_tostr(writer, arr + obj.elm_size * (obj.nb - 1));
+        obj.elm_tostr(writer, arr + obj.elm_size * (obj.nb - 1));
         
-        err = cgs__invoke_writer(writer, obj.trailing_separator);
+        cgs__invoke_writer(writer, obj.trailing_separator);
     }
     
     err = cgs__invoke_writer(writer, obj.close);
@@ -3502,7 +3505,7 @@ CGS_PRIVATE CGS_Error cgs__uchar_d_tostr(CGS_Writer writer, unsigned char obj)
 }
 
 #define cgs__if_else(cond, then, else) \
-_Generic((char(*)[(cond) + 1])0, char(*)[1]: else, char(*)[2]: then)
+_Generic((char(*)[(cond) + 1])0, char(*)[1]: else, char(*)[2]: (then))
 
 #define cgs__unsigned_of_size(sz)   \
 __typeof__(_Generic((char(*)[sz])0, \
@@ -3513,7 +3516,7 @@ __typeof__(_Generic((char(*)[sz])0, \
 ))
 
 #define cgs__as_unsigned(n) \
-((cgs__unsigned_of_size(sizeof(n))) n)
+((cgs__unsigned_of_size(sizeof(n))) (n))
 
 #define cgs__integer_d_Fmt_tostr(dst, num) \
 return _Generic(num, \
@@ -3535,13 +3538,13 @@ do \
 { \
     CGS_Error err = {CGS_OK}; \
     size_t sz = sizeof(num); \
-    uint8_t *num_bytes = ((uint8_t*) &num) + sizeof(num) - 1; \
+    uint8_t *num_bytes = ((uint8_t*) &(num)) + sizeof(num) - 1; \
     bool zero_pad = true; \
     while(sz--) \
     { \
-        if(!zero_pad || num_bytes == (uint8_t*)&num || *num_bytes != 0) \
+        if(!zero_pad || num_bytes == (uint8_t*)&(num) || *num_bytes != 0) \
         { \
-            CGS_StrView hex_sv = {.chars = (char*) byte2hex[*num_bytes], .len = 2}; \
+            CGS_StrView hex_sv = {.chars = (char*) (byte2hex)[*num_bytes], .len = 2}; \
             if(zero_pad && hex_sv.chars[0] == '0') \
             { \
                 hex_sv.chars += 1; \
@@ -3557,7 +3560,7 @@ do \
 
 #define cgs__bswap(num)                \
 _Generic((char(*)[sizeof(num)])0,       \
-    char(*)[1]: num,                    \
+    char(*)[1]: (num),                    \
     char(*)[2]: __builtin_bswap16(num), \
     char(*)[4]: __builtin_bswap32(num), \
     char(*)[8]: __builtin_bswap64(num)  \
@@ -3578,7 +3581,7 @@ _Generic((char(*)[sizeof(num)])0,       \
 #define cgs__integer_o_Fmt_tostr(dst, num) \
 do \
 { \
-    cgs__unsigned_of_size(sizeof(num)) unum = (__typeof__(unum)) num; \
+    cgs__unsigned_of_size(sizeof(num)) unum = (__typeof__(unum)) (num); \
     CGS_Error err = {CGS_OK}; \
     const int bits = (int)(sizeof(unum) * 8); \
     int iters = bits / 3; \
@@ -3614,7 +3617,7 @@ do \
 do \
 { \
     CGS_Error err = {CGS_OK}; \
-    cgs__unsigned_of_size(sizeof(num)) unum = (__typeof__(unum)) num; \
+    cgs__unsigned_of_size(sizeof(num)) unum = (__typeof__(unum)) (num); \
     size_t sz = sizeof(unum) * 8; \
     unsigned int written = 0; \
     unsigned int counter = (unsigned int) (sizeof(unum) * 8); \
