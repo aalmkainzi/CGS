@@ -1,5 +1,4 @@
 # CGS - C Generic Strings
-A Generic String library to make string handling more intuitive in C.
 
 ## Quick Examples
 ```C
