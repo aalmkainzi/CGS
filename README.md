@@ -198,7 +198,7 @@ StrView strv(anystr_t, unsigned int from = 0, unsigned int to_exclusive = cgs_le
 
 ## MutStrRef
 
-This type can be used as a reference to any mutable string type (all string types except `String_View`).
+This type can be used as a reference to any mutable string type (all string types except `StrView`).
 
 to initialize:
 ```C
