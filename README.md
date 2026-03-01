@@ -91,33 +91,32 @@ All of which are null terminated, except for `StrView`.
 There are three categories of string types:
 - anystr_t: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `StrView`, `DStr`, `DStr*`, `StrBuf`, `StrBuf*`, `MutStrRef`)
 - mutstr_t: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `DStr*`, `StrBuf*`, `MutStrRef`)
-- writer_t: anything from mutstr_t, and also `CGS_Writer`
+- writer_t: anything from mutstr_t, also `CGS_Writer` and `FILE*`
 
 This is a list of all the utility macros CGS provides:
 ```C
 CGS_StrView                        cgs_strv(anystr_t str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
-                               
+                                   
 CGS_StrBuf                         cgs_strbuf_init_from_cstr([unsigned] char *cstr, unsigned int cap = strlen(cstr) + 1);
 CGS_StrBuf                         cgs_strbuf_init_from_cstr([unsigned] char cstr[], unsigned int cap = sizeof(cstr));
 CGS_StrBuf                         cgs_strbuf_init_from_buf([unsigned] char *buf, unsigned int cap);
 CGS_StrBuf                         cgs_strbuf_init_from_buf([unsigned] char buf[], unsigned int cap = sizeof(buf));
-                               
+                                   
 CGS_DStr                           cgs_dstr_init(unsigned int initial_cap = 0, CGS_Allocator *allocator = cgs_get_default_allocator());
 CGS_DStr                           cgs_dstr_init_from(anystr_t src, CGS_Allocator *allocator = cgs_get_default_allocator());
-void                               cgs_dstr_deinit(DStr *dstr);
-CGS_Error                          cgs_dstr_shrink_to_fit(DStr *dstr);
-CGS_Error                          cgs_dstr_ensure_cap(DStr *dstr, unsigned int at_least);
-                               
+void                               cgs_dstr_deinit(CGS_DStr *dstr);
+CGS_Error                          cgs_dstr_shrink_to_fit(CGS_DStr *dstr);
+CGS_Error                          cgs_dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_least);
+                                   
 CGS_MutStrRef                      cgs_mutstr_ref(mutstr_t str);
 CGS_MutStrRef                      cgs_mutstr_ref(cstr, cap);
-                               
+                                   
 CGS_Writer                         cgs_writer(writer_t);
-CGS_Writer                         cgs_writer(FILE*);
-                               
+                                   
 CGS_StrViewArray                   cgs_strv_arr(...anystr_t);
 CGS_StrViewArray                   cgs_strv_arr_from_carr(CGS_StrView strs[N]);
 CGS_StrViewArray                   cgs_strv_arr_from_carr(CGS_StrView *strs, unsigned int len);
-                               
+                                   
 unsigned int                       cgs_len(anystr_t);
 unsigned int                       cgs_cap(anystr_t);
 bool                               cgs_equal(anystr_t a, anystr_t b);
@@ -142,7 +141,7 @@ CGS_Error                          cgs_replace_first(mutstr_t dst, anystr_t targ
 CGS_Error                          cgs_replace_range(mutstr_t dst, unsigned int from, unsigned int to_exclusive, anystr_t replacement);
 CGS_StrViewArray                   cgs_split(anystr_t str, anystr_t delim, CGS_Allocator *allocator = cgs_get_default_allocator());
 CGS_Error                          cgs_split_iter(anystr_t str, anystr_t delim, bool(*callback)(CGS_StrView found, void *arg), void *arg = NULL);
-CGS_Error                          cgs_join(mutstr_t dst, StrViewArray arr, anystr_t delim);
+CGS_Error                          cgs_join(mutstr_t dst, CGS_StrViewArray arr, anystr_t delim);
 CGS_Error                          cgs_fread_line(mutstr_t dst, FILE *stream);
 CGS_Error                          cgs_append_fread_line(mutstr_t dst, FILE *stream);
 CGS_Error                          cgs_read_line(mutstr_t dst);

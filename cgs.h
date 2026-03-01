@@ -446,20 +446,10 @@ _Generic(mutstr_dst, \
 )
 
 #define cgs_putc(writer_dst, c) \
-_Generic(writer_dst, \
-    CGS_MutStrRef : cgs__mutstr_ref_putc(cgs__coerce(writer_dst, CGS_MutStrRef), c), \
-    CGS_DStr*     : cgs__dstr_putc(cgs__coerce(writer_dst, CGS_DStr*), c), \
-    CGS_Writer    : cgs__writer_putc(cgs__coerce(writer_dst, CGS_Writer), c), \
-    default       : cgs__fmutstr_ref_putc(cgs__fmutstr_ref(cgs__coerce_not_mutstr_ref_or_writer(writer_dst)), c) \
-)
+cgs__invoke_writer(cgs_writer(writer_dst), (CGS_StrView){.chars = &(char){c}, .len = 1})
 
 #define cgs_append(writer_dst, anystr_src) \
-_Generic(writer_dst, \
-    CGS_MutStrRef : cgs__mutstr_ref_append(cgs__coerce(writer_dst, CGS_MutStrRef), cgs_strv(anystr_src)), \
-    CGS_DStr*     : cgs__dstr_append(cgs__coerce(writer_dst, CGS_DStr*), cgs_strv(anystr_src)), \
-    CGS_Writer    : cgs__invoke_writer(cgs__coerce(writer_dst, CGS_Writer), cgs_strv(anystr_src)), \
-    default       : cgs__fmutstr_ref_append(cgs__fmutstr_ref(cgs__coerce_not_mutstr_ref_or_writer(writer_dst)), cgs_strv(anystr_src)) \
-)
+cgs__invoke_writer(cgs_writer(writer_dst), cgs_strv(anystr_src))
 
 #define cgs_insert(mutstr_dst, anystr_src, idx) \
 _Generic(mutstr_dst, \
@@ -814,14 +804,8 @@ cgs__dstr_shrink_to_fit(dstr)
 #define cgs_dstr_ensure_cap(dstr, new_cap) \
 cgs__dstr_ensure_cap(dstr, new_cap)
 
-#define cgs_fprint(f, ...)                                        \
-do                                                                \
-{                                                                 \
-    FILE *cgs__file_stream = f;                                   \
-    CGS_Writer cgs__file_writer = cgs_writer(cgs__file_stream);  \
-    (void) cgs__file_writer;                                      \
-    __VA_OPT__(cgs_sprint_append(cgs__file_writer, __VA_ARGS__);) \
-} while(0)
+#define cgs_fprint(f, ...) \
+cgs_sprint_append(f __VA_OPT__(,) __VA_ARGS__)
 
 #define cgs__fprint_each(x)                                 \
 do                                                          \
