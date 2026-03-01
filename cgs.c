@@ -1137,19 +1137,6 @@ static const char cgs__byte_to_heX[][2] =
 
 CGS_PRIVATE CGS_Allocation cgs__print_buffer_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t align, size_t old_size, size_t new_size);
 
-static char cgs__nul = '\0';
-static CGS_Allocator cgs__fprint_buffer_allocator =
-{
-    .alloc = NULL,
-    .realloc = cgs__print_buffer_allocator_realloc,
-    .dealloc = cgs__default_allocator_dealloc
-};
-
-CGS_GLOBAL_VAR _Thread_local CGS_DStr cgs__fprint_dynamic_buffer = {
-    .allocator = &cgs__fprint_buffer_allocator,
-    .chars = &cgs__nul
-};
-
 CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref(CGS_Buffer buf, unsigned int *len_ptr)
 {
     *len_ptr = (unsigned int) strlen((char*) buf.ptr);
@@ -1209,22 +1196,6 @@ CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *ctx, vo
         .ptr = mem,
         .n = new_size
     };
-}
-
-CGS_PRIVATE CGS_Allocation cgs__print_buffer_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t align, size_t old_size, size_t new_size)
-{
-    (void)ctx;
-    (void)align;
-    (void)old_size;
-    
-    if(cgs__fprint_dynamic_buffer.chars == &cgs__nul)
-    {
-        return (CGS_Allocation){.ptr = malloc(new_size), .n = new_size};
-    }
-    else
-    {
-        return (CGS_Allocation){.ptr = realloc(ptr, new_size), .n = new_size};
-    }
 }
 
 CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n)
@@ -3606,8 +3577,6 @@ _Generic((char(*)[sizeof(num)])0,       \
 #define cgs__highest_3bits_as_u8(n) \
 (uint8_t)(cgs__highest_3bits(n) >> ((sizeof(n) - 1) * 8))
 
-// TODO optimize these. dont clear then append chars.
-// instead, write from beginning of chars up to cap, then put the nul
 #define cgs__integer_o_Fmt_tostr(dst, num) \
 do \
 { \

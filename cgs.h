@@ -814,7 +814,6 @@ cgs__dstr_shrink_to_fit(dstr)
 #define cgs_dstr_ensure_cap(dstr, new_cap) \
 cgs__dstr_ensure_cap(dstr, new_cap)
 
-// TODO make this user the CGS_Writer API to not need temporary string
 #define cgs_fprint(f, ...)                                        \
 do                                                                \
 {                                                                 \
