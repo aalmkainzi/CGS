@@ -396,8 +396,8 @@ _Generic(anystr, \
 
 #define cgs_cap(anystr)                                                       \
 _Generic((__typeof__(anystr)*){0},                                            \
-    char(*)[sizeof(__typeof__(anystr))]           : cgs__return_32,           \
-    unsigned char(*)[sizeof(__typeof__(anystr))]  : cgs__return_32,           \
+    char(*)[sizeof(__typeof__(anystr))]           : cgs__return_as_u32,           \
+    unsigned char(*)[sizeof(__typeof__(anystr))]  : cgs__return_as_u32,           \
     char**                                        : cgs__strlen_plus_one,     \
     unsigned char**                               : cgs__ustrlen_plus_one,    \
     CGS_StrView*                                  : cgs__strv_len,            \
@@ -1502,7 +1502,7 @@ static inline CGS_MutStrRef cgs__clear_and_return(CGS_MutStrRef dst)
     return dst;
 }
 
-static inline unsigned int cgs__return_32(size_t a)
+static inline unsigned int cgs__return_as_u32(size_t a)
 {
     return (unsigned int) a;
 }

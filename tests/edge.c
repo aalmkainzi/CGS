@@ -2095,13 +2095,8 @@ void test_tostr_edge_cases() {
     TEST("cgs_print: multiple arguments (concatenation)");
     {
         DStr dstr = dstr_init(50);
-        // Assuming cgs_print signature is something like:
-        // CGS_Error cgs_print(void* str_buf, ...);
-        // And it uses tostr internally for numbers.
         cgs_sprint(&dstr, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
-        // For floats/doubles, you might need to adjust precision in the expected string
-        // depending on how your tostr macro formats them.
-        ASSERT_TRUE(cgs_equal(&dstr, "123 test 456.78!-99")); // Adjust "456.780000" based on your tostr's float precision
+        ASSERT_TRUE(cgs_equal(&dstr, "123 test 456.78!-99"));
         dstr_deinit(&dstr);
     }
     
@@ -2119,6 +2114,107 @@ void test_tostr_edge_cases() {
         // Test hex, octal, etc.
         tostr(&dstr, nfmt(255, 'x'));
         ASSERT_TRUE(cgs_equal(dstr, "ff"));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt: integer decimal (signed/unsigned)");
+    {
+        DStr dstr = dstr_init(30);
+        cgs_sprint(&dstr, nfmt(0, 'd'), " ", nfmt(-123, 'd'), " ", nfmt(2147483647, 'd'));
+        ASSERT_TRUE(cgs_equal(&dstr, "0 -123 2147483647"));
+        dstr_deinit(&dstr);
+    }
+
+    TEST("nfmt: integer hexadecimal (x/X)");
+    {
+        DStr dstr = dstr_init(20);
+        tostr(&dstr, nfmt(255, 'x'));
+        ASSERT_TRUE(cgs_equal(&dstr, "ff"));
+        
+        cgs_clear(&dstr);
+        tostr(&dstr, nfmt(4095, 'X'));
+        ASSERT_TRUE(cgs_equal(&dstr, "FFF"));
+        dstr_deinit(&dstr);
+    }
+
+    TEST("nfmt: integer octal and binary");
+    {
+        DStr dstr = dstr_init(20);
+        cgs_sprint(&dstr, nfmt(8, 'o'), " ", nfmt(5, 'b'));
+        // 8 in octal is 10, 5 in binary is 101
+        ASSERT_TRUE(cgs_equal(&dstr, "10 101"));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt: floating point fixed-point (f/F)");
+    {
+        DStr dstr = dstr_init(30);
+        // Test precision and rounding
+        cgs_sprint(&dstr, nfmt(3.14159f, 'f', 2), " ", nfmt(-0.555f, 'f', 1));
+        ASSERT_TRUE(cgs_equal(&dstr, "3.14 -0.6"));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt: scientific notation (e/E)");
+    {
+        DStr dstr = dstr_init(30);
+        cgs_sprint(&dstr, nfmt(1000.0, 'e', 2));
+        ASSERT_TRUE(cgs_equal(&dstr, "1.00e+03"));
+        
+        cgs_clear(&dstr);
+        cgs_sprint(&dstr, nfmt(0.001, 'E', 1));
+        ASSERT_TRUE(cgs_equal(&dstr, "1.0E-03"));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt: general format (g/G)");
+    {
+        DStr dstr = dstr_init(30);
+        // 'g' chooses between fixed and scientific based on magnitude
+        cgs_sprint(&dstr, nfmt(123.456, 'g', 4));
+        ASSERT_TRUE(cgs_equal(&dstr, "123.5")); // 4 significant digits
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt: hex-float (a/A)");
+    {
+        DStr dstr = dstr_init(30);
+        tostr(&dstr, nfmt(1.0, 'a'));
+        // Usually 0x1.0p+0 or similar depending on implementation
+        ASSERT_TRUE(cgs_equal(&dstr, "0x1p+0")); 
+        
+        cgs_clear(&dstr);
+        tostr(&dstr, nfmt(15.5, 'A'));
+        ASSERT_TRUE(cgs_equal(&dstr, "0X1.FP+3"));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt: integer limits and zero");
+    {
+        DStr dstr = dstr_init(50);
+        long long max_val = 9223372036854775807LL;
+        cgs_sprint(&dstr, nfmt(0, 'x'), " ", nfmt(max_val, 'd'));
+        ASSERT_TRUE(cgs_equal(&dstr, "0 9223372036854775807"));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt: high precision and rounding");
+    {
+        DStr dstr = dstr_init(50);
+        // Test very small float with high precision
+        double val = 0.0000123456;
+        cgs_sprint(&dstr, nfmt(val, 'f', 8));
+        ASSERT_TRUE(cgs_equal(&dstr, "0.00001235"));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("cgs_sprint: complex mixed types");
+    {
+        DStr dstr = dstr_init(100);
+        int hex_val = 0xDEAD;
+        float pi = 3.14159f;
+        cgs_sprint(&dstr, "Hex: ", nfmt(hex_val, 'X'), ", Pi: ", nfmt(pi, 'g', 3), ", Bin: ", nfmt(7, 'b'));
+        ASSERT_TRUE(cgs_equal(&dstr, "Hex: DEAD, Pi: 3.14, Bin: 111"));
         dstr_deinit(&dstr);
     }
 }

@@ -1135,8 +1135,6 @@ static const char cgs__byte_to_heX[][2] =
     {'F', 'F'},
 };
 
-CGS_PRIVATE CGS_Allocation cgs__print_buffer_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t align, size_t old_size, size_t new_size);
-
 CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref(CGS_Buffer buf, unsigned int *len_ptr)
 {
     *len_ptr = (unsigned int) strlen((char*) buf.ptr);
@@ -1686,7 +1684,7 @@ CGS_API CGS_StrView cgs__strv_find(const CGS_StrView hay, const CGS_StrView need
     unsigned int scan_end = hay.len - needle.len;
     const char *max_possible_ptr = &hay.chars[scan_end];
     const char *first_char = hay.chars;
-    unsigned int remaining_len = hay.len;
+    unsigned int remaining_len;
     
     while(first_char && first_char <= max_possible_ptr)
     {
