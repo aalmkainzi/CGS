@@ -35,7 +35,7 @@ int main()
 ```
 
 ## Short names
-if you define the macro `CGS_SHORT_NAMES` before including the `cgs.h` header, unprefixed variants of the following identifiers will be `#define`d:
+If you define the macro `CGS_SHORT_NAMES` before including the `cgs.h` header, unprefixed variants of the following identifiers will be `#define`d:
 ```C
 CGS_Allocator
 CGS_DStr
@@ -88,10 +88,10 @@ The library exposes multiple string types for different use cases:
 
 All of which are null terminated, except for `StrView`.
 
-There are two categories of string types:
+There are three categories of string types:
 - anystr_t: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `StrView`, `DStr`, `DStr*`, `StrBuf`, `StrBuf*`, `MutStrRef`)
 - mutstr_t: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `DStr*`, `StrBuf*`, `MutStrRef`)
-- writer_t: mutstr_t, `CGS_Writer`
+- writer_t: anything from mutstr_t, and also `CGS_Writer`
 
 This is a list of all the utility macros CGS provides:
 ```C
@@ -109,6 +109,7 @@ CGS_Error                      dstr_shrink_to_fit(DStr *dstr);
 CGS_Error                      dstr_ensure_cap(DStr *dstr, unsigned int at_least);
                                
 MutStrRef                      mutstr_ref(mutstr_t str);
+MutStrRef                      mutstr_ref(cstr, cap);
                                
 CGS_Writer                     cgs_writer(writer_t);
 CGS_Writer                     cgs_writer(FILE*);
@@ -192,22 +193,22 @@ You can construct by calling `strbuf_init_from_*` macros, or by constructing it 
 
 Used to view into other strings.
 
-to initialize:
+To initialize:
 ```C
-StrView strv(anystr_t, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
+StrView strv(anystr_t str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
 ```
 
 ## MutStrRef
 
 This type can be used as a reference to any mutable string type (all string types except `StrView`).
 
-to initialize:
+To initialize:
 ```C
 MutStrRef mutstr_ref(mutstr_t);
 MutStrRef mutstr_ref(cstr, cap);
 ```
 
-for example:
+For example:
 ```C
 void set_to_bar(MutStrRef str)
 {
@@ -280,7 +281,7 @@ sprint(mutstr_t dst, ...args with tostr);
 sprint_append(writer_t dst, ...args with tostr);
 ```
 
-e.g:
+Example:
 ```C
 #define CGS_SHORT_NAMES
 #include "cgs.h"
@@ -299,7 +300,7 @@ int main()
 These macros return a format object that has a `tostr`. For example:
 
 ```C
-println( nfmt(10, 'X') ); // prints "A"
+println( nfmt(15, 'X') ); // prints "F"
 ```
 
 Note that `nfmt` is type-safe, you cannot use chars other than:
