@@ -2218,6 +2218,124 @@ void test_tostr_edge_cases() {
         ASSERT_TRUE(cgs_equal(&dstr, "Hex: DEAD, Pi: 3.14, Bin: 111"));
         dstr_deinit(&dstr);
     }
+    
+    TEST("nfmt (binary): basic and zero");
+    {
+        DStr dstr = dstr_init(20);
+        // Zero is a common edge case
+        tostr(&dstr, nfmt(0, 'b'));
+        ASSERT_TRUE(cgs_equal(&dstr, "0"));
+        
+        cgs_clear(&dstr);
+        // Small powers of 2
+        cgs_sprint(&dstr, nfmt(1, 'b'), ",", nfmt(2, 'b'), ",", nfmt(4, 'b'), ",", nfmt(8, 'b'));
+        ASSERT_TRUE(cgs_equal(&dstr, "1,10,100,1000"));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt (octal): basic and zero");
+    {
+        DStr dstr = dstr_init(20);
+        tostr(&dstr, nfmt(0, 'o'));
+        ASSERT_TRUE(cgs_equal(&dstr, "0"));
+        
+        cgs_clear(&dstr);
+        // Standard octal transitions
+        cgs_sprint(&dstr, nfmt(7, 'o'), ",", nfmt(8, 'o'), ",", nfmt(16, 'o'));
+        ASSERT_TRUE(cgs_equal(&dstr, "7,10,20"));
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt: unsigned integer limits (binary)");
+    {
+        DStr dstr = dstr_init(128);
+        
+        // uint8_t max (255)
+        unsigned char u8_max = 255;
+        tostr(&dstr, nfmt(u8_max, 'b'));
+        ASSERT_TRUE(cgs_equal(&dstr, "11111111"));
+        
+        cgs_clear(&dstr);
+        // uint64_t max (18,446,744,073,709,551,615)
+        unsigned long long u64_max = 0xFFFFFFFFFFFFFFFFULL;
+        tostr(&dstr, nfmt(u64_max, 'b'));
+        ASSERT_TRUE(cgs_equal(&dstr, "1111111111111111111111111111111111111111111111111111111111111111"));
+        
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt: unsigned integer limits (octal)");
+    {
+        DStr dstr = dstr_init(64);
+        
+        // uint16_t max (65535)
+        unsigned short u16_max = 65535;
+        tostr(&dstr, nfmt(u16_max, 'o'));
+        ASSERT_TRUE(cgs_equal(&dstr, "177777"));
+        
+        cgs_clear(&dstr);
+        // uint32_t max (4294967295)
+        unsigned int u32_max = 4294967295U;
+        tostr(&dstr, nfmt(u32_max, 'o'));
+        ASSERT_TRUE(cgs_equal(&dstr, "37777777777"));
+        
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt: signed negative integers (binary/octal)");
+    {
+        // Note: Standard C behavior for %o and %x is to treat the bits as unsigned.
+        // These tests assume your library follows that convention.
+        DStr dstr = dstr_init(128);
+        
+        // int8_t -1 (Two's complement: 11111111)
+        signed char s8_neg = -1;
+        tostr(&dstr, nfmt(s8_neg, 'b'));
+        ASSERT_TRUE(cgs_equal(&dstr, "11111111"));
+        
+        cgs_clear(&dstr);
+        // int16_t -1 in octal (Two's complement: 177777)
+        short s16_neg = -1;
+        tostr(&dstr, nfmt(s16_neg, 'o'));
+        ASSERT_TRUE(cgs_equal(&dstr, "177777"));
+        
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt: signed integer limits (decimal vs others)");
+    {
+        DStr dstr = dstr_init(128);
+        
+        // 64-bit Signed Minimum: -9,223,372,036,854,775,808
+        long long s64_min = -9223372036854775807LL - 1LL;
+        
+        // Decimal should show the minus sign
+        tostr(&dstr, nfmt(s64_min, 'd'));
+        ASSERT_TRUE(cgs_equal(&dstr, "-9223372036854775808"));
+        
+        cgs_clear(&dstr);
+        // Binary for signed min (usually 1 followed by 63 zeros)
+        tostr(&dstr, nfmt(s64_min, 'b'));
+        ASSERT_TRUE(cgs_equal(&dstr, "1000000000000000000000000000000000000000000000000000000000000000"));
+        
+        dstr_deinit(&dstr);
+    }
+    
+    TEST("nfmt: type genericity check");
+    {
+        DStr dstr = dstr_init(100);
+        
+        unsigned char  v1 = 10;
+        unsigned short v2 = 20;
+        unsigned int   v3 = 30;
+        
+        // Testing that the macro/generic correctly handles different sizes in one call
+        cgs_sprint(&dstr, nfmt(v1, 'b'), " ", nfmt(v2, 'o'), " ", nfmt(v3, 'x'));
+        // 10=1010(b), 20=24(o), 30=1e(x)
+        ASSERT_TRUE(cgs_equal(&dstr, "1010 24 1e"));
+        
+        dstr_deinit(&dstr);
+    }
 }
 
 // ============================================================================
