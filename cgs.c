@@ -2943,7 +2943,7 @@ CGS_API CGS_Error cgs__dstr_append_fread_line(CGS_DStr *dstr, FILE *stream)
         }
         dstr->len += count;
     }
-    
+    dstr->chars[dstr->len] = '\0';
     return (CGS_Error){CGS_OK};
 }
 

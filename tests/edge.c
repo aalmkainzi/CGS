@@ -700,6 +700,76 @@ void test_str_putc_edge_cases() {
         ASSERT_EQ(cgs_len(&dstr), 1000);
         dstr_deinit(&dstr);
     }
+    
+    TEST("writer_t: cgs_putc with FILE*");
+    {
+        FILE* tmp = tmpfile();
+        
+        cgs_putc(tmp, 'A');
+        cgs_putc(tmp, 'B');
+        cgs_putc(tmp, 'C');
+        
+        rewind(tmp);
+        char buf[4] = {0};
+        fread(buf, 1, 3, tmp);
+        
+        ASSERT_EQ(strcmp(buf, "ABC"), 0);
+        fclose(tmp);
+    }
+    
+    TEST("writer_t: cgs_append with FILE*");
+    {
+        FILE* tmp = tmpfile();
+        
+        cgs_append(tmp, "Hello, ");
+        cgs_append(tmp, "World");
+        
+        rewind(tmp);
+        DStr result = dstr_init();
+        cgs_fread_line(&result, tmp);
+        
+        ASSERT_EQ(strcmp(cgs_chars(result), "Hello, World"), 0);
+        
+        dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("writer_t: cgs_tostr_append with FILE*");
+    {
+        FILE* tmp = tmpfile();
+        
+        // Testing integer conversion to file
+        cgs_tostr_append(tmp, 1234);
+        cgs_putc(tmp, ' ');
+        // Testing float conversion to file
+        cgs_tostr_append(tmp, nfmt(5.5, 'f', 2));
+        
+        rewind(tmp);
+        DStr result = dstr_init();
+        cgs_fread_line(&result, tmp);
+        
+        ASSERT_EQ(strcmp(cgs_chars(result), "1234 5.50"), 0);
+        
+        dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("writer_t: cgs_sprint_append with FILE*");
+    {
+        FILE* tmp = tmpfile();
+        
+        // Using the variadic printing macro directly to a FILE*
+        cgs_sprint_append(tmp, "Hex: ", nfmt(255, 'X'), ", Score: ", 100);
+        
+        rewind(tmp);
+        DStr result = dstr_init();
+        cgs_fread_line(&result, tmp);
+        
+        ASSERT_EQ(strcmp(cgs_chars(result), "Hex: FF, Score: 100"), 0);
+        
+        dstr_deinit(&result);
+        fclose(tmp);
+    }
 }
 
 // ============================================================================
