@@ -1287,17 +1287,17 @@ CGS_API CGS_MutStrRef cgs__make_appender_mutstr_ref(CGS_MutStrRef owner, CGS_App
 {
     switch(owner.ty)
     {
-        case CGS__DSTR_TY    :
+        case CGS__DSTR_TY   :
             state->appender_dstr = cgs__make_appender_dstr(owner.str.dstr, &state->dstr_append_allocator);
             return cgs__dstr_ptr_as_mutstr_ref(&state->appender_dstr);
-        case CGS__STRBUF_TY  :
-        case CGS__BUF_TY     :
+        case CGS__STRBUF_TY :
+        case CGS__BUF_TY    :
             ;
             CGS_MutStrRef ret = {.ty = CGS__STRBUF_TY};
             ret.str.strbuf = &state->appender_buf;
             *ret.str.strbuf = cgs__make_appender_strbuf(owner);
             return ret;
-        default               :
+        default             :
             unreachable();
     }
 }
@@ -1548,10 +1548,10 @@ CGS_API char *cgs__mutstr_ref_as_cstr(const CGS_MutStrRef str)
 {
     switch(str.ty)
     {
-        case CGS__DSTR_TY     : return str.str.dstr->chars;
-        case CGS__STRBUF_TY   : return str.str.strbuf->chars;
-        case CGS__BUF_TY      : return str.str.buf.ptr;
-        default               : unreachable();
+        case CGS__DSTR_TY   : return str.str.dstr->chars;
+        case CGS__STRBUF_TY : return str.str.strbuf->chars;
+        case CGS__BUF_TY    : return str.str.buf.ptr;
+        default             : unreachable();
     };
 }
 
@@ -1559,20 +1559,20 @@ CGS_API CGS_Error cgs__mutstr_ref_set_len(CGS_MutStrRef str, unsigned int new_le
 {
     switch(str.ty)
     {
-        case CGS__DSTR_TY     :
+        case CGS__DSTR_TY   :
             str.str.dstr->len = new_len;
             str.str.dstr->chars[new_len] = '\0';
             assert(str.str.dstr->cap >= str.str.dstr->len);
             break;
-        case CGS__STRBUF_TY   :
+        case CGS__STRBUF_TY :
             str.str.strbuf->len = new_len;
             str.str.strbuf->chars[new_len] = '\0';
             assert(str.str.strbuf->cap >= str.str.strbuf->len);
             break;
-        case CGS__BUF_TY      :
+        case CGS__BUF_TY    :
             str.str.buf.ptr[new_len] = '\0';
             break;
-        default                :
+        default             :
             unreachable();
     };
     return (CGS_Error){CGS_OK};
@@ -1615,10 +1615,10 @@ CGS_API unsigned int cgs__mutstr_ref_cap(const CGS_MutStrRef str)
 {
     switch(str.ty)
     {
-        case CGS__DSTR_TY     : return str.str.dstr->cap;
-        case CGS__STRBUF_TY   : return str.str.strbuf->cap;
-        case CGS__BUF_TY      : return str.str.buf.cap;
-        default                : unreachable();
+        case CGS__DSTR_TY   : return str.str.dstr->cap;
+        case CGS__STRBUF_TY : return str.str.strbuf->cap;
+        case CGS__BUF_TY    : return str.str.buf.cap;
+        default             : unreachable();
     };
 }
 
@@ -1626,10 +1626,10 @@ CGS_API unsigned int cgs__mutstr_ref_len(const CGS_MutStrRef str)
 {
     switch(str.ty)
     {
-        case CGS__DSTR_TY     : return str.str.dstr->len;
-        case CGS__STRBUF_TY   : return str.str.strbuf->len;
-        case CGS__BUF_TY      : return (unsigned int) strlen(str.str.buf.ptr);
-        default               : unreachable();
+        case CGS__DSTR_TY   : return str.str.dstr->len;
+        case CGS__STRBUF_TY : return str.str.strbuf->len;
+        case CGS__BUF_TY    : return (unsigned int) strlen(str.str.buf.ptr);
+        default             : unreachable();
     };
 }
 
@@ -1660,10 +1660,10 @@ CGS_API CGS_Error cgs__mutstr_ref_insert(CGS_MutStrRef dst, const CGS_StrView sr
 {
     switch(dst.ty)
     {
-        case CGS__DSTR_TY     : return cgs__dstr_insert(dst.str.dstr, src, idx);
-        case CGS__STRBUF_TY   : return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(dst.str.strbuf), src, idx);
-        case CGS__BUF_TY      : return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src, idx);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__dstr_insert(dst.str.dstr, src, idx);
+        case CGS__STRBUF_TY : return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(dst.str.strbuf), src, idx);
+        case CGS__BUF_TY    : return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src, idx);
+        default             : unreachable();
     };
 }
 
@@ -1728,10 +1728,10 @@ CGS_API CGS_Error cgs__mutstr_ref_copy(CGS_MutStrRef dst, const CGS_StrView src)
 {
     switch(dst.ty)
     {
-        case CGS__DSTR_TY     : return cgs__dstr_copy(dst.str.dstr, src);
-        case CGS__STRBUF_TY   : return cgs__fmutstr_ref_copy(cgs__fmutstr_ref(dst.str.strbuf), src);
-        case CGS__BUF_TY      : return cgs__fmutstr_ref_copy(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__dstr_copy(dst.str.dstr, src);
+        case CGS__STRBUF_TY : return cgs__fmutstr_ref_copy(cgs__fmutstr_ref(dst.str.strbuf), src);
+        case CGS__BUF_TY    : return cgs__fmutstr_ref_copy(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
+        default             : unreachable();
     };
 }
 
@@ -1766,10 +1766,10 @@ CGS_API CGS_Error cgs__mutstr_ref_putc(CGS_MutStrRef dst, char c)
 {
     switch(dst.ty)
     {
-        case CGS__DSTR_TY     : return cgs__dstr_putc(dst.str.dstr, c);
-        case CGS__STRBUF_TY   : return cgs__fmutstr_ref_putc(cgs__fmutstr_ref(dst.str.strbuf), c);
-        case CGS__BUF_TY      : return cgs__fmutstr_ref_putc(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), c);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__dstr_putc(dst.str.dstr, c);
+        case CGS__STRBUF_TY : return cgs__fmutstr_ref_putc(cgs__fmutstr_ref(dst.str.strbuf), c);
+        case CGS__BUF_TY    : return cgs__fmutstr_ref_putc(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), c);
+        default             : unreachable();
     }
 }
 
@@ -1794,10 +1794,10 @@ CGS_API CGS_Error cgs__mutstr_ref_append(CGS_MutStrRef dst, const CGS_StrView sr
 {
     switch(dst.ty)
     {
-        case CGS__DSTR_TY     : return cgs__dstr_append(dst.str.dstr, src);
-        case CGS__STRBUF_TY   : return cgs__fmutstr_ref_append(cgs__fmutstr_ref(dst.str.strbuf), src);
-        case CGS__BUF_TY      : return cgs__fmutstr_ref_append(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__dstr_append(dst.str.dstr, src);
+        case CGS__STRBUF_TY : return cgs__fmutstr_ref_append(cgs__fmutstr_ref(dst.str.strbuf), src);
+        case CGS__BUF_TY    : return cgs__fmutstr_ref_append(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
+        default             : unreachable();
     };
 }
 
@@ -1834,10 +1834,10 @@ CGS_API CGS_Error cgs__mutstr_ref_delete_range(CGS_MutStrRef str, unsigned int b
 {
     switch(str.ty)
     {
-        case CGS__DSTR_TY     : return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.dstr), begin, end);
-        case CGS__STRBUF_TY   : return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.strbuf), begin, end);
-        case CGS__BUF_TY      : return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.dstr), begin, end);
+        case CGS__STRBUF_TY : return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.strbuf), begin, end);
+        case CGS__BUF_TY    : return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
+        default             : unreachable();
     };
 }
 
@@ -1974,10 +1974,10 @@ CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, const CGS_StrViewArray s
 {
     switch(dst.ty)
     {
-        case CGS__DSTR_TY     : return cgs__strv_arr_join_into_dstr(dst.str.dstr, strs, delim);
-        case CGS__STRBUF_TY   : return cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref(dst.str.strbuf), strs, delim);
-        case CGS__BUF_TY      : return cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), strs, delim);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__strv_arr_join_into_dstr(dst.str.dstr, strs, delim);
+        case CGS__STRBUF_TY : return cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref(dst.str.strbuf), strs, delim);
+        case CGS__BUF_TY    : return cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), strs, delim);
+        default             : unreachable();
     };
 }
 
@@ -2068,10 +2068,10 @@ CGS_API CGS_Error cgs__mutstr_ref_replace_range(CGS_MutStrRef str, unsigned int 
 {
     switch(str.ty)
     {
-        case CGS__DSTR_TY     : return cgs__dstr_replace_range(str.str.dstr, begin, end, replacement);
-        case CGS__STRBUF_TY   : return cgs__fmutstr_ref_replace_range(cgs__fmutstr_ref(str.str.strbuf), begin, end, replacement);
-        case CGS__BUF_TY      : return cgs__fmutstr_ref_replace_range(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end, replacement);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__dstr_replace_range(str.str.dstr, begin, end, replacement);
+        case CGS__STRBUF_TY : return cgs__fmutstr_ref_replace_range(cgs__fmutstr_ref(str.str.strbuf), begin, end, replacement);
+        case CGS__BUF_TY    : return cgs__fmutstr_ref_replace_range(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end, replacement);
+        default             : unreachable();
     };
 }
 
@@ -2304,10 +2304,10 @@ CGS_API CGS_ReplaceResult cgs__mutstr_ref_replace(CGS_MutStrRef str, const CGS_S
 {
     switch(str.ty)
     {
-        case CGS__DSTR_TY     : return cgs__dstr_replace(str.str.dstr, target, replacement);
-        case CGS__STRBUF_TY   : return cgs__fmutstr_ref_replace(cgs__fmutstr_ref(str.str.strbuf), target, replacement);
-        case CGS__BUF_TY      : return cgs__fmutstr_ref_replace(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__dstr_replace(str.str.dstr, target, replacement);
+        case CGS__STRBUF_TY : return cgs__fmutstr_ref_replace(cgs__fmutstr_ref(str.str.strbuf), target, replacement);
+        case CGS__BUF_TY    : return cgs__fmutstr_ref_replace(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
+        default             : unreachable();
     };
 }
 
@@ -2364,10 +2364,10 @@ CGS_API CGS_Error cgs__mutstr_ref_replace_first(CGS_MutStrRef str, const CGS_Str
 {
     switch(str.ty)
     {
-        case CGS__DSTR_TY     : return cgs__dstr_replace_first(str.str.dstr, target, replacement);
-        case CGS__STRBUF_TY   : return cgs__fmutstr_ref_replace_first(cgs__fmutstr_ref(str.str.strbuf), target, replacement);
-        case CGS__BUF_TY      : return cgs__fmutstr_ref_replace_first(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__dstr_replace_first(str.str.dstr, target, replacement);
+        case CGS__STRBUF_TY : return cgs__fmutstr_ref_replace_first(cgs__fmutstr_ref(str.str.strbuf), target, replacement);
+        case CGS__BUF_TY    : return cgs__fmutstr_ref_replace_first(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
+        default             : unreachable();
     };
 }
 
@@ -2753,10 +2753,10 @@ CGS_API CGS_StrView cgs__strv_mutstr_ref2(const CGS_MutStrRef str, unsigned int 
 {
     switch(str.ty)
     {
-        case CGS__DSTR_TY     : return cgs__strv_dstr_ptr2(str.str.dstr, begin);
-        case CGS__STRBUF_TY   : return cgs__strv_strbuf_ptr2(str.str.strbuf, begin);
-        case CGS__BUF_TY      : return cgs__strv_fmutstr_ref2(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__strv_dstr_ptr2(str.str.dstr, begin);
+        case CGS__STRBUF_TY : return cgs__strv_strbuf_ptr2(str.str.strbuf, begin);
+        case CGS__BUF_TY    : return cgs__strv_fmutstr_ref2(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin);
+        default             : unreachable();
     }
 }
 
@@ -2880,10 +2880,10 @@ CGS_API CGS_StrView cgs__strv_mutstr_ref3(CGS_MutStrRef str, unsigned int begin,
 {
     switch(str.ty)
     {
-        case CGS__DSTR_TY     : return cgs__strv_dstr_ptr3(str.str.dstr, begin, end);
-        case CGS__STRBUF_TY   : return cgs__strv_strbuf_ptr3(str.str.strbuf, begin, end);
-        case CGS__BUF_TY      : return cgs__strv_fmutstr_ref3(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
-        default               : unreachable();
+        case CGS__DSTR_TY   : return cgs__strv_dstr_ptr3(str.str.dstr, begin, end);
+        case CGS__STRBUF_TY : return cgs__strv_strbuf_ptr3(str.str.strbuf, begin, end);
+        case CGS__BUF_TY    : return cgs__strv_fmutstr_ref3(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
+        default             : unreachable();
     }
 }
 
@@ -2977,10 +2977,10 @@ CGS_API CGS_Error cgs__mutstr_ref_fread_line(CGS_MutStrRef dst, FILE *stream)
 {
     switch(dst.ty)
     {
-        case CGS__DSTR_TY     : return cgs__dstr_fread_line(dst.str.dstr, stream);
-        case CGS__STRBUF_TY   : return cgs__fmutstr_ref_fread_line(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream);
-        case CGS__BUF_TY      : return cgs__fmutstr_ref_fread_line(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__dstr_fread_line(dst.str.dstr, stream);
+        case CGS__STRBUF_TY : return cgs__fmutstr_ref_fread_line(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream);
+        case CGS__BUF_TY    : return cgs__fmutstr_ref_fread_line(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream);
+        default             : unreachable();
     };
 }
 
@@ -3010,10 +3010,10 @@ CGS_API CGS_Error cgs__mutstr_ref_append_fread_line(CGS_MutStrRef dst, FILE *str
 {
     switch(dst.ty)
     {
-        case CGS__DSTR_TY     : return cgs__dstr_append_fread_line(dst.str.dstr, stream);
-        case CGS__STRBUF_TY   : return cgs__fmutstr_ref_append_fread_line(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream);
-        case CGS__BUF_TY      : return cgs__fmutstr_ref_append_fread_line(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream);
-        default                : unreachable();
+        case CGS__DSTR_TY   : return cgs__dstr_append_fread_line(dst.str.dstr, stream);
+        case CGS__STRBUF_TY : return cgs__fmutstr_ref_append_fread_line(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream);
+        case CGS__BUF_TY    : return cgs__fmutstr_ref_append_fread_line(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream);
+        default             : unreachable();
     };
 }
 
@@ -3037,110 +3037,16 @@ CGS_API CGS_Error cgs__idstr_append(void *ctx, const CGS_StrView str)
     return cgs__dstr_append(dstr, str);
 }
 
-CGS_API CGS_Error cgs__idstr_insert(void *ctx, const CGS_StrView str, unsigned int idx)
-{
-    CGS_DStr *dstr = ctx;
-    return cgs__dstr_insert(dstr, str, idx);
-}
-
-CGS_API unsigned int cgs__idstr_len(void *ctx)
-{
-    CGS_DStr *dstr = ctx;
-    return dstr->len;
-}
-
-CGS_API void cgs__idstr_set_len(void *ctx, unsigned int len)
-{
-    CGS_DStr *dstr = ctx;
-    dstr->len = len;
-}
-
-CGS_API CGS_Error cgs__idstr_ensure_cap(void *ctx, unsigned int at_least)
-{
-    CGS_DStr *dstr = ctx;
-    return cgs__dstr_ensure_cap(dstr, at_least);
-}
-
-CGS_API char *cgs__idstr_cstr(void *ctx)
-{
-    CGS_DStr *dstr = ctx;
-    return dstr->chars;
-}
-
 CGS_API CGS_Error cgs__istrbuf_append(void *ctx, const CGS_StrView str)
 {
     CGS_StrBuf *strbuf = ctx;
     return cgs__fmutstr_ref_append(cgs__fmutstr_ref(strbuf), str);
 }
 
-CGS_API CGS_Error cgs__istrbuf_insert(void *ctx, const CGS_StrView str, unsigned int idx)
-{
-    CGS_StrBuf *strbuf = ctx;
-    return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(strbuf), str, idx);
-}
-
-CGS_API unsigned int cgs__istrbuf_len(void *ctx)
-{
-    CGS_StrBuf *strbuf = ctx;
-    return strbuf->len;
-}
-
-CGS_API void cgs__istrbuf_set_len(void *ctx, unsigned int len)
-{
-    CGS_StrBuf *strbuf = ctx;
-    strbuf->len = len;
-}
-
-CGS_API CGS_Error cgs__istrbuf_ensure_cap(void *ctx, unsigned int at_least)
-{
-    (void)ctx;
-    (void)at_least;
-    return (CGS_Error){CGS_WRONG_TYPE};
-}
-
-CGS_API char *cgs__istrbuf_cstr(void *ctx)
-{
-    CGS_StrBuf *strbuf = ctx;
-    return strbuf->chars;
-}
-
 CGS_API CGS_Error cgs__ibuf_append(void *ctx, const CGS_StrView str)
 {
     CGS_Buffer *buf = ctx;
     return cgs__fmutstr_ref_append(cgs__fmutstr_ref(*buf), str);
-}
-
-CGS_API CGS_Error cgs__ibuf_insert(void *ctx, const CGS_StrView str, unsigned int idx)
-{
-    CGS_Buffer *buf = ctx;
-    return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(*buf), str, idx);
-}
-
-CGS_API unsigned int cgs__ibuf_len(void *ctx)
-{
-    CGS_Buffer *buf = ctx;
-    return cgs__chars_strlen(buf->ptr, buf->cap);
-}
-
-CGS_API void cgs__ibuf_set_len(void *ctx, unsigned int len)
-{
-    (void)ctx;
-    (void)len;
-    // TODO put '\0'?
-    return;
-}
-
-CGS_API CGS_Error cgs__ibuf_ensure_cap(void *ctx, unsigned int at_least)
-{
-    (void)ctx;
-    (void)at_least;
-    return (CGS_Error){CGS_WRONG_TYPE};
-}
-
-CGS_API char *cgs__ibuf_cstr(void *ctx)
-{
-    CGS_Buffer *buf = ctx;
-    return buf->ptr;
 }
 
 CGS_API CGS_Error cgs__file_append(void *ctx, const CGS_StrView str)

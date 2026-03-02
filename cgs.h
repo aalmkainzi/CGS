@@ -259,7 +259,6 @@ typedef struct CGS_Error
     uint8_t ec;
 } CGS_Error;
 
-// this type should be able to be passed as dst to tostr and sprint and fprint (maybe cgs_putc and cgs_append)
 typedef struct CGS_Writer
 {
     void *ctx;
@@ -277,54 +276,15 @@ typedef struct CGS__MutStrInterface
 } CGS__MutStrInterface;
 
 CGS_API CGS_Error    cgs__idstr_append      (void *ctx, const CGS_StrView str);
-CGS_API CGS_Error    cgs__idstr_insert      (void *ctx, const CGS_StrView str, unsigned int idx);
-CGS_API unsigned int cgs__idstr_len         (void *ctx);
-CGS_API void         cgs__idstr_set_len     (void *ctx, unsigned int len);
-CGS_API CGS_Error    cgs__idstr_ensure_cap  (void *ctx, unsigned int at_least);
-CGS_API char*        cgs__idstr_cstr        (void *ctx);
-
 CGS_API CGS_Error    cgs__istrbuf_append    (void *ctx, const CGS_StrView str);
-CGS_API CGS_Error    cgs__istrbuf_insert    (void *ctx, const CGS_StrView str, unsigned int idx);
-CGS_API unsigned int cgs__istrbuf_len       (void *ctx);
-CGS_API void         cgs__istrbuf_set_len   (void *ctx, unsigned int len);
-CGS_API CGS_Error    cgs__istrbuf_ensure_cap(void *ctx, unsigned int at_least);
-CGS_API char*        cgs__istrbuf_cstr      (void *ctx);
-
 CGS_API CGS_Error    cgs__ibuf_append       (void *ctx, const CGS_StrView str);
-CGS_API CGS_Error    cgs__ibuf_insert       (void *ctx, const CGS_StrView str, unsigned int idx);
-CGS_API unsigned int cgs__ibuf_len          (void *ctx);
-CGS_API void         cgs__ibuf_set_len      (void *ctx, unsigned int len);
-CGS_API CGS_Error    cgs__ibuf_ensure_cap   (void *ctx, unsigned int at_least);
-CGS_API char*        cgs__ibuf_cstr         (void *ctx);
-
 CGS_API CGS_Error    cgs__file_append       (void *ctx, const CGS_StrView str);
 
-static const CGS__MutStrInterface cgs__mutstr_ref_interfaces[] = 
+static CGS_Error (* const cgs__mutstr_ref_interfaces[])(void *ctx, const CGS_StrView str) =
 {
-    [CGS__DSTR_TY] = {
-        cgs__idstr_append,
-        cgs__idstr_insert,
-        cgs__idstr_len,
-        cgs__idstr_set_len,
-        cgs__idstr_ensure_cap,
-        cgs__idstr_cstr
-    },
-    [CGS__STRBUF_TY] = {
-        cgs__istrbuf_append,
-        cgs__istrbuf_insert,
-        cgs__istrbuf_len,
-        cgs__istrbuf_set_len,
-        cgs__istrbuf_ensure_cap,
-        cgs__istrbuf_cstr
-    },
-    [CGS__BUF_TY] = {
-        cgs__ibuf_append,
-        cgs__ibuf_insert,
-        cgs__ibuf_len,
-        cgs__ibuf_set_len,
-        cgs__ibuf_ensure_cap,
-        cgs__ibuf_cstr
-    }
+    [CGS__DSTR_TY]   = cgs__idstr_append,
+    [CGS__STRBUF_TY] = cgs__istrbuf_append,
+    [CGS__BUF_TY]    = cgs__ibuf_append,
 };
 
 typedef struct CGS__FixedMutStrRef
@@ -553,7 +513,7 @@ cgs_append_fread_line(mutstr_dst, stdin)
 _Generic(mutstr, \
     CGS_DStr*: cgs__idstr_append, \
     CGS_StrBuf*: cgs__istrbuf_append, \
-    CGS_MutStrRef: cgs__mutstr_ref_interfaces[cgs__coerce(mutstr, CGS_MutStrRef).ty].append, \
+    CGS_MutStrRef: cgs__mutstr_ref_interfaces[cgs__coerce(mutstr, CGS_MutStrRef).ty], \
     char*: cgs__ibuf_append,  \
     unsigned char*: cgs__ibuf_append, \
     FILE*: cgs__file_append \
