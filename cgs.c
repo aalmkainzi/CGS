@@ -3274,8 +3274,20 @@ _Generic((char(*)[sizeof(ty)])0,           \
     char(*)[8]: 32                         \
 )
 
-#define cgs__sinteger_tostr_fmutstr_ref() \
+#define cgs__sinteger_tostr() \
 do { \
+    if(obj == cgs__sinteger_min(__typeof__(obj))) \
+    { \
+        return cgs__min_tostr(__typeof__(obj))(writer); \
+    } \
+    bool isneg = false; \
+    if(obj < 0) \
+    { \
+        isneg = true; \
+        obj *= -1; \
+    } \
+    unsigned int numlen = cgs__numstr_len((unsigned long long) obj); \
+    \
     __typeof__(obj) num = obj; \
     \
     if(isneg) \
@@ -3294,25 +3306,10 @@ do { \
     return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = chars_to_copy}); \
 } while(0)
 
-// TODO can optimize in case of dstr by checking if .append is cgs__idstr_append
-#define cgs__sinteger_tostr() \
+#define cgs__uinteger_tostr() \
 do { \
-    if(obj == cgs__sinteger_min(__typeof__(obj))) \
-    { \
-        return cgs__min_tostr(__typeof__(obj))(writer); \
-    } \
-    bool isneg = false; \
-    if(obj < 0) \
-    { \
-        isneg = true; \
-        obj *= -1; \
-    } \
-    unsigned int numlen = cgs__numstr_len((unsigned long long) obj); \
-    cgs__sinteger_tostr_fmutstr_ref(); \
-} while(0)
-
-#define cgs__uinteger_tostr_fmutstr_ref() \
-do { \
+    unsigned int numlen = cgs__numstr_len(obj); \
+    \
     __typeof__(obj) num = obj; \
     \
     unsigned int chars_to_copy = numlen; \
@@ -3325,12 +3322,6 @@ do { \
         cgs__tmp_buf[chars_to_copy - (i + 1)] = (char)(rem + '0'); \
     } \
     return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = chars_to_copy}); \
-} while(0)
-
-#define cgs__uinteger_tostr() \
-do { \
-    unsigned int numlen = cgs__numstr_len(obj); \
-    cgs__uinteger_tostr_fmutstr_ref(); \
 } while(0)
 
 CGS_API CGS_Error cgs__bool_tostr(CGS_Writer writer, bool obj)
