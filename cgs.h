@@ -683,7 +683,7 @@ unsigned char(*)[sizeof(__typeof__(mutstr))] : cgs__buf_as_mutstr_ref         \
 ))
 
 #define cgs__mutstr_ref2(carr_or_ptr, cap_) \
-(CGS_MutStrRef){.ty = CGS__BUF_TY, .str.carr = cgs__cstr_to_buf(carr_or_ptr, cap_)} \
+(CGS_MutStrRef){.ty = CGS__BUF_TY, .str.buf = cgs__cstr_to_buf(carr_or_ptr, cap_)} \
 
 #define cgs_appender(mutstr_owner, appender_state) \
 cgs__make_appender_mutstr_ref(cgs_mutstr_ref(mutstr_owner), (appender_state))
@@ -1298,8 +1298,8 @@ CGS_API void cgs__dstr_deinit(CGS_DStr *dstr);
 CGS_API CGS_Error cgs__dstr_append(CGS_DStr *dstr, const CGS_StrView str);
 CGS_API CGS_Error cgs__dstr_prepend_strv(CGS_DStr *dstr, const CGS_StrView str);
 CGS_API CGS_Error cgs__dstr_insert(CGS_DStr *dstr, const CGS_StrView str, unsigned int idx);
-CGS_API CGS_Error cgs__dstr_fread_until(CGS_DStr *dstr, FILE *stream, char delim);
-CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, char delim);
+CGS_API CGS_Error cgs__dstr_fread_until(CGS_DStr *dstr, FILE *stream, int delim);
+CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, int delim);
 CGS_API CGS_Error cgs__dstr_shrink_to_fit(CGS_DStr *dstr);
 CGS_API CGS_Error cgs__dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_least);
 
@@ -1348,11 +1348,11 @@ CGS_API CGS_Error cgs__map_chars(CGS_StrView str, bool(*map)(char *c,void *arg),
 CGS_API void cgs__chars_tolower(CGS_StrView str);
 CGS_API void cgs__chars_toupper(CGS_StrView str);
 
-CGS_API CGS_Error cgs__mutstr_ref_fread_until(CGS_MutStrRef dst, FILE *stream, char delim);
-CGS_API CGS_Error cgs__mutstr_ref_append_fread_until(CGS_MutStrRef dst, FILE *stream, char delim);
+CGS_API CGS_Error cgs__mutstr_ref_fread_until(CGS_MutStrRef dst, FILE *stream, int delim);
+CGS_API CGS_Error cgs__mutstr_ref_append_fread_until(CGS_MutStrRef dst, FILE *stream, int delim);
 
-CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *stream, char delim);
-CGS_API CGS_Error cgs__fmutstr_ref_append_fread_until(CGS__FixedMutStrRef dst, FILE *stream, char delim);
+CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *stream, int delim);
+CGS_API CGS_Error cgs__fmutstr_ref_append_fread_until(CGS__FixedMutStrRef dst, FILE *stream, int delim);
 
 CGS_API unsigned int cgs__fprint_strv(FILE *stream, const CGS_StrView str);
 CGS_API unsigned int cgs__fprintln_strv(FILE *stream, const CGS_StrView str);

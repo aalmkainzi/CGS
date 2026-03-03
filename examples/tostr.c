@@ -30,4 +30,8 @@ int main()
     
     nfmt_t(int,'X') a = nfmt(10,'X');
     println(a);
+    
+    char C[64];
+    cgs_read_until(C, ',');
+    print(C);
 }

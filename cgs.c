@@ -2913,7 +2913,7 @@ CGS_API CGS_StrView cgs__strv_strbuf3(CGS_StrBuf str, unsigned int begin, unsign
     return cgs__strv_strbuf_ptr3(&str, begin, end);
 }
 
-CGS_API CGS_Error cgs__dstr_fread_until(CGS_DStr *dstr, FILE *stream, char delim)
+CGS_API CGS_Error cgs__dstr_fread_until(CGS_DStr *dstr, FILE *stream, int delim)
 {
     dstr->len = 0;
     if(dstr->cap > 0)
@@ -2924,8 +2924,9 @@ CGS_API CGS_Error cgs__dstr_fread_until(CGS_DStr *dstr, FILE *stream, char delim
     return cgs__dstr_append_fread_until(dstr, stream, delim);
 }
 
-CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, char delim)
+CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, int delim)
 {
+    assert(delim == EOF || (delim >= 0 && delim <= 255));
     CGS_Error err = {CGS_OK};
     int c = 0;
     while(c != EOF && c != delim)
@@ -2947,8 +2948,11 @@ CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, cha
     return (CGS_Error){CGS_OK};
 }
 
-CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *stream, char delim)
+CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *stream, int delim)
 {
+    assert(delim == EOF || (delim >= 0 && delim <= 255));
+    
+    // TODO delim may be EOF, so dont ret here?
     if(dst.cap == 0)
     {
         return (CGS_Error){CGS_DST_TOO_SMALL};
@@ -2973,7 +2977,7 @@ CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *st
         return (CGS_Error){CGS_OK};
 }
 
-CGS_API CGS_Error cgs__mutstr_ref_fread_until(CGS_MutStrRef dst, FILE *stream, char delim)
+CGS_API CGS_Error cgs__mutstr_ref_fread_until(CGS_MutStrRef dst, FILE *stream, int delim)
 {
     switch(dst.ty)
     {
@@ -2984,7 +2988,7 @@ CGS_API CGS_Error cgs__mutstr_ref_fread_until(CGS_MutStrRef dst, FILE *stream, c
     };
 }
 
-CGS_API CGS_Error cgs__fmutstr_ref_append_fread_until(CGS__FixedMutStrRef dst, FILE *stream, char delim)
+CGS_API CGS_Error cgs__fmutstr_ref_append_fread_until(CGS__FixedMutStrRef dst, FILE *stream, int delim)
 {
     if(dst.cap <= *dst.len - 1)
         return (CGS_Error){CGS_DST_TOO_SMALL};
@@ -3006,7 +3010,7 @@ CGS_API CGS_Error cgs__fmutstr_ref_append_fread_until(CGS__FixedMutStrRef dst, F
     return err;
 }
 
-CGS_API CGS_Error cgs__mutstr_ref_append_fread_until(CGS_MutStrRef dst, FILE *stream, char delim)
+CGS_API CGS_Error cgs__mutstr_ref_append_fread_until(CGS_MutStrRef dst, FILE *stream, int delim)
 {
     switch(dst.ty)
     {

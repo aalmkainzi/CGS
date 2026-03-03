@@ -924,6 +924,131 @@ void test_str_putc_edge_cases() {
         stdin = old_stdin;
         fclose(tmp);
     }
+    
+    TEST("cgs_fread_until: basic delimiter inclusion");
+    {
+        FILE* tmp = tmpfile();
+        fputs("key:value", tmp);
+        rewind(tmp);
+        
+        CGS_DStr result = cgs_dstr_init();
+        
+        // Should include the ':'
+        cgs_fread_until(&result, tmp, ':');
+        ASSERT_TRUE(cgs_equal(result, "key:"));
+        
+        cgs_dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("cgs_fread_until: EOF as delimiter (read whole file)");
+    {
+        FILE* tmp = tmpfile();
+        fputs("line 1\nline 2", tmp);
+        rewind(tmp);
+        
+        CGS_DStr result = cgs_dstr_init();
+        
+        // Using EOF as the delimiter should read until the end
+        // EOF itself is not a character, so it is never "included"
+        cgs_fread_until(&result, tmp, EOF);
+        ASSERT_TRUE(cgs_equal(result, "line 1\nline 2"));
+        
+        cgs_dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("cgs_fread_until: reaching EOF before delim (delim not included)");
+    {
+        FILE* tmp = tmpfile();
+        fputs("partial data", tmp); // No semicolon here
+        rewind(tmp);
+        
+        CGS_DStr result = cgs_dstr_init();
+        
+        // Searching for ';' but hitting EOF first
+        cgs_fread_until(&result, tmp, ';');
+        
+        // Per requirements: if EOF is reached, the delim (;) won't be included
+        ASSERT_TRUE(cgs_equal(result, "partial data"));
+        ASSERT_FALSE(cgs_ends_with(result, ";"));
+        
+        cgs_dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("cgs_append_fread_until: logic with EOF and appends");
+    {
+        FILE* tmp = tmpfile();
+        fputs("part1;part2", tmp);
+        rewind(tmp);
+        
+        CGS_DStr result = cgs_dstr_init_from("Data: ");
+        
+        // 1. Read until ';' (found, so included)
+        cgs_append_fread_until(&result, tmp, ';');
+        ASSERT_TRUE(cgs_equal(result, "Data: part1;"));
+        
+        // 2. Read until ';' again (not found, hits EOF, so NOT included)
+        cgs_append_fread_until(&result, tmp, ';');
+        ASSERT_TRUE(cgs_equal(result, "Data: part1;part2"));
+        
+        cgs_dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("cgs_read_until: stdin redirection with EOF delim");
+    {
+        FILE* tmp = tmpfile();
+        fputs("stdin content", tmp);
+        rewind(tmp);
+        
+        FILE* old_stdin = stdin;
+        stdin = tmp;
+        
+        CGS_DStr res = cgs_dstr_init();
+        
+        // Testing that cgs_read_until(res, EOF) behaves correctly
+        cgs_read_until(&res, EOF);
+        ASSERT_TRUE(cgs_equal(res, "stdin content"));
+        
+        cgs_dstr_deinit(&res);
+        stdin = old_stdin;
+        fclose(tmp);
+    }
+    
+    TEST("cgs_append_read_until: delimiter is the very last char");
+    {
+        FILE* tmp = tmpfile();
+        fputs("command!", tmp); // '!' is at the end
+        rewind(tmp);
+        
+        FILE* old_stdin = stdin;
+        stdin = tmp;
+        
+        CGS_DStr res = cgs_dstr_init();
+        
+        // The delimiter is found exactly at the end of the stream
+        cgs_read_until(&res, '!');
+        ASSERT_TRUE(cgs_equal(res, "command!"));
+        
+        cgs_dstr_deinit(&res);
+        stdin = old_stdin;
+        fclose(tmp);
+    }
+    
+    TEST("cgs_fread_until: empty file immediately hitting EOF");
+    {
+        FILE* tmp = tmpfile(); // Empty
+        CGS_DStr result = cgs_dstr_init();
+        
+        // Should handle immediate EOF gracefully (result empty, no delim)
+        cgs_fread_until(&result, tmp, ':');
+        ASSERT_TRUE(cgs_equal(result, ""));
+        
+        cgs_dstr_deinit(&result);
+        fclose(tmp);
+    }
 }
 
 // ============================================================================

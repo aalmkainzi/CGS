@@ -154,10 +154,10 @@ CGS_Error                          cgs_fread_line(mutstr_t dst, FILE *stream);
 CGS_Error                          cgs_append_fread_line(mutstr_t dst, FILE *stream);
 CGS_Error                          cgs_read_line(mutstr_t dst);
 CGS_Error                          cgs_append_read_line(mutstr_t dst);
-CGS_Error                          cgs_fread_until(mutstr_t dst, FILE *stream, char delim); // includes the delim
-CGS_Error                          cgs_append_fread_until(mutstr_t dst, FILE *stream, char delim); // includes the delim
-CGS_Error                          cgs_read_until(mutstr_t dst, char delim); // includes the delim
-CGS_Error                          cgs_append_read_until(mutstr_t dst, char delim); // includes the delim
+CGS_Error                          cgs_fread_until(mutstr_t dst, FILE *stream, int delim);
+CGS_Error                          cgs_append_fread_until(mutstr_t dst, FILE *stream, int delim);
+CGS_Error                          cgs_read_until(mutstr_t dst, int delim);
+CGS_Error                          cgs_append_read_until(mutstr_t dst, int delim);
 
 CGS_MutStrRef                      cgs_appender(mutstr_t owner, CGS_AppenderState *state);
 CGS_Error                          cgs_commit_appender(mutstr_t owner, CGS_MutStrRef appender);
