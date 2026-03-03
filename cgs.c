@@ -2913,7 +2913,7 @@ CGS_API CGS_StrView cgs__strv_strbuf3(CGS_StrBuf str, unsigned int begin, unsign
     return cgs__strv_strbuf_ptr3(&str, begin, end);
 }
 
-CGS_API CGS_Error cgs__dstr_fread_line(CGS_DStr *dstr, FILE *stream)
+CGS_API CGS_Error cgs__dstr_fread_until(CGS_DStr *dstr, FILE *stream, char delim)
 {
     dstr->len = 0;
     if(dstr->cap > 0)
@@ -2921,21 +2921,21 @@ CGS_API CGS_Error cgs__dstr_fread_line(CGS_DStr *dstr, FILE *stream)
         dstr->chars[0] = '\0';
     }
     
-    return cgs__dstr_append_fread_line(dstr, stream);
+    return cgs__dstr_append_fread_until(dstr, stream, delim);
 }
 
-CGS_API CGS_Error cgs__dstr_append_fread_line(CGS_DStr *dstr, FILE *stream)
+CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, char delim)
 {
     CGS_Error err = {CGS_OK};
     int c = 0;
-    while(c != EOF && c != '\n')
+    while(c != EOF && c != delim)
     {
         err = cgs__dstr_maybe_grow(dstr, 64);
         if(err.ec != CGS_OK)
             return err;
         
         unsigned int count = 0;
-        while(c != '\n' && count < 64 && (c=fgetc(stream)) != EOF)
+        while(c != delim && count < 64 && (c=fgetc(stream)) != EOF)
         {
             char as_char = (char) c;
             dstr->chars[dstr->len + count] = as_char;
@@ -2947,7 +2947,7 @@ CGS_API CGS_Error cgs__dstr_append_fread_line(CGS_DStr *dstr, FILE *stream)
     return (CGS_Error){CGS_OK};
 }
 
-CGS_API CGS_Error cgs__fmutstr_ref_fread_line(CGS__FixedMutStrRef dst, FILE *stream)
+CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *stream, char delim)
 {
     if(dst.cap == 0)
     {
@@ -2956,7 +2956,7 @@ CGS_API CGS_Error cgs__fmutstr_ref_fread_line(CGS__FixedMutStrRef dst, FILE *str
     
     unsigned int len = 0;
     int c = 0;
-    while(len < dst.cap - 1 && c != '\n' && (c=fgetc(stream)) != EOF)
+    while(len < dst.cap - 1 && c != delim && (c=fgetc(stream)) != EOF)
     {
         dst.chars[len] = (char) c;
         len += 1;
@@ -2965,7 +2965,7 @@ CGS_API CGS_Error cgs__fmutstr_ref_fread_line(CGS__FixedMutStrRef dst, FILE *str
     dst.chars[len] = '\0';
     *dst.len = len;
     
-    bool dst_too_small = (len == dst.cap - 1) && (c != '\n') && (c != EOF);
+    bool dst_too_small = (len == dst.cap - 1) && (c != delim) && (c != EOF);
     
     if(dst_too_small)
         return (CGS_Error){CGS_DST_TOO_SMALL};
@@ -2973,18 +2973,18 @@ CGS_API CGS_Error cgs__fmutstr_ref_fread_line(CGS__FixedMutStrRef dst, FILE *str
         return (CGS_Error){CGS_OK};
 }
 
-CGS_API CGS_Error cgs__mutstr_ref_fread_line(CGS_MutStrRef dst, FILE *stream)
+CGS_API CGS_Error cgs__mutstr_ref_fread_until(CGS_MutStrRef dst, FILE *stream, char delim)
 {
     switch(dst.ty)
     {
-        case CGS__DSTR_TY   : return cgs__dstr_fread_line(dst.str.dstr, stream);
-        case CGS__STRBUF_TY : return cgs__fmutstr_ref_fread_line(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream);
-        case CGS__BUF_TY    : return cgs__fmutstr_ref_fread_line(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream);
+        case CGS__DSTR_TY   : return cgs__dstr_fread_until(dst.str.dstr, stream, delim);
+        case CGS__STRBUF_TY : return cgs__fmutstr_ref_fread_until(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream, delim);
+        case CGS__BUF_TY    : return cgs__fmutstr_ref_fread_until(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream, delim);
         default             : unreachable();
     };
 }
 
-CGS_API CGS_Error cgs__fmutstr_ref_append_fread_line(CGS__FixedMutStrRef dst, FILE *stream)
+CGS_API CGS_Error cgs__fmutstr_ref_append_fread_until(CGS__FixedMutStrRef dst, FILE *stream, char delim)
 {
     if(dst.cap <= *dst.len - 1)
         return (CGS_Error){CGS_DST_TOO_SMALL};
@@ -2997,7 +2997,7 @@ CGS_API CGS_Error cgs__fmutstr_ref_append_fread_line(CGS__FixedMutStrRef dst, FI
         .chars = dst.chars + *dst.len
     };
     
-    CGS_Error err = cgs__fmutstr_ref_fread_line(right, stream);
+    CGS_Error err = cgs__fmutstr_ref_fread_until(right, stream, delim);
     
     *dst.len += *right.len;
     
@@ -3006,13 +3006,13 @@ CGS_API CGS_Error cgs__fmutstr_ref_append_fread_line(CGS__FixedMutStrRef dst, FI
     return err;
 }
 
-CGS_API CGS_Error cgs__mutstr_ref_append_fread_line(CGS_MutStrRef dst, FILE *stream)
+CGS_API CGS_Error cgs__mutstr_ref_append_fread_until(CGS_MutStrRef dst, FILE *stream, char delim)
 {
     switch(dst.ty)
     {
-        case CGS__DSTR_TY   : return cgs__dstr_append_fread_line(dst.str.dstr, stream);
-        case CGS__STRBUF_TY : return cgs__fmutstr_ref_append_fread_line(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream);
-        case CGS__BUF_TY    : return cgs__fmutstr_ref_append_fread_line(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream);
+        case CGS__DSTR_TY   : return cgs__dstr_append_fread_until(dst.str.dstr, stream, delim);
+        case CGS__STRBUF_TY : return cgs__fmutstr_ref_append_fread_until(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream, delim);
+        case CGS__BUF_TY    : return cgs__fmutstr_ref_append_fread_until(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream, delim);
         default             : unreachable();
     };
 }
