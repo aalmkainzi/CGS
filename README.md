@@ -63,6 +63,7 @@ cgs_dstr_shrink_to_fit
 cgs_mutstr_ref
 
 cgs_tostr
+cgs_tostr_append
 cgs_tostr_p
 cgs_has_tostr
 

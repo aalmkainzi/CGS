@@ -728,8 +728,7 @@ void test_str_putc_edge_cases() {
         DStr result = dstr_init();
         cgs_fread_line(&result, tmp);
         
-        ASSERT_EQ(strcmp(cgs_chars(result), "Hello, World"), 0);
-        
+        ASSERT_TRUE(cgs_equal(result, "Hello, World"));
         dstr_deinit(&result);
         fclose(tmp);
     }
@@ -768,6 +767,161 @@ void test_str_putc_edge_cases() {
         ASSERT_EQ(strcmp(cgs_chars(result), "Hex: FF, Score: 100"), 0);
         
         dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("cgs_fread_line: basic line reading");
+    {
+        FILE* tmp = tmpfile();
+        fputs("line one\nline two", tmp);
+        rewind(tmp);
+        
+        CGS_DStr result = cgs_dstr_init();
+        
+        cgs_fread_line(&result, tmp);
+        ASSERT_TRUE(cgs_equal(result, "line one\n"));
+        
+        cgs_clear(&result);
+        cgs_fread_line(&result, tmp);
+        ASSERT_TRUE(cgs_equal(result, "line two"));
+        
+        cgs_dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("cgs_append_fread_line: appending multiple lines");
+    {
+        FILE* tmp = tmpfile();
+        fputs("first\nsecond", tmp);
+        rewind(tmp);
+        
+        CGS_DStr result = cgs_dstr_init_from("init:");
+        
+        cgs_append_fread_line(&result, tmp); // appends "first\n"
+        cgs_append_fread_line(&result, tmp); // appends "second"
+        
+        ASSERT_TRUE(cgs_equal(result, "init:first\nsecond"));
+        
+        cgs_dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("cgs_fread_until: basic delimiter test");
+    {
+        FILE* tmp = tmpfile();
+        fputs("user@hostname.com", tmp);
+        rewind(tmp);
+        
+        CGS_DStr result = cgs_dstr_init();
+        
+        cgs_fread_until(&result, tmp, '@');
+        ASSERT_TRUE(cgs_equal(result, "user@"));
+        
+        cgs_clear(&result);
+        cgs_fread_until(&result, tmp, '.');
+        ASSERT_TRUE(cgs_equal(result, "hostname."));
+        
+        cgs_dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("cgs_fread_until: read until EOF (delimiter not found)");
+    {
+        FILE* tmp = tmpfile();
+        fputs("hello world", tmp);
+        rewind(tmp);
+        
+        CGS_DStr result = cgs_dstr_init();
+        
+        // Search for '!' which doesn't exist
+        cgs_fread_until(&result, tmp, '!');
+        ASSERT_TRUE(cgs_equal(result, "hello world"));
+        
+        cgs_dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("cgs_append_fread_until: building a path");
+    {
+        FILE* tmp = tmpfile();
+        fputs("home/user/docs", tmp);
+        rewind(tmp);
+        
+        CGS_DStr result = cgs_dstr_init_from("/");
+        
+        cgs_append_fread_until(&result, tmp, '/'); // appends "home/"
+        cgs_append_fread_until(&result, tmp, '/'); // appends "user/"
+        
+        ASSERT_TRUE(cgs_equal(result, "/home/user/"));
+        
+        cgs_dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("cgs_read_line and cgs_read_until: stdin redirection");
+    {
+        // Setup: Redirect stdin to a temporary file
+        FILE* tmp = tmpfile();
+        fputs("standard input line\npart1:part2", tmp);
+        rewind(tmp);
+        
+        // Save old stdin to restore later (platform dependent, but works on most POSIX/Windows)
+        FILE* old_stdin = stdin;
+        stdin = tmp;
+        
+        CGS_DStr res1 = cgs_dstr_init();
+        CGS_DStr res2 = cgs_dstr_init();
+        
+        cgs_read_line(&res1);
+        ASSERT_TRUE(cgs_equal(res1, "standard input line\n"));
+        
+        cgs_read_until(&res2, ':');
+        ASSERT_TRUE(cgs_equal(res2, "part1:"));
+        
+        // Append remaining stdin
+        cgs_append_read_line(&res2);
+        ASSERT_TRUE(cgs_equal(res2, "part1:part2"));
+        
+        cgs_dstr_deinit(&res1);
+        cgs_dstr_deinit(&res2);
+        
+        // Restore stdin and cleanup
+        stdin = old_stdin;
+        fclose(tmp);
+    }
+    
+    TEST("cgs_fread_line: empty file and immediate EOF");
+    {
+        FILE* tmp = tmpfile(); // empty
+        CGS_DStr result = cgs_dstr_init_from("untouched");
+        
+        CGS_Error err = cgs_fread_line(&result, tmp);
+        
+        ASSERT_TRUE(cgs_equal(result, ""));
+        
+        cgs_dstr_deinit(&result);
+        fclose(tmp);
+    }
+    
+    TEST("cgs_append_read_until: mixed append/read on stdin");
+    {
+        FILE* tmp = tmpfile();
+        fputs("A,B,C", tmp);
+        rewind(tmp);
+        
+        FILE* old_stdin = stdin;
+        stdin = tmp;
+        
+        CGS_DStr res = cgs_dstr_init_from("Letters: ");
+        
+        cgs_append_read_until(&res, ','); // "Letters: A,"
+        cgs_append_read_until(&res, ','); // "Letters: A,B,"
+        cgs_append_read_line(&res);       // "Letters: A,B,C"
+        
+        ASSERT_TRUE(cgs_equal(res, "Letters: A,B,C"));
+        
+        cgs_dstr_deinit(&res);
+        stdin = old_stdin;
         fclose(tmp);
     }
 }
