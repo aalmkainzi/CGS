@@ -565,33 +565,6 @@ _Generic(mutstr, \
         } \
 )
 
-// helper macro
-#define cgs__str_print_each(x) \
-do \
-{ \
-    cgs__get_tostr_func(__typeof__(x))(cgs__as_writer, x); \
-} while(0);
-
-#define cgs__sprint_each_setup(...) \
-__VA_OPT__( \
-    CGS__FOREACH(cgs__str_print_each, __VA_ARGS__); \
-)
-
-#define cgs_sprint_append(mutstr_dst, ...) \
-do \
-{ \
-    CGS_Writer cgs__as_writer = cgs_writer(mutstr_dst); \
-    cgs__sprint_each_setup(__VA_ARGS__); \
-} while(0)
-
-#define cgs_sprint(mutstr_dst, ...) \
-do \
-{ \
-    cgs_clear(mutstr_dst); \
-    CGS_Writer cgs__as_writer = cgs_writer(mutstr_dst); \
-    cgs__sprint_each_setup(__VA_ARGS__); \
-} while(0)
-
 #define cgs_strv_arr_from_carr(strv_carr, ...) \
 cgs__strv_arr_from_carr(strv_carr, CGS__VA_OR((cgs__static_assertx(cgs__is_array_of((strv_carr), CGS_StrView), "Must pass StrView[N] or StrView* with length parameter"), CGS__CARR_LEN(strv_carr)), __VA_ARGS__))
 
@@ -776,30 +749,35 @@ cgs__dstr_shrink_to_fit(dstr)
 #define cgs_dstr_ensure_cap(dstr, new_cap) \
 cgs__dstr_ensure_cap(dstr, new_cap)
 
+// helper macro
+#define cgs__str_print_each(x) \
+do \
+{ \
+    cgs__get_tostr_func(__typeof__(x))(cgs__as_writer, x); \
+} while(0);
+
+#define cgs__sprint_foreach_arg(...) \
+__VA_OPT__( \
+CGS__FOREACH(cgs__str_print_each, __VA_ARGS__); \
+)
+
+#define cgs_sprint_append(mutstr_dst, ...) \
+do \
+{ \
+    CGS_Writer cgs__as_writer = cgs_writer(mutstr_dst); \
+    cgs__sprint_foreach_arg(__VA_ARGS__); \
+} while(0)
+
+#define cgs_sprint(mutstr_dst, ...) \
+do \
+{ \
+    cgs_clear(mutstr_dst); \
+    CGS_Writer cgs__as_writer = cgs_writer(mutstr_dst); \
+    cgs__sprint_foreach_arg(__VA_ARGS__); \
+} while(0)
+
 #define cgs_fprint(f, ...) \
 cgs_sprint_append(f __VA_OPT__(,) __VA_ARGS__)
-
-#define cgs__fprint_each(x)                                 \
-do                                                          \
-{                                                           \
-    __typeof__(((void)0,x)) cgs__x_tmp = x;                 \
-    cgs__fprint_strv(cgs__file_stream, _Generic(cgs__x_tmp, \
-        char*                     : cgs__strv_cstr1,        \
-        unsigned char*            : cgs__strv_ucstr1,       \
-        CGS_DStr                  : cgs__strv_dstr1,        \
-        CGS_DStr*                 : cgs__strv_dstr_ptr1,    \
-        CGS_StrView               : cgs__strv_strv1,        \
-        CGS_StrBuf                : cgs__strv_strbuf1,      \
-        CGS_StrBuf*               : cgs__strv_strbuf_ptr1,  \
-        CGS_MutStrRef             : cgs__strv_mutstr_ref1,  \
-        const char*               : cgs__strv_cstr1,        \
-        const unsigned char*      : cgs__strv_ucstr1,       \
-        const CGS_DStr*           : cgs__strv_dstr_ptr1,    \
-        const CGS_StrBuf*         : cgs__strv_strbuf_ptr1,  \
-        default                   : cgs__strv_dstr1         \
-    )(cgs__coerce_string_type(cgs__x_tmp, (cgs_tostr(&cgs__fprint_dynamic_buffer, cgs__x_tmp), cgs__fprint_dynamic_buffer)))); \
-    cgs__fprint_dynamic_buffer.len = 0;               \
-} while(0);
 
 #define cgs_print(...) \
 cgs_fprint(stdout, __VA_ARGS__)
