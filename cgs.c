@@ -1602,11 +1602,6 @@ CGS_API unsigned int cgs__strbuf_ptr_cap(const CGS_StrBuf *str)
     return str->cap;
 }
 
-CGS_API unsigned int cgs__buf_cap(const CGS_Buffer buf)
-{
-    return buf.cap;
-}
-
 CGS_API unsigned int cgs__mutstr_ref_cap(const CGS_MutStrRef str)
 {
     switch(str.ty)

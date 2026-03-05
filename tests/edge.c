@@ -525,11 +525,25 @@ void test_str_starts_ends_with_edge_cases() {
         ASSERT_FALSE(cgs_starts_with(hay, prefix));
     }
     
-    TEST("cgs_starts_with: NULL");
+    TEST("cgs_starts_with: NULL hay");
     {
         StrView hay = {0};
         StrView prefix = strv("hello");
         ASSERT_FALSE(cgs_starts_with(hay, prefix));
+    }
+    
+    TEST("cgs_starts_with: NULL needle");
+    {
+        StrView hay = strv("hello");
+        StrView prefix = {0};
+        ASSERT_TRUE(cgs_starts_with(hay, prefix));
+    }
+    
+    TEST("cgs_starts_with: NULL both");
+    {
+        StrView hay = {0};
+        StrView prefix = {0};
+        ASSERT_TRUE(cgs_starts_with(hay, prefix));
     }
 }
 
@@ -2271,7 +2285,110 @@ void test_str_join_edge_cases() {
 // Edge Case Tests for tostr and print functions
 // ============================================================================
 
+static bool cb_toupper(char *c, void *arg) {
+    (void)arg;
+    if (*c >= 'a' && *c <= 'z') *c -= 32;
+    return true;
+}
+
+static bool cb_exit_on_bang(char *c, void *arg) {
+    int *count = (int*)arg;
+    if (*c == '!') return false;
+    (*count)++;
+    return true;
+}
+
 void test_tostr_edge_cases() {
+    TEST("cgs_tostr_len: scalar types");
+    {
+        // Integers
+        ASSERT_EQ(cgs_tostr_len(0), 1);      // "0"
+        ASSERT_EQ(cgs_tostr_len(123), 3);    // "123"
+        ASSERT_EQ(cgs_tostr_len(-45), 3);    // "-45"
+        
+        // Floats (default precision 6)
+        // 3.140000 -> 8 chars
+        ASSERT_EQ(cgs_tostr_len(3.14), (unsigned int) snprintf(0,0,"%g",3.14)); 
+        
+        // Booleans
+        ASSERT_EQ(cgs_tostr_len(true), 4);   // "true"
+    }
+    
+    TEST("cgs_tostr_p_len: string and pointer types");
+    {
+        int val = 1024;
+        ASSERT_EQ(cgs_tostr_p_len(&val), 4); // "1024"
+        
+        CGS_StrView sv = cgs_strv("hello world");
+        ASSERT_EQ(cgs_tostr_p_len(&sv), 11);
+        
+        CGS_DStr ds = cgs_dstr_init_from("test");
+        ASSERT_EQ(cgs_tostr_p_len(&ds), 4);
+        cgs_dstr_deinit(&ds);
+    }
+    
+    TEST("cgs_tostr_len: formatters (nfmt/arrfmt)");
+    {
+        // nfmt(255, 'X') -> "FF"
+        ASSERT_EQ(cgs_tostr_len(cgs_nfmt(255, 'X')), 2);
+        
+        int arr[] = {1, 2, 3};
+        ASSERT_EQ(cgs_tostr_len(cgs_arrfmt(arr, 3)), strlen("{1, 2, 3}"));
+    }
+    
+    TEST("cgs_map_chars: successful full iteration");
+    {
+        char buf[] = "hello";
+        CGS_Error err = cgs_map_chars(buf, cb_toupper, NULL);
+        
+        ASSERT_EQ(err.ec, 0); // Success
+        ASSERT_TRUE(cgs_equal(buf, "HELLO"));
+    }
+    
+    TEST("cgs_map_chars: early exit with CGS_CALLBACK_EXIT");
+    {
+        char buf[] = "abc!def";
+        int processed_count = 0;
+        
+        CGS_Error err = cgs_map_chars(buf, cb_exit_on_bang, &processed_count);
+        
+        // Verify early exit error code
+        ASSERT_EQ(err.ec, CGS_CALLBACK_EXIT);
+        // Verify we stopped at '!'
+        ASSERT_EQ(processed_count, 3); 
+    }
+    
+    TEST("cgs_map_chars: edge cases (empty strings)");
+    {
+        char buf[] = "";
+        int processed_count = 0;
+        
+        CGS_Error err = cgs_map_chars(buf, cb_exit_on_bang, &processed_count);
+        
+        ASSERT_EQ(err.ec, 0);
+        ASSERT_EQ(processed_count, 0);
+    }
+    
+    TEST("cgs_map_chars: with DStr* and pointer types");
+    {
+        CGS_DStr ds = cgs_dstr_init_from("123!456");
+        int count = 0;
+        
+        CGS_Error err = cgs_map_chars(&ds, cb_exit_on_bang, &count);
+        
+        ASSERT_EQ(err.ec, CGS_CALLBACK_EXIT);
+        ASSERT_EQ(count, 3);
+        
+        cgs_dstr_deinit(&ds);
+    }
+    
+    TEST("cgs_tostr_len: large values");
+    {
+        // 18446744073709551615 is 20 digits
+        unsigned long long ull = 18446744073709551615ULL;
+        ASSERT_EQ(cgs_tostr_len(ull), 20);
+    }
+    
     TEST("tostr: integer boundary values (INT_MAX)");
     {
         DStr dstr = dstr_init(30);

@@ -1082,7 +1082,7 @@ const unsigned char*      : cgs__ucstr_tostr_p,               \
 const CGS_DStr*           : cgs__dstr_ptr_tostr_p,            \
 const CGS_StrBuf*         : cgs__strbuf_ptr_tostr_p,          \
 CGS_Error                 : cgs__error_tostr_p,               \
-CGS_ArrayFmt*             : cgs__array_fmt_tostr_p,           \
+CGS_ArrayFmt              : cgs__array_fmt_tostr_p,           \
 CGS__INTEGER_TYPES(CGS__INTEGER_TOSTR_P_GENERIC_CASE, ignore) \
 CGS__FLOATING_TYPES(CGS__FLOATING_TOSTR_P_GENERIC_CASE, ignore, CGS__FLOATING_TOSTR_P_LAST_GENERIC_CASE)
 
@@ -1185,8 +1185,14 @@ cgs__get_tostr_func(__typeof__(src))(cgs_writer(dst), (src))
 #define cgs_has_tostr(ty) \
 (!cgs__has_type(cgs__get_tostr_func_ft(__typeof__(ty)), cgs__tostr_fail))
 
-#define cgs_tostr_p(dst, src) \
-cgs__get_tostr_p_func(__typeof__(*(src)))(cgs_writer(dst), (src))
+#define cgs_tostr_p(dst, srcp) \
+cgs__get_tostr_p_func(__typeof__(*(srcp)))(cgs_writer(dst), (srcp))
+
+#define cgs_tostr_len(src) \
+cgs__invoke_tostr_len((CGS_Error(*)(CGS_Writer,void*)) cgs__get_tostr_p_func(__typeof__(src)), &(__typeof__(src)[]){src}[0])
+
+#define cgs_tostr_p_len(srcp) \
+cgs__invoke_tostr_len((CGS_Error(*)(CGS_Writer,void*)) cgs__get_tostr_p_func(__typeof__(*(srcp))), (srcp))
 
 #define CGS__DECL_TOSTR_FUNC(n) \
 typedef __typeof__(CGS__MCALL(CGS__ARG1, ADD_TOSTR)) cgs__tostr_type_##n; \
@@ -1263,7 +1269,6 @@ CGS_API unsigned int cgs__dstr_cap(const CGS_DStr str);
 CGS_API unsigned int cgs__dstr_ptr_cap(const CGS_DStr *str);
 CGS_API unsigned int cgs__strbuf_cap(const CGS_StrBuf str);
 CGS_API unsigned int cgs__strbuf_ptr_cap(const CGS_StrBuf *str);
-CGS_API unsigned int cgs__buf_cap(const CGS_Buffer buf);
 CGS_API unsigned int cgs__mutstr_ref_cap(const CGS_MutStrRef str);
 CGS_API unsigned int cgs__mutstr_ref_len(const CGS_MutStrRef str);
 
@@ -1467,6 +1472,21 @@ static inline CGS_Error cgs__writer_putc(CGS_Writer writer, char c)
     return writer.append(writer.ctx, (CGS_StrView){.chars = &c, .len = 1});
 }
 
+static inline CGS_Error cgs__len_writer_append(void *ctx, const CGS_StrView str)
+{
+    unsigned int *lenp = ctx;
+    *lenp += str.len;
+    return (CGS_Error){CGS_OK};
+}
+
+static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer, void*), void *obj)
+{
+    unsigned int len = 0;
+    CGS_Writer len_writer = {.ctx = &len, .append = cgs__len_writer_append};
+    tostr_p(len_writer, obj);
+    return len;
+}
+
 #endif // CGS__H_INCLUDED
 
 #ifdef CGS_SHORT_NAMES
@@ -1500,6 +1520,8 @@ static inline CGS_Error cgs__writer_putc(CGS_Writer writer, char c)
 #define tostr_append(dst, src) cgs_tostr_append(dst, src)
 #define tostr_p(dst, srcp) cgs_tostr_p(dst, srcp)
 #define has_tostr(T) cgs_has_tostr(T)
+#define tostr_len(srcp) cgs_tostr_len(src)
+#define tostr_p_len(srcp) cgs_tostr_p_len(srcp)
 
 #define sprint(dst, ...) cgs_sprint(dst __VA_OPT__(,) __VA_ARGS__)
 #define sprint_append(dst, ...) cgs_sprint_append(dst __VA_OPT__(,) __VA_ARGS__)
