@@ -33,53 +33,6 @@ int main()
 }
 
 ```
-
-## Short names
-If you define the macro `CGS_SHORT_NAMES` before including the `cgs.h` header, unprefixed variants of the following identifiers will be `#define`d:
-```C
-CGS_Allocator
-CGS_DStr
-CGS_StrBuf
-CGS_StrView
-CGS_StrViewArray
-CGS_MutStrRef
-CGS_ReplaceResult
-CGS_AppenderState
-CGS_ArrayFmt
-
-cgs_strv
-cgs_strv_arr
-cgs_strv_arr_from_carr
-
-cgs_strbuf_init_from_cstr
-cgs_strbuf_init_from_buf
-
-cgs_dstr_init
-cgs_dstr_init_from
-cgs_dstr_deinit
-cgs_dstr_ensure_cap
-cgs_dstr_shrink_to_fit
-
-cgs_mutstr_ref
-
-cgs_tostr
-cgs_tostr_append
-cgs_tostr_p
-cgs_has_tostr
-
-cgs_print
-cgs_println
-cgs_fprint
-cgs_fprintln
-
-cgs_sprint
-cgs_sprint_append
-
-cgs_nfmt
-cgs_nfmt_t
-cgs_arrfmt
-```
-
 ## Features
 The library exposes multiple string types for different use cases:
 - [DStr](#DStr)
@@ -90,9 +43,9 @@ The library exposes multiple string types for different use cases:
 All of which are null terminated, except for `StrView`.
 
 There are three categories of string types:
-- anystr_t: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `StrView`, `DStr`, `DStr*`, `StrBuf`, `StrBuf*`, `MutStrRef`)
-- mutstr_t: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `DStr*`, `StrBuf*`, `MutStrRef`)
-- writer_t: anything from mutstr_t, also `CGS_Writer` and `FILE*`
+- `anystr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `StrView`, `DStr`, `DStr*`, `StrBuf`, `StrBuf*`, `MutStrRef`)
+- `mutstr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `DStr*`, `StrBuf*`, `MutStrRef`)
+- `writer_t`: anything from `mutstr_t`, also `CGS_Writer` and `FILE*`
 
 This is a list of all the utility macros CGS provides:
 ```C
@@ -178,6 +131,52 @@ cgs_nfmt_t(integer_T, fmt_char)    cgs_nfmt(integer_T value, int fmt_char);
 cgs_nfmt_t(float/double, fmt_char) cgs_nfmt(float/double value, int fmt_char, int precision = (fmt_char == 'a' ? -1 : 6));
 CGS_ArrayFmt                       cgs_arrfmt(T *array, size_t len);
 CGS_ArrayFmt                       cgs_arrfmt(T *array, size_t len, anystr_t open, anystr_t close, anystr_t delim, anystr_t trailing_delim = "");
+```
+
+## Short names
+If you define the macro `CGS_SHORT_NAMES` before including the `cgs.h` header, unprefixed variants of the following identifiers will be `#define`d:
+```C
+CGS_Allocator
+CGS_DStr
+CGS_StrBuf
+CGS_StrView
+CGS_StrViewArray
+CGS_MutStrRef
+CGS_ReplaceResult
+CGS_AppenderState
+CGS_ArrayFmt
+
+cgs_strv
+cgs_strv_arr
+cgs_strv_arr_from_carr
+
+cgs_strbuf_init_from_cstr
+cgs_strbuf_init_from_buf
+
+cgs_dstr_init
+cgs_dstr_init_from
+cgs_dstr_deinit
+cgs_dstr_ensure_cap
+cgs_dstr_shrink_to_fit
+
+cgs_mutstr_ref
+
+cgs_tostr
+cgs_tostr_append
+cgs_tostr_p
+cgs_has_tostr
+
+cgs_print
+cgs_println
+cgs_fprint
+cgs_fprintln
+
+cgs_sprint
+cgs_sprint_append
+
+cgs_nfmt
+cgs_nfmt_t
+cgs_arrfmt
 ```
 
 ## DStr
