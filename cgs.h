@@ -1,4 +1,4 @@
-#ifndef CGS__H_INCLUDED
+#if !defined(CGS__H_INCLUDED) && !defined(ONLY_TOSTR)
 #define CGS__H_INCLUDED
 
 #include <stdarg.h>
@@ -724,7 +724,7 @@ CGS__CAT(cgs__dstr_init0, __VA_OPT__(1))(__VA_ARGS__)
 #define cgs__dstr_init0() \
 cgs__dstr_init(1, cgs_get_default_allocator())
 
-#define cgs__dstr_init01(cap, ...)               \
+#define cgs__dstr_init01(cap, ...)              \
 __VA_OPT__(cgs__dstr_init2((cap), __VA_ARGS__)) \
 CGS__IF_EMPTY(                                  \
     cgs__dstr_init(                             \
@@ -765,6 +765,7 @@ CGS__FOREACH(cgs__str_print_each, __VA_ARGS__); \
 do \
 { \
     CGS_Writer cgs__as_writer = cgs_writer(mutstr_dst); \
+    (void)cgs__as_writer; \
     cgs__sprint_foreach_arg(__VA_ARGS__); \
 } while(0)
 
@@ -1466,19 +1467,19 @@ static inline CGS_Error cgs__writer_putc(CGS_Writer writer, char c)
     return writer.append(writer.ctx, (CGS_StrView){.chars = &c, .len = 1});
 }
 
-#endif /* CGS__H_INCLUDED */
+#endif // CGS__H_INCLUDED
 
 #ifdef CGS_SHORT_NAMES
 
-#define Allocator             CGS_Allocator
-#define DStr                  CGS_DStr
-#define StrBuf                CGS_StrBuf
-#define StrView               CGS_StrView
-#define StrViewArray          CGS_StrViewArray
-#define MutStrRef             CGS_MutStrRef
-#define ReplaceResult         CGS_ReplaceResult
-#define AppenderState         CGS_AppenderState
-#define ArrayFmt              CGS_ArrayFmt
+#define Allocator     CGS_Allocator
+#define DStr          CGS_DStr
+#define StrBuf        CGS_StrBuf
+#define StrView       CGS_StrView
+#define StrViewArray  CGS_StrViewArray
+#define MutStrRef     CGS_MutStrRef
+#define ReplaceResult CGS_ReplaceResult
+#define AppenderState CGS_AppenderState
+#define ArrayFmt      CGS_ArrayFmt
 
 #define strv(anystr, ...) cgs_strv(anystr __VA_OPT__(,) __VA_ARGS__)
 #define strv_arr(...) cgs_strv_arr(__VA_ARGS__)

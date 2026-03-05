@@ -524,6 +524,13 @@ void test_str_starts_ends_with_edge_cases() {
         char prefix[] = "test";
         ASSERT_FALSE(cgs_starts_with(hay, prefix));
     }
+    
+    TEST("cgs_starts_with: NULL");
+    {
+        StrView hay = {0};
+        StrView prefix = strv("hello");
+        ASSERT_FALSE(cgs_starts_with(hay, prefix));
+    }
 }
 
 // ============================================================================
