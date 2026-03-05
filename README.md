@@ -324,3 +324,14 @@ println( nfmt(15, 'X') ); // prints "F"
 Note that `nfmt` is type-safe, you cannot use chars other than:
 - For integers: `'d'`, `'x'`, `'o'`, `'b'`, `'X'`
 - For float/double: `'f'`, `'g'`, `'e'`, `'a'`, `'F'`, `'G'`, `'E'`, `'A'`
+
+## Including
+If you want external linking, your options are:
+- Add cgs.c to your build, and only include cgs.h
+- Include cgs.c in only one file, and cgs.h in other files
+
+You can also always include cgs.c, if you define `#define CGS_API static` before including:
+```C
+#define CGS_API static inline
+#include "cgs.c"
+```
