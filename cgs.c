@@ -3069,7 +3069,7 @@ CGS_PRIVATE unsigned int cgs__numstr_len(unsigned long long num)
     return len;
 }
 
-#define cgs__sinteger_min(ty) \
+#define cgs__sinteger_min(ty)  \
 _Generic((ty){0},              \
 signed char: SCHAR_MIN,        \
 short      : SHRT_MIN,         \
@@ -3079,7 +3079,7 @@ long long  : LLONG_MIN         \
 )
 
 #define cgs__min_tostr(ty)        \
-_Generic((ty){0},                  \
+_Generic((ty){0},                 \
 signed char: cgs__schar_min_into, \
 short      : cgs__short_min_into, \
 int        : cgs__int_min_into,   \

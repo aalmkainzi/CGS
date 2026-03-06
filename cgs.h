@@ -270,10 +270,10 @@ typedef struct CGS__MutStrInterface
     char*            (*cstr)      (void *ctx);
 } CGS__MutStrInterface;
 
-CGS_API CGS_Error    cgs__idstr_append      (void *ctx, const CGS_StrView str);
-CGS_API CGS_Error    cgs__istrbuf_append    (void *ctx, const CGS_StrView str);
-CGS_API CGS_Error    cgs__ibuf_append       (void *ctx, const CGS_StrView str);
-CGS_API CGS_Error    cgs__file_append       (void *ctx, const CGS_StrView str);
+CGS_API CGS_Error    cgs__idstr_append  (void *ctx, const CGS_StrView str);
+CGS_API CGS_Error    cgs__istrbuf_append(void *ctx, const CGS_StrView str);
+CGS_API CGS_Error    cgs__ibuf_append   (void *ctx, const CGS_StrView str);
+CGS_API CGS_Error    cgs__file_append   (void *ctx, const CGS_StrView str);
 
 static CGS_Error (* const cgs__mutstr_ref_interfaces[])(void *ctx, const CGS_StrView str) =
 {
