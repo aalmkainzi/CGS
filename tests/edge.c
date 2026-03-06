@@ -2391,7 +2391,7 @@ void test_tostr_edge_cases() {
     
     TEST("tostr: integer boundary values (INT_MAX)");
     {
-        DStr dstr = dstr_init(30);
+        DStr dstr = dstr_init();
         CGS_Error err = tostr(&dstr, INT_MAX);
         ASSERT_EQ(err.ec, CGS_OK);
         char expected_int_max[32]; // Max 2^31-1 is 10 digits, plus sign and null. 32 is safe.

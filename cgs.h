@@ -1,16 +1,11 @@
 #if !defined(CGS__H_INCLUDED) && !defined(ONLY_TOSTR)
 #define CGS__H_INCLUDED
 
-#include <stdarg.h>
-#include <stdint.h>
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 #include <stdbool.h>
-#include <inttypes.h>
-#include <limits.h>
 
 struct CGS_Allocator;
 

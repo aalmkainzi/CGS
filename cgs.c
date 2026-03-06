@@ -1,5 +1,7 @@
 #include <ctype.h>
-#include <stdio.h>
+#include <stdint.h>
+#include <assert.h>
+#include <limits.h>
 
 #ifndef CGS_API
     // for functions exposed in the header
