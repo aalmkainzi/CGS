@@ -2567,6 +2567,13 @@ void test_tostr_edge_cases() {
     
     TEST("cgs_print: multiple arguments (concatenation)");
     {
+        CGS_StrBuf sb = {0};
+        cgs_sprint(&sb, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
+        ASSERT_TRUE(cgs_equal(sb, ""));
+    }
+    
+    TEST("cgs_print: multiple arguments (concatenation)");
+    {
         DStr dstr = dstr_init(50);
         cgs_sprint(&dstr, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
         ASSERT_TRUE(cgs_equal(&dstr, "123 test 456.78!-99"));

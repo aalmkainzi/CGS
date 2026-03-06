@@ -45,7 +45,7 @@ static const CGS_StrView cgs__error_to_string[] = {
     [CGS_BAD_RANGE]              = {.len = sizeof("BAD_RANGE")              - 1, .chars = "BAD_RANGE"},
     [CGS_NOT_FOUND]              = {.len = sizeof("NOT_FOUND")              - 1, .chars = "NOT_FOUND"},
     [CGS_ALIASING_NOT_SUPPORTED] = {.len = sizeof("ALIASING_NOT_SUPPORTED") - 1, .chars = "ALIASING_NOT_SUPPORTED"},
-    [CGS_WRONG_TYPE]             = {.len = sizeof("INCORRECT_TYPE")         - 1, .chars = "INCORRECT_TYPE"},
+    [CGS_WRONG_TYPE]             = {.len = sizeof("WRONG_TYPE")             - 1, .chars = "WRONG_TYPE"},
     [CGS_ENCODING_ERROR]         = {.len = sizeof("ENCODING_ERROR")         - 1, .chars = "ENCODING_ERROR"},
     [CGS_CALLBACK_EXIT]          = {.len = sizeof("CALLBACK_EXIT")          - 1, .chars = "CALLBACK_EXIT"}
 };
@@ -1135,7 +1135,7 @@ static const char cgs__byte_to_heX[][2] =
 
 CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref(CGS_Buffer buf, unsigned int *len_ptr)
 {
-    *len_ptr = (unsigned int) strlen((char*) buf.ptr);
+    *len_ptr = (unsigned int)((char*)memchr(buf.ptr, '\0', buf.cap) - buf.ptr);
     CGS__FixedMutStrRef ret = {
         .chars = buf.ptr,
         .cap = buf.cap,
@@ -1398,7 +1398,7 @@ CGS_API CGS_Error cgs__dstr_append(CGS_DStr *dstr, const CGS_StrView src)
     if(cgs__is_strv_within(cgs__strv_dstr_ptr2(dstr, 0), to_append))
     {
         unsigned int begin_idx = (unsigned int)(to_append.chars - dstr->chars);
-        err = cgs__dstr_maybe_grow(dstr, to_append.len + 1);
+        err = cgs__dstr_maybe_grow(dstr, to_append.len);
         to_append = (CGS_StrView){
             .len   = to_append.len,
             .chars = dstr->chars + begin_idx
@@ -1774,6 +1774,11 @@ CGS_API CGS_Error cgs__mutstr_ref_putc(CGS_MutStrRef dst, char c)
 
 CGS_API CGS_Error cgs__fmutstr_ref_append(CGS__FixedMutStrRef dst, const CGS_StrView src)
 {
+    if(dst.cap == 0)
+    {
+        return (CGS_Error){CGS_DST_TOO_SMALL};
+    }
+    
     unsigned int dst_len = *dst.len;
     
     unsigned int chars_to_copy = cgs__uint_min(src.len, dst.cap - dst_len - 1);
@@ -2989,7 +2994,7 @@ CGS_API CGS_Error cgs__mutstr_ref_fread_until(CGS_MutStrRef dst, FILE *stream, i
 
 CGS_API CGS_Error cgs__fmutstr_ref_append_fread_until(CGS__FixedMutStrRef dst, FILE *stream, int delim)
 {
-    if(dst.cap <= *dst.len - 1)
+    if(dst.cap == 0 || dst.cap - 1 <= *dst.len)
         return (CGS_Error){CGS_DST_TOO_SMALL};
     
     unsigned int appended_len = 0;
@@ -3415,9 +3420,6 @@ __typeof__(_Generic((char(*)[sz])0, \
     char(*)[8]: (uint64_t)0         \
 ))
 
-#define cgs__as_unsigned(n) \
-((cgs__unsigned_of_size(sizeof(n))) (n))
-
 #define cgs__integer_d_Fmt_tostr(dst, num) \
 return _Generic(num, \
     char: cgs__if_else(CHAR_MIN < 0, cgs__schar_tostr, cgs__uchar_d_tostr), \
@@ -3457,20 +3459,6 @@ do \
     } \
     return err; \
 } while(0)
-
-#define cgs__bswap(num)                \
-_Generic((char(*)[sizeof(num)])0,       \
-    char(*)[1]: (num),                    \
-    char(*)[2]: __builtin_bswap16(num), \
-    char(*)[4]: __builtin_bswap32(num), \
-    char(*)[8]: __builtin_bswap64(num)  \
-)
-
-#define cgs__highest_bit(n) \
-((__typeof__(n))((n) & (((__typeof__(n)) 0b1) << (sizeof(n) * 8 - 1))))
-
-#define cgs__highest_bit_as_u8(n) \
-(cgs__highest_bit(n) >> ((sizeof(n) - 1) * 8))
 
 #define cgs__highest_3bits(n) \
 ((__typeof__(n))((n) & (((__typeof__(n)) 0b111) << (sizeof(n) * 8 - 3))))

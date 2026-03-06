@@ -77,7 +77,7 @@ cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old
 #endif
 
 #define cgs__has_type(exp, t) \
-_Generic(exp, t: true, default: false)
+_Generic((exp), t: true, default: false)
 
 #define cgs__is_array_of(exp, ty) \
 cgs__has_type((__typeof__(exp)*){0}, __typeof__(ty)(*)[sizeof(exp)/sizeof(ty)])
@@ -94,40 +94,16 @@ _Generic(exp, \
     default: (fallback) \
 )
 
-#define cgs__coerce_string_type(exp, fallback) \
-_Generic(exp,                                  \
-    char*                     : exp,           \
-    unsigned char*            : exp,           \
-    CGS_DStr                  : exp,           \
-    CGS_DStr*                 : exp,           \
-    CGS_StrView               : exp,           \
-    CGS_StrBuf                : exp,           \
-    CGS_StrBuf*               : exp,           \
-    CGS_MutStrRef             : exp,           \
-    const char*               : exp,           \
-    const unsigned char*      : exp,           \
-    const CGS_DStr*           : exp,           \
-    const CGS_StrBuf*         : exp,           \
-    default                   : fallback       \
-)
-
 #define cgs__coerce_not(exp, not_ty, fallback_ty) \
 _Generic(exp, \
     not_ty: (fallback_ty){0}, \
-    default: exp \
+    default: (exp) \
 )
 
 #define cgs__coerce_not_mutstr_ref(exp) \
 cgs__coerce_not(exp, CGS_MutStrRef, CGS_StrBuf*)
 
-#define cgs__coerce_not_mutstr_ref_or_writer(exp) \
-_Generic(exp,                                     \
-    CGS_MutStrRef: (CGS_StrBuf*)0,                \
-    CGS_Writer   : (CGS_StrBuf*)0,                \
-    default      : exp                            \
-)
-
-#define CGS__CARR_LEN(carr) (sizeof(carr) / sizeof(carr[0]))
+#define CGS__CARR_LEN(carr) (sizeof(carr) / sizeof((carr)[0]))
 
 // IF_DEF and ARG_n stuff
 #define CGS__COMMA()              ,
@@ -547,12 +523,12 @@ _Generic((__typeof__(mutstr)*){0}, \
     CGS_MutStrRef*                               : cgs__mutstr_ref_ctx(cgs__coerce(mutstr, CGS_MutStrRef), &(CGS_Buffer){0}), \
     char(*)         [sizeof(__typeof__(mutstr))] : &(CGS_Buffer){.ptr = (char*) cgs__coerce_not_mutstr_ref(mutstr), .cap = sizeof(__typeof__(mutstr))}, \
     unsigned char(*)[sizeof(__typeof__(mutstr))] : &(CGS_Buffer){.ptr = (char*) cgs__coerce_not_mutstr_ref(mutstr), .cap = sizeof(__typeof__(mutstr))}, \
-    default                                      : mutstr \
+    default                                      : (mutstr) \
 )
 
 #define cgs_writer(mutstr) \
 _Generic(mutstr, \
-    CGS_Writer: mutstr, \
+    CGS_Writer: (mutstr), \
     default: \
         (CGS_Writer){ \
             .ctx = cgs__mutstr_ctx(cgs__coerce_not(mutstr, CGS_Writer, CGS_StrBuf*)), \
@@ -605,11 +581,11 @@ cgs__strbuf_from_buf( \
 _Generic(&(__typeof__(buf)){0}, \
     char(*)[sizeof(__typeof__(buf))]: (CGS_Buffer){.ptr = (char*) (buf), .cap = sizeof(buf)}, \
     unsigned char(*)[sizeof(__typeof__(buf))]: (CGS_Buffer){.ptr = (char*) (buf), .cap = sizeof(buf)}, \
-    CGS_Buffer*: buf \
+    CGS_Buffer*: (buf) \
 ))
 
 #define cgs__strbuf_init_from_buf_2(buf, cap_) \
-cgs__strbuf_from_buf((CGS_Buffer){.ptr = (char*) _Generic(buf,char*:buf,unsigned char*:buf,void*:buf), .cap = cap_})
+cgs__strbuf_from_buf((CGS_Buffer){.ptr = (char*) _Generic(buf,char*:(buf),unsigned char*:(buf),void*:(buf)), .cap = (cap_)})
 
 #define cgs__cstr_to_buf(carr, ...) \
 ( \
