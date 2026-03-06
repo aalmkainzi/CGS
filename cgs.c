@@ -1578,10 +1578,16 @@ CGS_API CGS_Error cgs__mutstr_ref_set_len(CGS_MutStrRef str, unsigned int new_le
 
 CGS_API CGS_Error cgs__mutstr_ref_commit_appender(CGS_MutStrRef owner, CGS_MutStrRef appender)
 {
-    return cgs__mutstr_ref_set_len(
-        owner,
-        cgs__mutstr_ref_len(owner) + cgs__mutstr_ref_len(appender) \
-    );
+    unsigned int appender_len = cgs__mutstr_ref_len(appender);
+    switch(owner.ty)
+    {
+        case CGS__DSTR_TY   : owner.str.dstr->len += appender_len;   break;
+        case CGS__STRBUF_TY : owner.str.strbuf->len += appender_len; break;
+        case CGS__BUF_TY    :                                        break;
+        default             : unreachable();
+    };
+    
+    return (CGS_Error){CGS_OK};
 }
 
 CGS_API unsigned int cgs__dstr_cap(const CGS_DStr str)
