@@ -225,7 +225,7 @@ enum CGS__MutStrType
 
 typedef struct CGS_MutStrRef
 {
-    uint8_t ty;
+    unsigned char ty;
     union
     {
         CGS_Buffer buf;
@@ -251,7 +251,7 @@ enum CGS__Error_Value
 
 typedef struct CGS_Error
 {
-    uint8_t ec;
+    unsigned char ec;
 } CGS_Error;
 
 typedef struct CGS_Writer
@@ -351,8 +351,8 @@ _Generic(anystr, \
 
 #define cgs_cap(anystr)                                                       \
 _Generic((__typeof__(anystr)*){0},                                            \
-    char(*)[sizeof(__typeof__(anystr))]           : cgs__return_as_u32,           \
-    unsigned char(*)[sizeof(__typeof__(anystr))]  : cgs__return_as_u32,           \
+    char(*)[sizeof(__typeof__(anystr))]           : cgs__return_as_u32,       \
+    unsigned char(*)[sizeof(__typeof__(anystr))]  : cgs__return_as_u32,       \
     char**                                        : cgs__strlen_plus_one,     \
     unsigned char**                               : cgs__ustrlen_plus_one,    \
     CGS_StrView*                                  : cgs__strv_len,            \
