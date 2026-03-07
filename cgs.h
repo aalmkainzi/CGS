@@ -1489,7 +1489,7 @@ static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer,
 #define tostr_append(dst, src) cgs_tostr_append(dst, src)
 #define tostr_p(dst, srcp) cgs_tostr_p(dst, srcp)
 #define has_tostr(T) cgs_has_tostr(T)
-#define tostr_len(srcp) cgs_tostr_len(src)
+#define tostr_len(srcp) cgs_tostr_len(srcp)
 #define tostr_p_len(srcp) cgs_tostr_p_len(srcp)
 
 #define sprint(dst, ...) cgs_sprint(dst __VA_OPT__(,) __VA_ARGS__)
