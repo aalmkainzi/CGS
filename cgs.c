@@ -28,9 +28,9 @@
     #endif
 #endif
 
-CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *ctx, size_t align, size_t n);
-CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *ctx, void *ptr, size_t n);
-CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t align, size_t old_size, size_t new_size);
+CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n);
+CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n);
+CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t align, size_t old_size, size_t new_size);
 
 static const CGS_Allocator cgs__default_allocator = {
     .alloc   = cgs__default_allocator_alloc,
@@ -1165,10 +1165,10 @@ CGS_API CGS__FixedMutStrRef cgs__dstr_ptr_as_fmutstr_ref(CGS_DStr *dstr)
     return ret;
 }
 
-CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *ctx, size_t align, size_t n)
+CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n)
 {
     (void) align;
-    (void) ctx;
+    (void) allocator;
     void *mem = malloc(n);
     return (CGS_Allocation){
         .ptr = mem,
@@ -1176,16 +1176,16 @@ CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *ctx, size
     };
 }
 
-CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *ctx, void *ptr, size_t n)
+CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n)
 {
-    (void) ctx;
+    (void) allocator;
     (void) n;
     free(ptr);
 }
 
-CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *ctx, void *ptr, size_t align, size_t old_size, size_t new_size)
+CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t align, size_t old_size, size_t new_size)
 {
-    (void) ctx;
+    (void) allocator;
     (void) align;
     (void) old_size;
     void *mem = realloc(ptr, new_size);
