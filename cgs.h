@@ -537,7 +537,7 @@ _Generic(mutstr, \
 )
 
 #define cgs_strv_arr_from_carr(strv_carr, ...) \
-cgs__strv_arr_from_carr(strv_carr, CGS__VA_OR((cgs__static_assertx(cgs__is_array_of((strv_carr), CGS_StrView), "Must pass StrView[N] or StrView* with length parameter"), CGS__CARR_LEN(strv_carr)), __VA_ARGS__))
+cgs__strv_arr_from_carr(strv_carr, CGS__VA_OR((cgs__static_assertx(cgs__is_array_of((strv_carr), CGS_StrView), "Must pass StrView[N] or StrView* with length argument"), CGS__CARR_LEN(strv_carr)), __VA_ARGS__))
 
 #define CGS__STRV_COMMA(anystr) \
 cgs_strv(anystr),
@@ -1242,8 +1242,6 @@ CGS_API unsigned int cgs__strbuf_cap(const CGS_StrBuf str);
 CGS_API unsigned int cgs__strbuf_ptr_cap(const CGS_StrBuf *str);
 CGS_API unsigned int cgs__mutstr_ref_cap(const CGS_MutStrRef str);
 CGS_API unsigned int cgs__mutstr_ref_len(const CGS_MutStrRef str);
-
-CGS_API bool cgs__is_strv_within(CGS_StrView base, CGS_StrView sub);
 
 CGS__NODISCARD("discarding a new DStr may cause a memory leak")
 CGS_API CGS_DStr cgs__dstr_init(unsigned int cap, CGS_Allocator *allocator);

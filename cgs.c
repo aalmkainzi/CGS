@@ -1,3 +1,4 @@
+#include <__stddef_unreachable.h>
 #include <ctype.h>
 #include <stdint.h>
 #include <assert.h>
@@ -1196,7 +1197,7 @@ CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *ctx, vo
 
 CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n)
 {
-    assert(0); // this should never get called
+    unreachable();
     (void) allocator;
     (void) align;
     (void) n;
@@ -1205,7 +1206,7 @@ CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_alloc(CGS_Allocator *alloc
 
 CGS_PRIVATE void cgs__dstr_append_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n)
 {
-    assert(0); // this should never get called
+    unreachable();
     (void) allocator;
     (void) ptr;
     (void) n;
@@ -1327,7 +1328,7 @@ CGS_PRIVATE unsigned int cgs__chars_strlen(const char *chars, unsigned int cap)
     return len;
 }
 
-CGS_API bool cgs__is_strv_within(CGS_StrView base, CGS_StrView sub)
+CGS_PRIVATE bool cgs__is_strv_within(CGS_StrView base, CGS_StrView sub)
 {
     uintptr_t begin = (uintptr_t) base.chars;
     uintptr_t end = (uintptr_t) (base.chars + base.len);
@@ -1463,7 +1464,10 @@ CGS_API CGS_Error cgs__dstr_insert(CGS_DStr *dstr, const CGS_StrView src, unsign
     if(cgs__is_strv_within(cgs__strv_dstr_ptr2(dstr, 0), src))
     {
         unsigned int begin_idx = (unsigned int)(src.chars - dstr->chars);
-        cgs__dstr_maybe_grow(dstr, src.len);
+        CGS_Error err = cgs__dstr_maybe_grow(dstr, src.len);
+        if(err.ec != CGS_OK)
+            return err;
+        
         to_insert = (CGS_StrView){
             .len = src.len, 
             .chars = dstr->chars + begin_idx
@@ -1471,7 +1475,9 @@ CGS_API CGS_Error cgs__dstr_insert(CGS_DStr *dstr, const CGS_StrView src, unsign
     }
     else
     {
-        cgs__dstr_maybe_grow(dstr, to_insert.len);
+        CGS_Error err = cgs__dstr_maybe_grow(dstr, to_insert.len);
+        if(err.ec != CGS_OK)
+            return err;
     }
     
     memmove(dstr->chars + idx + to_insert.len, dstr->chars + idx, dstr->len - idx);
@@ -1498,7 +1504,7 @@ CGS_API CGS_Error cgs__dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_least)
             dstr->chars = save;
             return (CGS_Error){CGS_ALLOC_ERR};
         }
-        if(dstr->cap < new_cap)
+        if(dstr->cap < at_least)
         {
             return (CGS_Error){CGS_ALLOC_ERR};
         }
@@ -1553,7 +1559,7 @@ CGS_API char *cgs__mutstr_ref_as_cstr(const CGS_MutStrRef str)
     };
 }
 
-CGS_API CGS_Error cgs__mutstr_ref_set_len(CGS_MutStrRef str, unsigned int new_len)
+CGS_PRIVATE CGS_Error cgs__mutstr_ref_set_len(CGS_MutStrRef str, unsigned int new_len)
 {
     switch(str.ty)
     {
@@ -2299,7 +2305,7 @@ CGS_API CGS_ReplaceResult cgs__dstr_replace(CGS_DStr *dstr, const CGS_StrView ta
     dstr->chars[dstr->len] = '\0';
     
     out:
-    if(replace_count == 0)
+    if(replace_count == 0 && err.ec == CGS_OK)
         err.ec = CGS_NOT_FOUND;
     return (CGS_ReplaceResult){.nb_replaced = replace_count, .err = err};
 }
@@ -2784,7 +2790,7 @@ CGS_PRIVATE CGS_StrView cgs__strv_fmutstr_ref2(const CGS__FixedMutStrRef str, un
     };
 }
 
-CGS_API CGS_StrView cgs__strv_fmutstr_ref3(const CGS__FixedMutStrRef str, unsigned int begin, unsigned int end)
+CGS_PRIVATE CGS_StrView cgs__strv_fmutstr_ref3(const CGS__FixedMutStrRef str, unsigned int begin, unsigned int end)
 {
     unsigned int len = *str.len;
     
