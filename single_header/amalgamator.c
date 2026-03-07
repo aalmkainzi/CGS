@@ -9,7 +9,8 @@ int main()
     
     DStr amalgam = dstr_init();
     
-    cgs_fread_until(&amalgam, h, EOF);
+    cgs_append(&amalgam, "// This file is generated from amalgamator.c\n");
+    cgs_append_fread_until(&amalgam, h, EOF);
     cgs_append(&amalgam, "\n#if defined(CGS_IMPL)\n");
     cgs_append_fread_until(&amalgam, c, EOF);
     cgs_append(&amalgam, "\n#endif // CGS_IMPL\n");

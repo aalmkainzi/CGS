@@ -1,3 +1,4 @@
+// This file is generated from amalgamator.c
 #if !defined(CGS__H_INCLUDED) && !defined(ONLY_TOSTR)
 #define CGS__H_INCLUDED
 
