@@ -48,7 +48,7 @@ There are three categories of string types:
 - `writer_t`: anything from `mutstr_t`, also `CGS_Writer` and `FILE*`
 
 This is a list of all the utility macros CGS provides:
-```C
+```C++
 CGS_StrView       cgs_strv(anystr_t str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
                   
 CGS_StrBuf        cgs_strbuf_init_from_cstr([unsigned] char *cstr, unsigned int cap = strlen(cstr) + 1);
