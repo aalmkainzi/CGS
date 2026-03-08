@@ -74,7 +74,7 @@ cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old
 ((void)_Generic((char(*)[!!(exp) + 1])0, char(*)[2]: (msg) && (0)))
 #else
     #define cgs__static_assertx(exp, msg) \
-((void)sizeof(struct { _Static_assert(exp, msg); int : 8; }))
+((void)sizeof(struct { _Static_assert(exp, msg); int dummy; }))
 #endif
 
 #define cgs__has_type(exp, t) \
