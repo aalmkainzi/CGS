@@ -3191,7 +3191,6 @@ do { \
         cgs__invoke_writer(writer, (CGS_StrView){.chars = &(char){'-'}, .len = 1}); \
     } \
     unsigned int chars_to_copy = numlen; \
-    num /= (__typeof__(num)) cgs__ten_pows[numlen - chars_to_copy]; \
     char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(num))]; \
     for (unsigned int i = 0; i < chars_to_copy ; i++) \
     { \
@@ -3209,7 +3208,6 @@ do { \
     __typeof__(obj) num = obj; \
     \
     unsigned int chars_to_copy = numlen; \
-    num /= (__typeof__(num)) cgs__ten_pows_ull[numlen - chars_to_copy]; \
     char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(num))]; \
     for (unsigned int i = 0; i < chars_to_copy ; i++) \
     { \
