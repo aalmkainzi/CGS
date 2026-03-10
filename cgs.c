@@ -1558,29 +1558,6 @@ CGS_API char *cgs__mutstr_ref_as_cstr(const CGS_MutStrRef str)
     };
 }
 
-CGS_PRIVATE CGS_Error cgs__mutstr_ref_set_len(CGS_MutStrRef str, unsigned int new_len)
-{
-    switch(str.ty)
-    {
-        case CGS__DSTR_TY   :
-            str.str.dstr->len = new_len;
-            str.str.dstr->chars[new_len] = '\0';
-            assert(str.str.dstr->cap >= str.str.dstr->len);
-            break;
-        case CGS__STRBUF_TY :
-            str.str.strbuf->len = new_len;
-            str.str.strbuf->chars[new_len] = '\0';
-            assert(str.str.strbuf->cap >= str.str.strbuf->len);
-            break;
-        case CGS__BUF_TY    :
-            str.str.buf.ptr[new_len] = '\0';
-            break;
-        default             :
-            unreachable();
-    };
-    return (CGS_Error){CGS_OK};
-}
-
 CGS_API CGS_Error cgs__mutstr_ref_commit_appender(CGS_MutStrRef owner, CGS_MutStrRef appender)
 {
     unsigned int appender_len = cgs__mutstr_ref_len(appender);
