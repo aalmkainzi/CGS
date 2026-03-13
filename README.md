@@ -290,7 +290,7 @@ int main()
 
 Types that have a `tostr` defined can use `fprint`/`sprint` and their variants:
 
-```C
+```C++
 cgs_fprint(FILE *stream, ...args with tostr);
 cgs_fprintln(FILE *stream, ...args with tostr);
 cgs_print(...args with tostr);
