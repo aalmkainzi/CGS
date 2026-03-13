@@ -5,6 +5,7 @@
 *.out
 *.exe
 *.app
+.clang-tidy
 /tests/files/
 compile_flags.txt
 api.c
