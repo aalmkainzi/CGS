@@ -1144,6 +1144,17 @@ CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref(CGS_Buffer buf, unsigned int
     return ret;
 }
 
+CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref_zero_len(CGS_Buffer buf, unsigned int *len_ptr)
+{
+    *len_ptr = 0;
+    CGS__FixedMutStrRef ret = {
+        .chars = buf.ptr,
+        .cap = buf.cap,
+        .len = len_ptr
+    };
+    return ret;
+}
+
 CGS_API CGS__FixedMutStrRef cgs__strbuf_ptr_as_fmutstr_ref(CGS_StrBuf *strbuf)
 {
     CGS__FixedMutStrRef ret = {
@@ -1338,19 +1349,18 @@ CGS_PRIVATE bool cgs__is_strv_within(CGS_StrView base, CGS_StrView sub)
 CGS__NODISCARD("discarding a new DString may cause memory leak")
 CGS_API CGS_DStr cgs__dstr_init(unsigned int cap, CGS_Allocator *allocator)
 {
-    CGS_DStr ret = { 0 };
-    
-    ret.allocator = allocator;
-    
-    CGS_Allocation allocation = cgs_alloc(allocator, unsigned char, cap);
-    ret.chars = allocation.ptr;
-    ret.cap = (unsigned int) allocation.n;
-    
-    if(ret.chars != NULL)
+    CGS_DStr ret = { .allocator = allocator };
+    if(cap != 0)
     {
-        ret.chars[0] = '\0';
+        CGS_Allocation allocation = cgs_alloc(allocator, unsigned char, cap);
+        ret.chars = allocation.ptr;
+        ret.cap = (unsigned int) allocation.n;
+        
+        if(ret.chars != NULL && ret.cap != 0)
+        {
+            ret.chars[0] = '\0';
+        }
     }
-    
     return ret;
 }
 
@@ -1650,9 +1660,9 @@ CGS_API CGS_Error cgs__mutstr_ref_insert(CGS_MutStrRef dst, const CGS_StrView sr
 
 CGS_API bool cgs__strv_equal(const CGS_StrView str1, const CGS_StrView str2)
 {
-    return
-    (str1.len == str2.len) &&
-    (memcmp(str1.chars, str2.chars, str1.len) == 0);
+    if(str1.len == 0)
+        return str2.len == 0; // passing NULL to memcmp is UB, even if 0 bytes. But CGS allows strings to be NULL if len is 0
+    return (str1.len == str2.len) && (memcmp(str1.chars, str2.chars, str1.len) == 0);
 }
 
 CGS_API CGS_StrView cgs__strv_find(const CGS_StrView hay, const CGS_StrView needle)
@@ -1680,6 +1690,10 @@ CGS_API CGS_StrView cgs__strv_find(const CGS_StrView hay, const CGS_StrView need
 
 CGS_API CGS_Error cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, const CGS_StrView src)
 {
+    if(dst.cap == 0)
+    {
+        return src.len == 0 ? (CGS_Error){CGS_OK} : (CGS_Error){CGS_DST_TOO_SMALL};
+    }
     unsigned int chars_to_copy = cgs__uint_min(src.len, dst.cap - 1);
     
     memmove(dst.chars, src.chars, chars_to_copy * sizeof(unsigned char));
@@ -2376,11 +2390,19 @@ CGS_API unsigned int cgs__strv_count(const CGS_StrView hay, const CGS_StrView ne
 
 CGS_API bool cgs__strv_starts_with(const CGS_StrView hay, const CGS_StrView needle)
 {
+    if(needle.len == 0)
+        return true;
+    if(hay.len == 0)
+        return false;
     return (needle.len <= hay.len) && (memcmp(hay.chars, needle.chars, needle.len) == 0);
 }
 
 CGS_API bool cgs__strv_ends_with(const CGS_StrView hay, const CGS_StrView needle)
 {
+    if(needle.len == 0)
+        return true;
+    if(hay.len == 0)
+        return false;
     return (needle.len <= hay.len) && (memcmp(hay.chars + hay.len - needle.len, needle.chars, needle.len) == 0);
 }
 

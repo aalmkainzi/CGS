@@ -1876,6 +1876,22 @@ void test_dstring_edge_cases() {
         ASSERT_EQ(err.ec, CGS_OK);
         dstr_deinit(&dstr);
     }
+    
+    TEST("cgs_find: null checks");
+    {
+        DStr dstr = dstr_init();
+        ASSERT_TRUE(dstr.chars == NULL);
+        ASSERT_TRUE(cgs_find(dstr, "").chars == dstr.chars);
+        ASSERT_TRUE(cgs_equal(dstr, ""));
+        ASSERT_TRUE(cgs_starts_with(dstr, ""));
+        ASSERT_TRUE(cgs_ends_with(dstr, ""));
+        
+        ASSERT_FALSE(cgs_starts_with(dstr, "something"));
+        
+        StrBuf sb = {0};
+        CGS_Error err = cgs_copy(&sb, "hello");
+        ASSERT_TRUE(err.ec == CGS_DST_TOO_SMALL);
+    }
 }
 
 // ============================================================================

@@ -309,6 +309,17 @@ _Generic(&(__typeof__(s)){0}, \
     unsigned char(*)[sizeof(__typeof__(s))] : cgs__buf_as_fmutstr_ref(cgs__buf_from_ucarr(cgs__coerce(s, unsigned char*), sizeof(__typeof__(s))), CGS__VA_OR(&(unsigned int){0}, __VA_ARGS__)) \
 )
 
+#define cgs__fmutstr_ref_zero_len(s, ...) \
+_Generic(&(__typeof__(s)){0}, \
+CGS_DStr**                              : cgs__dstr_ptr_as_fmutstr_ref(cgs__coerce(s, CGS_DStr*)), \
+CGS_Buffer*                             : cgs__buf_as_fmutstr_ref_zero_len(cgs__coerce(s, CGS_Buffer), CGS__VA_OR(&(unsigned int){0}, __VA_ARGS__)), \
+CGS_StrBuf**                            : cgs__strbuf_ptr_as_fmutstr_ref(cgs__coerce(s, CGS_StrBuf*)), \
+char**                                  : cgs__buf_as_fmutstr_ref_zero_len(cgs__buf_from_cstr(cgs__coerce(s, char*)), CGS__VA_OR(&(unsigned int){0}, __VA_ARGS__)), \
+unsigned char**                         : cgs__buf_as_fmutstr_ref_zero_len(cgs__buf_from_ucstr(cgs__coerce(s, unsigned char*)), CGS__VA_OR(&(unsigned int){0}, __VA_ARGS__)), \
+char(*)[sizeof(__typeof__(s))]          : cgs__buf_as_fmutstr_ref_zero_len(cgs__buf_from_carr(cgs__coerce(s, char*), sizeof(__typeof__(s))), CGS__VA_OR(&(unsigned int){0}, __VA_ARGS__)), \
+unsigned char(*)[sizeof(__typeof__(s))] : cgs__buf_as_fmutstr_ref_zero_len(cgs__buf_from_ucarr(cgs__coerce(s, unsigned char*), sizeof(__typeof__(s))), CGS__VA_OR(&(unsigned int){0}, __VA_ARGS__)) \
+)
+
 #define cgs_len(anystr) \
 _Generic(anystr, \
     char*                : strlen(cgs__coerce_fallback(anystr, char*, "")), \
@@ -373,7 +384,7 @@ cgs__dstr_init_from(cgs_strv(anystr), CGS__VA_OR(cgs_get_default_allocator(), __
 _Generic(mutstr_dst, \
     CGS_MutStrRef : cgs__mutstr_ref_copy(cgs__coerce(mutstr_dst, CGS_MutStrRef), cgs_strv(anystr_src)), \
     CGS_DStr*     : cgs__dstr_copy(cgs__coerce(mutstr_dst, CGS_DStr*), cgs_strv(anystr_src)), \
-    default       : cgs__fmutstr_ref_copy(cgs__fmutstr_ref(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), cgs_strv(anystr_src)) \
+    default       : cgs__fmutstr_ref_copy(cgs__fmutstr_ref_zero_len(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), cgs_strv(anystr_src)) \
 )
 
 #define cgs_putc(writer_dst, c) \
@@ -401,7 +412,7 @@ cgs__strv_count(cgs_strv(anystr_hay), cgs_strv(anystr_needle))
 #define cgs_clear(mutstr) \
 _Generic(mutstr, \
     CGS_MutStrRef : cgs__mutstr_ref_clear(cgs__coerce(mutstr, CGS_MutStrRef)), \
-    default       : cgs__fmutstr_ref_clear(cgs__fmutstr_ref(cgs__coerce_not(mutstr, CGS_MutStrRef, CGS_StrBuf*))) \
+    default       : cgs__fmutstr_ref_clear(cgs__fmutstr_ref_zero_len(cgs__coerce_not(mutstr, CGS_MutStrRef, CGS_StrBuf*))) \
 )
 
 #define cgs_starts_with(anystr_hay, anystr_needle) \
@@ -450,7 +461,7 @@ cgs__strv_split_iter(cgs_strv(anystr), cgs_strv(anystr_delim), callback, CGS__VA
 _Generic(mutstr_dst, \
     CGS_MutStrRef : cgs__strv_arr_join(cgs__coerce(mutstr_dst, CGS_MutStrRef), strv_arr, cgs_strv(anystr_delim)), \
     CGS_DStr*     : cgs__strv_arr_join_into_dstr(cgs__coerce(mutstr_dst, CGS_DStr*), strv_arr, cgs_strv(anystr_delim)), \
-    default       : cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), strv_arr, cgs_strv(anystr_delim)) \
+    default       : cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref_zero_len(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), strv_arr, cgs_strv(anystr_delim)) \
 )
 
 // DStr branch can call fmutstr_ref version directly (its a shrink-only operation)
@@ -464,7 +475,7 @@ _Generic(mutstr_dst, \
 _Generic(mutstr_dst, \
     CGS_MutStrRef : cgs__mutstr_ref_fread_until(cgs__coerce(mutstr_dst, CGS_MutStrRef), stream, delim), \
     CGS_DStr*     : cgs__dstr_fread_until(cgs__coerce(mutstr_dst, CGS_DStr*), stream, delim), \
-    default       : cgs__fmutstr_ref_fread_until(cgs__fmutstr_ref(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), stream, delim) \
+    default       : cgs__fmutstr_ref_fread_until(cgs__fmutstr_ref_zero_len(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), stream, delim) \
 )
 
 #define cgs_append_fread_until(mutstr_dst, stream, delim) \
@@ -693,7 +704,7 @@ _Generic(anystr,                                  \
 CGS__CAT(cgs__dstr_init0, __VA_OPT__(1))(__VA_ARGS__)
 
 #define cgs__dstr_init0() \
-cgs__dstr_init(1, cgs_get_default_allocator())
+cgs__dstr_init(0, cgs_get_default_allocator())
 
 #define cgs__dstr_init01(cap, ...)              \
 __VA_OPT__(cgs__dstr_init2((cap), __VA_ARGS__)) \
@@ -1221,6 +1232,7 @@ CGS_API CGS_MutStrRef cgs__strbuf_ptr_as_mutstr_ref(const CGS_StrBuf *str);
 CGS_API CGS_MutStrRef cgs__mutstr_ref_as_mutstr_ref(const CGS_MutStrRef str);
 
 CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref(CGS_Buffer buf, unsigned int *len_ptr);
+CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref_zero_len(CGS_Buffer buf, unsigned int *len_ptr);
 CGS_API CGS__FixedMutStrRef cgs__strbuf_ptr_as_fmutstr_ref(CGS_StrBuf *strbuf);
 CGS_API CGS__FixedMutStrRef cgs__dstr_ptr_as_fmutstr_ref(CGS_DStr *dstr);
 
