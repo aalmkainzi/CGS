@@ -1165,6 +1165,36 @@ CGS_API CGS__FixedMutStrRef cgs__strbuf_ptr_as_fmutstr_ref(CGS_StrBuf *strbuf)
     return ret;
 }
 
+CGS_API CGS__FixedMutStrRef cgs__mutstr_ref_as_fmutstr_ref(CGS_MutStrRef mutstr_ref, unsigned int *len_ptr)
+{
+    switch(mutstr_ref.ty)
+    {
+        case CGS__DSTR_TY:
+            return cgs__dstr_ptr_as_fmutstr_ref(mutstr_ref.str.dstr);
+        case CGS__STRBUF_TY:
+            return cgs__strbuf_ptr_as_fmutstr_ref(mutstr_ref.str.strbuf);
+        case CGS__BUF_TY:
+            return cgs__buf_as_fmutstr_ref(mutstr_ref.str.buf, len_ptr);
+        default:
+            unreachable();
+    }
+}
+
+CGS_API CGS__FixedMutStrRef cgs__mutstr_ref_as_fmutstr_ref_zero_len(CGS_MutStrRef mutstr_ref, unsigned int *len_ptr)
+{
+    switch(mutstr_ref.ty)
+    {
+        case CGS__DSTR_TY:
+            return cgs__dstr_ptr_as_fmutstr_ref(mutstr_ref.str.dstr);
+        case CGS__STRBUF_TY:
+            return cgs__strbuf_ptr_as_fmutstr_ref(mutstr_ref.str.strbuf);
+        case CGS__BUF_TY:
+            return cgs__buf_as_fmutstr_ref_zero_len(mutstr_ref.str.buf, len_ptr);
+        default:
+            unreachable();
+    }
+}
+
 CGS_API CGS__FixedMutStrRef cgs__dstr_ptr_as_fmutstr_ref(CGS_DStr *dstr)
 {
     CGS__FixedMutStrRef ret = {
@@ -2386,6 +2416,105 @@ CGS_API unsigned int cgs__strv_count(const CGS_StrView hay, const CGS_StrView ne
     }
     
     return count;
+}
+
+CGS_API CGS_StrView cgs__trim_view(const CGS_StrView str)
+{
+    if(str.len == 0)
+    {
+        return str;
+    }
+    unsigned int begin = 0;
+    for( ; begin < str.len ; begin++)
+    {
+        if(!isspace(str.chars[begin]))
+        {
+            break;
+        }
+    }
+    unsigned int end = str.len;
+    for( ; end > begin ; end--)
+    {
+        if(!isspace(str.chars[end - 1]))
+        {
+            break;
+        }
+    }
+    
+    return cgs__strv_strv3(str, begin, end);
+}
+
+CGS_API unsigned int cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset)
+{
+    // 256 bits
+    uint64_t reject_bitset[4] = {0};
+    for(unsigned int i = 0 ; i < charset.len ; i++)
+    {
+        unsigned char c = (unsigned char) charset.chars[i];
+        reject_bitset[(c / 64) % 4] |= (uint64_t)1 << (c % 64);
+    }
+    
+    for(unsigned int i = 0 ; i < src.len ; i++)
+    {
+        unsigned char c = (unsigned char) src.chars[i];
+        if(reject_bitset[(c / 64) % 4] & ((uint64_t)1 << (c % 64)))
+        {
+            return i;
+        }
+    }
+    
+    return src.len;
+}
+
+CGS_API unsigned int cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset)
+{
+    // 256 bits
+    uint64_t reject_bitset[4] = {0};
+    for(unsigned int i = 0 ; i < charset.len ; i++)
+    {
+        unsigned char c = (unsigned char) charset.chars[i];
+        reject_bitset[(c / 64) % 4] |= (uint64_t)1 << (c % 64);
+    }
+    
+    for(unsigned int i = 0 ; i < src.len ; i++)
+    {
+        unsigned char c = (unsigned char) src.chars[i];
+        if(!(reject_bitset[(c / 64) % 4] & ((uint64_t)1 << (c % 64))))
+        {
+            return i;
+        }
+    }
+    
+    return src.len;
+}
+
+CGS_API CGS_Error cgs__trim(CGS__FixedMutStrRef str)
+{
+    unsigned int begin = 0;
+    for( ; begin < *str.len ; begin++)
+    {
+        if(!isspace(str.chars[begin]))
+        {
+            break;
+        }
+    }
+    
+    unsigned int end = *str.len;
+    for( ; end > begin ; end--)
+    {
+        if(!isspace(str.chars[end - 1]))
+        {
+            break;
+        }
+    }
+    
+    unsigned int len = end - begin;
+    memmove(str.chars, str.chars + begin, end);
+    
+    *str.len = len;
+    str.chars[len] = '\0';
+    
+    return (CGS_Error){CGS_OK};
 }
 
 CGS_API bool cgs__strv_starts_with(const CGS_StrView hay, const CGS_StrView needle)

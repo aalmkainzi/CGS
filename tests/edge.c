@@ -309,6 +309,514 @@ void test_str_find_edge_cases() {
         StrView result = cgs_find(hay, needle);
         ASSERT_TRUE(cgs_len(result) > 0);
     }
+    
+    /* --- cgs_trim_view --- */
+    
+    TEST("cgs_trim_view: no whitespace");
+    {
+        char s[] = "hello";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 5 && v.chars == &s[0]);
+    }
+    
+    TEST("cgs_trim_view: leading spaces");
+    {
+        char s[] = "   hello";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 5 && v.chars == &s[3]);
+    }
+    
+    TEST("cgs_trim_view: trailing spaces");
+    {
+        char s[] = "hello   ";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 5 && v.chars == &s[0]);
+    }
+    
+    TEST("cgs_trim_view: leading and trailing spaces");
+    {
+        char s[] = "  hello  ";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 5 && v.chars == &s[2]);
+    }
+    
+    TEST("cgs_trim_view: interior whitespace is preserved");
+    {
+        char s[] = "  hello world  ";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 11 && v.chars == &s[2]);
+    }
+    
+    TEST("cgs_trim_view: only spaces");
+    {
+        char s[] = "     ";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 0);
+    }
+    
+    TEST("cgs_trim_view: empty string");
+    {
+        char s[] = "";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 0);
+    }
+    
+    TEST("cgs_trim_view: empty string");
+    {
+        char s[] = " \t\n";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 0);
+    }
+    
+    TEST("cgs_trim_view: single non-whitespace character");
+    {
+        char s[] = "x";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 1 && v.chars == &s[0]);
+    }
+    
+    TEST("cgs_trim_view: single space");
+    {
+        char s[] = " ";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 0 && v.chars == s + 1);
+    }
+    
+    TEST("cgs_trim_view: leading tab");
+    {
+        char s[] = "\thello";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 5 && v.chars == &s[1]);
+    }
+    
+    TEST("cgs_trim_view: trailing newline");
+    {
+        char s[] = "hello\n";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 5 && v.chars == &s[0]);
+    }
+    
+    TEST("cgs_trim_view: mixed whitespace characters on both sides");
+    {
+        char s[] = " \t\n hello \r\n";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 5 && v.chars == &s[4]);
+    }
+    
+    TEST("cgs_trim_view: accepts StrView");
+    {
+        StrView src = strv("  hi  ");
+        StrView v = cgs_trim_view(src);
+        ASSERT_TRUE(v.len == 2);
+    }
+    
+    TEST("cgs_trim_view: accepts DStr");
+    {
+        DStr d = dstr_init_from("  hi  ");
+        StrView v = cgs_trim_view(d);
+        ASSERT_TRUE(v.len == 2);
+        dstr_deinit(&d);
+    }
+    
+    TEST("cgs_trim_view: result points into original buffer, not a copy");
+    {
+        char s[] = "  abc  ";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.chars == &s[2]);
+    }
+    
+    TEST("cgs_trim_view: only spaces");
+    {
+        char s[] = "   ";
+        StrView v = cgs_trim_view(s);
+        ASSERT_TRUE(v.len == 0 && v.chars == s + 3);
+    }
+    
+    /* --- cgs_trim --- */
+    
+    TEST("cgs_trim: no whitespace");
+    {
+        char s[64] = "hello";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(s, "hello") == 0 && cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: leading spaces");
+    {
+        char s[64] = "   hello";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(s, "hello") == 0);
+        ASSERT_TRUE(cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: trailing spaces");
+    {
+        char s[64] = "hello   ";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(s, "hello") == 0 && cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: leading and trailing spaces");
+    {
+        char s[64] = "  hello  ";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(s, "hello") == 0);
+        ASSERT_TRUE( cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: interior whitespace is preserved");
+    {
+        char s[64] = "  hello world  ";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(s, "hello world") == 0 && cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: only spaces");
+    {
+        char s[64] = "     ";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(s, "") == 0 && cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: empty string");
+    {
+        char s[64] = "";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(s, "") == 0 && cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: single non-whitespace character");
+    {
+        char s[64] = "x";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(s, "x") == 0 && cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: single space");
+    {
+        char s[64] = " ";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(s, "") == 0 && cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: leading tab");
+    {
+        char s[64] = "\thello";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(s, "hello") == 0 && cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: trailing newline");
+    {
+        char s[64] = "hello\n";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(s, "hello") == 0 && cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: mixed whitespace on both sides");
+    {
+        char s[64] = " \t\n hello \r\n";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(s, "hello") == 0 && cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: DStr*");
+    {
+        DStr d = dstr_init_from("  hello  ");
+        char *p = cgs_chars(d);
+        CGS_Error e = cgs_trim(&d);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(d, "hello") && cgs_chars(d) == p);
+        dstr_deinit(&d);
+    }
+    
+    TEST("cgs_trim: StrBuf*");
+    {
+        char buf[64] = "  hello  ";
+        StrBuf sb = strbuf_init_from_cstr(buf, sizeof(buf));
+        char *p = cgs_chars(sb);
+        CGS_Error e = cgs_trim(&sb);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(sb, "hello") && cgs_chars(sb) == p);
+    }
+    
+    TEST("cgs_trim: MutStrRef");
+    {
+        char buf[64] = "  hello  ";
+        MutStrRef ref = mutstr_ref(buf);
+        char *p = buf;
+        CGS_Error e = cgs_trim(ref);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(buf, "hello") == 0 && buf == p);
+    }
+    
+    TEST("cgs_trim: length decreases correctly after trim");
+    {
+        char s[64] = "  hi  ";
+        char *p = s;
+        CGS_Error e = cgs_trim(s);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(cgs_len(s) == 2 && cgs_chars(s) == p);
+    }
+    
+    /* --- cgs_spn --- */
+    
+    TEST("cgs_spn: entire string in charset");
+    {
+        char s[] = "aabbcc";
+        ASSERT_TRUE(cgs_spn(s, "abc") == 6);
+    }
+    
+    TEST("cgs_spn: no chars in charset");
+    {
+        char s[] = "hello";
+        ASSERT_TRUE(cgs_spn(s, "xyz") == 0);
+    }
+    
+    TEST("cgs_spn: partial match at start");
+    {
+        char s[] = "aaabcd";
+        ASSERT_TRUE(cgs_spn(s, "ab") == 4);
+    }
+    
+    TEST("cgs_spn: match stops at first non-charset char");
+    {
+        char s[] = "aaa!aaa";
+        ASSERT_TRUE(cgs_spn(s, "a") == 3);
+    }
+    
+    TEST("cgs_spn: empty string");
+    {
+        char s[] = "";
+        ASSERT_TRUE(cgs_spn(s, "abc") == 0);
+    }
+    
+    TEST("cgs_spn: empty charset");
+    {
+        char s[] = "hello";
+        ASSERT_TRUE(cgs_spn(s, "") == 0);
+    }
+    
+    TEST("cgs_spn: both empty");
+    {
+        char s[] = "";
+        ASSERT_TRUE(cgs_spn(s, "") == 0);
+    }
+    
+    TEST("cgs_spn: single char string, in charset");
+    {
+        char s[] = "a";
+        ASSERT_TRUE(cgs_spn(s, "a") == 1);
+    }
+    
+    TEST("cgs_spn: single char string, not in charset");
+    {
+        char s[] = "a";
+        ASSERT_TRUE(cgs_spn(s, "b") == 0);
+    }
+    
+    TEST("cgs_spn: charset has duplicate chars");
+    {
+        char s[] = "aaabbb";
+        ASSERT_TRUE(cgs_spn(s, "aaabbb") == 6);
+    }
+    
+    TEST("cgs_spn: charset larger than string");
+    {
+        char s[] = "ab";
+        ASSERT_TRUE(cgs_spn(s, "abcdefghijklmnop") == 2);
+    }
+    
+    TEST("cgs_spn: whitespace charset");
+    {
+        char s[] = "   \t\nhello";
+        ASSERT_TRUE(cgs_spn(s, " \t\n\r") == 5);
+    }
+    
+    TEST("cgs_spn: first char not in charset");
+    {
+        char s[] = "xaaa";
+        ASSERT_TRUE(cgs_spn(s, "a") == 0);
+    }
+    
+    TEST("cgs_spn: accepts StrView");
+    {
+        StrView sv = strv("aaabcd");
+        ASSERT_TRUE(cgs_spn(sv, "a") == 3);
+    }
+    
+    TEST("cgs_spn: accepts DStr");
+    {
+        DStr d = dstr_init_from("aaabcd");
+        ASSERT_TRUE(cgs_spn(d, "a") == 3);
+        dstr_deinit(&d);
+    }
+    
+    TEST("cgs_spn: charset as StrView");
+    {
+        char s[] = "aaabcd";
+        StrView charset = strv("a");
+        ASSERT_TRUE(cgs_spn(s, charset) == 3);
+    }
+    
+    TEST("cgs_spn: result equals length means all chars matched");
+    {
+        char s[] = "abcabc";
+        unsigned int n = cgs_spn(s, "abc");
+        ASSERT_TRUE(n == cgs_len(s));
+    }
+    
+    /* --- cgs_cspn --- */
+    
+    TEST("cgs_cspn: no chars in charset");
+    {
+        char s[] = "hello";
+        ASSERT_TRUE(cgs_cspn(s, "xyz") == 5);
+    }
+    
+    TEST("cgs_cspn: first char in charset");
+    {
+        char s[] = "hello";
+        ASSERT_TRUE(cgs_cspn(s, "h") == 0);
+    }
+    
+    TEST("cgs_cspn: charset hit in middle");
+    {
+        char s[] = "abcXdef";
+        ASSERT_TRUE(cgs_cspn(s, "X") == 3);
+    }
+    
+    TEST("cgs_cspn: charset hit at last char");
+    {
+        char s[] = "abcdX";
+        ASSERT_TRUE(cgs_cspn(s, "X") == 4);
+    }
+    
+    TEST("cgs_cspn: entire string in charset");
+    {
+        char s[] = "aaa";
+        ASSERT_TRUE(cgs_cspn(s, "a") == 0);
+    }
+    
+    TEST("cgs_cspn: empty string");
+    {
+        char s[] = "";
+        ASSERT_TRUE(cgs_cspn(s, "abc") == 0);
+    }
+    
+    TEST("cgs_cspn: empty charset");
+    {
+        char s[] = "hello";
+        ASSERT_TRUE(cgs_cspn(s, "") == 5);
+    }
+    
+    TEST("cgs_cspn: both empty");
+    {
+        char s[] = "";
+        ASSERT_TRUE(cgs_cspn(s, "") == 0);
+    }
+    
+    TEST("cgs_cspn: single char string, in charset");
+    {
+        char s[] = "a";
+        ASSERT_TRUE(cgs_cspn(s, "a") == 0);
+    }
+    
+    TEST("cgs_cspn: single char string, not in charset");
+    {
+        char s[] = "a";
+        ASSERT_TRUE(cgs_cspn(s, "b") == 1);
+    }
+    
+    TEST("cgs_cspn: multiple chars in charset, first hit determines result");
+    {
+        char s[] = "abcdef";
+        ASSERT_TRUE(cgs_cspn(s, "ce") == 2);
+    }
+    
+    TEST("cgs_cspn: charset has duplicate chars");
+    {
+        char s[] = "abcXdef";
+        ASSERT_TRUE(cgs_cspn(s, "XX") == 3);
+    }
+    
+    TEST("cgs_cspn: whitespace as charset");
+    {
+        char s[] = "hello world";
+        ASSERT_TRUE(cgs_cspn(s, " \t\n\r") == 5);
+    }
+    
+    TEST("cgs_cspn: accepts StrView");
+    {
+        StrView sv = strv("abcXdef");
+        ASSERT_TRUE(cgs_cspn(sv, "X") == 3);
+    }
+    
+    TEST("cgs_cspn: accepts DStr");
+    {
+        DStr d = dstr_init_from("abcXdef");
+        ASSERT_TRUE(cgs_cspn(d, "X") == 3);
+        dstr_deinit(&d);
+    }
+    
+    TEST("cgs_cspn: charset as StrView");
+    {
+        char s[] = "abcXdef";
+        StrView charset = strv("X");
+        ASSERT_TRUE(cgs_cspn(s, charset) == 3);
+    }
+    
+    TEST("cgs_cspn: result equals length means no chars matched");
+    {
+        char s[] = "hello";
+        unsigned int n = cgs_cspn(s, "xyz");
+        ASSERT_TRUE(n == cgs_len(s));
+    }
+    
+    /* --- cgs_spn / cgs_cspn: complementary relationship --- */
+    
+    TEST("cgs_spn + cgs_cspn: partition the string");
+    {
+        /* for any string and charset, spn + cspn(from that offset) should
+         *           walk the entire string */
+        char s[] = "aaabbbccc";
+        unsigned int spn = cgs_spn(s, "a");
+        StrView rest = strv(s, spn);
+        unsigned int cspn = cgs_cspn(rest, "a");
+        ASSERT_TRUE(spn == 3 && cspn == 6);
+    }
+    
+    TEST("cgs_spn + cgs_cspn: on same string and charset sum to string length when non-overlapping");
+    {
+        /* all-a string: spn == len, cspn == 0 */
+        char s[] = "aaaa";
+        ASSERT_TRUE(cgs_spn(s, "a") + cgs_cspn(s, "a") == cgs_len(s));
+    }
+    
 }
 
 // ============================================================================
