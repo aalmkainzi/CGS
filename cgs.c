@@ -2446,18 +2446,17 @@ CGS_API CGS_StrView cgs__trim_view(const CGS_StrView str)
 
 CGS_API unsigned int cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset)
 {
-    // 256 bits
     uint64_t reject_bitset[4] = {0};
     for(unsigned int i = 0 ; i < charset.len ; i++)
     {
         unsigned char c = (unsigned char) charset.chars[i];
-        reject_bitset[(c / 64) % 4] |= (uint64_t)1 << (c % 64);
+        reject_bitset[c / 64] |= (uint64_t)1 << (c % 64);
     }
     
     for(unsigned int i = 0 ; i < src.len ; i++)
     {
         unsigned char c = (unsigned char) src.chars[i];
-        if(reject_bitset[(c / 64) % 4] & ((uint64_t)1 << (c % 64)))
+        if(reject_bitset[c / 64] & ((uint64_t)1 << (c % 64)))
         {
             return i;
         }
@@ -2468,18 +2467,17 @@ CGS_API unsigned int cgs__strv_cspn(const CGS_StrView src, const CGS_StrView cha
 
 CGS_API unsigned int cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset)
 {
-    // 256 bits
-    uint64_t reject_bitset[4] = {0};
+    uint64_t accept_bitset[4] = {0};
     for(unsigned int i = 0 ; i < charset.len ; i++)
     {
         unsigned char c = (unsigned char) charset.chars[i];
-        reject_bitset[(c / 64) % 4] |= (uint64_t)1 << (c % 64);
+        accept_bitset[(c / 64)] |= (uint64_t)1 << (c % 64);
     }
     
     for(unsigned int i = 0 ; i < src.len ; i++)
     {
         unsigned char c = (unsigned char) src.chars[i];
-        if(!(reject_bitset[(c / 64) % 4] & ((uint64_t)1 << (c % 64))))
+        if(!(accept_bitset[c / 64] & ((uint64_t)1 << (c % 64))))
         {
             return i;
         }
