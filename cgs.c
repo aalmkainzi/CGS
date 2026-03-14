@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <limits.h>
+#include <stddef.h>
 
 #ifndef CGS_API
     // for functions exposed in the header
@@ -3303,40 +3304,37 @@ do { \
     { \
         return cgs__min_tostr(__typeof__(obj))(writer); \
     } \
+    unsigned int numlen = cgs__numstr_len(llabs(obj)); \
+    char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
+    if(numlen >= sizeof(cgs__tmp_buf)) unreachable(); \
+    \
     bool isneg = false; \
     if(obj < 0) \
     { \
         isneg = true; \
         obj *= -1; \
+        cgs__tmp_buf[0] = '-'; \
     } \
-    unsigned int numlen = cgs__numstr_len((unsigned long long) obj); \
-    __typeof__(obj) num = obj; \
     \
-    if(isneg) \
-    { \
-        cgs__invoke_writer(writer, (CGS_StrView){.chars = &(char){'-'}, .len = 1}); \
-    } \
-    char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(num))]; \
     for (unsigned int i = 0; i < numlen ; i++) \
     { \
-        unsigned char rem = (unsigned char)(num % 10); \
-        num = num / 10; \
-        cgs__tmp_buf[numlen - (i + 1)] = (char)(rem + '0'); \
+        unsigned char rem = (unsigned char)(obj % 10); \
+        obj = obj / 10; \
+        cgs__tmp_buf[isneg + numlen - (i + 1)] = (char)(rem + '0'); \
     } \
-    return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = numlen}); \
+    return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = numlen + isneg}); \
 } while(0)
 
 #define cgs__uinteger_tostr() \
 do { \
     unsigned int numlen = cgs__numstr_len(obj); \
+    char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
+    if(numlen >= sizeof(cgs__tmp_buf)) unreachable(); \
     \
-    __typeof__(obj) num = obj; \
-    \
-    char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(num))]; \
     for (unsigned int i = 0; i < numlen ; i++) \
     { \
-        unsigned char rem = (unsigned char)(num % 10); \
-        num = num / 10; \
+        unsigned char rem = (unsigned char)(obj % 10); \
+        obj = obj / 10; \
         cgs__tmp_buf[numlen - (i + 1)] = (char)(rem + '0'); \
     } \
     return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = numlen}); \
