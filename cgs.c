@@ -3310,22 +3310,20 @@ do { \
         obj *= -1; \
     } \
     unsigned int numlen = cgs__numstr_len((unsigned long long) obj); \
-    \
     __typeof__(obj) num = obj; \
     \
     if(isneg) \
     { \
         cgs__invoke_writer(writer, (CGS_StrView){.chars = &(char){'-'}, .len = 1}); \
     } \
-    unsigned int chars_to_copy = numlen; \
     char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(num))]; \
-    for (unsigned int i = 0; i < chars_to_copy ; i++) \
+    for (unsigned int i = 0; i < numlen ; i++) \
     { \
         unsigned char rem = (unsigned char)(num % 10); \
         num = num / 10; \
-        cgs__tmp_buf[chars_to_copy - (i + 1)] = (char)(rem + '0'); \
+        cgs__tmp_buf[numlen - (i + 1)] = (char)(rem + '0'); \
     } \
-    return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = chars_to_copy}); \
+    return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = numlen}); \
 } while(0)
 
 #define cgs__uinteger_tostr() \
@@ -3334,15 +3332,14 @@ do { \
     \
     __typeof__(obj) num = obj; \
     \
-    unsigned int chars_to_copy = numlen; \
     char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(num))]; \
-    for (unsigned int i = 0; i < chars_to_copy ; i++) \
+    for (unsigned int i = 0; i < numlen ; i++) \
     { \
         unsigned char rem = (unsigned char)(num % 10); \
         num = num / 10; \
-        cgs__tmp_buf[chars_to_copy - (i + 1)] = (char)(rem + '0'); \
+        cgs__tmp_buf[numlen - (i + 1)] = (char)(rem + '0'); \
     } \
-    return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = chars_to_copy}); \
+    return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = numlen}); \
 } while(0)
 
 CGS_API CGS_Error cgs__bool_tostr(CGS_Writer writer, bool obj)
