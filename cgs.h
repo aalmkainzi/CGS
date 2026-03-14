@@ -210,7 +210,7 @@ typedef struct CGS_MutStrRef
     } str;
 } CGS_MutStrRef;
 
-enum CGS__Error_Value
+enum CGS__ErrorCode
 {
     CGS_OK = 0,
     CGS_DST_TOO_SMALL,

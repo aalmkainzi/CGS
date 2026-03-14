@@ -50,28 +50,6 @@ static const CGS_StrView cgs__error_to_string[] = {
     [CGS_CALLBACK_EXIT]          = {.len = sizeof("CALLBACK_EXIT")          - 1, .chars = "CALLBACK_EXIT"}
 };
 
-static const long long cgs__ten_pows[] = {
-    1,
-    10,
-    100,
-    1000,
-    10000,
-    100000,
-    1000000,
-    10000000,
-    100000000,
-    1000000000,
-    10000000000,
-    100000000000,
-    1000000000000,
-    10000000000000,
-    100000000000000,
-    1000000000000000,
-    10000000000000000,
-    100000000000000000,
-    1000000000000000000,
-};
-
 static const unsigned long long cgs__ten_pows_ull[] = {
     1ull,
     10ull,
