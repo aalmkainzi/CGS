@@ -153,7 +153,7 @@ __VA_OPT__( \
 CGS__ARG1(__VA_ARGS__) CGS__FOREACH(CGS__TYPEOF_ARG, __VA_ARGS__) \
 )
 
-// Dynamic String
+// Dynamic string
 typedef struct CGS_DStr
 {
     char *chars;
@@ -185,7 +185,7 @@ typedef struct CGS_StrViewArray
     unsigned int len;
 } CGS_StrViewArray;
 
-// Used for passing `char[]` or `unsigned char[]`, such that it doesn't lose cap information
+// Used for passing `char[]` and `unsigned char[]`, such that it doesn't lose cap information
 typedef struct CGS_Buffer
 {
     char *ptr;
@@ -443,7 +443,7 @@ cgs__chars_toupper(cgs_strv(mutstr))
 
 #define cgs_replace(mutstr_dst, anystr_target, anystr_replacement) \
 _Generic(mutstr_dst, \
-    MutStrRef : cgs__mutstr_ref_replace(cgs__coerce(mutstr_dst, CGS_MutStrRef), cgs_strv(anystr_target), cgs_strv(anystr_replacement)), \
+    CGS_MutStrRef : cgs__mutstr_ref_replace(cgs__coerce(mutstr_dst, CGS_MutStrRef), cgs_strv(anystr_target), cgs_strv(anystr_replacement)), \
     CGS_DStr* : cgs__dstr_replace(cgs__coerce(mutstr_dst, CGS_DStr*), cgs_strv(anystr_target), cgs_strv(anystr_replacement)), \
     default   : cgs__fmutstr_ref_replace(cgs__fmutstr_ref(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), cgs_strv(anystr_target), cgs_strv(anystr_replacement)) \
 )
@@ -475,12 +475,8 @@ _Generic(mutstr_dst, \
     default       : cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref_zero_len(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), strv_arr, cgs_strv(anystr_delim)) \
 )
 
-// DStr branch can call fmutstr_ref version directly (its a shrink-only operation)
 #define cgs_del(mutstr_dst, begin, end) \
-_Generic(mutstr_dst, \
-    CGS_MutStrRef : cgs__mutstr_ref_delete_range(cgs__coerce(mutstr_dst, CGS_MutStrRef), begin, end), \
-    default       : cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), begin, end) \
-)
+cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(mutstr_dst), begin, end)
 
 #define cgs_fread_until(mutstr_dst, stream, delim) \
 _Generic(mutstr_dst, \
