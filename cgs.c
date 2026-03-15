@@ -3304,15 +3304,18 @@ do { \
     { \
         return cgs__min_tostr(__typeof__(obj))(writer); \
     } \
-    unsigned int numlen = cgs__numstr_len(llabs(obj)); \
-    char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
-    if(numlen >= sizeof(cgs__tmp_buf)) unreachable(); \
-    \
     bool isneg = false; \
     if(obj < 0) \
     { \
         isneg = true; \
         obj *= -1; \
+    } \
+    unsigned int numlen = cgs__numstr_len(obj); \
+    char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
+    if(numlen >= sizeof(cgs__tmp_buf)) unreachable(); \
+    \
+    if(isneg) \
+    { \
         cgs__tmp_buf[0] = '-'; \
     } \
     \
