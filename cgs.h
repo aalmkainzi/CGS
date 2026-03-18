@@ -68,7 +68,7 @@ cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old
 
 #endif
 
-#if defined(__GNUC__) && !defined(__clang__)
+#if !defined(__clang__)
     #define cgs__static_assertx(exp, msg) \
 ((void)_Generic((char(*)[!!(exp) + 1])0, char(*)[2]: (msg) && (0)))
 #else
@@ -742,7 +742,10 @@ cgs__dstr_ensure_cap(dstr, new_cap)
 #define cgs__str_print_each(x) \
 do \
 { \
-    cgs__get_tostr_func(__typeof__(x))(cgs__as_writer, x); \
+    __typeof__(x) cgs__type_holder; \
+    { \
+        cgs__get_tostr_func(__typeof__(cgs__type_holder))(cgs__as_writer, x); \
+    } \
 } while(0);
 
 #define cgs__sprint_foreach_arg(...) \
@@ -799,14 +802,14 @@ typedef unsigned long long cgs__ull;
 #define CGS__MCALL(macro, arglist) macro arglist
 
 #define CGS__INTEGER_TYPES(CGS__X, extra, ...) \
-CGS__X(cgs__c, extra)  \
+CGS__X(cgs__c , extra)  \
 CGS__X(cgs__sc, extra) \
 CGS__X(cgs__uc, extra) \
-CGS__X(cgs__s, extra)  \
+CGS__X(cgs__s , extra)  \
 CGS__X(cgs__us, extra) \
-CGS__X(cgs__i, extra)  \
+CGS__X(cgs__i , extra)  \
 CGS__X(cgs__ui, extra) \
-CGS__X(cgs__l, extra)  \
+CGS__X(cgs__l , extra)  \
 CGS__X(cgs__ul, extra) \
 CGS__X(cgs__ll, extra) \
 CGS__MCALL(CGS__VA_OR(CGS__X, __VA_ARGS__), (cgs__ull, extra))
