@@ -2397,32 +2397,6 @@ CGS_API unsigned int cgs__strv_count(const CGS_StrView hay, const CGS_StrView ne
     return count;
 }
 
-CGS_API CGS_StrView cgs__trim_view(const CGS_StrView str)
-{
-    if(str.len == 0)
-    {
-        return str;
-    }
-    unsigned int begin = 0;
-    for( ; begin < str.len ; begin++)
-    {
-        if(!isspace(str.chars[begin]))
-        {
-            break;
-        }
-    }
-    unsigned int end = str.len;
-    for( ; end > begin ; end--)
-    {
-        if(!isspace(str.chars[end - 1]))
-        {
-            break;
-        }
-    }
-    
-    return cgs__strv_strv3(str, begin, end);
-}
-
 CGS_API unsigned int cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset)
 {
     if(charset.len == 1)
@@ -2456,6 +2430,32 @@ CGS_API unsigned int cgs__strv_spn(const CGS_StrView src, const CGS_StrView char
     return src.len;
 }
 
+CGS_API CGS_StrView cgs__trim_view(const CGS_StrView str)
+{
+    if(str.len == 0)
+    {
+        return str;
+    }
+    unsigned int begin = 0;
+    for( ; begin < str.len ; begin++)
+    {
+        if(!isspace(str.chars[begin]))
+        {
+            break;
+        }
+    }
+    unsigned int end = str.len;
+    for( ; end > begin ; end--)
+    {
+        if(!isspace(str.chars[end - 1]))
+        {
+            break;
+        }
+    }
+    
+    return cgs__strv_strv3(str, begin, end);
+}
+
 CGS_API CGS_Error cgs__trim(CGS__FixedMutStrRef str)
 {
     unsigned int begin = 0;
@@ -2477,7 +2477,7 @@ CGS_API CGS_Error cgs__trim(CGS__FixedMutStrRef str)
     }
     
     unsigned int len = end - begin;
-    memmove(str.chars, str.chars + begin, end);
+    memmove(str.chars, str.chars + begin, len);
     
     *str.len = len;
     str.chars[len] = '\0';

@@ -468,8 +468,30 @@ void test_str_find_edge_cases() {
         char *p = s;
         CGS_Error e = cgs_trim(s);
         ASSERT_TRUE(e.ec == CGS_OK);
-        ASSERT_TRUE(strcmp(s, "hello") == 0);
+        ASSERT_TRUE(cgs_equal(s, "hello"));
         ASSERT_TRUE( cgs_chars(s) == p);
+    }
+    
+    TEST("cgs_trim: all whitespace");
+    {
+        // A string of 4 spaces. Length is 4.
+        // Buffer is exactly large enough for 4 chars + null (5 bytes).
+        char s[5] = "    "; 
+        
+        // Logic execution:
+        // 1. begin will become 4 (it hits the end of the string).
+        // 2. end will stay 4 (the loop 'end > begin' will never execute).
+        // 3. len = 4 - 4 = 0.
+        // 4. memmove(s, s + 4, 4);  <-- BUG HERE
+        
+        // This memmove will try to read 4 bytes starting from index 4.
+        // Index 4 is '\0', but indices 5, 6, and 7 are OUTSIDE the array 's[5]'.
+        
+        CGS_Error e = cgs_trim(s);
+        
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(s, ""));
+        ASSERT_TRUE(cgs_len(s) == 0);
     }
     
     TEST("cgs_trim: interior whitespace is preserved");
