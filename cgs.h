@@ -916,13 +916,13 @@ CGS__VA_OR(otherwise, __VA_ARGS__)
 #define CGS__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra) \
 ty: \
 _Generic((char(*)[CGS__ARG2 extra]){0}, \
-char(*)['f']: (CGS__Floating_f_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, (6 , CGS__EXPAND1 extra))}, \
-char(*)['g']: (CGS__Floating_g_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, (6 , CGS__EXPAND1 extra))}, \
-char(*)['e']: (CGS__Floating_e_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, (6 , CGS__EXPAND1 extra))}, \
+char(*)['f']: (CGS__Floating_f_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, ( 6, CGS__EXPAND1 extra))}, \
+char(*)['g']: (CGS__Floating_g_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, ( 6, CGS__EXPAND1 extra))}, \
+char(*)['e']: (CGS__Floating_e_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, ( 6, CGS__EXPAND1 extra))}, \
 char(*)['a']: (CGS__Floating_a_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, (-1, CGS__EXPAND1 extra))}, \
-char(*)['F']: (CGS__Floating_F_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, (6 , CGS__EXPAND1 extra))}, \
-char(*)['G']: (CGS__Floating_G_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, (6 , CGS__EXPAND1 extra))}, \
-char(*)['E']: (CGS__Floating_E_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, (6 , CGS__EXPAND1 extra))}, \
+char(*)['F']: (CGS__Floating_F_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, ( 6, CGS__EXPAND1 extra))}, \
+char(*)['G']: (CGS__Floating_G_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, ( 6, CGS__EXPAND1 extra))}, \
+char(*)['E']: (CGS__Floating_E_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, ( 6, CGS__EXPAND1 extra))}, \
 char(*)['A']: (CGS__Floating_A_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), CGS__MCALL(CGS__3_VA_OR, (-1, CGS__EXPAND1 extra))}, \
 default: 0)
 

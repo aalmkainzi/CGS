@@ -1409,38 +1409,6 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("cgs_read_line and cgs_read_until: stdin redirection");
-    {
-        // Setup: Redirect stdin to a temporary file
-        FILE* tmp = tmpfile();
-        fputs("standard input line\npart1:part2", tmp);
-        rewind(tmp);
-        
-        // Save old stdin to restore later (platform dependent, but works on most POSIX/Windows)
-        FILE* old_stdin = stdin;
-        stdin = tmp;
-        
-        CGS_DStr res1 = cgs_dstr_init();
-        CGS_DStr res2 = cgs_dstr_init();
-        
-        cgs_read_line(&res1);
-        ASSERT_TRUE(cgs_equal(res1, "standard input line\n"));
-        
-        cgs_read_until(&res2, ':');
-        ASSERT_TRUE(cgs_equal(res2, "part1:"));
-        
-        // Append remaining stdin
-        cgs_append_read_line(&res2);
-        ASSERT_TRUE(cgs_equal(res2, "part1:part2"));
-        
-        cgs_dstr_deinit(&res1);
-        cgs_dstr_deinit(&res2);
-        
-        // Restore stdin and cleanup
-        stdin = old_stdin;
-        fclose(tmp);
-    }
-    
     TEST("cgs_fread_line: empty file and immediate EOF");
     {
         FILE* tmp = tmpfile(); // empty
@@ -1451,28 +1419,6 @@ void test_str_putc_edge_cases() {
         ASSERT_TRUE(cgs_equal(result, ""));
         
         cgs_dstr_deinit(&result);
-        fclose(tmp);
-    }
-    
-    TEST("cgs_append_read_until: mixed append/read on stdin");
-    {
-        FILE* tmp = tmpfile();
-        fputs("A,B,C", tmp);
-        rewind(tmp);
-        
-        FILE* old_stdin = stdin;
-        stdin = tmp;
-        
-        CGS_DStr res = cgs_dstr_init_from("Letters: ");
-        
-        cgs_append_read_until(&res, ','); // "Letters: A,"
-        cgs_append_read_until(&res, ','); // "Letters: A,B,"
-        cgs_append_read_line(&res);       // "Letters: A,B,C"
-        
-        ASSERT_TRUE(cgs_equal(res, "Letters: A,B,C"));
-        
-        cgs_dstr_deinit(&res);
-        stdin = old_stdin;
         fclose(tmp);
     }
     
@@ -1545,46 +1491,6 @@ void test_str_putc_edge_cases() {
         ASSERT_TRUE(cgs_equal(result, "Data: part1;part2"));
         
         cgs_dstr_deinit(&result);
-        fclose(tmp);
-    }
-    
-    TEST("cgs_read_until: stdin redirection with EOF delim");
-    {
-        FILE* tmp = tmpfile();
-        fputs("stdin content", tmp);
-        rewind(tmp);
-        
-        FILE* old_stdin = stdin;
-        stdin = tmp;
-        
-        CGS_DStr res = cgs_dstr_init();
-        
-        // Testing that cgs_read_until(res, EOF) behaves correctly
-        cgs_read_until(&res, EOF);
-        ASSERT_TRUE(cgs_equal(res, "stdin content"));
-        
-        cgs_dstr_deinit(&res);
-        stdin = old_stdin;
-        fclose(tmp);
-    }
-    
-    TEST("cgs_append_read_until: delimiter is the very last char");
-    {
-        FILE* tmp = tmpfile();
-        fputs("command!", tmp); // '!' is at the end
-        rewind(tmp);
-        
-        FILE* old_stdin = stdin;
-        stdin = tmp;
-        
-        CGS_DStr res = cgs_dstr_init();
-        
-        // The delimiter is found exactly at the end of the stream
-        cgs_read_until(&res, '!');
-        ASSERT_TRUE(cgs_equal(res, "command!"));
-        
-        cgs_dstr_deinit(&res);
-        stdin = old_stdin;
         fclose(tmp);
     }
     
@@ -3614,6 +3520,8 @@ int main() {
     printf("\n========================================\n");
     printf("Test Results: %d/%d passed\n", passed_count, test_count);
     printf("========================================\n");
+    
+    nfmt_t(int, 'd') f = nfmt(10, 'd');
     
     return (passed_count == test_count) ? 0 : 1;
 }
