@@ -3195,7 +3195,7 @@ long long  : cgs__llong_min_into  \
 
 CGS_PRIVATE CGS_Error cgs__schar_min_into(CGS_Writer writer)
 {
-    if(SCHAR_MIN == -128)
+    if(SCHAR_MIN == (-127 - 1))
     {
         const char *numstr = "-128";
         CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
@@ -3211,7 +3211,7 @@ CGS_PRIVATE CGS_Error cgs__schar_min_into(CGS_Writer writer)
 
 CGS_PRIVATE CGS_Error cgs__short_min_into(CGS_Writer writer)
 {
-    if(SHRT_MIN == -32768)
+    if(SHRT_MIN == (-32767 - 1))
     {
         const char *numstr = "-32768";
         CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
@@ -3227,7 +3227,7 @@ CGS_PRIVATE CGS_Error cgs__short_min_into(CGS_Writer writer)
 
 CGS_PRIVATE CGS_Error cgs__int_min_into(CGS_Writer writer)
 {
-    if(INT_MIN == -2147483648)
+    if(INT_MIN == (-2147483647 - 1))
     {
         const char *numstr = "-2147483648";
         CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
