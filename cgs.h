@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#if !defined(CGS_API)
+    #define CGS_API
+#endif
+
 struct CGS_Allocator;
 
 typedef struct CGS_Allocation
@@ -25,10 +29,6 @@ typedef struct CGS_Allocator
     cgs_dealloc_func dealloc;
     cgs_realloc_func realloc;
 } CGS_Allocator;
-
-#if !defined(CGS_API)
-    #define CGS_API
-#endif
 
 CGS_API CGS_Allocation cgs__allocator_invoke_alloc(CGS_Allocator *allocator, size_t alignment, size_t obj_size, size_t nb);
 CGS_API void cgs__allocator_invoke_dealloc(CGS_Allocator *allocator, void *ptr, size_t obj_size, size_t nb);
@@ -55,25 +55,19 @@ cgs__allocator_invoke_dealloc((allocator), (ptr), 1, (n))
 cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old_n), (new_n))
 
 #if __STDC_VERSION__ >= 202311L
-
     #define CGS__NODISCARD(...) [[nodiscard (__VA_ARGS__)]]
-
 #elif defined(__GNUC__)
-
     #define CGS__NODISCARD(...) __attribute__((warn_unused_result))
-
 #else
-
     #define CGS__NODISCARD(...)
-
 #endif
 
 #if !defined(__clang__)
     #define cgs__static_assertx(exp, msg) \
-((void)_Generic((char(*)[!!(exp) + 1])0, char(*)[2]: (msg) && (0)))
+    ((void)_Generic((char(*)[!!(exp) + 1])0, char(*)[2]: (msg) && (0)))
 #else
     #define cgs__static_assertx(exp, msg) \
-((void)sizeof(struct { _Static_assert(exp, msg); int dummy; }))
+    ((void)sizeof(struct { _Static_assert(exp, msg); int dummy; }))
 #endif
 
 #define cgs__has_type(exp, t) \
