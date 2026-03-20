@@ -1305,8 +1305,8 @@ CGS_API CGS_StrView cgs__strv_find(const CGS_StrView hay, const CGS_StrView need
 CGS_API unsigned int cgs__strv_count(const CGS_StrView hay, const CGS_StrView needle);
 CGS_API CGS_StrView cgs__trim_view(const CGS_StrView str);
 CGS_API CGS_Error cgs__trim(CGS__FixedMutStrRef str);
-CGS_API unsigned int cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset);
-CGS_API unsigned int cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset);
+CGS_API CGS_StrView cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset);
+CGS_API CGS_StrView cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset);
 CGS_API bool cgs__strv_starts_with(const CGS_StrView hay, const CGS_StrView needle);
 CGS_API bool cgs__strv_ends_with(const CGS_StrView hay, const CGS_StrView needle);
 
@@ -4027,37 +4027,37 @@ CGS_API unsigned int cgs__strv_count(const CGS_StrView hay, const CGS_StrView ne
     return count;
 }
 
-CGS_API unsigned int cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset)
+CGS_API CGS_StrView cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset)
 {
     if(charset.len == 1)
     {
         char *found = (char*) memchr(src.chars, charset.chars[0], src.len);
         if(found)
         {
-            return found - src.chars;
+            return (CGS_StrView){.chars = src.chars, .len = found - src.chars};
         }
         else
         {
-            return src.len;
+            return src;
         }
     }
     
     for(unsigned int i = 0 ; i < src.len ; i++)
     {
         if(memchr(charset.chars, src.chars[i], charset.len))
-            return i;
+            return (CGS_StrView){.chars = src.chars, .len = i};
     }
-    return src.len;
+    return src;
 }
 
-CGS_API unsigned int cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset)
+CGS_API CGS_StrView cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset)
 {
     for(unsigned int i = 0 ; i < src.len ; i++)
     {
         if(memchr(charset.chars, src.chars[i], charset.len) == NULL)
-            return i;
+            return (CGS_StrView){.chars = src.chars, .len = i};
     }
-    return src.len;
+    return src;
 }
 
 CGS_API CGS_StrView cgs__trim_view(const CGS_StrView str)
