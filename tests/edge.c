@@ -610,91 +610,91 @@ void test_str_find_edge_cases() {
     TEST("cgs_spn: entire string in charset");
     {
         char s[] = "aabbcc";
-        ASSERT_TRUE(cgs_spn(s, "abc") == 6);
+        ASSERT_TRUE(cgs_spn(s, "abc").len == 6);
     }
     
     TEST("cgs_spn: no chars in charset");
     {
         char s[] = "hello";
-        ASSERT_TRUE(cgs_spn(s, "xyz") == 0);
+        ASSERT_TRUE(cgs_spn(s, "xyz").len == 0);
     }
     
     TEST("cgs_spn: partial match at start");
     {
         char s[] = "aaabcd";
-        ASSERT_TRUE(cgs_spn(s, "ab") == 4);
+        ASSERT_TRUE(cgs_spn(s, "ab").len == 4);
     }
     
     TEST("cgs_spn: match stops at first non-charset char");
     {
         char s[] = "aaa!aaa";
-        ASSERT_TRUE(cgs_spn(s, "a") == 3);
+        ASSERT_TRUE(cgs_spn(s, "a").len == 3);
     }
     
     TEST("cgs_spn: empty string");
     {
         char s[] = "";
-        ASSERT_TRUE(cgs_spn(s, "abc") == 0);
+        ASSERT_TRUE(cgs_spn(s, "abc").len == 0);
     }
     
     TEST("cgs_spn: empty charset");
     {
         char s[] = "hello";
-        ASSERT_TRUE(cgs_spn(s, "") == 0);
+        ASSERT_TRUE(cgs_spn(s, "").len == 0);
     }
     
     TEST("cgs_spn: both empty");
     {
         char s[] = "";
-        ASSERT_TRUE(cgs_spn(s, "") == 0);
+        ASSERT_TRUE(cgs_spn(s, "").len == 0);
     }
     
     TEST("cgs_spn: single char string, in charset");
     {
         char s[] = "a";
-        ASSERT_TRUE(cgs_spn(s, "a") == 1);
+        ASSERT_TRUE(cgs_spn(s, "a").len == 1);
     }
     
     TEST("cgs_spn: single char string, not in charset");
     {
         char s[] = "a";
-        ASSERT_TRUE(cgs_spn(s, "b") == 0);
+        ASSERT_TRUE(cgs_spn(s, "b").len == 0);
     }
     
     TEST("cgs_spn: charset has duplicate chars");
     {
         char s[] = "aaabbb";
-        ASSERT_TRUE(cgs_spn(s, "aaabbb") == 6);
+        ASSERT_TRUE(cgs_spn(s, "aaabbb").len == 6);
     }
     
     TEST("cgs_spn: charset larger than string");
     {
         char s[] = "ab";
-        ASSERT_TRUE(cgs_spn(s, "abcdefghijklmnop") == 2);
+        ASSERT_TRUE(cgs_spn(s, "abcdefghijklmnop").len == 2);
     }
     
     TEST("cgs_spn: whitespace charset");
     {
         char s[] = "   \t\nhello";
-        ASSERT_TRUE(cgs_spn(s, " \t\n\r") == 5);
+        ASSERT_TRUE(cgs_spn(s, " \t\n\r").len == 5);
     }
     
     TEST("cgs_spn: first char not in charset");
     {
         char s[] = "xaaa";
-        ASSERT_TRUE(cgs_spn(s, "a") == 0);
+        ASSERT_TRUE(cgs_spn(s, "a").len == 0);
     }
     
     TEST("cgs_spn: accepts StrView");
     {
         StrView sv = strv("aaabcd");
-        ASSERT_TRUE(cgs_spn(sv, "a") == 3);
+        ASSERT_TRUE(cgs_spn(sv, "a").len == 3);
     }
     
     TEST("cgs_spn: accepts DStr");
     {
         DStr d = dstr_init_from("aaabcd");
-        ASSERT_TRUE(cgs_spn(d, "a") == 3);
+        ASSERT_TRUE(cgs_spn(d, "a").len == 3);
         dstr_deinit(&d);
     }
     
@@ -702,13 +702,13 @@ void test_str_find_edge_cases() {
     {
         char s[] = "aaabcd";
         StrView charset = strv("a");
-        ASSERT_TRUE(cgs_spn(s, charset) == 3);
+        ASSERT_TRUE(cgs_spn(s, charset).len == 3);
     }
     
     TEST("cgs_spn: result equals length means all chars matched");
     {
         char s[] = "abcabc";
-        unsigned int n = cgs_spn(s, "abc");
+        unsigned int n = cgs_spn(s, "abc").len;
         ASSERT_TRUE(n == cgs_len(s));
     }
     
@@ -717,91 +717,91 @@ void test_str_find_edge_cases() {
     TEST("cgs_cspn: no chars in charset");
     {
         char s[] = "hello";
-        ASSERT_TRUE(cgs_cspn(s, "xyz") == 5);
+        ASSERT_TRUE(cgs_cspn(s, "xyz").len == 5);
     }
     
     TEST("cgs_cspn: first char in charset");
     {
         char s[] = "hello";
-        ASSERT_TRUE(cgs_cspn(s, "h") == 0);
+        ASSERT_TRUE(cgs_cspn(s, "h").len == 0);
     }
     
     TEST("cgs_cspn: charset hit in middle");
     {
         char s[] = "abcXdef";
-        ASSERT_TRUE(cgs_cspn(s, "X") == 3);
+        ASSERT_TRUE(cgs_cspn(s, "X").len == 3);
     }
     
     TEST("cgs_cspn: charset hit at last char");
     {
         char s[] = "abcdX";
-        ASSERT_TRUE(cgs_cspn(s, "X") == 4);
+        ASSERT_TRUE(cgs_cspn(s, "X").len == 4);
     }
     
     TEST("cgs_cspn: entire string in charset");
     {
         char s[] = "aaa";
-        ASSERT_TRUE(cgs_cspn(s, "a") == 0);
+        ASSERT_TRUE(cgs_cspn(s, "a").len == 0);
     }
     
     TEST("cgs_cspn: empty string");
     {
         char s[] = "";
-        ASSERT_TRUE(cgs_cspn(s, "abc") == 0);
+        ASSERT_TRUE(cgs_cspn(s, "abc").len == 0);
     }
     
     TEST("cgs_cspn: empty charset");
     {
         char s[] = "hello";
-        ASSERT_TRUE(cgs_cspn(s, "") == 5);
+        ASSERT_TRUE(cgs_cspn(s, "").len == 5);
     }
     
     TEST("cgs_cspn: both empty");
     {
         char s[] = "";
-        ASSERT_TRUE(cgs_cspn(s, "") == 0);
+        ASSERT_TRUE(cgs_cspn(s, "").len == 0);
     }
     
     TEST("cgs_cspn: single char string, in charset");
     {
         char s[] = "a";
-        ASSERT_TRUE(cgs_cspn(s, "a") == 0);
+        ASSERT_TRUE(cgs_cspn(s, "a").len == 0);
     }
     
     TEST("cgs_cspn: single char string, not in charset");
     {
         char s[] = "a";
-        ASSERT_TRUE(cgs_cspn(s, "b") == 1);
+        ASSERT_TRUE(cgs_cspn(s, "b").len == 1);
     }
     
     TEST("cgs_cspn: multiple chars in charset, first hit determines result");
     {
         char s[] = "abcdef";
-        ASSERT_TRUE(cgs_cspn(s, "ce") == 2);
+        ASSERT_TRUE(cgs_cspn(s, "ce").len == 2);
     }
     
     TEST("cgs_cspn: charset has duplicate chars");
     {
         char s[] = "abcXdef";
-        ASSERT_TRUE(cgs_cspn(s, "XX") == 3);
+        ASSERT_TRUE(cgs_cspn(s, "XX").len == 3);
     }
     
     TEST("cgs_cspn: whitespace as charset");
     {
         char s[] = "hello world";
-        ASSERT_TRUE(cgs_cspn(s, " \t\n\r") == 5);
+        ASSERT_TRUE(cgs_cspn(s, " \t\n\r").len == 5);
     }
     
     TEST("cgs_cspn: accepts StrView");
     {
         StrView sv = strv("abcXdef");
-        ASSERT_TRUE(cgs_cspn(sv, "X") == 3);
+        ASSERT_TRUE(cgs_cspn(sv, "X").len == 3);
     }
     
     TEST("cgs_cspn: accepts DStr");
     {
         DStr d = dstr_init_from("abcXdef");
-        ASSERT_TRUE(cgs_cspn(d, "X") == 3);
+        ASSERT_TRUE(cgs_cspn(d, "X").len == 3);
         dstr_deinit(&d);
     }
     
@@ -809,13 +809,13 @@ void test_str_find_edge_cases() {
     {
         char s[] = "abcXdef";
         StrView charset = strv("X");
-        ASSERT_TRUE(cgs_cspn(s, charset) == 3);
+        ASSERT_TRUE(cgs_cspn(s, charset).len == 3);
     }
     
     TEST("cgs_cspn: result equals length means no chars matched");
     {
         char s[] = "hello";
-        unsigned int n = cgs_cspn(s, "xyz");
+        unsigned int n = cgs_cspn(s, "xyz").len;
         ASSERT_TRUE(n == cgs_len(s));
     }
     
@@ -826,9 +826,9 @@ void test_str_find_edge_cases() {
         /* for any string and charset, spn + cspn(from that offset) should
          *           walk the entire string */
         char s[] = "aaabbbccc";
-        unsigned int spn = cgs_spn(s, "a");
+        unsigned int spn = cgs_spn(s, "a").len;
         StrView rest = strv(s, spn);
-        unsigned int cspn = cgs_cspn(rest, "a");
+        unsigned int cspn = cgs_cspn(rest, "a").len;
         ASSERT_TRUE(spn == 3 && cspn == 6);
     }
     
@@ -836,7 +836,7 @@ void test_str_find_edge_cases() {
     {
         /* all-a string: spn == len, cspn == 0 */
         char s[] = "aaaa";
-        ASSERT_TRUE(cgs_spn(s, "a") + cgs_cspn(s, "a") == cgs_len(s));
+        ASSERT_TRUE(cgs_spn(s, "a").len + cgs_cspn(s, "a").len == cgs_len(s));
     }
     
 }

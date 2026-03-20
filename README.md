@@ -85,8 +85,8 @@ bool              cgs_ends_with(anystr_t hay, anystr_t needle);
 CGS_StrView       cgs_trim_view(anystr_t str);
 CGS_Error         cgs_trim(mutstr_t str);
 
-unsigned int      cgs_spn(anystr_t src, anystr_t charset);
-unsigned int      cgs_cspn(anystr_t src, anystr_t charset);
+CGS_StrView       cgs_spn(anystr_t src, anystr_t charset);
+CGS_StrView       cgs_cspn(anystr_t src, anystr_t charset);
 
 CGS_Error         cgs_map_chars(mutstr_t, bool(*map_func)(char *c, void *arg), void *arg = NULL);
 void              cgs_tolower(mutstr_t);

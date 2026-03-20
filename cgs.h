@@ -1304,8 +1304,8 @@ CGS_API CGS_StrView cgs__strv_find(const CGS_StrView hay, const CGS_StrView need
 CGS_API unsigned int cgs__strv_count(const CGS_StrView hay, const CGS_StrView needle);
 CGS_API CGS_StrView cgs__trim_view(const CGS_StrView str);
 CGS_API CGS_Error cgs__trim(CGS__FixedMutStrRef str);
-CGS_API unsigned int cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset);
-CGS_API unsigned int cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset);
+CGS_API CGS_StrView cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset);
+CGS_API CGS_StrView cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset);
 CGS_API bool cgs__strv_starts_with(const CGS_StrView hay, const CGS_StrView needle);
 CGS_API bool cgs__strv_ends_with(const CGS_StrView hay, const CGS_StrView needle);
 
