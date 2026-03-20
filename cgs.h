@@ -230,16 +230,6 @@ typedef struct CGS_Writer
     CGS_Error (*append)(void *ctx, const CGS_StrView str);
 } CGS_Writer;
 
-typedef struct CGS__MutStrInterface
-{
-    CGS_Error        (*append)    (void *ctx, const CGS_StrView str);
-    CGS_Error        (*insert)    (void *ctx, const CGS_StrView str, unsigned int idx);
-    unsigned int     (*len)       (void *ctx);
-    void             (*set_len)   (void *ctx, unsigned int len);
-    CGS_Error        (*ensure_cap)(void *ctx, unsigned int at_least);
-    char*            (*cstr)      (void *ctx);
-} CGS__MutStrInterface;
-
 CGS_API CGS_Error    cgs__idstr_append  (void *ctx, const CGS_StrView str);
 CGS_API CGS_Error    cgs__istrbuf_append(void *ctx, const CGS_StrView str);
 CGS_API CGS_Error    cgs__ibuf_append   (void *ctx, const CGS_StrView str);
