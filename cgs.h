@@ -754,7 +754,7 @@ do \
 } while(0)
 
 #define cgs_fprint(f, ...) \
-cgs_sprint_append(f __VA_OPT__(,) __VA_ARGS__)
+cgs_sprint_append(_Generic(f, FILE*:f) __VA_OPT__(,) __VA_ARGS__)
 
 #define cgs_print(...) \
 cgs_fprint(stdout, __VA_ARGS__)
