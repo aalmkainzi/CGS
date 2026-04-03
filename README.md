@@ -88,6 +88,9 @@ CGS_Error         cgs_trim(mutstr_t str);
 CGS_StrView       cgs_spn(anystr_t src, anystr_t charset);
 CGS_StrView       cgs_cspn(anystr_t src, anystr_t charset);
 
+CGS_StrView       cgs_next_tok(CGS_StrView *base, anystr_t delim);
+CGS_StrView       cgs_next_tok_any(CGS_StrView *base, anystr_t delim_set);
+
 CGS_Error         cgs_map_chars(mutstr_t, bool(*map_func)(char *c, void *arg), void *arg = NULL);
 void              cgs_tolower(mutstr_t);
 void              cgs_toupper(mutstr_t);
@@ -127,6 +130,9 @@ CGS_Error         cgs_tostr_p(mutstr_t dst, T *val);
 bool              cgs_has_tostr(T);
 unsigned int      cgs_tostr_len(T val);
 unsigned int      cgs_tostr_p_len(T *val);
+
+CGS_Error         cgs_format(mutstr_t dst, constexpr char *fmt, ...args with tostr);
+CGS_Error         cgs_format_append(writer_t dst, constexpr char *fmt, ...args with tostr);
 
                   cgs_print(...args with tostr);
                   cgs_println(...args with tostr);

@@ -1990,6 +1990,43 @@ CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, const CGS_StrViewArray s
     };
 }
 
+CGS_API CGS_StrView cgs__next_tok(CGS_StrView *base, CGS_StrView delim)
+{
+    CGS_StrView found = cgs__strv_find(*base, delim);
+    if(found.chars)
+    {
+        ptrdiff_t index = found.chars - base->chars;
+        CGS_StrView ret = {
+            .chars = base->chars,
+            .len = index
+        };
+        index += delim.len;
+        base->chars += index;
+        base->len -= index;
+        
+        return ret;
+    }
+    else
+    {
+        CGS_StrView ret = *base;
+        base->chars += base->len;
+        base->len = 0;
+        
+        return ret;
+    }
+}
+
+CGS_API CGS_StrView cgs__next_tok_any(CGS_StrView *base, CGS_StrView delim_set)
+{
+    CGS_StrView tok = cgs__strv_cspn(*base, delim_set);
+    bool found = tok.len != base->len;
+    
+    base->chars += (tok.len + found);
+    base->len   -= (tok.len + found);
+    
+    return tok;
+}
+
 CGS_API CGS_Error cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int begin, unsigned int end, const CGS_StrView replacement)
 {
     if(begin > dstr->len || end > dstr->len)
@@ -3165,6 +3202,56 @@ CGS_API CGS_Error cgs__file_append(void *ctx, const CGS_StrView str)
     if(ret != str.len)
         return (CGS_Error){CGS_IO_ERROR};
     return (CGS_Error){CGS_OK};
+}
+
+// Note fmt is guaranteed to be nul terminated
+CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, void*))
+{
+    CGS_StrView fmt_walk = fmt;
+    
+    size_t how_many_formatted = 0;
+    CGS_Error err = {CGS_OK};
+    while(fmt_walk.len != 0 && err.ec == CGS_OK)
+    {
+        char *found = memchr(fmt_walk.chars, '%', fmt_walk.len);
+        if(found)
+        {
+            ptrdiff_t index = found - fmt_walk.chars;
+            CGS_StrView chunk = { .chars = fmt_walk.chars, .len = index };
+            fmt_walk.chars += (index + 1);
+            fmt_walk.len   -= (index + 1);
+            if(fmt_walk.len > 0 && fmt_walk.chars[0] == '%') // escape %%
+            {
+                chunk.len += 1; // to include the first %
+                fmt_walk.chars += 1;
+                fmt_walk.len   -= 1;
+                err = cgs__invoke_writer(writer, chunk);
+            }
+            else
+            {
+                err = cgs__invoke_writer(writer, chunk);
+                if(how_many_formatted >= nargs)
+                {
+                    err.ec = CGS_NOT_ENOUGH_ARGS;
+                    break;
+                }
+                err = tostr_p_funcs[how_many_formatted](writer, args[how_many_formatted]);
+                how_many_formatted += 1;
+            }
+        }
+        else
+        {
+            err = cgs__invoke_writer(writer, fmt_walk);
+            fmt_walk.chars += fmt_walk.len;
+            fmt_walk.len = 0;
+        }
+    }
+    
+    if(err.ec == CGS_OK && how_many_formatted < nargs)
+    {
+        return (CGS_Error){CGS_TOO_MANY_ARGS};
+    }
+    return err;
 }
 
 CGS_PRIVATE unsigned int cgs__numstr_len(unsigned long long num)

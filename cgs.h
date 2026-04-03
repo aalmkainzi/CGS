@@ -55,6 +55,12 @@ cgs__allocator_invoke_dealloc((allocator), (ptr), 1, (n))
 cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old_n), (new_n))
 
 #if __STDC_VERSION__ >= 202311L
+    #define CGS__CONSTEXPR constexpr
+#else
+    #define CGS__CONSTEXPR const
+#endif
+
+#if __STDC_VERSION__ >= 202311L
     #define CGS__NODISCARD(...) [[nodiscard (__VA_ARGS__)]]
 #elif defined(__GNUC__)
     #define CGS__NODISCARD(...) __attribute__((warn_unused_result))
@@ -216,7 +222,9 @@ enum CGS__ErrorCode
     CGS_WRONG_TYPE,
     CGS_ENCODING_ERROR,
     CGS_IO_ERROR,
-    CGS_CALLBACK_EXIT
+    CGS_CALLBACK_EXIT,
+    CGS_TOO_MANY_ARGS,
+    CGS_NOT_ENOUGH_ARGS
 };
 
 typedef struct CGS_Error
@@ -458,6 +466,12 @@ _Generic(mutstr_dst, \
     CGS_DStr*     : cgs__strv_arr_join_into_dstr(cgs__coerce(mutstr_dst, CGS_DStr*), strv_arr, cgs_strv(anystr_delim)), \
     default       : cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref_zero_len(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), strv_arr, cgs_strv(anystr_delim)) \
 )
+
+#define cgs_next_tok(strv_ptr, delim) \
+cgs__next_tok(strv_ptr, cgs_strv(delim))
+
+#define cgs_next_tok_any(strv_ptr, delim_set) \
+cgs__next_tok_any(strv_ptr, cgs_strv(delim_set))
 
 #define cgs_del(mutstr_dst, begin, end) \
 cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(mutstr_dst), begin, end)
@@ -770,6 +784,23 @@ do                                          \
 
 #define cgs_println(...) \
 cgs_fprintln(stdout, __VA_ARGS__)
+
+#define cgs__arg_count_each(a) \
++1
+
+#define cgs__as_ptr_elm(a) \
+&(__typeof__(a)[]){a}[0],
+
+#define cgs__tostr_p_func_elm(a) \
+(CGS_Error(*)(CGS_Writer, void*))cgs__get_tostr_p_func(__typeof__(a)),
+
+#define cgs_format_append(writer_dst, fmt, ...) \
+    __VA_OPT__(cgs__format(cgs_writer(writer_dst), (CGS_StrView){.chars = (char[]){fmt}, .len = sizeof(fmt) - 1}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
+    CGS__IF_EMPTY((cgs__format(cgs_writer(writer_dst), (CGS_StrView){.chars = (char[]){fmt}, .len = sizeof(fmt) - 1}, 0, NULL, NULL)), __VA_ARGS__)
+
+#define cgs_format(mutstr_dst, fmt, ...) \
+    __VA_OPT__(cgs__format(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), (CGS_StrView){.chars = (char[]){fmt}, .len = sizeof(fmt) - 1}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
+    CGS__IF_EMPTY((cgs__format(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), (CGS_StrView){.chars = (char[]){fmt}, .len = sizeof(fmt) - 1}, 0, NULL, NULL)), __VA_ARGS__)
 
 typedef char cgs__c;
 typedef signed char cgs__sc;
@@ -1274,6 +1305,8 @@ CGS_API CGS_Error cgs__mutstr_ref_replace_first(CGS_MutStrRef str, const CGS_Str
 CGS_API CGS_Error cgs__mutstr_ref_replace_range(CGS_MutStrRef str, unsigned int begin, unsigned int end, const CGS_StrView replacement);
 CGS_API CGS_Error cgs__mutstr_ref_clear(CGS_MutStrRef str);
 CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, CGS_StrViewArray strs, CGS_StrView delim);
+CGS_API CGS_StrView cgs__next_tok(CGS_StrView *base, CGS_StrView delim);
+CGS_API CGS_StrView cgs__next_tok_any(CGS_StrView *base, CGS_StrView delim_set);
 
 CGS_API CGS_Error cgs__fmutstr_ref_putc(CGS__FixedMutStrRef dst, char c);
 CGS_API CGS_Error cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, const CGS_StrView src);
@@ -1321,6 +1354,8 @@ CGS_API CGS_Error cgs__fmutstr_ref_append_fread_until(CGS__FixedMutStrRef dst, F
 
 CGS_API unsigned int cgs__fprint_strv(FILE *stream, const CGS_StrView str);
 CGS_API unsigned int cgs__fprintln_strv(FILE *stream, const CGS_StrView str);
+
+CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, void*));
 
 CGS_API CGS_Error cgs__bool_tostr(CGS_Writer writer, bool obj);
 CGS_API CGS_Error cgs__cstr_tostr(CGS_Writer writer, const char *obj);

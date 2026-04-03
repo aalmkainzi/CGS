@@ -72,26 +72,26 @@ do { \
 // ============================================================================
 
 void test_str_len_edge_cases() {
-    TEST("cgs_len: empty string");
+    TEST("cgs_len: empty string");;;
     {
         char buf[] = "";
         ASSERT_EQ(cgs_len(buf), 0);
     }
     
-    TEST("cgs_len: single null terminator");
+    TEST("cgs_len: single null terminator");;;
     {
         char buf[1] = {'\0'};
         ASSERT_EQ(cgs_len(buf), 0);
     }
     
-    TEST("cgs_len: DStr with zero capacity");
+    TEST("cgs_len: DStr with zero capacity");;;
     {
         DStr dstr = dstr_init(0);
         ASSERT_EQ(cgs_len(&dstr), 0);
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_len: very long string");
+    TEST("cgs_len: very long string");;;
     {
         // This tests if length calculation handles large strings
         DStr dstr = dstr_init(10000);
@@ -108,7 +108,7 @@ void test_str_len_edge_cases() {
 // ============================================================================
 
 void test_str_cap_edge_cases() {
-    TEST("cgs_cap: raw char array");
+    TEST("cgs_cap: raw char array");;;
     {
         char buf[100];
         // For raw arrays, capacity might not be trackable
@@ -117,7 +117,7 @@ void test_str_cap_edge_cases() {
         ASSERT_TRUE(cap == 100);
     }
     
-    TEST("cgs_cap: StrBuf at exact capacity");
+    TEST("cgs_cap: StrBuf at exact capacity");;;
     {
         char backing[5] = {'t', 'e', 's', 't', '\0'};
         StrBuf sb = strbuf_init_from_cstr(backing, 5);
@@ -130,14 +130,14 @@ void test_str_cap_edge_cases() {
 // ============================================================================
 
 void test_str_equal_edge_cases() {
-    TEST("cgs_equal: both empty");
+    TEST("cgs_equal: both empty");;;
     {
         char a[] = "";
         char b[] = "";
         ASSERT_TRUE(cgs_equal(a, b));
     }
     
-    TEST("cgs_equal: one empty, one not");
+    TEST("cgs_equal: one empty, one not");;;
     {
         char a[] = "";
         char b[] = "test";
@@ -145,13 +145,13 @@ void test_str_equal_edge_cases() {
         ASSERT_FALSE(cgs_equal(b, a));
     }
     
-    TEST("cgs_equal: same pointer");
+    TEST("cgs_equal: same pointer");;;
     {
         char a[] = "test";
         ASSERT_TRUE(cgs_equal(a, a));
     }
     
-    TEST("cgs_equal: different types with same content");
+    TEST("cgs_equal: different types with same content");;;
     {
         char cstr[] = "hello";
         DStr dstr = dstr_init_from(cstr);
@@ -160,14 +160,14 @@ void test_str_equal_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_equal: strings differing only in last char");
+    TEST("cgs_equal: strings differing only in last char");;;
     {
         char a[] = "test1";
         char b[] = "test2";
         ASSERT_FALSE(cgs_equal(a, b));
     }
     
-    TEST("cgs_equal: strings with embedded nulls");
+    TEST("cgs_equal: strings with embedded nulls");;;
     {
         char a[5] = {'a', 'b', '\0', 'c', 'd'};
         char b[5] = {'a', 'b', '\0', 'x', 'y'};
@@ -175,7 +175,7 @@ void test_str_equal_edge_cases() {
         ASSERT_TRUE(cgs_equal(a, b));
     }
     
-    TEST("cgs_equal: very long identical strings");
+    TEST("cgs_equal: very long identical strings");;;
     {
         DStr a = dstr_init(5000);
         DStr b = dstr_init(5000);
@@ -194,7 +194,7 @@ void test_str_equal_edge_cases() {
 // ============================================================================
 
 void test_str_find_edge_cases() {
-    TEST("cgs_find: basic match");
+    TEST("cgs_find: basic match");;;
     {
         char hay[] = "hello world";
         StrView v = cgs_find(hay, "world");
@@ -203,14 +203,14 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(v.len == 5);
     }
     
-    TEST("cgs_find: not found");
+    TEST("cgs_find: not found");;;
     {
         StrView v = cgs_find("apple", "orange");
         // Usually returns a null view (chars == NULL) or a view with len 0
         ASSERT_TRUE(v.chars == NULL || v.len == 0);
     }
     
-    TEST("cgs_find: match at start and end");
+    TEST("cgs_find: match at start and end");;;
     {
         char hay[] = "bracket";
         StrView start = cgs_find(hay, "b");
@@ -220,7 +220,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(end.chars == &hay[6]);
     }
     
-    TEST("cgs_find: empty needle");
+    TEST("cgs_find: empty needle");;;
     {
         char hay[] = "abc";
         StrView v = cgs_find(hay, "");
@@ -229,20 +229,20 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(v.len == 0);
     }
     
-    TEST("cgs_find: needle equals haystack");
+    TEST("cgs_find: needle equals haystack");;;
     {
         char hay[] = "same";
         StrView v = cgs_find(hay, "same");
         ASSERT_TRUE(v.len == 4 && v.chars == &hay[0]);
     }
     
-    TEST("cgs_find: needle longer than haystack");
+    TEST("cgs_find: needle longer than haystack");;;
     {
         StrView v = cgs_find("short", "much longer needle");
         ASSERT_TRUE(v.chars == NULL || v.len == 0);
     }
     
-    TEST("cgs_find: empty needle in empty haystack");
+    TEST("cgs_find: empty needle in empty haystack");;;
     {
         char hay[] = "";
         char needle[] = "";
@@ -252,7 +252,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE((char*)result.chars == hay);
     }
     
-    TEST("cgs_find: empty needle in non-empty haystack");
+    TEST("cgs_find: empty needle in non-empty haystack");;;
     {
         char hay[] = "test";
         char needle[] = "";
@@ -261,7 +261,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(result.chars == hay);
     }
     
-    TEST("cgs_find: needle longer than haystack");
+    TEST("cgs_find: needle longer than haystack");;;
     {
         char hay[] = "ab";
         char needle[] = "abcdef";
@@ -269,7 +269,7 @@ void test_str_find_edge_cases() {
         ASSERT_EQ(cgs_len(result), 0); // Not found
     }
     
-    TEST("cgs_find: needle equals haystack");
+    TEST("cgs_find: needle equals haystack");;;
     {
         char hay[] = "exact";
         char needle[] = "exact";
@@ -277,7 +277,7 @@ void test_str_find_edge_cases() {
         ASSERT_EQ(cgs_len(result), 5);
     }
     
-    TEST("cgs_find: needle at very end");
+    TEST("cgs_find: needle at very end");;;
     {
         char hay[] = "abcdefghij";
         char needle[] = "hij";
@@ -285,7 +285,7 @@ void test_str_find_edge_cases() {
         ASSERT_EQ(cgs_len(result), 3);
     }
     
-    TEST("cgs_find: needle at very start");
+    TEST("cgs_find: needle at very start");;;
     {
         char hay[] = "abcdefghij";
         char needle[] = "abc";
@@ -293,7 +293,7 @@ void test_str_find_edge_cases() {
         ASSERT_EQ(cgs_len(result), 3);
     }
     
-    TEST("cgs_find: overlapping pattern");
+    TEST("cgs_find: overlapping pattern");;;
     {
         char hay[] = "aaaa";
         char needle[] = "aa";
@@ -302,7 +302,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(cgs_len(result) > 0);
     }
     
-    TEST("cgs_find: pattern that almost matches");
+    TEST("cgs_find: pattern that almost matches");;;
     {
         char hay[] = "abcabcabd";
         char needle[] = "abcabd";
@@ -312,105 +312,105 @@ void test_str_find_edge_cases() {
     
     /* --- cgs_trim_view --- */
     
-    TEST("cgs_trim_view: no whitespace");
+    TEST("cgs_trim_view: no whitespace");;;
     {
         char s[] = "hello";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 5 && v.chars == &s[0]);
     }
     
-    TEST("cgs_trim_view: leading spaces");
+    TEST("cgs_trim_view: leading spaces");;;
     {
         char s[] = "   hello";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 5 && v.chars == &s[3]);
     }
     
-    TEST("cgs_trim_view: trailing spaces");
+    TEST("cgs_trim_view: trailing spaces");;;
     {
         char s[] = "hello   ";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 5 && v.chars == &s[0]);
     }
     
-    TEST("cgs_trim_view: leading and trailing spaces");
+    TEST("cgs_trim_view: leading and trailing spaces");;;
     {
         char s[] = "  hello  ";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 5 && v.chars == &s[2]);
     }
     
-    TEST("cgs_trim_view: interior whitespace is preserved");
+    TEST("cgs_trim_view: interior whitespace is preserved");;;
     {
         char s[] = "  hello world  ";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 11 && v.chars == &s[2]);
     }
     
-    TEST("cgs_trim_view: only spaces");
+    TEST("cgs_trim_view: only spaces");;;
     {
         char s[] = "     ";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 0);
     }
     
-    TEST("cgs_trim_view: empty string");
+    TEST("cgs_trim_view: empty string");;;
     {
         char s[] = "";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 0);
     }
     
-    TEST("cgs_trim_view: empty string");
+    TEST("cgs_trim_view: empty string");;;
     {
         char s[] = " \t\n";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 0);
     }
     
-    TEST("cgs_trim_view: single non-whitespace character");
+    TEST("cgs_trim_view: single non-whitespace character");;;
     {
         char s[] = "x";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 1 && v.chars == &s[0]);
     }
     
-    TEST("cgs_trim_view: single space");
+    TEST("cgs_trim_view: single space");;;
     {
         char s[] = " ";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 0 && v.chars == s + 1);
     }
     
-    TEST("cgs_trim_view: leading tab");
+    TEST("cgs_trim_view: leading tab");;;
     {
         char s[] = "\thello";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 5 && v.chars == &s[1]);
     }
     
-    TEST("cgs_trim_view: trailing newline");
+    TEST("cgs_trim_view: trailing newline");;;
     {
         char s[] = "hello\n";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 5 && v.chars == &s[0]);
     }
     
-    TEST("cgs_trim_view: mixed whitespace characters on both sides");
+    TEST("cgs_trim_view: mixed whitespace characters on both sides");;;
     {
         char s[] = " \t\n hello \r\n";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.len == 5 && v.chars == &s[4]);
     }
     
-    TEST("cgs_trim_view: accepts StrView");
+    TEST("cgs_trim_view: accepts StrView");;;
     {
         StrView src = strv("  hi  ");
         StrView v = cgs_trim_view(src);
         ASSERT_TRUE(v.len == 2);
     }
     
-    TEST("cgs_trim_view: accepts DStr");
+    TEST("cgs_trim_view: accepts DStr");;;
     {
         DStr d = dstr_init_from("  hi  ");
         StrView v = cgs_trim_view(d);
@@ -418,14 +418,14 @@ void test_str_find_edge_cases() {
         dstr_deinit(&d);
     }
     
-    TEST("cgs_trim_view: result points into original buffer, not a copy");
+    TEST("cgs_trim_view: result points into original buffer, not a copy");;;
     {
         char s[] = "  abc  ";
         StrView v = cgs_trim_view(s);
         ASSERT_TRUE(v.chars == &s[2]);
     }
     
-    TEST("cgs_trim_view: only spaces");
+    TEST("cgs_trim_view: only spaces");;;
     {
         char s[] = "   ";
         StrView v = cgs_trim_view(s);
@@ -434,7 +434,7 @@ void test_str_find_edge_cases() {
     
     /* --- cgs_trim --- */
     
-    TEST("cgs_trim: no whitespace");
+    TEST("cgs_trim: no whitespace");;;
     {
         char s[64] = "hello";
         char *p = s;
@@ -443,7 +443,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(strcmp(s, "hello") == 0 && cgs_chars(s) == p);
     }
     
-    TEST("cgs_trim: leading spaces");
+    TEST("cgs_trim: leading spaces");;;
     {
         char s[64] = "   hello";
         char *p = s;
@@ -453,7 +453,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(cgs_chars(s) == p);
     }
     
-    TEST("cgs_trim: trailing spaces");
+    TEST("cgs_trim: trailing spaces");;;
     {
         char s[64] = "hello   ";
         char *p = s;
@@ -462,7 +462,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(strcmp(s, "hello") == 0 && cgs_chars(s) == p);
     }
     
-    TEST("cgs_trim: leading and trailing spaces");
+    TEST("cgs_trim: leading and trailing spaces");;;
     {
         char s[64] = "  hello  ";
         char *p = s;
@@ -472,7 +472,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE( cgs_chars(s) == p);
     }
     
-    TEST("cgs_trim: all whitespace");
+    TEST("cgs_trim: all whitespace");;;
     {
         // A string of 4 spaces. Length is 4.
         // Buffer is exactly large enough for 4 chars + null (5 bytes).
@@ -494,7 +494,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(cgs_len(s) == 0);
     }
     
-    TEST("cgs_trim: interior whitespace is preserved");
+    TEST("cgs_trim: interior whitespace is preserved");;;
     {
         char s[64] = "  hello world  ";
         char *p = s;
@@ -503,7 +503,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(strcmp(s, "hello world") == 0 && cgs_chars(s) == p);
     }
     
-    TEST("cgs_trim: only spaces");
+    TEST("cgs_trim: only spaces");;;
     {
         char s[64] = "     ";
         char *p = s;
@@ -512,7 +512,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(strcmp(s, "") == 0 && cgs_chars(s) == p);
     }
     
-    TEST("cgs_trim: empty string");
+    TEST("cgs_trim: empty string");;;
     {
         char s[64] = "";
         char *p = s;
@@ -521,7 +521,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(strcmp(s, "") == 0 && cgs_chars(s) == p);
     }
     
-    TEST("cgs_trim: single non-whitespace character");
+    TEST("cgs_trim: single non-whitespace character");;;
     {
         char s[64] = "x";
         char *p = s;
@@ -530,7 +530,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(strcmp(s, "x") == 0 && cgs_chars(s) == p);
     }
     
-    TEST("cgs_trim: single space");
+    TEST("cgs_trim: single space");;;
     {
         char s[64] = " ";
         char *p = s;
@@ -539,7 +539,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(strcmp(s, "") == 0 && cgs_chars(s) == p);
     }
     
-    TEST("cgs_trim: leading tab");
+    TEST("cgs_trim: leading tab");;;
     {
         char s[64] = "\thello";
         char *p = s;
@@ -548,7 +548,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(strcmp(s, "hello") == 0 && cgs_chars(s) == p);
     }
     
-    TEST("cgs_trim: trailing newline");
+    TEST("cgs_trim: trailing newline");;;
     {
         char s[64] = "hello\n";
         char *p = s;
@@ -557,7 +557,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(strcmp(s, "hello") == 0 && cgs_chars(s) == p);
     }
     
-    TEST("cgs_trim: mixed whitespace on both sides");
+    TEST("cgs_trim: mixed whitespace on both sides");;;
     {
         char s[64] = " \t\n hello \r\n";
         char *p = s;
@@ -566,7 +566,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(strcmp(s, "hello") == 0 && cgs_chars(s) == p);
     }
     
-    TEST("cgs_trim: DStr*");
+    TEST("cgs_trim: DStr*");;;
     {
         DStr d = dstr_init_from("  hello  ");
         char *p = cgs_chars(d);
@@ -576,7 +576,7 @@ void test_str_find_edge_cases() {
         dstr_deinit(&d);
     }
     
-    TEST("cgs_trim: StrBuf*");
+    TEST("cgs_trim: StrBuf*");;;
     {
         char buf[64] = "  hello  ";
         StrBuf sb = strbuf_init_from_cstr(buf, sizeof(buf));
@@ -586,7 +586,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(cgs_equal(sb, "hello") && cgs_chars(sb) == p);
     }
     
-    TEST("cgs_trim: MutStrRef");
+    TEST("cgs_trim: MutStrRef");;;
     {
         char buf[64] = "  hello  ";
         MutStrRef ref = mutstr_ref(buf);
@@ -596,7 +596,7 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(strcmp(buf, "hello") == 0 && buf == p);
     }
     
-    TEST("cgs_trim: length decreases correctly after trim");
+    TEST("cgs_trim: length decreases correctly after trim");;;
     {
         char s[64] = "  hi  ";
         char *p = s;
@@ -607,105 +607,105 @@ void test_str_find_edge_cases() {
     
     /* --- cgs_spn --- */
     
-    TEST("cgs_spn: entire string in charset");
+    TEST("cgs_spn: entire string in charset");;;
     {
         char s[] = "aabbcc";
         ASSERT_TRUE(cgs_spn(s, "abc").len == 6);
     }
     
-    TEST("cgs_spn: no chars in charset");
+    TEST("cgs_spn: no chars in charset");;;
     {
         char s[] = "hello";
         ASSERT_TRUE(cgs_spn(s, "xyz").len == 0);
     }
     
-    TEST("cgs_spn: partial match at start");
+    TEST("cgs_spn: partial match at start");;;
     {
         char s[] = "aaabcd";
         ASSERT_TRUE(cgs_spn(s, "ab").len == 4);
     }
     
-    TEST("cgs_spn: match stops at first non-charset char");
+    TEST("cgs_spn: match stops at first non-charset char");;;
     {
         char s[] = "aaa!aaa";
         ASSERT_TRUE(cgs_spn(s, "a").len == 3);
     }
     
-    TEST("cgs_spn: empty string");
+    TEST("cgs_spn: empty string");;;
     {
         char s[] = "";
         ASSERT_TRUE(cgs_spn(s, "abc").len == 0);
     }
     
-    TEST("cgs_spn: empty charset");
+    TEST("cgs_spn: empty charset");;;
     {
         char s[] = "hello";
         ASSERT_TRUE(cgs_spn(s, "").len == 0);
     }
     
-    TEST("cgs_spn: both empty");
+    TEST("cgs_spn: both empty");;;
     {
         char s[] = "";
         ASSERT_TRUE(cgs_spn(s, "").len == 0);
     }
     
-    TEST("cgs_spn: single char string, in charset");
+    TEST("cgs_spn: single char string, in charset");;;
     {
         char s[] = "a";
         ASSERT_TRUE(cgs_spn(s, "a").len == 1);
     }
     
-    TEST("cgs_spn: single char string, not in charset");
+    TEST("cgs_spn: single char string, not in charset");;;
     {
         char s[] = "a";
         ASSERT_TRUE(cgs_spn(s, "b").len == 0);
     }
     
-    TEST("cgs_spn: charset has duplicate chars");
+    TEST("cgs_spn: charset has duplicate chars");;;
     {
         char s[] = "aaabbb";
         ASSERT_TRUE(cgs_spn(s, "aaabbb").len == 6);
     }
     
-    TEST("cgs_spn: charset larger than string");
+    TEST("cgs_spn: charset larger than string");;;
     {
         char s[] = "ab";
         ASSERT_TRUE(cgs_spn(s, "abcdefghijklmnop").len == 2);
     }
     
-    TEST("cgs_spn: whitespace charset");
+    TEST("cgs_spn: whitespace charset");;;
     {
         char s[] = "   \t\nhello";
         ASSERT_TRUE(cgs_spn(s, " \t\n\r").len == 5);
     }
     
-    TEST("cgs_spn: first char not in charset");
+    TEST("cgs_spn: first char not in charset");;;
     {
         char s[] = "xaaa";
         ASSERT_TRUE(cgs_spn(s, "a").len == 0);
     }
     
-    TEST("cgs_spn: accepts StrView");
+    TEST("cgs_spn: accepts StrView");;;
     {
         StrView sv = strv("aaabcd");
         ASSERT_TRUE(cgs_spn(sv, "a").len == 3);
     }
     
-    TEST("cgs_spn: accepts DStr");
+    TEST("cgs_spn: accepts DStr");;;
     {
         DStr d = dstr_init_from("aaabcd");
         ASSERT_TRUE(cgs_spn(d, "a").len == 3);
         dstr_deinit(&d);
     }
     
-    TEST("cgs_spn: charset as StrView");
+    TEST("cgs_spn: charset as StrView");;;
     {
         char s[] = "aaabcd";
         StrView charset = strv("a");
         ASSERT_TRUE(cgs_spn(s, charset).len == 3);
     }
     
-    TEST("cgs_spn: result equals length means all chars matched");
+    TEST("cgs_spn: result equals length means all chars matched");;;
     {
         char s[] = "abcabc";
         unsigned int n = cgs_spn(s, "abc").len;
@@ -714,105 +714,105 @@ void test_str_find_edge_cases() {
     
     /* --- cgs_cspn --- */
     
-    TEST("cgs_cspn: no chars in charset");
+    TEST("cgs_cspn: no chars in charset");;;
     {
         char s[] = "hello";
         ASSERT_TRUE(cgs_cspn(s, "xyz").len == 5);
     }
     
-    TEST("cgs_cspn: first char in charset");
+    TEST("cgs_cspn: first char in charset");;;
     {
         char s[] = "hello";
         ASSERT_TRUE(cgs_cspn(s, "h").len == 0);
     }
     
-    TEST("cgs_cspn: charset hit in middle");
+    TEST("cgs_cspn: charset hit in middle");;;
     {
         char s[] = "abcXdef";
         ASSERT_TRUE(cgs_cspn(s, "X").len == 3);
     }
     
-    TEST("cgs_cspn: charset hit at last char");
+    TEST("cgs_cspn: charset hit at last char");;;
     {
         char s[] = "abcdX";
         ASSERT_TRUE(cgs_cspn(s, "X").len == 4);
     }
     
-    TEST("cgs_cspn: entire string in charset");
+    TEST("cgs_cspn: entire string in charset");;;
     {
         char s[] = "aaa";
         ASSERT_TRUE(cgs_cspn(s, "a").len == 0);
     }
     
-    TEST("cgs_cspn: empty string");
+    TEST("cgs_cspn: empty string");;;
     {
         char s[] = "";
         ASSERT_TRUE(cgs_cspn(s, "abc").len == 0);
     }
     
-    TEST("cgs_cspn: empty charset");
+    TEST("cgs_cspn: empty charset");;;
     {
         char s[] = "hello";
         ASSERT_TRUE(cgs_cspn(s, "").len == 5);
     }
     
-    TEST("cgs_cspn: both empty");
+    TEST("cgs_cspn: both empty");;;
     {
         char s[] = "";
         ASSERT_TRUE(cgs_cspn(s, "").len == 0);
     }
     
-    TEST("cgs_cspn: single char string, in charset");
+    TEST("cgs_cspn: single char string, in charset");;;
     {
         char s[] = "a";
         ASSERT_TRUE(cgs_cspn(s, "a").len == 0);
     }
     
-    TEST("cgs_cspn: single char string, not in charset");
+    TEST("cgs_cspn: single char string, not in charset");;;
     {
         char s[] = "a";
         ASSERT_TRUE(cgs_cspn(s, "b").len == 1);
     }
     
-    TEST("cgs_cspn: multiple chars in charset, first hit determines result");
+    TEST("cgs_cspn: multiple chars in charset, first hit determines result");;;
     {
         char s[] = "abcdef";
         ASSERT_TRUE(cgs_cspn(s, "ce").len == 2);
     }
     
-    TEST("cgs_cspn: charset has duplicate chars");
+    TEST("cgs_cspn: charset has duplicate chars");;;
     {
         char s[] = "abcXdef";
         ASSERT_TRUE(cgs_cspn(s, "XX").len == 3);
     }
     
-    TEST("cgs_cspn: whitespace as charset");
+    TEST("cgs_cspn: whitespace as charset");;;
     {
         char s[] = "hello world";
         ASSERT_TRUE(cgs_cspn(s, " \t\n\r").len == 5);
     }
     
-    TEST("cgs_cspn: accepts StrView");
+    TEST("cgs_cspn: accepts StrView");;;
     {
         StrView sv = strv("abcXdef");
         ASSERT_TRUE(cgs_cspn(sv, "X").len == 3);
     }
     
-    TEST("cgs_cspn: accepts DStr");
+    TEST("cgs_cspn: accepts DStr");;;
     {
         DStr d = dstr_init_from("abcXdef");
         ASSERT_TRUE(cgs_cspn(d, "X").len == 3);
         dstr_deinit(&d);
     }
     
-    TEST("cgs_cspn: charset as StrView");
+    TEST("cgs_cspn: charset as StrView");;;
     {
         char s[] = "abcXdef";
         StrView charset = strv("X");
         ASSERT_TRUE(cgs_cspn(s, charset).len == 3);
     }
     
-    TEST("cgs_cspn: result equals length means no chars matched");
+    TEST("cgs_cspn: result equals length means no chars matched");;;
     {
         char s[] = "hello";
         unsigned int n = cgs_cspn(s, "xyz").len;
@@ -821,7 +821,7 @@ void test_str_find_edge_cases() {
     
     /* --- cgs_spn / cgs_cspn: complementary relationship --- */
     
-    TEST("cgs_spn + cgs_cspn: partition the string");
+    TEST("cgs_spn + cgs_cspn: partition the string");;;
     {
         /* for any string and charset, spn + cspn(from that offset) should
          *           walk the entire string */
@@ -832,11 +832,382 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(spn == 3 && cspn == 6);
     }
     
-    TEST("cgs_spn + cgs_cspn: on same string and charset sum to string length when non-overlapping");
+    TEST("cgs_spn + cgs_cspn: on same string and charset sum to string length when non-overlapping");;;
     {
         /* all-a string: spn == len, cspn == 0 */
         char s[] = "aaaa";
         ASSERT_TRUE(cgs_spn(s, "a").len + cgs_cspn(s, "a").len == cgs_len(s));
+    }
+    
+    /* =========================================================================
+     * cgs_next_tok  —  substring delimiter
+     * ========================================================================= */
+    
+    TEST("cgs_next_tok: basic split");;
+    {
+        CGS_StrView base = cgs_strv("hello-world");
+        CGS_StrView tok  = cgs_next_tok(&base, cgs_strv("-"));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("hello")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("world")));
+    }
+    
+    TEST("cgs_next_tok: second call consumes remainder");;
+    {
+        CGS_StrView base = cgs_strv("hello-world");
+        cgs_next_tok(&base, cgs_strv("-"));
+        CGS_StrView tok = cgs_next_tok(&base, cgs_strv("-"));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("world")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok: full iteration over all tokens");;
+    {
+        CGS_StrView base     = cgs_strv("a,bb,ccc,dddd");
+        CGS_StrView delim    = cgs_strv(",");
+        const char *expected[] = { "a", "bb", "ccc", "dddd" };
+        int i = 0;
+        while (base.len > 0) {
+            CGS_StrView tok = cgs_next_tok(&base, delim);
+            ASSERT_TRUE(cgs_equal(tok, cgs_strv(expected[i])));
+            i++;
+        }
+        ASSERT_TRUE(i == 4);
+    }
+    
+    TEST("cgs_next_tok: delimiter not found returns whole string");;
+    {
+        CGS_StrView base = cgs_strv("hello");
+        CGS_StrView tok  = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("hello")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok: delimiter at start produces empty token");;
+    {
+        CGS_StrView base = cgs_strv("-hello");
+        CGS_StrView tok  = cgs_next_tok(&base, cgs_strv("-"));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("hello")));
+    }
+    
+    TEST("cgs_next_tok: delimiter at end produces empty trailing token");;
+    {
+        CGS_StrView base = cgs_strv("hello-");
+        const char *origin = base.chars;
+        
+        CGS_StrView tok = cgs_next_tok(&base, cgs_strv("-"));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("hello")));
+        ASSERT_TRUE(tok.chars == origin);           /* tok starts at original base */
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+        ASSERT_TRUE(base.chars == origin + 6);      /* points at '\0' of "hello-" */
+        
+        CGS_StrView tok2 = cgs_next_tok(&base, cgs_strv("-"));
+        ASSERT_TRUE(cgs_equal(tok2, cgs_strv("")));
+        ASSERT_TRUE(tok2.chars == origin + 6);      /* still pointing at '\0', not moved */
+        ASSERT_TRUE(base.chars == origin + 6);      /* base unchanged after exhaustion */
+    }
+    
+    TEST("cgs_next_tok: consecutive delimiters produce empty tokens");;
+    {
+        CGS_StrView base  = cgs_strv("a--b");
+        CGS_StrView delim = cgs_strv("-");
+        CGS_StrView t0 = cgs_next_tok(&base, delim);
+        CGS_StrView t1 = cgs_next_tok(&base, delim);
+        CGS_StrView t2 = cgs_next_tok(&base, delim);
+        ASSERT_TRUE(cgs_equal(t0,   cgs_strv("a")));
+        ASSERT_TRUE(cgs_equal(t1,   cgs_strv("")));
+        ASSERT_TRUE(cgs_equal(t2,   cgs_strv("b")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok: delimiter equals entire string");;
+    {
+        CGS_StrView base = cgs_strv("-");
+        CGS_StrView tok  = cgs_next_tok(&base, cgs_strv("-"));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok: empty base returns empty token without crash");;
+    {
+        CGS_StrView base = cgs_strv("");
+        CGS_StrView tok  = cgs_next_tok(&base, cgs_strv("-"));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok: single character string no delimiter match");;
+    {
+        CGS_StrView base = cgs_strv("x");
+        CGS_StrView tok  = cgs_next_tok(&base, cgs_strv("-"));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("x")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok: multi-char delimiter is matched as whole sequence");;
+    {
+        CGS_StrView base  = cgs_strv("key->value->end");
+        CGS_StrView delim = cgs_strv("->");
+        CGS_StrView t0 = cgs_next_tok(&base, delim);
+        CGS_StrView t1 = cgs_next_tok(&base, delim);
+        CGS_StrView t2 = cgs_next_tok(&base, delim);
+        ASSERT_TRUE(cgs_equal(t0,   cgs_strv("key")));
+        ASSERT_TRUE(cgs_equal(t1,   cgs_strv("value")));
+        ASSERT_TRUE(cgs_equal(t2,   cgs_strv("end")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok: multi-char delimiter partial prefix is not a match");;
+    {
+        /* "key-value" contains '-' but not "->" so no split should occur */
+        CGS_StrView base = cgs_strv("key-value");
+        CGS_StrView tok  = cgs_next_tok(&base, cgs_strv("->"));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("key-value")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok: CRLF delimiter splits HTTP-style lines correctly");;
+    {
+        CGS_StrView base  = cgs_strv("Header: value\r\nOther: data\r\n");
+        CGS_StrView delim = cgs_strv("\r\n");
+        CGS_StrView t0 = cgs_next_tok(&base, delim);
+        CGS_StrView t1 = cgs_next_tok(&base, delim);
+        ASSERT_TRUE(cgs_equal(t0, cgs_strv("Header: value")));
+        ASSERT_TRUE(cgs_equal(t1, cgs_strv("Other: data")));
+    }
+    
+    TEST("cgs_next_tok: does not modify the underlying string data");;
+    {
+        char buf[] = "foo|bar";
+        CGS_StrView base = cgs_strv(buf);
+        cgs_next_tok(&base, cgs_strv("|"));
+        ASSERT_TRUE(buf[3] == '|');   /* delimiter byte must be untouched */
+    }
+    
+    /* --- second-argument type variants ---------------------------------------- */
+    
+    TEST("cgs_next_tok: delimiter as CGS_StrBuf");;
+    {
+        char dbuf[]      = "-";
+        CGS_StrBuf delim = cgs_strbuf_init_from_cstr(dbuf);
+        CGS_StrView base = cgs_strv("hello-world");
+        CGS_StrView tok  = cgs_next_tok(&base, delim);
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("hello")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("world")));
+    }
+    
+    TEST("cgs_next_tok: delimiter as CGS_DStr");;
+    {
+        CGS_DStr delim = cgs_dstr_init_from(cgs_strv("-"));
+        CGS_StrView base = cgs_strv("hello-world");
+        CGS_StrView tok  = cgs_next_tok(&base, delim);
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("hello")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("world")));
+        cgs_dstr_deinit(&delim);
+    }
+    
+    TEST("cgs_next_tok: delimiter as CGS_MutStrRef");;
+    {
+        char dbuf[]        = "-";
+        CGS_MutStrRef delim = cgs_mutstr_ref(dbuf);
+        CGS_StrView base   = cgs_strv("hello-world");
+        CGS_StrView tok    = cgs_next_tok(&base, delim);
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("hello")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("world")));
+    }
+    
+    
+    /* =========================================================================
+     * cgs_next_tok_any  —  character-set delimiter
+     * ========================================================================= */
+    
+    TEST("cgs_next_tok_any: basic split on single char set");;
+    {
+        CGS_StrView base = cgs_strv("hello-world");
+        CGS_StrView tok  = cgs_next_tok_any(&base, cgs_strv("-"));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("hello")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("world")));
+    }
+    
+    TEST("cgs_next_tok_any: splits on any character in the set");;
+    {
+        CGS_StrView base  = cgs_strv("one,two;three");
+        CGS_StrView delim = cgs_strv(",;");
+        
+        CGS_StrView t0 = cgs_next_tok_any(&base, delim);
+        ASSERT_TRUE(cgs_equal(t0,   cgs_strv("one")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("two;three")));
+        
+        CGS_StrView t1 = cgs_next_tok_any(&base, delim);
+        ASSERT_TRUE(cgs_equal(t1,   cgs_strv("two")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("three")));
+        
+        CGS_StrView t2 = cgs_next_tok_any(&base, delim);
+        ASSERT_TRUE(cgs_equal(t2,   cgs_strv("three")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok_any: whitespace set splits words");;
+    {
+        CGS_StrView base  = cgs_strv("hello world\there");
+        CGS_StrView delim = cgs_strv(" \t");
+        CGS_StrView t0 = cgs_next_tok_any(&base, delim);
+        CGS_StrView t1 = cgs_next_tok_any(&base, delim);
+        CGS_StrView t2 = cgs_next_tok_any(&base, delim);
+        ASSERT_TRUE(cgs_equal(t0, cgs_strv("hello")));
+        ASSERT_TRUE(cgs_equal(t1, cgs_strv("world")));
+        ASSERT_TRUE(cgs_equal(t2, cgs_strv("here")));
+    }
+    
+    TEST("cgs_next_tok_any: each char in set is an independent split point");;
+    {
+        /* ",;" set — "a,b;c" and "a;b,c" should behave identically */
+        CGS_StrView base1 = cgs_strv("a,b;c");
+        CGS_StrView base2 = cgs_strv("a;b,c");
+        CGS_StrView delim = cgs_strv(",;");
+        CGS_StrView a0 = cgs_next_tok_any(&base1, delim);
+        CGS_StrView a1 = cgs_next_tok_any(&base1, delim);
+        CGS_StrView b0 = cgs_next_tok_any(&base2, delim);
+        CGS_StrView b1 = cgs_next_tok_any(&base2, delim);
+        ASSERT_TRUE(cgs_equal(a0, b0));
+        ASSERT_TRUE(cgs_equal(a1, b1));
+    }
+    
+    TEST("cgs_next_tok_any: delimiter not found returns whole string");;
+    {
+        CGS_StrView base = cgs_strv("hello");
+        CGS_StrView tok  = cgs_next_tok_any(&base, cgs_strv(",;"));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("hello")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok_any: delimiter char at start produces empty token");;
+    {
+        CGS_StrView base = cgs_strv(",hello");
+        CGS_StrView tok  = cgs_next_tok_any(&base, cgs_strv(","));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("hello")));
+    }
+    
+    TEST("cgs_next_tok_any: delimiter char at end produces empty trailing token");;
+    {
+        CGS_StrView base = cgs_strv("hello,");
+        CGS_StrView tok  = cgs_next_tok_any(&base, cgs_strv(","));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("hello")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+        CGS_StrView tok2 = cgs_next_tok_any(&base, cgs_strv(","));
+        ASSERT_TRUE(cgs_equal(tok2, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok_any: consecutive delimiter chars produce empty tokens");;
+    {
+        CGS_StrView base  = cgs_strv("a,,b");
+        CGS_StrView delim = cgs_strv(",");
+        CGS_StrView t0 = cgs_next_tok_any(&base, delim);
+        CGS_StrView t1 = cgs_next_tok_any(&base, delim);
+        CGS_StrView t2 = cgs_next_tok_any(&base, delim);
+        ASSERT_TRUE(cgs_equal(t0,   cgs_strv("a")));
+        ASSERT_TRUE(cgs_equal(t1,   cgs_strv("")));
+        ASSERT_TRUE(cgs_equal(t2,   cgs_strv("b")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok_any: two different consecutive delimiter chars produce empty token");;
+    {
+        /* ",;" set — ",;" in the string should produce an empty token between them */
+        CGS_StrView base  = cgs_strv("a,;b");
+        CGS_StrView delim = cgs_strv(",;");
+        CGS_StrView t0 = cgs_next_tok_any(&base, delim);
+        CGS_StrView t1 = cgs_next_tok_any(&base, delim);
+        CGS_StrView t2 = cgs_next_tok_any(&base, delim);
+        ASSERT_TRUE(cgs_equal(t0,   cgs_strv("a")));
+        ASSERT_TRUE(cgs_equal(t1,   cgs_strv("")));
+        ASSERT_TRUE(cgs_equal(t2,   cgs_strv("b")));
+    }
+    
+    TEST("cgs_next_tok_any: empty base returns empty token without crash");;
+    {
+        CGS_StrView base = cgs_strv("");
+        CGS_StrView tok  = cgs_next_tok_any(&base, cgs_strv(","));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok_any: single character string no delimiter match");;
+    {
+        CGS_StrView base = cgs_strv("x");
+        CGS_StrView tok  = cgs_next_tok_any(&base, cgs_strv(","));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("x")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok_any: single character string is the delimiter");;
+    {
+        CGS_StrView base = cgs_strv(",");
+        CGS_StrView tok  = cgs_next_tok_any(&base, cgs_strv(","));
+        ASSERT_TRUE(cgs_equal(tok,  cgs_strv("")));
+        ASSERT_TRUE(cgs_equal(base, cgs_strv("")));
+    }
+    
+    TEST("cgs_next_tok_any: multi-char set does not split on sequence, only individual chars");;
+    {
+        /* contrast with cgs_next_tok: "->" as a set splits on '-' OR '>' individually */
+        CGS_StrView base  = cgs_strv("key->value");
+        CGS_StrView t0 = cgs_next_tok_any(&base, cgs_strv("->"));
+        CGS_StrView t1 = cgs_next_tok_any(&base, cgs_strv("->"));
+        CGS_StrView t2 = cgs_next_tok_any(&base, cgs_strv("->"));
+        ASSERT_TRUE(cgs_equal(t0,   cgs_strv("key")));
+        ASSERT_TRUE(cgs_equal(t1,   cgs_strv("")));      /* '-' and '>' are both hits */
+        ASSERT_TRUE(cgs_equal(t2,   cgs_strv("value")));
+    }
+    
+    TEST("cgs_next_tok_any: does not modify the underlying string data");;
+    {
+        char buf[] = "foo|bar";
+        CGS_StrView base = cgs_strv(buf);
+        cgs_next_tok_any(&base, cgs_strv("|"));
+        ASSERT_TRUE(buf[3] == '|');
+    }
+    
+    /* --- second-argument type variants ---------------------------------------- */
+    
+    TEST("cgs_next_tok_any: delimiter set as CGS_StrBuf");;
+    {
+        char dbuf[]      = ",;";
+        CGS_StrBuf delim = cgs_strbuf_init_from_cstr(dbuf);
+        CGS_StrView base = cgs_strv("a,b;c");
+        CGS_StrView t0   = cgs_next_tok_any(&base, delim);
+        CGS_StrView t1   = cgs_next_tok_any(&base, delim);
+        CGS_StrView t2   = cgs_next_tok_any(&base, delim);
+        ASSERT_TRUE(cgs_equal(t0, cgs_strv("a")));
+        ASSERT_TRUE(cgs_equal(t1, cgs_strv("b")));
+        ASSERT_TRUE(cgs_equal(t2, cgs_strv("c")));
+    }
+    
+    TEST("cgs_next_tok_any: delimiter set as CGS_DStr");;
+    {
+        CGS_DStr delim   = cgs_dstr_init_from(cgs_strv(",;"));
+        CGS_StrView base = cgs_strv("a,b;c");
+        CGS_StrView t0   = cgs_next_tok_any(&base, delim);
+        CGS_StrView t1   = cgs_next_tok_any(&base, delim);
+        CGS_StrView t2   = cgs_next_tok_any(&base, delim);
+        ASSERT_TRUE(cgs_equal(t0, cgs_strv("a")));
+        ASSERT_TRUE(cgs_equal(t1, cgs_strv("b")));
+        ASSERT_TRUE(cgs_equal(t2, cgs_strv("c")));
+        cgs_dstr_deinit(&delim);
+    }
+    
+    TEST("cgs_next_tok_any: delimiter set as CGS_MutStrRef");;
+    {
+        char dbuf[]         = ",;";
+        CGS_MutStrRef delim = cgs_mutstr_ref(dbuf);
+        CGS_StrView base    = cgs_strv("a,b;c");
+        CGS_StrView t0      = cgs_next_tok_any(&base, delim);
+        CGS_StrView t1      = cgs_next_tok_any(&base, delim);
+        CGS_StrView t2      = cgs_next_tok_any(&base, delim);
+        ASSERT_TRUE(cgs_equal(t0, cgs_strv("a")));
+        ASSERT_TRUE(cgs_equal(t1, cgs_strv("b")));
+        ASSERT_TRUE(cgs_equal(t2, cgs_strv("c")));
     }
     
 }
@@ -846,13 +1217,13 @@ void test_str_find_edge_cases() {
 // ============================================================================
 
 void test_str_count_edge_cases() {
-    TEST("cgs_count: basic count");
+    TEST("cgs_count: basic count");;;
     {
         unsigned int n = cgs_count("banana", "a");
         ASSERT_TRUE(n == 3);
     }
     
-    TEST("cgs_count: non-overlapping logic");
+    TEST("cgs_count: non-overlapping logic");;;
     {
         // "aa" appears in "aaaaa" at:
         // [aa] [aa] a  <- Non-overlapping (2)
@@ -862,13 +1233,13 @@ void test_str_count_edge_cases() {
         ASSERT_TRUE(n == 2);
     }
     
-    TEST("cgs_count: no matches");
+    TEST("cgs_count: no matches");;;
     {
         unsigned int n = cgs_count("abc", "z");
         ASSERT_TRUE(n == 0);
     }
     
-    TEST("cgs_count: empty needle (Interstitial Gaps)");
+    TEST("cgs_count: empty needle (Interstitial Gaps)");;;
     {
         // "abc" has gaps: ^ a ^ b ^ c ^ 
         // Index:        0 1 1 2 2 3 3
@@ -877,7 +1248,7 @@ void test_str_count_edge_cases() {
         ASSERT_TRUE(n == 4);
     }
     
-    TEST("cgs_count: empty haystack");
+    TEST("cgs_count: empty haystack");;;
     {
         // "" contains one ""
         ASSERT_TRUE(cgs_count("", "") == 1);
@@ -885,12 +1256,12 @@ void test_str_count_edge_cases() {
         ASSERT_TRUE(cgs_count("", "a") == 0);
     }
     
-    TEST("cgs_count: needle is haystack");
+    TEST("cgs_count: needle is haystack");;;
     {
         ASSERT_TRUE(cgs_count("test", "test") == 1);
     }
     
-    TEST("cgs_count: needle overlaps but is not identical");
+    TEST("cgs_count: needle overlaps but is not identical");;;
     {
         // count "ababa" in "abababa"
         // [ababa] ba -> 1 match
@@ -898,7 +1269,7 @@ void test_str_count_edge_cases() {
         ASSERT_TRUE(n == 1);
     }
     
-    TEST("cgs_count: empty needle");
+    TEST("cgs_count: empty needle");;;
     {
         char hay[] = "test";
         char needle[] = "";
@@ -906,14 +1277,14 @@ void test_str_count_edge_cases() {
         ASSERT_TRUE(count == cgs_len(hay) + 1);
     }
     
-    TEST("cgs_count: empty haystack");
+    TEST("cgs_count: empty haystack");;;
     {
         char hay[] = "";
         char needle[] = "x";
         ASSERT_EQ(cgs_count(hay, needle), 0);
     }
     
-    TEST("cgs_count: overlapping occurrences");
+    TEST("cgs_count: overlapping occurrences");;;
     {
         char hay[] = "aaaa";
         char needle[] = "aa";
@@ -922,21 +1293,21 @@ void test_str_count_edge_cases() {
         ASSERT_TRUE(count == 2 || count == 3);
     }
     
-    TEST("cgs_count: needle equals haystack");
+    TEST("cgs_count: needle equals haystack");;;
     {
         char hay[] = "exact";
         char needle[] = "exact";
         ASSERT_EQ(cgs_count(hay, needle), 1);
     }
     
-    TEST("cgs_count: needle longer than haystack");
+    TEST("cgs_count: needle longer than haystack");;;
     {
         char hay[] = "ab";
         char needle[] = "abcdef";
         ASSERT_EQ(cgs_count(hay, needle), 0);
     }
     
-    TEST("cgs_count: many occurrences");
+    TEST("cgs_count: many occurrences");;;
     {
         char hay[] = "a a a a a a a a a a";
         char needle[] = "a";
@@ -949,7 +1320,7 @@ void test_str_count_edge_cases() {
 // ============================================================================
 
 void test_str_clear_edge_cases() {
-    TEST("cgs_clear: already empty DStr");
+    TEST("cgs_clear: already empty DStr");;;
     {
         DStr dstr = dstr_init(10);
         CGS_Error err = cgs_clear(&dstr);
@@ -958,7 +1329,7 @@ void test_str_clear_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_clear: StrBuf at capacity");
+    TEST("cgs_clear: StrBuf at capacity");;;
     {
         char backing[5] = {'f', 'u', 'l', 'l', '\0'};
         StrBuf sb = strbuf_init_from_cstr(backing, 5);
@@ -967,7 +1338,7 @@ void test_str_clear_edge_cases() {
         ASSERT_EQ(cgs_len(&sb), 0);
     }
     
-    TEST("cgs_clear: raw char array (might be unsupported)");
+    TEST("cgs_clear: raw char array (might be unsupported)");;;
     {
         char buf[10] = "test";
         // This might return an error or work
@@ -976,7 +1347,7 @@ void test_str_clear_edge_cases() {
         ASSERT_TRUE(1);
     }
     
-    TEST("cgs_clear: then append");
+    TEST("cgs_clear: then append");;;
     {
         DStr dstr = dstr_init_from("original");
         cgs_clear(&dstr);
@@ -992,84 +1363,84 @@ void test_str_clear_edge_cases() {
 // ============================================================================
 
 void test_str_starts_ends_with_edge_cases() {
-    TEST("cgs_starts_with: empty prefix");
+    TEST("cgs_starts_with: empty prefix");;;
     {
         char hay[] = "test";
         char prefix[] = "";
         ASSERT_TRUE(cgs_starts_with(hay, prefix));
     }
     
-    TEST("cgs_starts_with: prefix equals string");
+    TEST("cgs_starts_with: prefix equals string");;;
     {
         char hay[] = "exact";
         char prefix[] = "exact";
         ASSERT_TRUE(cgs_starts_with(hay, prefix));
     }
     
-    TEST("cgs_starts_with: prefix longer than string");
+    TEST("cgs_starts_with: prefix longer than string");;;
     {
         char hay[] = "ab";
         char prefix[] = "abcdef";
         ASSERT_FALSE(cgs_starts_with(hay, prefix));
     }
     
-    TEST("cgs_starts_with: both empty");
+    TEST("cgs_starts_with: both empty");;;
     {
         char hay[] = "";
         char prefix[] = "";
         ASSERT_TRUE(cgs_starts_with(hay, prefix));
     }
     
-    TEST("cgs_ends_with: empty suffix");
+    TEST("cgs_ends_with: empty suffix");;;
     {
         char hay[] = "test";
         char suffix[] = "";
         ASSERT_TRUE(cgs_ends_with(hay, suffix));
     }
     
-    TEST("cgs_ends_with: suffix equals string");
+    TEST("cgs_ends_with: suffix equals string");;;
     {
         char hay[] = "exact";
         char suffix[] = "exact";
         ASSERT_TRUE(cgs_ends_with(hay, suffix));
     }
     
-    TEST("cgs_ends_with: suffix longer than string");
+    TEST("cgs_ends_with: suffix longer than string");;;
     {
         char hay[] = "ab";
         char suffix[] = "zabcdef";
         ASSERT_FALSE(cgs_ends_with(hay, suffix));
     }
     
-    TEST("cgs_ends_with: single character suffix");
+    TEST("cgs_ends_with: single character suffix");;;
     {
         char hay[] = "test";
         char suffix[] = "t";
         ASSERT_TRUE(cgs_ends_with(hay, suffix));
     }
     
-    TEST("cgs_starts_with: case sensitive");
+    TEST("cgs_starts_with: case sensitive");;;
     {
         char hay[] = "Test";
         char prefix[] = "test";
         ASSERT_FALSE(cgs_starts_with(hay, prefix));
     }
     
-    TEST("cgs_starts_with: NULL hay");
+    TEST("cgs_starts_with: NULL hay");;;
     {
         StrView hay = {0};
         StrView prefix = strv("hello");
         ASSERT_FALSE(cgs_starts_with(hay, prefix));
     }
     
-    TEST("cgs_starts_with: NULL needle");
+    TEST("cgs_starts_with: NULL needle");;;
     {
         StrView hay = strv("hello");
         StrView prefix = {0};
         ASSERT_TRUE(cgs_starts_with(hay, prefix));
     }
     
-    TEST("cgs_starts_with: NULL both");
+    TEST("cgs_starts_with: NULL both");;;
     {
         StrView hay = {0};
         StrView prefix = {0};
@@ -1082,7 +1453,7 @@ void test_str_starts_ends_with_edge_cases() {
 // ============================================================================
 
 void test_str_case_edge_cases() {
-    TEST("cgs_tolower: empty string");
+    TEST("cgs_tolower: empty string");;;
     {
         DStr dstr = dstr_init_from("");
         cgs_tolower(&dstr);
@@ -1090,7 +1461,7 @@ void test_str_case_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_tolower: already lowercase");
+    TEST("cgs_tolower: already lowercase");;;
     {
         DStr dstr = dstr_init_from("alllower");
         cgs_tolower(&dstr);
@@ -1098,7 +1469,7 @@ void test_str_case_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_tolower: with numbers and symbols");
+    TEST("cgs_tolower: with numbers and symbols");;;
     {
         DStr dstr = dstr_init_from("Test123!@#");
         cgs_tolower(&dstr);
@@ -1106,14 +1477,14 @@ void test_str_case_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_toupper: empty string");
+    TEST("cgs_toupper: empty string");;;
     {
         DStr dstr = dstr_init_from("");
         cgs_toupper(&dstr);
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_toupper: already uppercase");
+    TEST("cgs_toupper: already uppercase");;;
     {
         DStr dstr = dstr_init_from("ALLUPPER");
         cgs_toupper(&dstr);
@@ -1121,7 +1492,7 @@ void test_str_case_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_tolower: on read-only buffer (should fail)");
+    TEST("cgs_tolower: on read-only buffer (should fail)");;;
     {
         char buf[] = "TEST";
         cgs_tolower(buf);
@@ -1134,7 +1505,7 @@ void test_str_case_edge_cases() {
 // ============================================================================
 
 void test_str_copy_edge_cases() {
-    TEST("cgs_copy: empty to empty");
+    TEST("cgs_copy: empty to empty");;;
     {
         char dst[10] = "";
         char src[] = "";
@@ -1143,7 +1514,7 @@ void test_str_copy_edge_cases() {
         ASSERT_EQ(cgs_len(dst), 0);
     }
     
-    TEST("cgs_copy: to buffer exactly sized");
+    TEST("cgs_copy: to buffer exactly sized");;;
     {
         char dst[5];
         char src[] = "test";
@@ -1152,7 +1523,7 @@ void test_str_copy_edge_cases() {
         ASSERT_TRUE(cgs_equal(dst, "test"));
     }
     
-    TEST("cgs_copy: to buffer one too small");
+    TEST("cgs_copy: to buffer one too small");;;
     {
         char dst[4];
         char src[] = "test";
@@ -1160,7 +1531,7 @@ void test_str_copy_edge_cases() {
         ASSERT_EQ(err.ec, CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_copy: to StrBuf at capacity");
+    TEST("cgs_copy: to StrBuf at capacity");;;
     {
         char backing[5];
         StrBuf sb = strbuf_init_from_buf(backing, 5);
@@ -1169,7 +1540,7 @@ void test_str_copy_edge_cases() {
         ASSERT_EQ(err.ec, CGS_OK);
     }
     
-    TEST("cgs_copy: overlapping buffers (aliasing)");
+    TEST("cgs_copy: overlapping buffers (aliasing)");;;
     {
         char buf[10] = "test";
         // Copying to itself should fail or handle gracefully
@@ -1178,7 +1549,7 @@ void test_str_copy_edge_cases() {
         ASSERT_TRUE(err.ec == CGS_ALIASING_NOT_SUPPORTED || err.ec == CGS_OK);
     }
     
-    TEST("cgs_copy: to DStr with insufficient capacity");
+    TEST("cgs_copy: to DStr with insufficient capacity");;;
     {
         DStr dstr = dstr_init(2);
         char src[] = "this is a long string";
@@ -1188,7 +1559,7 @@ void test_str_copy_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_copy: from DStr to char array");
+    TEST("cgs_copy: from DStr to char array");;;
     {
         DStr src = dstr_init_from("source");
         char dst[20];
@@ -1204,7 +1575,7 @@ void test_str_copy_edge_cases() {
 // ============================================================================
 
 void test_str_putc_edge_cases() {
-    TEST("cgs_putc: to empty DStr");
+    TEST("cgs_putc: to empty DStr");;;
     {
         DStr dstr = dstr_init(0);
         CGS_Error err = cgs_putc(&dstr, 'a');
@@ -1212,7 +1583,7 @@ void test_str_putc_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_putc: null character");
+    TEST("cgs_putc: null character");;;
     {
         DStr dstr = dstr_init(10);
         CGS_Error err = cgs_putc(&dstr, '\0');
@@ -1222,7 +1593,7 @@ void test_str_putc_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_putc: to StrBuf at capacity");
+    TEST("cgs_putc: to StrBuf at capacity");;;
     {
         char backing[3] = {'a', 'b', '\0'};
         StrBuf sb = strbuf_init_from_cstr(backing, 3);
@@ -1230,7 +1601,7 @@ void test_str_putc_edge_cases() {
         ASSERT_EQ(err.ec, CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_putc: extended ASCII character");
+    TEST("cgs_putc: extended ASCII character");;;
     {
         DStr dstr = dstr_init(10);
         CGS_Error err = cgs_putc(&dstr, 0xFF);
@@ -1238,7 +1609,7 @@ void test_str_putc_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_putc: many characters sequentially");
+    TEST("cgs_putc: many characters sequentially");;;
     {
         DStr dstr = dstr_init(1);
         for (int i = 0; i < 1000; i++) {
@@ -1252,7 +1623,7 @@ void test_str_putc_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("writer_t: cgs_putc with FILE*");
+    TEST("writer_t: cgs_putc with FILE*");;;
     {
         FILE* tmp = tmpfile();
         
@@ -1268,7 +1639,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("writer_t: cgs_append with FILE*");
+    TEST("writer_t: cgs_append with FILE*");;;
     {
         FILE* tmp = tmpfile();
         
@@ -1284,7 +1655,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("writer_t: cgs_tostr_append with FILE*");
+    TEST("writer_t: cgs_tostr_append with FILE*");;;
     {
         FILE* tmp = tmpfile();
         
@@ -1304,7 +1675,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("writer_t: cgs_sprint_append with FILE*");
+    TEST("writer_t: cgs_sprint_append with FILE*");;;
     {
         FILE* tmp = tmpfile();
         
@@ -1321,7 +1692,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("cgs_fread_line: basic line reading");
+    TEST("cgs_fread_line: basic line reading");;;
     {
         FILE* tmp = tmpfile();
         fputs("line one\nline two", tmp);
@@ -1340,7 +1711,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("cgs_append_fread_line: appending multiple lines");
+    TEST("cgs_append_fread_line: appending multiple lines");;;
     {
         FILE* tmp = tmpfile();
         fputs("first\nsecond", tmp);
@@ -1357,7 +1728,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("cgs_fread_until: basic delimiter test");
+    TEST("cgs_fread_until: basic delimiter test");;;
     {
         FILE* tmp = tmpfile();
         fputs("user@hostname.com", tmp);
@@ -1376,7 +1747,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("cgs_fread_until: read until EOF (delimiter not found)");
+    TEST("cgs_fread_until: read until EOF (delimiter not found)");;;
     {
         FILE* tmp = tmpfile();
         fputs("hello world", tmp);
@@ -1392,7 +1763,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("cgs_append_fread_until: building a path");
+    TEST("cgs_append_fread_until: building a path");;;
     {
         FILE* tmp = tmpfile();
         fputs("home/user/docs", tmp);
@@ -1409,7 +1780,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("cgs_fread_line: empty file and immediate EOF");
+    TEST("cgs_fread_line: empty file and immediate EOF");;;
     {
         FILE* tmp = tmpfile(); // empty
         CGS_DStr result = cgs_dstr_init_from("untouched");
@@ -1422,7 +1793,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("cgs_fread_until: basic delimiter inclusion");
+    TEST("cgs_fread_until: basic delimiter inclusion");;;
     {
         FILE* tmp = tmpfile();
         fputs("key:value", tmp);
@@ -1438,7 +1809,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("cgs_fread_until: EOF as delimiter (read whole file)");
+    TEST("cgs_fread_until: EOF as delimiter (read whole file)");;;
     {
         FILE* tmp = tmpfile();
         fputs("line 1\nline 2", tmp);
@@ -1455,7 +1826,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("cgs_fread_until: reaching EOF before delim (delim not included)");
+    TEST("cgs_fread_until: reaching EOF before delim (delim not included)");;;
     {
         FILE* tmp = tmpfile();
         fputs("partial data", tmp); // No semicolon here
@@ -1474,7 +1845,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("cgs_append_fread_until: logic with EOF and appends");
+    TEST("cgs_append_fread_until: logic with EOF and appends");;;
     {
         FILE* tmp = tmpfile();
         fputs("part1;part2", tmp);
@@ -1494,7 +1865,7 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("cgs_fread_until: empty file immediately hitting EOF");
+    TEST("cgs_fread_until: empty file immediately hitting EOF");;;
     {
         FILE* tmp = tmpfile(); // Empty
         CGS_DStr result = cgs_dstr_init();
@@ -1506,6 +1877,316 @@ void test_str_putc_edge_cases() {
         cgs_dstr_deinit(&result);
         fclose(tmp);
     }
+    
+    /* =========================================================================
+     * cgs_format — basic copying (no specifiers)
+     * ========================================================================= */
+    
+    TEST("cgs_format: no specifiers copies string as-is into DStr");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        CGS_Error err = cgs_format(&dst, "hello world");
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_format: no specifiers copies string as-is into StrBuf");
+    {
+        char buf[32];
+        CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
+        CGS_Error err = cgs_format(&dst, "hello world");
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
+    }
+    
+    TEST("cgs_format: no specifiers copies string as-is into FILE*");
+    {
+        FILE *f = tmpfile();
+        CGS_Error err = cgs_format_append(f, "hello world");
+        ASSERT_TRUE(err.ec == CGS_OK);
+        rewind(f);
+        char buf[32] = {0};
+        fread(buf, 1, sizeof(buf) - 1, f);
+        ASSERT_TRUE(strcmp(buf, "hello world") == 0);
+        fclose(f);
+    }
+    
+    /* =========================================================================
+     * cgs_format — percent escape
+     * ========================================================================= */
+    
+    TEST("cgs_format: %% writes a literal percent sign");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        CGS_Error err = cgs_format(&dst, "100%%");
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("100%")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_format: multiple %% escapes all produce literal percent signs");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        CGS_Error err = cgs_format(&dst, "%%+%%=%%");
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("%+%=%")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    /* =========================================================================
+     * cgs_format — single substitution
+     * ========================================================================= */
+    
+    TEST("cgs_format: single % substituted with string arg");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        CGS_Error err = cgs_format(&dst, "hello %", cgs_strv("world"));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_format: % at start of format string");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        CGS_Error err = cgs_format(&dst, "% world", cgs_strv("hello"));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_format: % at end of format string");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        CGS_Error err = cgs_format(&dst, "hello %", cgs_strv("world"));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_format: % substituted with empty string arg");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        CGS_Error err = cgs_format(&dst, "hello%world", cgs_strv(""));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("helloworld")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    /* =========================================================================
+     * cgs_format — multiple substitutions
+     * ========================================================================= */
+    
+    TEST("cgs_format: multiple % substituted in order");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        CGS_Error err = cgs_format(&dst, "% % %",
+                                   cgs_strv("one"), cgs_strv("two"), cgs_strv("three"));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("one two three")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_format: mixed %% escapes and % substitutions");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        CGS_Error err = cgs_format(&dst, "%% of % is %",
+                                   cgs_strv("50"), cgs_strv("done"));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("% of 50 is done")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    /* =========================================================================
+     * cgs_format — arg count errors
+     * ========================================================================= */
+    
+    TEST("cgs_format: more % than args returns CGS_NOT_ENOUGH_ARGS");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        CGS_Error err = cgs_format(&dst, "% and %", cgs_strv("only one"));
+        ASSERT_TRUE(err.ec == CGS_NOT_ENOUGH_ARGS);
+        cgs_dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_format: more args than % returns CGS_TOO_MANY_ARGS");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        CGS_Error err = cgs_format(&dst, "hello",
+                                   cgs_strv("extra"), cgs_strv("args"));
+        ASSERT_TRUE(err.ec == CGS_TOO_MANY_ARGS);
+        cgs_dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_format: %% escape does not consume an arg");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        CGS_Error err = cgs_format(&dst, "%% and %", cgs_strv("hello"));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("% and hello")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    /* =========================================================================
+     * cgs_format — overflow / CGS_DST_TOO_SMALL
+     * ========================================================================= */
+    
+    TEST("cgs_format: output exceeding StrBuf capacity returns CGS_DST_TOO_SMALL");
+    {
+        char buf[4];
+        CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
+        CGS_Error err = cgs_format(&dst, "hello world");
+        ASSERT_TRUE(err.ec == CGS_DST_TOO_SMALL);
+    }
+    
+    TEST("cgs_format: substitution exceeding StrBuf capacity returns CGS_DST_TOO_SMALL");
+    {
+        char buf[8];
+        CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
+        CGS_Error err = cgs_format(&dst, "hi %", cgs_strv("this is way too long"));
+        ASSERT_TRUE(err.ec == CGS_DST_TOO_SMALL);
+    }
+    
+    TEST("cgs_format: output exactly filling StrBuf capacity succeeds");
+    {
+        char buf[6];
+        CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
+        CGS_Error err = cgs_format(&dst, "hello");  /* 5 chars + null */
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello")));
+    }
+    
+    /* =========================================================================
+     * cgs_format — writer type variants
+     * ========================================================================= */
+    
+    TEST("cgs_format: writer as char[]");
+    {
+        char buf[32] = {0};
+        CGS_Error err = cgs_format(buf, "hello %", cgs_strv("world"));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(buf, "hello world") == 0);
+    }
+    
+    TEST("cgs_format: writer as MutStrRef");
+    {
+        char buf[32] = {0};
+        CGS_MutStrRef dst = cgs_mutstr_ref(buf);
+        CGS_Error err = cgs_format(dst, "hello %", cgs_strv("world"));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(strcmp(buf, "hello world") == 0);
+    }
+    
+    TEST("cgs_format: writer as FILE*");
+    {
+        FILE *f = tmpfile();
+        CGS_Error err = cgs_format_append(f, "hello %", cgs_strv("world"));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        rewind(f);
+        char buf[32] = {0};
+        fread(buf, 1, sizeof(buf) - 1, f);
+        ASSERT_TRUE(strcmp(buf, "hello world") == 0);
+        fclose(f);
+    }
+    
+    /* =========================================================================
+     * cgs_format_append — appending behaviour
+     * ========================================================================= */
+    
+    TEST("cgs_format_append: appends to existing DStr content");
+    {
+        CGS_DStr dst = cgs_dstr_init_from(cgs_strv("hello "));
+        CGS_Error err = cgs_format_append(&dst, "world");
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_format_append: appends with substitution to existing DStr content");
+    {
+        CGS_DStr dst = cgs_dstr_init_from(cgs_strv("hello "));
+        CGS_Error err = cgs_format_append(&dst, "%", cgs_strv("world"));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_format_append: multiple appends accumulate correctly");
+    {
+        CGS_DStr dst = cgs_dstr_init();
+        cgs_format_append(&dst, "one");
+        cgs_format_append(&dst, ", two");
+        CGS_Error err = cgs_format_append(&dst, ", three");
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("one, two, three")));
+        cgs_dstr_deinit(&dst);
+    }
+    
+    TEST("cgs_format_append: appends to existing StrBuf content");
+    {
+        char buf[32] = {0};
+        CGS_StrBuf dst = cgs_strbuf_init_from_cstr(buf);
+        cgs_format_append(&dst, "hello ");
+        CGS_Error err = cgs_format_append(&dst, "world");
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
+    }
+    
+    TEST("cgs_format_append: appending to StrBuf that leaves no remaining capacity returns CGS_DST_TOO_SMALL");
+    {
+        char buf[8];
+        CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
+        cgs_format_append(&dst, "hello");   /* 5 chars, 2 remaining (+ null) */
+        CGS_Error err = cgs_format_append(&dst, " world");
+        ASSERT_TRUE(err.ec == CGS_DST_TOO_SMALL);
+    }
+    
+    TEST("cgs_format_append: appends to FILE* after existing content");
+    {
+        FILE *f = tmpfile();
+        fwrite("hello ", 1, 6, f);
+        CGS_Error err = cgs_format_append(f, "world");
+        ASSERT_TRUE(err.ec == CGS_OK);
+        rewind(f);
+        char buf[32] = {0};
+        fread(buf, 1, sizeof(buf) - 1, f);
+        ASSERT_TRUE(strcmp(buf, "hello world") == 0);
+        fclose(f);
+    }
+    
+    TEST("cgs_format_append: appends with substitution to FILE* after existing content");
+    {
+        FILE *f = tmpfile();
+        fwrite("hello ", 1, 6, f);
+        CGS_Error err = cgs_format_append(f, "%", cgs_strv("world"));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        rewind(f);
+        char buf[32] = {0};
+        fread(buf, 1, sizeof(buf) - 1, f);
+        ASSERT_TRUE(strcmp(buf, "hello world") == 0);
+        fclose(f);
+    }
+    
+    TEST("cgs_format_append: appends to StrBuf with sufficient remaining capacity");
+    {
+        char buf[32];
+        CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
+        cgs_format_append(&dst, "hello ");
+        CGS_Error err = cgs_format_append(&dst, "world");
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
+    }
+    
+    TEST("cgs_format_append: appends with substitution to StrBuf");
+    {
+        char buf[32];
+        CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
+        cgs_format_append(&dst, "hello ");
+        CGS_Error err = cgs_format_append(&dst, "%", cgs_strv("world"));
+        ASSERT_TRUE(err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
+    }
 }
 
 // ============================================================================
@@ -1513,7 +2194,7 @@ void test_str_putc_edge_cases() {
 // ============================================================================
 
 void test_str_append_edge_cases() {
-    TEST("cgs_append: empty to empty");
+    TEST("cgs_append: empty to empty");;;
     {
         DStr dst = dstr_init(10);
         char src[] = "";
@@ -1523,7 +2204,7 @@ void test_str_append_edge_cases() {
         dstr_deinit(&dst);
     }
     
-    TEST("cgs_append: to itself (aliasing)");
+    TEST("cgs_append: to itself (aliasing)");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_append(&dstr, &dstr);
@@ -1532,7 +2213,7 @@ void test_str_append_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_append: to StrBuf causing overflow");
+    TEST("cgs_append: to StrBuf causing overflow");;;
     {
         char backing[10] = "hello";
         StrBuf sb = strbuf_init_from_cstr(backing, 10);
@@ -1541,7 +2222,7 @@ void test_str_append_edge_cases() {
         ASSERT_EQ(err.ec, CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_append: exactly fitting capacity");
+    TEST("cgs_append: exactly fitting capacity");;;
     {
         char backing[11] = "hello";
         StrBuf sb = strbuf_init_from_cstr(backing, 11);
@@ -1551,7 +2232,7 @@ void test_str_append_edge_cases() {
         ASSERT_TRUE(cgs_equal(&sb, "helloworld"));
     }
     
-    TEST("cgs_append: multiple appends growing DStr");
+    TEST("cgs_append: multiple appends growing DStr");;;
     {
         DStr dstr = dstr_init(1);
         for (int i = 0; i < 100; i++) {
@@ -1562,7 +2243,7 @@ void test_str_append_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_append: very long string");
+    TEST("cgs_append: very long string");;;
     {
         DStr dstr = dstr_init(100);
         DStr long_str = dstr_init(5000);
@@ -1582,7 +2263,7 @@ void test_str_append_edge_cases() {
 // ============================================================================
 
 void test_str_del_edge_cases() {
-    TEST("cgs_del: delete entire string");
+    TEST("cgs_del: delete entire string");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_del(&dstr, 0, 4);
@@ -1591,7 +2272,7 @@ void test_str_del_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_del: delete nothing (from == to)");
+    TEST("cgs_del: delete nothing (from == to)");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_del(&dstr, 2, 2);
@@ -1600,7 +2281,7 @@ void test_str_del_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_del: invalid range (from > to)");
+    TEST("cgs_del: invalid range (from > to)");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_del(&dstr, 3, 1);
@@ -1608,7 +2289,7 @@ void test_str_del_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_del: out of bounds from");
+    TEST("cgs_del: out of bounds from");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_del(&dstr, 10, 15);
@@ -1616,7 +2297,7 @@ void test_str_del_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_del: out of bounds to");
+    TEST("cgs_del: out of bounds to");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_del(&dstr, 0, 100);
@@ -1624,7 +2305,7 @@ void test_str_del_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_del: delete from middle");
+    TEST("cgs_del: delete from middle");;;
     {
         DStr dstr = dstr_init_from("abcdef");
         CGS_Error err = cgs_del(&dstr, 2, 4);
@@ -1633,7 +2314,7 @@ void test_str_del_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_del: delete first character");
+    TEST("cgs_del: delete first character");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_del(&dstr, 0, 1);
@@ -1642,7 +2323,7 @@ void test_str_del_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_del: delete last character");
+    TEST("cgs_del: delete last character");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_del(&dstr, 3, 4);
@@ -1651,7 +2332,7 @@ void test_str_del_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_del: on empty string");
+    TEST("cgs_del: on empty string");;;
     {
         DStr dstr = dstr_init(10);
         CGS_Error err = cgs_del(&dstr, 0, 0);
@@ -1665,7 +2346,7 @@ void test_str_del_edge_cases() {
 // ============================================================================
 
 void test_str_replace_edge_cases() {
-    TEST("cgs_replace: target not found");
+    TEST("cgs_replace: target not found");;;
     {
         DStr dstr = dstr_init_from("hello world");
         ReplaceResult res = cgs_replace(&dstr, "xyz", "abc");
@@ -1674,7 +2355,7 @@ void test_str_replace_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace: empty target");
+    TEST("cgs_replace: empty target");;;
     {
         DStr dstr = dstr_init_from("test");
         ReplaceResult res = cgs_replace(&dstr, "", "x");
@@ -1683,7 +2364,7 @@ void test_str_replace_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace: replace with empty string");
+    TEST("cgs_replace: replace with empty string");;;
     {
         DStr dstr = dstr_init_from("hello world");
         ReplaceResult res = cgs_replace(&dstr, "o", "");
@@ -1692,7 +2373,7 @@ void test_str_replace_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace: replacement longer than target");
+    TEST("cgs_replace: replacement longer than target");;;
     {
         DStr dstr = dstr_init_from("hi hi hi");
         ReplaceResult res = cgs_replace(&dstr, "hi", "hello");
@@ -1701,7 +2382,7 @@ void test_str_replace_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace: replacement shorter than target");
+    TEST("cgs_replace: replacement shorter than target");;;
     {
         DStr dstr = dstr_init_from("hello hello");
         ReplaceResult res = cgs_replace(&dstr, "hello", "hi");
@@ -1710,7 +2391,7 @@ void test_str_replace_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace: overlapping matches");
+    TEST("cgs_replace: overlapping matches");;;
     {
         DStr dstr = dstr_init_from("aaa");
         ReplaceResult res = cgs_replace(&dstr, "aa", "b");
@@ -1720,7 +2401,7 @@ void test_str_replace_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace: target equals entire string");
+    TEST("cgs_replace: target equals entire string");;;
     {
         DStr dstr = dstr_init_from("exact");
         ReplaceResult res = cgs_replace(&dstr, "exact", "replaced");
@@ -1730,7 +2411,7 @@ void test_str_replace_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace: on StrBuf with insufficient space");
+    TEST("cgs_replace: on StrBuf with insufficient space");;;
     {
         char backing[10] = "hi hi"; // "hello hi"
         StrBuf sb = strbuf_init_from_cstr(backing, 10);
@@ -1740,7 +2421,7 @@ void test_str_replace_edge_cases() {
         ASSERT_EQ(res.nb_replaced, 1);
     }
     
-    TEST("cgs_replace: many occurrences");
+    TEST("cgs_replace: many occurrences");;;
     {
         DStr dstr = dstr_init(100);
         for (int i = 0; i < 50; i++) {
@@ -1758,7 +2439,7 @@ void test_str_replace_edge_cases() {
 // ============================================================================
 
 void test_str_replace_first_edge_cases() {
-    TEST("cgs_replace_first: no occurrence");
+    TEST("cgs_replace_first: no occurrence");;;
     {
         DStr dstr = dstr_init_from("hello");
         CGS_Error err = cgs_replace_first(&dstr, "xyz", "abc");
@@ -1766,7 +2447,7 @@ void test_str_replace_first_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace_first: empty string target");
+    TEST("cgs_replace_first: empty string target");;;
     {
         DStr s = dstr_init_from("abc");
         // Replacing the first "" is defined in many libs as an injection at start
@@ -1775,7 +2456,7 @@ void test_str_replace_first_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_first: match at end of string");
+    TEST("cgs_replace_first: match at end of string");;;
     {
         DStr s = dstr_init_from("path/to/file");
         cgs_replace_first(&s, "file", "dir");
@@ -1783,7 +2464,7 @@ void test_str_replace_first_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_first: multiple occurrences");
+    TEST("cgs_replace_first: multiple occurrences");;;
     {
         DStr dstr = dstr_init_from("test test test");
         CGS_Error err = cgs_replace_first(&dstr, "test", "word");
@@ -1792,7 +2473,7 @@ void test_str_replace_first_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace_first: at end of string");
+    TEST("cgs_replace_first: at end of string");;;
     {
         DStr dstr = dstr_init_from("abcdef");
         CGS_Error err = cgs_replace_first(&dstr, "def", "xyz");
@@ -1801,7 +2482,7 @@ void test_str_replace_first_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace_first: only first occurrence");
+    TEST("cgs_replace_first: only first occurrence");;;
     {
         DStr s = dstr_init_from("ababab");
         CGS_Error err = cgs_replace_first(&s, "ab", "X");
@@ -1809,7 +2490,7 @@ void test_str_replace_first_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_first: target at the very end");
+    TEST("cgs_replace_first: target at the very end");;;
     {
         DStr s = dstr_init_from("hello world");
         CGS_Error err = cgs_replace_first(&s, "world", "C");
@@ -1817,7 +2498,7 @@ void test_str_replace_first_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_first: target is the whole string");
+    TEST("cgs_replace_first: target is the whole string");;;
     {
         DStr s = dstr_init_from("match");
         cgs_replace_first(&s, "match", "replaced");
@@ -1825,7 +2506,7 @@ void test_str_replace_first_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_first: error when not found");
+    TEST("cgs_replace_first: error when not found");;;
     {
         DStr s = dstr_init_from("abc");
         CGS_Error err = cgs_replace_first(&s, "z", "x");
@@ -1840,7 +2521,7 @@ void test_str_replace_first_edge_cases() {
 // ============================================================================
 
 void test_str_replace_range_edge_cases() {
-    TEST("cgs_replace_range: remove last character");
+    TEST("cgs_replace_range: remove last character");;;
     {
         DStr s = dstr_init_from("Hello!");
         // Range is [5, 6) -> the '!'
@@ -1849,7 +2530,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_range: replace inside string with much longer string");
+    TEST("cgs_replace_range: replace inside string with much longer string");;;
     {
         DStr s = dstr_init_from("a[ ]c");
         // Replace "[ ]" (index 1 to 4) with "long string"
@@ -1858,7 +2539,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_range: null/empty replacement at specific index (Insertion)");
+    TEST("cgs_replace_range: null/empty replacement at specific index (Insertion)");;;
     {
         DStr s = dstr_init_from("ac");
         cgs_replace_range(&s, 1, 1, "b");
@@ -1866,7 +2547,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_range: replace entire string");
+    TEST("cgs_replace_range: replace entire string");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_replace_range(&dstr, 0, 4, "replaced");
@@ -1875,7 +2556,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace_range: invalid range");
+    TEST("cgs_replace_range: invalid range");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_replace_range(&dstr, 3, 1, "x");
@@ -1883,7 +2564,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace_range: out of bounds");
+    TEST("cgs_replace_range: out of bounds");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_replace_range(&dstr, 0, 100, "x");
@@ -1891,7 +2572,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace_range: zero-length range (insertion)");
+    TEST("cgs_replace_range: zero-length range (insertion)");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_replace_range(&dstr, 2, 2, "XX");
@@ -1900,7 +2581,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace_range: with empty replacement (deletion)");
+    TEST("cgs_replace_range: with empty replacement (deletion)");;;
     {
         DStr dstr = dstr_init_from("testing");
         CGS_Error err = cgs_replace_range(&dstr, 2, 5, "");
@@ -1909,7 +2590,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace_range: at string boundaries");
+    TEST("cgs_replace_range: at string boundaries");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_replace_range(&dstr, 0, 0, "start");
@@ -1918,7 +2599,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_replace_range: StrBuf overflow");
+    TEST("cgs_replace_range: StrBuf overflow");;;
     {
         char backing[10] = "test";
         StrBuf sb = strbuf_init_from_cstr(backing, 10);
@@ -1926,7 +2607,7 @@ void test_str_replace_range_edge_cases() {
         ASSERT_EQ(err.ec, CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_replace_range: replace middle (same size)");
+    TEST("cgs_replace_range: replace middle (same size)");;;
     {
         DStr s = dstr_init_from("ABCDE");
         // Replace "BCD" (indices 1, 2, 3) with "123"
@@ -1935,7 +2616,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_range: grow string (insertion)");
+    TEST("cgs_replace_range: grow string (insertion)");;;
     {
         DStr s = dstr_init_from("AB");
         // Replace nothing at index 1 with "123" -> "A123B"
@@ -1944,7 +2625,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_range: shrink string (deletion)");
+    TEST("cgs_replace_range: shrink string (deletion)");;;
     {
         DStr s = dstr_init_from("Hello World");
         // Replace " World" (index 5 to 11) with ""
@@ -1953,7 +2634,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_range: replace entire string");
+    TEST("cgs_replace_range: replace entire string");;;
     {
         DStr s = dstr_init_from("old");
         cgs_replace_range(&s, 0, 3, "new");
@@ -1961,7 +2642,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_range: out of bounds");
+    TEST("cgs_replace_range: out of bounds");;;
     {
         DStr s = dstr_init_from("abc");
         CGS_Error err = cgs_replace_range(&s, 1, 10, "x");
@@ -1969,7 +2650,7 @@ void test_str_replace_range_edge_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace_range: inverted range");
+    TEST("cgs_replace_range: inverted range");;;
     {
         DStr s = dstr_init_from("abc");
         CGS_Error err = cgs_replace_range(&s, 3, 1, "x");
@@ -1984,7 +2665,7 @@ void test_str_replace_range_edge_cases() {
 
 void test_str_split_edge_cases() {
     
-    TEST("cgs_split: empty string");
+    TEST("cgs_split: empty string");;;
     {
         char str[] = "";
         char delim[] = ",";
@@ -1994,7 +2675,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("Split: No delimiter present in source");
+    TEST("Split: No delimiter present in source");;;
     {
         char str[] = "hello world";
         char delim[] = ",";
@@ -2006,7 +2687,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("cgs_split: empty string with non-empty delimiter");
+    TEST("cgs_split: empty string with non-empty delimiter");;;
     {
         char str[] = "";
         StrViewArray arr = cgs_split(str, ",");
@@ -2016,7 +2697,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("cgs_split: empty delimiter (Explode behavior)");
+    TEST("cgs_split: empty delimiter (Explode behavior)");;;
     {
         char str[] = "abc";
         StrViewArray arr = cgs_split(str, "");
@@ -2027,7 +2708,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("cgs_split: consecutive delimiters (Empty fields)");
+    TEST("cgs_split: consecutive delimiters (Empty fields)");;;
     {
         char str[] = "a,,b";
         StrViewArray arr = cgs_split(str, ",");
@@ -2037,7 +2718,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("cgs_split: leading and trailing delimiters");
+    TEST("cgs_split: leading and trailing delimiters");;;
     {
         char str[] = ",a,";
         StrViewArray arr = cgs_split(str, ",");
@@ -2048,7 +2729,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("cgs_split: delimiter not present");
+    TEST("cgs_split: delimiter not present");;;
     {
         char str[] = "hello";
         StrViewArray arr = cgs_split(str, "|");
@@ -2058,7 +2739,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("cgs_split: string is exactly the delimiter");
+    TEST("cgs_split: string is exactly the delimiter");;;
     {
         char str[] = "::";
         StrViewArray arr = cgs_split(str, "::");
@@ -2067,7 +2748,7 @@ void test_str_split_edge_cases() {
         ASSERT_TRUE(arr.strs[0].len == 0 && arr.strs[1].len == 0);
         free(arr.strs);
     }    
-    TEST("cgs_split: delimiter not in string");
+    TEST("cgs_split: delimiter not in string");;;
     {
         char str[] = "no delimiters here";
         char delim[] = ",";
@@ -2076,7 +2757,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("cgs_split: consecutive delimiters");
+    TEST("cgs_split: consecutive delimiters");;;
     {
         char str[] = "a,,b,,c";
         char delim[] = ",";
@@ -2086,7 +2767,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("cgs_split: delimiter at start");
+    TEST("cgs_split: delimiter at start");;;
     {
         char str[] = ",test";
         char delim[] = ",";
@@ -2096,7 +2777,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("cgs_split: delimiter at end");
+    TEST("cgs_split: delimiter at end");;;
     {
         char str[] = "test,";
         char delim[] = ",";
@@ -2106,7 +2787,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("cgs_split: only delimiter");
+    TEST("cgs_split: only delimiter");;;
     {
         char str[] = ",";
         char delim[] = ",";
@@ -2116,7 +2797,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("cgs_split: multi-character delimiter");
+    TEST("cgs_split: multi-character delimiter");;;
     {
         char str[] = "a::b::c";
         char delim[] = "::";
@@ -2125,7 +2806,7 @@ void test_str_split_edge_cases() {
         free(arr.strs);
     }
     
-    TEST("cgs_split: many splits");
+    TEST("cgs_split: many splits");;;
     {
         DStr dstr = dstr_init(1000);
         for (int i = 0; i < 100; i++) {
@@ -2143,7 +2824,7 @@ void test_str_split_edge_cases() {
 // ============================================================================
 
 void test_str_insert_prepend_edge_cases() {
-    TEST("cgs_insert: at position 0 (same as prepend)");
+    TEST("cgs_insert: at position 0 (same as prepend)");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_insert(&dstr, "START", 0);
@@ -2152,7 +2833,7 @@ void test_str_insert_prepend_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_insert: at middle position");
+    TEST("cgs_insert: at middle position");;;
     {
         DStr dstr = dstr_init_from("abef");
         CGS_Error err = cgs_insert(&dstr, "cd", 2);
@@ -2161,7 +2842,7 @@ void test_str_insert_prepend_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_insert: at end position");
+    TEST("cgs_insert: at end position");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_insert(&dstr, "end", 4);
@@ -2170,7 +2851,7 @@ void test_str_insert_prepend_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_insert: out of bounds position");
+    TEST("cgs_insert: out of bounds position");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_insert(&dstr, "x", 100);
@@ -2178,7 +2859,7 @@ void test_str_insert_prepend_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_insert: into empty string at position 0");
+    TEST("cgs_insert: into empty string at position 0");;;
     {
         DStr dstr = dstr_init(10);
         CGS_Error err = cgs_insert(&dstr, "first", 0);
@@ -2187,7 +2868,7 @@ void test_str_insert_prepend_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_insert: into empty string at position > 0");
+    TEST("cgs_insert: into empty string at position > 0");;;
     {
         DStr dstr = dstr_init(10);
         CGS_Error err = cgs_insert(&dstr, "test", 5);
@@ -2195,7 +2876,7 @@ void test_str_insert_prepend_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_insert: StrBuf overflow");
+    TEST("cgs_insert: StrBuf overflow");;;
     {
         char backing[10] = "test";
         StrBuf sb = strbuf_init_from_cstr(backing, 10);
@@ -2203,7 +2884,7 @@ void test_str_insert_prepend_edge_cases() {
         ASSERT_EQ(err.ec, CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_insert: empty string insertion");
+    TEST("cgs_insert: empty string insertion");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = cgs_insert(&dstr, "", 2);
@@ -2212,7 +2893,7 @@ void test_str_insert_prepend_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_prepend: to empty string");
+    TEST("cgs_prepend: to empty string");;;
     {
         DStr dstr = dstr_init(10);
         CGS_Error err = cgs_prepend(&dstr, "first");
@@ -2221,7 +2902,7 @@ void test_str_insert_prepend_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_prepend: StrBuf overflow");
+    TEST("cgs_prepend: StrBuf overflow");;;
     {
         char backing[10] = "test";
         StrBuf sb = strbuf_init_from_cstr(backing, 10);
@@ -2229,7 +2910,7 @@ void test_str_insert_prepend_edge_cases() {
         ASSERT_EQ(err.ec, CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_prepend: multiple times");
+    TEST("cgs_prepend: multiple times");;;
     {
         DStr dstr = dstr_init_from("end");
         cgs_prepend(&dstr, "middle");
@@ -2244,7 +2925,7 @@ void test_str_insert_prepend_edge_cases() {
 // ============================================================================
 
 void test_dstring_edge_cases() {
-    TEST("dstr_init: zero capacity");
+    TEST("dstr_init: zero capacity");;;
     {
         DStr dstr = dstr_init(0);
         ASSERT_EQ(cgs_len(&dstr), 0);
@@ -2254,21 +2935,21 @@ void test_dstring_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("dstr_init: very large capacity");
+    TEST("dstr_init: very large capacity");;;
     {
         DStr dstr = dstr_init(1000000);
         ASSERT_TRUE(cgs_cap(&dstr) >= 1000000 || cgs_cap(&dstr) == 0);
         dstr_deinit(&dstr);
     }
     
-    TEST("dstr_init_from: empty string");
+    TEST("dstr_init_from: empty string");;;
     {
         DStr dstr = dstr_init_from("");
         ASSERT_EQ(cgs_len(&dstr), 0);
         dstr_deinit(&dstr);
     }
     
-    TEST("dstr_shrink_to_fit: already minimal");
+    TEST("dstr_shrink_to_fit: already minimal");;;
     {
         DStr dstr = dstr_init_from("test");
         CGS_Error err = dstr_shrink_to_fit(&dstr);
@@ -2277,7 +2958,7 @@ void test_dstring_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("dstr_shrink_to_fit: after deletions");
+    TEST("dstr_shrink_to_fit: after deletions");;;
     {
         DStr dstr = dstr_init(1000);
         cgs_append(&dstr, "small");
@@ -2286,7 +2967,7 @@ void test_dstring_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("dstr_ensure_cap: already sufficient");
+    TEST("dstr_ensure_cap: already sufficient");;;
     {
         DStr dstr = dstr_init(100);
         CGS_Error err = dstr_ensure_cap(&dstr, 50);
@@ -2294,7 +2975,7 @@ void test_dstring_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("dstr_ensure_cap: needs growth");
+    TEST("dstr_ensure_cap: needs growth");;;
     {
         DStr dstr = dstr_init(10);
         CGS_Error err = dstr_ensure_cap(&dstr, 100);
@@ -2305,7 +2986,7 @@ void test_dstring_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("dstr_ensure_cap: zero requested");
+    TEST("dstr_ensure_cap: zero requested");;;
     {
         DStr dstr = dstr_init(10);
         CGS_Error err = dstr_ensure_cap(&dstr, 0);
@@ -2313,7 +2994,7 @@ void test_dstring_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_find: null checks");
+    TEST("cgs_find: null checks");;;
     {
         DStr dstr = dstr_init();
         ASSERT_TRUE(dstr.chars == NULL);
@@ -2335,7 +3016,7 @@ void test_dstring_edge_cases() {
 // ============================================================================
 
 void test_string_buffer_edge_cases() {
-    TEST("StrBuf: from empty array");
+    TEST("StrBuf: from empty array");;;
     {
         char buf[1] = {'\0'};
         StrBuf sb = strbuf_init_from_cstr(buf, 1);
@@ -2343,14 +3024,14 @@ void test_string_buffer_edge_cases() {
         ASSERT_EQ(cgs_cap(&sb), 1);
     }
     
-    TEST("StrBuf: from array without null terminator");
+    TEST("StrBuf: from array without null terminator");;;
     {
         char buf[5] = {'t', 'e', 's', 't', 'x'};
         StrBuf sb = strbuf_init_from_buf(buf, 5);
         ASSERT_TRUE(sb.len == 0);
     }
     
-    TEST("StrBuf: from cstr with capacity exactly length + 1");
+    TEST("StrBuf: from cstr with capacity exactly length + 1");;;
     {
         char buf[5] = {'t', 'e', 's', 't', '\0'};
         StrBuf sb = strbuf_init_from_cstr(buf, 5);
@@ -2358,14 +3039,14 @@ void test_string_buffer_edge_cases() {
         ASSERT_EQ(cgs_len(&sb), 4);
     }
     
-    TEST("StrBuf: from buf with exact capacity");
+    TEST("StrBuf: from buf with exact capacity");;;
     {
         char buf[10] = {'h', 'e', 'l', 'l', 'o', '\0'};
         StrBuf sb = strbuf_init_from_buf(buf, 10);
         ASSERT_EQ(cgs_cap(&sb), 10);
     }
     
-    TEST("StrBuf: append to full buffer from cstr");
+    TEST("StrBuf: append to full buffer from cstr");;;
     {
         char buf[5] = {'f', 'u', 'l', 'l', '\0'};
         StrBuf sb = strbuf_init_from_cstr(buf, 5);
@@ -2373,7 +3054,7 @@ void test_string_buffer_edge_cases() {
         ASSERT_EQ(err.ec, CGS_DST_TOO_SMALL);
     }
     
-    TEST("StrBuf: init from buf then set content");
+    TEST("StrBuf: init from buf then set content");;;
     {
         char buf[20];
         StrBuf sb = strbuf_init_from_buf(buf, 20);
@@ -2388,14 +3069,14 @@ void test_string_buffer_edge_cases() {
 // ============================================================================
 
 void test_strv_edge_cases() {
-    TEST("strv: empty range");
+    TEST("strv: empty range");;;
     {
         char str[] = "test";
         StrView sv = strv(str, 2, 2);
         ASSERT_EQ(cgs_len(sv), 0);
     }
     
-    TEST("strv: entire string");
+    TEST("strv: entire string");;;
     {
         char str[] = "test";
         StrView sv = strv(str, 0, 4);
@@ -2403,7 +3084,7 @@ void test_strv_edge_cases() {
         ASSERT_TRUE(cgs_equal(sv, "test"));
     }
     
-    TEST("strv: invalid range (from > to)");
+    TEST("strv: invalid range (from > to)");;;
     {
         char str[] = "test";
         StrView sv = strv(str, 3, 1);
@@ -2411,7 +3092,7 @@ void test_strv_edge_cases() {
         ASSERT_TRUE(1);
     }
     
-    TEST("strv: single character");
+    TEST("strv: single character");;;
     {
         char str[] = "test";
         StrView sv = strv(str, 1, 2);
@@ -2425,7 +3106,7 @@ void test_strv_edge_cases() {
 // ============================================================================
 
 void test_file_io_edge_cases() {
-    TEST("cgs_fread_line: from empty file");
+    TEST("cgs_fread_line: from empty file");;;
     {
         FILE *f = tmpfile();
         DStr dstr = dstr_init(10);
@@ -2436,7 +3117,7 @@ void test_file_io_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_fread_line: very long line");
+    TEST("cgs_fread_line: very long line");;;
     {
         FILE *f = tmpfile();
         for (int i = 0; i < 10000; i++)
@@ -2457,7 +3138,7 @@ void test_file_io_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_fread_line: line without newline");
+    TEST("cgs_fread_line: line without newline");;;
     {
         FILE *f = tmpfile();
         fprintf(f, "no newline");
@@ -2471,7 +3152,7 @@ void test_file_io_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_fread_line: multiple calls");
+    TEST("cgs_fread_line: multiple calls");;;
     {
         FILE *f = tmpfile();
         fprintf(f, "line1\nline2\nline3\n");
@@ -2489,7 +3170,7 @@ void test_file_io_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_append_fread_line: append multiple lines");
+    TEST("cgs_append_fread_line: append multiple lines");;;
     {
         FILE *f = tmpfile();
         fprintf(f, "line1\nline2\n");
@@ -2510,7 +3191,7 @@ void test_file_io_edge_cases() {
 // ============================================================================
 
 void test_appender_edge_cases() {
-    TEST("cgs_appender: basic usage");
+    TEST("cgs_appender: basic usage");;;
     {
         DStr dstr = dstr_init_from("start");
         AppenderState state = {};
@@ -2522,7 +3203,7 @@ void test_appender_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_appender: without commit");
+    TEST("cgs_appender: without commit");;;
     {
         DStr dstr = dstr_init_from("start");
         AppenderState state = {};
@@ -2533,7 +3214,7 @@ void test_appender_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_appender: multiple appends before commit");
+    TEST("cgs_appender: multiple appends before commit");;;
     {
         DStr dstr = dstr_init_from("start");
         AppenderState state = {};
@@ -2546,7 +3227,7 @@ void test_appender_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_appender: on empty DStr");
+    TEST("cgs_appender: on empty DStr");;;
     {
         DStr dstr = dstr_init(10);
         AppenderState state = {};
@@ -2557,7 +3238,7 @@ void test_appender_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_appender: commit without any appends");
+    TEST("cgs_appender: commit without any appends");;;
     {
         DStr dstr = dstr_init_from("unchanged");
         AppenderState state = {};
@@ -2568,7 +3249,7 @@ void test_appender_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_appender: multiple uses with same state");
+    TEST("cgs_appender: multiple uses with same state");;;
     {
         DStr dstr = dstr_init_from("base");
         AppenderState state = {};
@@ -2585,7 +3266,7 @@ void test_appender_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_appender: causing buffer growth");
+    TEST("cgs_appender: causing buffer growth");;;
     {
         DStr dstr = dstr_init(5);
         cgs_append(&dstr, "x");
@@ -2606,7 +3287,7 @@ void test_appender_edge_cases() {
 
 void test_str_join_edge_cases() {
     
-    TEST("cgs_join: empty array");
+    TEST("cgs_join: empty array");;;
     {
         StrViewArray arr = {NULL, 0, 0};
         DStr dst = dstr_init(10);
@@ -2615,7 +3296,7 @@ void test_str_join_edge_cases() {
         dstr_deinit(&dst);
     }
     
-    TEST("cgs_join: single element");
+    TEST("cgs_join: single element");;;
     {
         char s1[] = "lonely";
         StrView views[] = { strv(s1, 0, 6) };
@@ -2627,7 +3308,7 @@ void test_str_join_edge_cases() {
         dstr_deinit(&dst);
     }
     
-    TEST("cgs_join: elements are empty strings");
+    TEST("cgs_join: elements are empty strings");;;
     {
         char empty[] = "";
         StrView views[] = { strv(empty, 0, 0), strv(empty, 0, 0) };
@@ -2639,7 +3320,7 @@ void test_str_join_edge_cases() {
         dstr_deinit(&dst);
     }
     
-    TEST("cgs_join: empty delimiter");
+    TEST("cgs_join: empty delimiter");;;
     {
         char s1[] = "a", s2[] = "b";
         StrView views[] = { strv(s1, 0, 1), strv(s2, 0, 1) };
@@ -2652,7 +3333,7 @@ void test_str_join_edge_cases() {
     }
     
     // old
-    TEST("cgs_join: empty array");
+    TEST("cgs_join: empty array");;;
     {
         StrViewArray arr = {NULL, 0, 0};
         DStr dst = dstr_init(10);
@@ -2662,7 +3343,7 @@ void test_str_join_edge_cases() {
         dstr_deinit(&dst);
     }
     
-    TEST("cgs_join: single element");
+    TEST("cgs_join: single element");;;
     {
         char s1[] = "only";
         StrView views[] = {strv(s1, 0, 4)};
@@ -2673,7 +3354,7 @@ void test_str_join_edge_cases() {
         dstr_deinit(&dst);
     }
     
-    TEST("cgs_join: empty delimiter");
+    TEST("cgs_join: empty delimiter");;;
     {
         char s1[] = "a", s2[] = "b", s3[] = "c";
         StrView views[] = {
@@ -2688,7 +3369,7 @@ void test_str_join_edge_cases() {
         dstr_deinit(&dst);
     }
     
-    TEST("cgs_join: multi-char delimiter");
+    TEST("cgs_join: multi-char delimiter");;;
     {
         char s1[] = "a", s2[] = "b";
         StrView views[] = {
@@ -2702,7 +3383,7 @@ void test_str_join_edge_cases() {
         dstr_deinit(&dst);
     }
     
-    TEST("cgs_join: with empty strings");
+    TEST("cgs_join: with empty strings");;;
     {
         char s1[] = "", s2[] = "mid", s3[] = "";
         StrView views[] = {
@@ -2717,7 +3398,7 @@ void test_str_join_edge_cases() {
         dstr_deinit(&dst);
     }
     
-    TEST("cgs_join: buffer too small");
+    TEST("cgs_join: buffer too small");;;
     {
         char s1[] = "long", s2[] = "strings";
         StrView views[] = {
@@ -2751,7 +3432,7 @@ static bool cb_exit_on_bang(char *c, void *arg) {
 }
 
 void test_tostr_edge_cases() {
-    TEST("cgs_tostr_len: scalar types");
+    TEST("cgs_tostr_len: scalar types");;;
     {
         // Integers
         ASSERT_EQ(cgs_tostr_len(0), 1);      // "0"
@@ -2766,7 +3447,7 @@ void test_tostr_edge_cases() {
         ASSERT_EQ(cgs_tostr_len(true), 4);   // "true"
     }
     
-    TEST("cgs_tostr_p_len: string and pointer types");
+    TEST("cgs_tostr_p_len: string and pointer types");;;
     {
         int val = 1024;
         ASSERT_EQ(cgs_tostr_p_len(&val), 4); // "1024"
@@ -2779,7 +3460,7 @@ void test_tostr_edge_cases() {
         cgs_dstr_deinit(&ds);
     }
     
-    TEST("cgs_tostr_len: formatters (nfmt/arrfmt)");
+    TEST("cgs_tostr_len: formatters (nfmt/arrfmt)");;;
     {
         // nfmt(255, 'X') -> "FF"
         ASSERT_EQ(cgs_tostr_len(cgs_nfmt(255, 'X')), 2);
@@ -2788,7 +3469,7 @@ void test_tostr_edge_cases() {
         ASSERT_EQ(cgs_tostr_len(cgs_arrfmt(arr, 3)), strlen("{1, 2, 3}"));
     }
     
-    TEST("cgs_map_chars: successful full iteration");
+    TEST("cgs_map_chars: successful full iteration");;;
     {
         char buf[] = "hello";
         CGS_Error err = cgs_map_chars(buf, cb_toupper, NULL);
@@ -2797,7 +3478,7 @@ void test_tostr_edge_cases() {
         ASSERT_TRUE(cgs_equal(buf, "HELLO"));
     }
     
-    TEST("cgs_map_chars: early exit with CGS_CALLBACK_EXIT");
+    TEST("cgs_map_chars: early exit with CGS_CALLBACK_EXIT");;;
     {
         char buf[] = "abc!def";
         int processed_count = 0;
@@ -2810,7 +3491,7 @@ void test_tostr_edge_cases() {
         ASSERT_EQ(processed_count, 3); 
     }
     
-    TEST("cgs_map_chars: edge cases (empty strings)");
+    TEST("cgs_map_chars: edge cases (empty strings)");;;
     {
         char buf[] = "";
         int processed_count = 0;
@@ -2821,7 +3502,7 @@ void test_tostr_edge_cases() {
         ASSERT_EQ(processed_count, 0);
     }
     
-    TEST("cgs_map_chars: with DStr* and pointer types");
+    TEST("cgs_map_chars: with DStr* and pointer types");;;
     {
         CGS_DStr ds = cgs_dstr_init_from("123!456");
         int count = 0;
@@ -2834,14 +3515,14 @@ void test_tostr_edge_cases() {
         cgs_dstr_deinit(&ds);
     }
     
-    TEST("cgs_tostr_len: large values");
+    TEST("cgs_tostr_len: large values");;;
     {
         // 18446744073709551615 is 20 digits
         unsigned long long ull = 18446744073709551615ULL;
         ASSERT_EQ(cgs_tostr_len(ull), 20);
     }
     
-    TEST("tostr: integer boundary values (INT_MAX)");
+    TEST("tostr: integer boundary values (INT_MAX)");;;
     {
         DStr dstr = dstr_init();
         CGS_Error err = tostr(&dstr, INT_MAX);
@@ -2852,7 +3533,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: integer boundary values (INT_MIN)");
+    TEST("tostr: integer boundary values (INT_MIN)");;;
     {
         DStr dstr = dstr_init(30);
         CGS_Error err = tostr(&dstr, INT_MIN);
@@ -2863,7 +3544,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: zero");
+    TEST("tostr: zero");;;
     {
         DStr dstr = dstr_init(10);
         CGS_Error err = tostr(&dstr, 0);
@@ -2872,7 +3553,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: positive integer");
+    TEST("tostr: positive integer");;;
     {
         DStr dstr = dstr_init(10);
         CGS_Error err = tostr(&dstr, 12345);
@@ -2881,7 +3562,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: negative integer");
+    TEST("tostr: negative integer");;;
     {
         DStr dstr = dstr_init(10);
         CGS_Error err = tostr(&dstr, -6789);
@@ -2890,7 +3571,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: long long boundary values (LLONG_MAX)");
+    TEST("tostr: long long boundary values (LLONG_MAX)");;;
     {
         DStr dstr = dstr_init(30);
         CGS_Error err = tostr(&dstr, LLONG_MAX);
@@ -2901,7 +3582,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: unsigned int (UINT_MAX)");
+    TEST("tostr: unsigned int (UINT_MAX)");;;
     {
         DStr dstr = dstr_init(30);
         CGS_Error err = tostr(&dstr, UINT_MAX);
@@ -2912,7 +3593,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: unsigned long long (ULLONG_MAX)");
+    TEST("tostr: unsigned long long (ULLONG_MAX)");;;
     {
         DStr dstr = dstr_init(30);
         CGS_Error err = tostr(&dstr, ULLONG_MAX);
@@ -2923,7 +3604,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: float (positive)");
+    TEST("tostr: float (positive)");;;
     {
         DStr dstr = dstr_init(30);
         float val = 123.456f;
@@ -2935,7 +3616,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: float (negative)");
+    TEST("tostr: float (negative)");;;
     {
         DStr dstr = dstr_init(30);
         float val = -987.65f;
@@ -2947,7 +3628,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: float zero");
+    TEST("tostr: float zero");;;
     {
         DStr dstr = dstr_init(30);
         float val = 0.0f;
@@ -2959,7 +3640,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: double (positive)");
+    TEST("tostr: double (positive)");;;
     {
         DStr dstr = dstr_init(50);
         double val = 12345.67890123;
@@ -2971,7 +3652,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: double (negative)");
+    TEST("tostr: double (negative)");;;
     {
         DStr dstr = dstr_init(50);
         double val = -98765.43210987;
@@ -2983,7 +3664,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: double zero");
+    TEST("tostr: double zero");;;
     {
         DStr dstr = dstr_init(30);
         double val = 0.0;
@@ -2995,7 +3676,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("tostr: buffer too small for integer");
+    TEST("tostr: buffer too small for integer");;;
     {
         char backing[3]; // Can hold "12" + null terminator
         StrBuf sb = strbuf_init_from_buf(backing, 3);
@@ -3004,7 +3685,7 @@ void test_tostr_edge_cases() {
         ASSERT_EQ(err.ec, CGS_DST_TOO_SMALL);
     }
     
-    TEST("tostr: buffer too small for double");
+    TEST("tostr: buffer too small for double");;;
     {
         char backing[5]; // Can hold "0.0" + null. Try to fit something bigger.
         StrBuf sb = strbuf_init_from_buf(backing, 5);
@@ -3017,14 +3698,14 @@ void test_tostr_edge_cases() {
     // - Scientific notation for very large/small floats/doubles if your tostr supports it.
     // - Special float values: INFINITY, -INFINITY, NaN (if tostr handles them gracefully).
     
-    TEST("cgs_print: multiple arguments (concatenation)");
+    TEST("cgs_print: multiple arguments (concatenation)");;;
     {
         CGS_StrBuf sb = {0};
         cgs_sprint(&sb, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
         ASSERT_TRUE(cgs_equal(sb, ""));
     }
     
-    TEST("cgs_print: multiple arguments (concatenation)");
+    TEST("cgs_print: multiple arguments (concatenation)");;;
     {
         DStr dstr = dstr_init(50);
         cgs_sprint(&dstr, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
@@ -3032,7 +3713,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_print: multiple arguments, buffer too small");
+    TEST("cgs_print: multiple arguments, buffer too small");;;
     {
         char backing[10];
         StrBuf sb = strbuf_init_from_buf(backing, 10);
@@ -3041,7 +3722,7 @@ void test_tostr_edge_cases() {
         ASSERT_TRUE(cgs_equal(sb, "1 long_st"));
     }
     
-    TEST("nfmt: various format characters");
+    TEST("nfmt: various format characters");;;
     {
         DStr dstr = dstr_init(30);
         // Test hex, octal, etc.
@@ -3050,7 +3731,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt: integer decimal (signed/unsigned)");
+    TEST("nfmt: integer decimal (signed/unsigned)");;;
     {
         DStr dstr = dstr_init(30);
         cgs_sprint(&dstr, nfmt(0, 'd'), " ", nfmt(-123, 'd'), " ", nfmt(2147483647, 'd'));
@@ -3058,7 +3739,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
 
-    TEST("nfmt: integer hexadecimal (x/X)");
+    TEST("nfmt: integer hexadecimal (x/X)");;;
     {
         DStr dstr = dstr_init(20);
         tostr(&dstr, nfmt(255, 'x'));
@@ -3070,7 +3751,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
 
-    TEST("nfmt: integer octal and binary");
+    TEST("nfmt: integer octal and binary");;;
     {
         DStr dstr = dstr_init(20);
         cgs_sprint(&dstr, nfmt(8, 'o'), " ", nfmt(5, 'b'));
@@ -3079,7 +3760,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt: floating point fixed-point (f/F)");
+    TEST("nfmt: floating point fixed-point (f/F)");;;
     {
         DStr dstr = dstr_init(30);
         // Test precision and rounding
@@ -3088,7 +3769,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt: scientific notation (e/E)");
+    TEST("nfmt: scientific notation (e/E)");;;
     {
         DStr dstr = dstr_init(30);
         cgs_sprint(&dstr, nfmt(1000.0, 'e', 2));
@@ -3100,7 +3781,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt: general format (g/G)");
+    TEST("nfmt: general format (g/G)");;;
     {
         DStr dstr = dstr_init(30);
         // 'g' chooses between fixed and scientific based on magnitude
@@ -3109,7 +3790,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt: hex-float (a/A)");
+    TEST("nfmt: hex-float (a/A)");;;
     {
         DStr dstr = dstr_init(30);
         tostr(&dstr, nfmt(1.0, 'a'));
@@ -3122,7 +3803,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt: integer limits and zero");
+    TEST("nfmt: integer limits and zero");;;
     {
         DStr dstr = dstr_init(50);
         long long max_val = 9223372036854775807LL;
@@ -3131,7 +3812,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt: high precision and rounding");
+    TEST("nfmt: high precision and rounding");;;
     {
         DStr dstr = dstr_init(50);
         // Test very small float with high precision
@@ -3141,7 +3822,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_sprint: complex mixed types");
+    TEST("cgs_sprint: complex mixed types");;;
     {
         DStr dstr = dstr_init(100);
         int hex_val = 0xDEAD;
@@ -3151,7 +3832,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt (binary): basic and zero");
+    TEST("nfmt (binary): basic and zero");;;
     {
         DStr dstr = dstr_init(20);
         // Zero is a common edge case
@@ -3165,7 +3846,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt (octal): basic and zero");
+    TEST("nfmt (octal): basic and zero");;;
     {
         DStr dstr = dstr_init(20);
         tostr(&dstr, nfmt(0, 'o'));
@@ -3178,7 +3859,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt: unsigned integer limits (binary)");
+    TEST("nfmt: unsigned integer limits (binary)");;;
     {
         DStr dstr = dstr_init(128);
         
@@ -3196,7 +3877,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt: unsigned integer limits (octal)");
+    TEST("nfmt: unsigned integer limits (octal)");;;
     {
         DStr dstr = dstr_init(64);
         
@@ -3214,7 +3895,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt: signed negative integers (binary/octal)");
+    TEST("nfmt: signed negative integers (binary/octal)");;;
     {
         // Note: Standard C behavior for %o and %x is to treat the bits as unsigned.
         // These tests assume your library follows that convention.
@@ -3234,7 +3915,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt: signed integer limits (decimal vs others)");
+    TEST("nfmt: signed integer limits (decimal vs others)");;;
     {
         DStr dstr = dstr_init(128);
         
@@ -3253,7 +3934,7 @@ void test_tostr_edge_cases() {
         dstr_deinit(&dstr);
     }
     
-    TEST("nfmt: type genericity check");
+    TEST("nfmt: type genericity check");;;
     {
         DStr dstr = dstr_init(100);
         
@@ -3275,7 +3956,7 @@ void test_tostr_edge_cases() {
 // ============================================================================
 
 void test_stress_cases() {
-    TEST("cgs_replace: fixed buffer overflow check");
+    TEST("cgs_replace: fixed buffer overflow check");;;
     {
         char buf[10] = "apple"; // capacity 10
         // Result would be "appleapple", length 10 + 1 for null = 11.
@@ -3284,7 +3965,7 @@ void test_stress_cases() {
         ASSERT_TRUE(res.err.ec == CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_replace_range: invalid indices");
+    TEST("cgs_replace_range: invalid indices");;;
     {
         DStr s = dstr_init_from("abc");
         // Start > End
@@ -3298,7 +3979,7 @@ void test_stress_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace: fixed buffer overflow check");
+    TEST("cgs_replace: fixed buffer overflow check");;;
     {
         char buf[10] = "apple"; // capacity 10
         // Result would be "appleapple", length 10 + 1 for null = 11.
@@ -3307,7 +3988,7 @@ void test_stress_cases() {
         ASSERT_TRUE(res.err.ec == CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_replace_range: invalid indices");
+    TEST("cgs_replace_range: invalid indices");;;
     {
         DStr s = dstr_init_from("abc");
         // Start > End
@@ -3321,7 +4002,7 @@ void test_stress_cases() {
         dstr_deinit(&s);
     }
     
-    TEST("stress: many allocations and deallocations");
+    TEST("stress: many allocations and deallocations");;;
     {
         for (int i = 0; i < 100; i++) {
             DStr dstr = dstr_init(i * 10);
@@ -3333,7 +4014,7 @@ void test_stress_cases() {
         ASSERT_TRUE(1);
     }
     
-    TEST("stress: alternating growth and shrinkage");
+    TEST("stress: alternating growth and shrinkage");;;
     {
         DStr dstr = dstr_init(10);
         for (int i = 0; i < 50; i++) {
@@ -3350,7 +4031,7 @@ void test_stress_cases() {
         ASSERT_TRUE(1);
     }
     
-    TEST("stress: very deep nesting of operations");
+    TEST("stress: very deep nesting of operations");;;
     {
         DStr dstr = dstr_init(1000);
         cgs_append(&dstr, "start");
@@ -3369,7 +4050,7 @@ void test_stress_cases() {
 // ============================================================================
 
 void test_special_characters() {
-    TEST("special chars: all printable ASCII");
+    TEST("special chars: all printable ASCII");;;
     {
         DStr dstr = dstr_init(200);
         for (char c = 32; c < 127; c++) {
@@ -3379,7 +4060,7 @@ void test_special_characters() {
         dstr_deinit(&dstr);
     }
     
-    TEST("special chars: control characters");
+    TEST("special chars: control characters");;;
     {
         DStr dstr = dstr_init(50);
         cgs_putc(&dstr, '\t');
@@ -3389,7 +4070,7 @@ void test_special_characters() {
         dstr_deinit(&dstr);
     }
     
-    TEST("special chars: high ASCII");
+    TEST("special chars: high ASCII");;;
     {
         DStr dstr = dstr_init(200);
         for (unsigned char c = 128; c < 255; c++) {
@@ -3402,7 +4083,7 @@ void test_special_characters() {
 
 void test_replace_all()
 {
-    TEST("cgs_replace: standard multiple replacement");
+    TEST("cgs_replace: standard multiple replacement");;;
     {
         DStr s = dstr_init_from("banana");
         ReplaceResult res = cgs_replace(&s, "a", "o");
@@ -3411,7 +4092,7 @@ void test_replace_all()
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace: empty target (Injection behavior)");
+    TEST("cgs_replace: empty target (Injection behavior)");;;
     {
         DStr s = dstr_init_from("abc");
         // Standard behavior (Python/JS): Replace "" with "-"
@@ -3421,7 +4102,7 @@ void test_replace_all()
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace: replacement contains target (No infinite loop)");
+    TEST("cgs_replace: replacement contains target (No infinite loop)");;;
     {
         DStr s = dstr_init_from("a");
         // Replacing "a" with "aa" should only happen once per original match
@@ -3430,7 +4111,7 @@ void test_replace_all()
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace: non-overlapping counts");
+    TEST("cgs_replace: non-overlapping counts");;;
     {
         DStr s = dstr_init_from("aaaaa"); 
         ReplaceResult res = cgs_replace(&s, "aa", "b");
@@ -3440,7 +4121,7 @@ void test_replace_all()
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace: target longer than source");
+    TEST("cgs_replace: target longer than source");;;
     {
         DStr s = dstr_init_from("abc");
         ReplaceResult res = cgs_replace(&s, "abcd", "x");
@@ -3448,7 +4129,7 @@ void test_replace_all()
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace: multiple replacements with different lengths");
+    TEST("cgs_replace: multiple replacements with different lengths");;;
     {
         DStr s = dstr_init_from("1-2-3");
         // Growing the string: "1" -> "one"
@@ -3457,21 +4138,21 @@ void test_replace_all()
         dstr_deinit(&s);
     }
     
-    TEST("cgs_replace: fixed buffer too small");
+    TEST("cgs_replace: fixed buffer too small");;;
     {
         char buf[5] = "abc"; // Small fixed buffer
         ReplaceResult res = cgs_replace(buf, "b", "verylongstring");
         ASSERT_TRUE(res.err.ec == CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_replace_first: fixed buffer too small");
+    TEST("cgs_replace_first: fixed buffer too small");;;
     {
         char buf[5] = "abc"; // Small fixed buffer
         CGS_Error res = cgs_replace_first(buf, "b", "verylongstring");
         ASSERT_TRUE(res.ec == CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_replace: target not found");
+    TEST("cgs_replace: target not found");;;
     {
         DStr s = dstr_init_from("hello");
         ReplaceResult res = cgs_replace(&s, "world", "earth");
