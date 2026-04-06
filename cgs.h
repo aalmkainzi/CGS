@@ -210,21 +210,28 @@ typedef struct CGS_MutStrRef
     } str;
 } CGS_MutStrRef;
 
+#define CGS__ERROR_NAMES(X) \
+X(OK)                       \
+X(DST_TOO_SMALL)            \
+X(ALLOC_ERR)                \
+X(INDEX_OUT_OF_BOUNDS)      \
+X(BAD_RANGE)                \
+X(NOT_FOUND)                \
+X(ALIASING_NOT_SUPPORTED)   \
+X(WRONG_TYPE)               \
+X(ENCODING_ERROR)           \
+X(IO_ERROR)                 \
+X(CALLBACK_EXIT)            \
+X(TOO_MANY_ARGS)            \
+X(NOT_ENOUGH_ARGS)
+
 enum CGS__ErrorCode
 {
-    CGS_OK = 0,
-    CGS_DST_TOO_SMALL,
-    CGS_ALLOC_ERR,
-    CGS_INDEX_OUT_OF_BOUNDS,
-    CGS_BAD_RANGE,
-    CGS_NOT_FOUND,
-    CGS_ALIASING_NOT_SUPPORTED,
-    CGS_WRONG_TYPE,
-    CGS_ENCODING_ERROR,
-    CGS_IO_ERROR,
-    CGS_CALLBACK_EXIT,
-    CGS_TOO_MANY_ARGS,
-    CGS_NOT_ENOUGH_ARGS
+    #define CGS__PREPEND(e) CGS_##e,
+
+    CGS__ERROR_NAMES(CGS__PREPEND)
+
+    #undef CGS__PREPEND
 };
 
 typedef struct CGS_Error

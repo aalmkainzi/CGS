@@ -39,16 +39,12 @@ static const CGS_Allocator cgs__default_allocator = {
 };
 
 static const CGS_StrView cgs__error_to_string[] = {
-    [CGS_OK]                     = {.len = sizeof("OK")                     - 1, .chars = "OK"},
-    [CGS_DST_TOO_SMALL]          = {.len = sizeof("DST_TOO_SMALL")          - 1, .chars = "DST_TOO_SMALL"},
-    [CGS_ALLOC_ERR]              = {.len = sizeof("ALLOC_ERR")              - 1, .chars = "ALLOC_ERR"},
-    [CGS_INDEX_OUT_OF_BOUNDS]    = {.len = sizeof("INDEX_OUT_OF_BOUNDS")    - 1, .chars = "INDEX_OUT_OF_BOUNDS"},
-    [CGS_BAD_RANGE]              = {.len = sizeof("BAD_RANGE")              - 1, .chars = "BAD_RANGE"},
-    [CGS_NOT_FOUND]              = {.len = sizeof("NOT_FOUND")              - 1, .chars = "NOT_FOUND"},
-    [CGS_ALIASING_NOT_SUPPORTED] = {.len = sizeof("ALIASING_NOT_SUPPORTED") - 1, .chars = "ALIASING_NOT_SUPPORTED"},
-    [CGS_WRONG_TYPE]             = {.len = sizeof("WRONG_TYPE")             - 1, .chars = "WRONG_TYPE"},
-    [CGS_ENCODING_ERROR]         = {.len = sizeof("ENCODING_ERROR")         - 1, .chars = "ENCODING_ERROR"},
-    [CGS_CALLBACK_EXIT]          = {.len = sizeof("CALLBACK_EXIT")          - 1, .chars = "CALLBACK_EXIT"}
+    #define CGS__ERROR_TO_STRV(e) \
+    [CGS_##e] = {.len = sizeof(#e) - 1, .chars = #e},
+
+    CGS__ERROR_NAMES(CGS__ERROR_TO_STRV)
+
+    #undef CGS__ERROR_TO_STRV
 };
 
 static const unsigned long long cgs__ten_pows_ull[] = {
