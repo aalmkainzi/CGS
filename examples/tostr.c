@@ -20,18 +20,4 @@ int main()
 {
     struct FOO f = {'a'};
     println(f); // can now use `struct FOO` variables in contexts that require a type with tostr
-    
-    println("hello", 123, "\n", nfmt(15.3, 'E', 2));
-    
-    char buf[64];
-    sprint(buf, "hello-", f);
-    
-    println(buf);
-    
-    nfmt_t(int,'X') a = nfmt(10,'X');
-    println(a);
-    
-    char C[64];
-    cgs_read_until(C, ',');
-    print(C);
 }
