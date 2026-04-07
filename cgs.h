@@ -796,7 +796,7 @@ cgs_fprintln(stdout, __VA_ARGS__)
 +1
 
 #define cgs__as_ptr_elm(a) \
-(void*)&(__typeof__(a)[]){a}[0],
+(void*)&(__typeof__(((void)0,a))[]){(a),}[0],
 
 #define cgs__tostr_p_func_elm(a) \
 (CGS_Error(*)(CGS_Writer, void*))cgs__get_tostr_p_func(__typeof__(a)),
