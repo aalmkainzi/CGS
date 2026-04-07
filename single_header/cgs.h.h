@@ -746,13 +746,7 @@ cgs__dstr_ensure_cap(dstr, new_cap)
 
 // helper macro
 #define cgs__str_print_each(x) \
-do \
-{ \
-    __typeof__(x) cgs__type_holder; \
-    { \
-        cgs__get_tostr_func(__typeof__(cgs__type_holder))(cgs__as_writer, x); \
-    } \
-} while(0);
+cgs__get_tostr_func(__typeof__(x))(cgs__as_writer, x); \
 
 #define cgs__sprint_foreach_arg(...) \
 __VA_OPT__( \
