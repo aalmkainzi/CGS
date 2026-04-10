@@ -3423,74 +3423,87 @@ CGS_API CGS_Error cgs__bool_tostr(CGS_Writer writer, bool obj, const CGS_StrView
     return cgs__invoke_writer(writer, res);
 }
 
-CGS_API CGS_Error cgs__cstr_tostr(CGS_Writer writer, const char *obj)
+CGS_PRIVATE CGS_Error cgs__write_quoted_string(CGS_Writer writer, const CGS_StrView str)
 {
-    return cgs__invoke_writer(
-        writer,
-        (CGS_StrView){
-            .chars = (char*) obj,
-            .len = (unsigned int) strlen(obj)
-        }
-    );
+    CGS_Error err = cgs__invoke_writer(writer, cgs_strv("\""));
+    err = cgs__invoke_writer(writer, str);
+    err = cgs__invoke_writer(writer, cgs_strv("\""));
+    return err;
 }
 
-CGS_API CGS_Error cgs__ucstr_tostr(CGS_Writer writer, const unsigned char *obj)
+CGS_API CGS_Error cgs__cstr_tostr(CGS_Writer writer, const char *obj, const CGS_StrView fmt_opt)
 {
-    return cgs__invoke_writer(
-        writer,
-        (CGS_StrView){
-            .chars = (char*) obj,
-            .len = (unsigned int) strlen((char*) obj)
-        }
-    );
+    if(fmt_opt.len == 1 && fmt_opt.chars[0] == 'q')
+    {
+        return cgs__write_quoted_string(writer, cgs_strv(obj));
+    }
+    
+    return cgs__invoke_writer(writer, cgs_strv(obj));
 }
 
-CGS_API CGS_Error cgs__char_tostr(CGS_Writer writer, char obj)
+CGS_API CGS_Error cgs__ucstr_tostr(CGS_Writer writer, const unsigned char *obj, const CGS_StrView fmt_opt)
 {
+    if(fmt_opt.len == 1 && fmt_opt.chars[0] == 'q')
+    {
+        return cgs__write_quoted_string(writer, cgs_strv(obj));
+    }
+    
+    return cgs__invoke_writer(writer, cgs_strv(obj));
+}
+
+CGS_API CGS_Error cgs__char_tostr(CGS_Writer writer, char obj, const CGS_StrView fmt_opt)
+{
+    if(fmt_opt.len == 1)
+    {
+        switch(fmt_opt.chars[0])
+        {
+            case 'd': cgs__Integer_d_Fmt_cgs__c_tostr(writer, obj, fmt_opt);
+        }
+    }
     return cgs__invoke_writer(writer, (CGS_StrView){.chars = &obj, .len = 1});
 }
 
-CGS_API CGS_Error cgs__schar_tostr(CGS_Writer writer, signed char obj)
+CGS_API CGS_Error cgs__schar_tostr(CGS_Writer writer, signed char obj, const CGS_StrView fmt_opt)
 {
     return cgs__invoke_writer(writer, cgs__sc_to_string[(unsigned char)obj]);
 }
 
-CGS_API CGS_Error cgs__uchar_tostr(CGS_Writer writer, unsigned char obj)
+CGS_API CGS_Error cgs__uchar_tostr(CGS_Writer writer, unsigned char obj, const CGS_StrView fmt_opt)
 {
     return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) &obj, .len = 1});
 }
 
-CGS_API CGS_Error cgs__short_tostr(CGS_Writer writer, short obj)
+CGS_API CGS_Error cgs__short_tostr(CGS_Writer writer, short obj, const CGS_StrView fmt_opt)
 {
     cgs__sinteger_tostr();
 }
 
-CGS_API CGS_Error cgs__ushort_tostr(CGS_Writer writer, unsigned short obj)
+CGS_API CGS_Error cgs__ushort_tostr(CGS_Writer writer, unsigned short obj, const CGS_StrView fmt_opt)
 {
     cgs__uinteger_tostr();
 }
 
-CGS_API CGS_Error cgs__int_tostr(CGS_Writer writer, int obj)
+CGS_API CGS_Error cgs__int_tostr(CGS_Writer writer, int obj, const CGS_StrView fmt_opt)
 {
     cgs__sinteger_tostr();
 }
 
-CGS_API CGS_Error cgs__uint_tostr(CGS_Writer writer, unsigned int obj)
+CGS_API CGS_Error cgs__uint_tostr(CGS_Writer writer, unsigned int obj, const CGS_StrView fmt_opt)
 {
     cgs__uinteger_tostr();
 }
 
-CGS_API CGS_Error cgs__long_tostr(CGS_Writer writer, long obj)
+CGS_API CGS_Error cgs__long_tostr(CGS_Writer writer, long obj, const CGS_StrView fmt_opt)
 {
     cgs__sinteger_tostr();
 }
 
-CGS_API CGS_Error cgs__ulong_tostr(CGS_Writer writer, unsigned long obj)
+CGS_API CGS_Error cgs__ulong_tostr(CGS_Writer writer, unsigned long obj, const CGS_StrView fmt_opt)
 {
     cgs__uinteger_tostr();
 }
 
-CGS_API CGS_Error cgs__llong_tostr(CGS_Writer writer, long long obj)
+CGS_API CGS_Error cgs__llong_tostr(CGS_Writer writer, long long obj, const CGS_StrView fmt_opt)
 {
     cgs__sinteger_tostr();
 }
