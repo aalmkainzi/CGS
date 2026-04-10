@@ -3200,8 +3200,7 @@ CGS_API CGS_Error cgs__file_append(void *ctx, const CGS_StrView str)
     return (CGS_Error){CGS_OK};
 }
 
-// Note fmt is guaranteed to be nul terminated
-CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*))
+CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*, const CGS_StrView))
 {
     CGS_StrView fmt_walk = fmt;
     
@@ -3231,7 +3230,8 @@ CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t n
                     err.ec = CGS_NOT_ENOUGH_ARGS;
                     break;
                 }
-                err = tostr_p_funcs[how_many_formatted](writer, args[how_many_formatted]);
+                // TODO fix this
+                err = tostr_p_funcs[how_many_formatted](writer, args[how_many_formatted], (CGS_StrView){});
                 how_many_formatted += 1;
             }
         }
@@ -3417,7 +3417,7 @@ do { \
     return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = numlen}); \
 } while(0)
 
-CGS_API CGS_Error cgs__bool_tostr(CGS_Writer writer, bool obj)
+CGS_API CGS_Error cgs__bool_tostr(CGS_Writer writer, bool obj, const CGS_StrView fmt_opt)
 {
     CGS_StrView res = obj ? cgs__strv_cstr1("true") : cgs__strv_cstr1("false");
     return cgs__invoke_writer(writer, res);
