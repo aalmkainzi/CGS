@@ -3457,7 +3457,12 @@ CGS_API CGS_Error cgs__char_tostr(CGS_Writer writer, char obj, const CGS_StrView
     {
         switch(fmt_opt.chars[0])
         {
-            case 'd': cgs__Integer_d_Fmt_cgs__c_tostr(writer, obj, fmt_opt);
+            case 'd': return cgs_tostr_append(writer, cgs_nfmt(obj, 'd'));
+            case 'x': return cgs_tostr_append(writer, cgs_nfmt(obj, 'x'));
+            case 'o': return cgs_tostr_append(writer, cgs_nfmt(obj, 'o'));
+            case 'b': return cgs_tostr_append(writer, cgs_nfmt(obj, 'b'));
+            case 'X': return cgs_tostr_append(writer, cgs_nfmt(obj, 'X'));
+            case 'c': return cgs__invoke_writer(writer, (CGS_StrView){.chars = &obj, .len = 1});
         }
     }
     return cgs__invoke_writer(writer, (CGS_StrView){.chars = &obj, .len = 1});
