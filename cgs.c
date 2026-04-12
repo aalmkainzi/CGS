@@ -3233,6 +3233,7 @@ CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t n
             {
                 CGS_Unreachable();
                 err.ec = CGS_BAD_FORMAT;
+                break;
             }
             
             if(fmt_walk.len > 0 && found[1] == '?')
@@ -3241,6 +3242,7 @@ CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t n
                 {
                     CGS_Unreachable(); // cannot change arg indexing mode. either all formats use index, or all automatic index
                     err.ec = CGS_BAD_FORMAT;
+                    break;
                 }
                 index_mode = AUTO_INDEX;
                 
@@ -3295,6 +3297,7 @@ CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t n
             else
             {
                 CGS_Unreachable(); // lone percent
+                err.ec = CGS_BAD_FORMAT;
                 break;
             }
         }
