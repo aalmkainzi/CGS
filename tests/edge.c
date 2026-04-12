@@ -112,8 +112,6 @@ void test_str_cap_edge_cases() {
     TEST("cgs_cap: raw char array");;;
     {
         char buf[100];
-        // For raw arrays, capacity might not be trackable
-        // This tests that it doesn't crash
         unsigned int cap = cgs_cap(buf);
         ASSERT_TRUE(cap == 100);
     }
@@ -1942,7 +1940,8 @@ void test_str_putc_edge_cases() {
     TEST("cgs_format: single % substituted with string arg");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "hello %?", cgs_strv("world"));
+        const char *fmt = "hello %?";
+        CGS_Error err = cgs_format(&dst, fmt, cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);

@@ -3211,7 +3211,8 @@ CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t n
         SPECIFY_INDEX
     } index_mode = UNKNOWN_INDEXING; // SPECIFY_INDEX is "%index" (e.g. "%0" is the first arg). AUTO_INDEX requires "%?", cannot mix
     // This should proably be:
-    // check indexing mode, const declare it, then begin.
+    // do first format specififer, determine mode from it,
+    // and have one outer branch.
     
     CGS_StrView fmt_walk = fmt;
     

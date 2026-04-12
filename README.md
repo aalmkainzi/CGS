@@ -131,8 +131,8 @@ bool              cgs_has_tostr(T);
 unsigned int      cgs_tostr_len(T val);
 unsigned int      cgs_tostr_p_len(T *val);
 
-CGS_Error         cgs_format(mutstr_t dst, constexpr char *fmt, ...args with tostr);
-CGS_Error         cgs_format_append(writer_t dst, constexpr char *fmt, ...args with tostr);
+CGS_Error         cgs_format(mutstr_t dst, const char *fmt, ...args with tostr);
+CGS_Error         cgs_format_append(writer_t dst, const char *fmt, ...args with tostr);
 
                   cgs_print(...args with tostr);
                   cgs_println(...args with tostr);
