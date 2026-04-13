@@ -992,6 +992,8 @@ __VA_OPT__(cgs__arrfmt_2) \
     .trailing_separator = cgs_strv(CGS__VA_OR("", __VA_ARGS__)) \
 })
 
+#define cgs_fmtobj
+
 #define CGS__INTEGER_TOSTR_GENERIC_CASE(ty, extra)         \
 CGS__Integer_d_Fmt_##ty : cgs__Integer_d_Fmt_##ty##_tostr, \
 CGS__Integer_x_Fmt_##ty : cgs__Integer_x_Fmt_##ty##_tostr, \

@@ -1,4 +1,3 @@
-#define CGS_SHORT_NAMES
 #include "cgs.h"
 
 int main()

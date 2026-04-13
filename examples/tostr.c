@@ -1,4 +1,3 @@
-#define CGS_SHORT_NAMES
 #include "cgs.h"
 
 struct FOO {
@@ -19,5 +18,5 @@ CGS_Error foo_to_str(CGS_Writer dst, struct FOO foo)
 int main()
 {
     struct FOO f = {'a'};
-    println(f); // can now use `struct FOO` variables in contexts that require a type with tostr
+    cgs_println(f); // can now use `struct FOO` variables in contexts that require a type with tostr
 }

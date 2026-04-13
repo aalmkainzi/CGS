@@ -2,34 +2,32 @@
 
 ## Quick Examples
 ```C
-#define CGS_SHORT_NAMES
 #include "cgs.h"
 
 int main()
 {
-    StrView s     = strv("hello, world");
-    StrView hello = strv(s, 0, 5);
-    StrView world = strv(s, 7);
+    CGS_StrView s     = cgs_strv("hello, world");
+    CGS_StrView hello = cgs_strv(s, 0, 5);
+    CGS_StrView world = cgs_strv(s, 7);
     
-    println(hello);
-    println(world);
+    cgs_println(hello);
+    cgs_println(world);
 }
 
 ```
 ```C
-#define CGS_SHORT_NAMES
 #include "cgs.h"
 
 int main()
 {
-    DStr str = dstr_init();
+    CGS_DStr str = cgs_dstr_init();
     
     cgs_append(&str, "world");
     cgs_prepend(&str, "hello, ");
     
-    println(str);
+    cgs_println(str);
     
-    dstr_deinit(&str);
+    cgs_dstr_deinit(&str);
 }
 
 ```
@@ -261,19 +259,17 @@ CGS_Error cgs_tostr_append(writer_t dst, T val);
 ```
 Example:
 ```C
-#define CGS_SHORT_NAMES
 #include "cgs.h"
 
 int main()
 {
-    DStr num = dstr_init();
-    tostr(&num, 10);
+    CGS_DStr num = cgs_dstr_init();
+    cgs_tostr(&num, 10);
 }
 ```
 
 You can add your own tostr functions for types by defining `ADD_TOSTR (Ty, Ty2str)` and re-including the `cgs.h` header:
 ```C
-#define CGS_SHORT_NAMES
 #include "cgs.h"
 
 struct FOO {
@@ -294,7 +290,7 @@ CGS_Error foo_to_str(CGS_Writer dst, struct FOO *f )
 int main()
 {
     struct FOO f = {'a'};
-    println(f); // can now use `struct FOO` in contexts that require a type with tostr
+    cgs_println(f); // can now use `struct FOO` in contexts that require a type with tostr
 }
 ```
 
@@ -314,15 +310,14 @@ cgs_sprint_append(writer_t dst, ...args with tostr);
 
 Example:
 ```C
-#define CGS_SHORT_NAMES
 #include "cgs.h"
 
 int main()
 {
-    println("hello", 123, "\n", 15.3);
+    cgs_println("hello", 123, "\n", 15.3);
     
     char buf[64];
-    sprint(buf, "hello", 123);
+    cgs_sprint(buf, "hello", 123);
 }
 ```
 
@@ -331,7 +326,7 @@ int main()
 These macros return a format object that has a `tostr`. For example:
 
 ```C
-println( nfmt(15, 'X') ); // prints "F"
+cgs_println( cgs_nfmt(15, 'X') ); // prints "F"
 ```
 
 Note that `nfmt` is type-safe, you cannot use chars other than:

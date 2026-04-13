@@ -1,14 +1,13 @@
-#define CGS_SHORT_NAMES
 #include "cgs.h"
 
 int main()
 {
-    DStr str = dstr_init();
+    CGS_DStr str = cgs_dstr_init();
     
     cgs_append(&str, "world");
     cgs_prepend(&str, "hello, ");
     
-    println(str);
+    cgs_println(str);
     
-    dstr_deinit(&str);
+    cgs_dstr_deinit(&str);
 }
