@@ -1,5 +1,5 @@
 CC := cc
-CFLAGS := -Wall -Wextra -g -I.. ../cgs.c
+BASE_CFLAGS := -Wall -Wextra -g -I.. ../cgs.c
 SRCS := $(wildcard *.c)
 BINS := $(SRCS:.c=)
 
@@ -9,7 +9,7 @@ all: $(BINS)
 	
 
 %: %.c
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(BASE_CFLAGS) $(CFLAGS) $< -o $@
 
 clean:
 	rm -f $(BINS)
