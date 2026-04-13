@@ -224,7 +224,8 @@ X(ENCODING_ERROR)           \
 X(IO_ERROR)                 \
 X(CALLBACK_EXIT)            \
 X(TOO_MANY_ARGS)            \
-X(NOT_ENOUGH_ARGS)
+X(NOT_ENOUGH_ARGS)          \
+X(BAD_FORMAT)
 
 enum CGS__ErrorCode
 {
@@ -797,12 +798,12 @@ cgs_fprintln(stdout, __VA_ARGS__)
 (CGS_Error(*)(CGS_Writer, const void*))cgs__get_tostr_p_func(__typeof__(a)),
 
 #define cgs_format_append(writer_dst, fmt, ...) \
-    __VA_OPT__(cgs__format(cgs_writer(writer_dst), (CGS_StrView){.chars = (char*)(fmt ""), .len = sizeof(fmt) - 1}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
-    CGS__IF_EMPTY((cgs__format(cgs_writer(writer_dst), (CGS_StrView){.chars = (char*)(fmt ""), .len = sizeof(fmt) - 1}, 0, NULL, NULL)), __VA_ARGS__)
+    __VA_OPT__(cgs__format(cgs_writer(writer_dst), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
+    CGS__IF_EMPTY((cgs__format(cgs_writer(writer_dst), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0, NULL, NULL)), __VA_ARGS__)
 
 #define cgs_format(mutstr_dst, fmt, ...) \
-    __VA_OPT__(cgs__format(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), (CGS_StrView){.chars = (char*)(fmt ""), .len = sizeof(fmt) - 1}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
-    CGS__IF_EMPTY((cgs__format(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), (CGS_StrView){.chars = (char*)(fmt ""), .len = sizeof(fmt) - 1}, 0, NULL, NULL)), __VA_ARGS__)
+    __VA_OPT__(cgs__format(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
+    CGS__IF_EMPTY((cgs__format(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0, NULL, NULL)), __VA_ARGS__)
 
 typedef char               cgs__c;
 typedef signed char        cgs__sc;
@@ -819,14 +820,14 @@ typedef unsigned long long cgs__ull;
 #define CGS__MCALL(macro, arglist) macro arglist
 
 #define CGS__INTEGER_TYPES(CGS__X, extra, ...) \
-CGS__X(cgs__c , extra)  \
+CGS__X(cgs__c , extra) \
 CGS__X(cgs__sc, extra) \
 CGS__X(cgs__uc, extra) \
-CGS__X(cgs__s , extra)  \
+CGS__X(cgs__s , extra) \
 CGS__X(cgs__us, extra) \
-CGS__X(cgs__i , extra)  \
+CGS__X(cgs__i , extra) \
 CGS__X(cgs__ui, extra) \
-CGS__X(cgs__l , extra)  \
+CGS__X(cgs__l , extra) \
 CGS__X(cgs__ul, extra) \
 CGS__X(cgs__ll, extra) \
 CGS__MCALL(CGS__VA_OR(CGS__X, __VA_ARGS__), (cgs__ull, extra))
@@ -1684,13 +1685,32 @@ CGS__DECL_TOSTR_FUNC(32)
 #if !defined(CGS__STR_C_INCLUDED)
 #define CGS__STR_C_INCLUDED
 
-#if !defined(unreachable)
+#ifndef CGS_Unreachable
+    
+#endif
+
+
+#if !defined(CGS_NDEBUG)
     #if defined(_MSC_VER)
-        #define unreachable() __assume(0)
+        #define CGS_Unreachable() __debugbreak()
+    #elif defined(__clang__)
+        #define CGS_Unreachable() __builtin_debugtrap()
     #elif defined(__GNUC__)
-        #define unreachable() __builtin_unreachable()
+        #define CGS_Unreachable() __builtin_trap()
+    #elif defined(unreachable)
+        #define CGS_Unreachable() unreachable()
     #else
-        #define unreachable()
+        #define CGS_Unreachable()
+    #endif
+#else
+    #if defined(_MSC_VER)
+        #define CGS_Unreachable() __assume(0)
+    #elif defined(__GNUC__)
+        #define CGS_Unreachable() __builtin_unreachable()
+    #elif defined(unreachable)
+        #define CGS_Unreachable() unreachable()
+    #else
+        #define CGS_Unreachable()
     #endif
 #endif
 
@@ -2817,7 +2837,7 @@ CGS_API CGS__FixedMutStrRef cgs__mutstr_ref_as_fmutstr_ref(CGS_MutStrRef mutstr_
         case CGS__BUF_TY:
             return cgs__buf_as_fmutstr_ref(mutstr_ref.str.buf, len_ptr);
         default:
-            unreachable();
+            CGS_Unreachable();
     }
 }
 
@@ -2832,7 +2852,7 @@ CGS_API CGS__FixedMutStrRef cgs__mutstr_ref_as_fmutstr_ref_zero_len(CGS_MutStrRe
         case CGS__BUF_TY:
             return cgs__buf_as_fmutstr_ref_zero_len(mutstr_ref.str.buf, len_ptr);
         default:
-            unreachable();
+            CGS_Unreachable();
     }
 }
 
@@ -2878,7 +2898,7 @@ CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *allocat
 
 CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n)
 {
-    unreachable();
+    CGS_Unreachable();
     (void) allocator;
     (void) align;
     (void) n;
@@ -2887,7 +2907,7 @@ CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_alloc(CGS_Allocator *alloc
 
 CGS_PRIVATE void cgs__dstr_append_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n)
 {
-    unreachable();
+    CGS_Unreachable();
     (void) allocator;
     (void) ptr;
     (void) n;
@@ -2978,7 +2998,7 @@ CGS_API CGS_MutStrRef cgs__make_appender_mutstr_ref(CGS_MutStrRef owner, CGS_App
             *ret.str.strbuf = cgs__make_appender_strbuf(owner);
             return ret;
         default             :
-            unreachable();
+            CGS_Unreachable();
     }
 }
 
@@ -3235,7 +3255,7 @@ CGS_API char *cgs__mutstr_ref_as_cstr(const CGS_MutStrRef str)
         case CGS__DSTR_TY   : return str.str.dstr->chars;
         case CGS__STRBUF_TY : return str.str.strbuf->chars;
         case CGS__BUF_TY    : return str.str.buf.ptr;
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -3247,7 +3267,7 @@ CGS_API CGS_Error cgs__mutstr_ref_commit_appender(CGS_MutStrRef owner, CGS_MutSt
         case CGS__DSTR_TY   : owner.str.dstr->len += appender_len;   break;
         case CGS__STRBUF_TY : owner.str.strbuf->len += appender_len; break;
         case CGS__BUF_TY    :                                        break;
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
     
     return (CGS_Error){CGS_OK};
@@ -3280,7 +3300,7 @@ CGS_API unsigned int cgs__mutstr_ref_cap(const CGS_MutStrRef str)
         case CGS__DSTR_TY   : return str.str.dstr->cap;
         case CGS__STRBUF_TY : return str.str.strbuf->cap;
         case CGS__BUF_TY    : return str.str.buf.cap;
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -3291,7 +3311,7 @@ CGS_API unsigned int cgs__mutstr_ref_len(const CGS_MutStrRef str)
         case CGS__DSTR_TY   : return str.str.dstr->len;
         case CGS__STRBUF_TY : return str.str.strbuf->len;
         case CGS__BUF_TY    : return (unsigned int) strlen(str.str.buf.ptr);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -3325,7 +3345,7 @@ CGS_API CGS_Error cgs__mutstr_ref_insert(CGS_MutStrRef dst, const CGS_StrView sr
         case CGS__DSTR_TY   : return cgs__dstr_insert(dst.str.dstr, src, idx);
         case CGS__STRBUF_TY : return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(dst.str.strbuf), src, idx);
         case CGS__BUF_TY    : return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src, idx);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -3397,7 +3417,7 @@ CGS_API CGS_Error cgs__mutstr_ref_copy(CGS_MutStrRef dst, const CGS_StrView src)
         case CGS__DSTR_TY   : return cgs__dstr_copy(dst.str.dstr, src);
         case CGS__STRBUF_TY : return cgs__fmutstr_ref_copy(cgs__fmutstr_ref(dst.str.strbuf), src);
         case CGS__BUF_TY    : return cgs__fmutstr_ref_copy(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -3435,7 +3455,7 @@ CGS_API CGS_Error cgs__mutstr_ref_putc(CGS_MutStrRef dst, char c)
         case CGS__DSTR_TY   : return cgs__dstr_putc(dst.str.dstr, c);
         case CGS__STRBUF_TY : return cgs__fmutstr_ref_putc(cgs__fmutstr_ref(dst.str.strbuf), c);
         case CGS__BUF_TY    : return cgs__fmutstr_ref_putc(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), c);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     }
 }
 
@@ -3468,7 +3488,7 @@ CGS_API CGS_Error cgs__mutstr_ref_append(CGS_MutStrRef dst, const CGS_StrView sr
         case CGS__DSTR_TY   : return cgs__dstr_append(dst.str.dstr, src);
         case CGS__STRBUF_TY : return cgs__fmutstr_ref_append(cgs__fmutstr_ref(dst.str.strbuf), src);
         case CGS__BUF_TY    : return cgs__fmutstr_ref_append(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -3508,7 +3528,7 @@ CGS_API CGS_Error cgs__mutstr_ref_delete_range(CGS_MutStrRef str, unsigned int b
         case CGS__DSTR_TY   : return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.dstr), begin, end);
         case CGS__STRBUF_TY : return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.strbuf), begin, end);
         case CGS__BUF_TY    : return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -3648,7 +3668,7 @@ CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, const CGS_StrViewArray s
         case CGS__DSTR_TY   : return cgs__strv_arr_join_into_dstr(dst.str.dstr, strs, delim);
         case CGS__STRBUF_TY : return cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref(dst.str.strbuf), strs, delim);
         case CGS__BUF_TY    : return cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), strs, delim);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -3779,7 +3799,7 @@ CGS_API CGS_Error cgs__mutstr_ref_replace_range(CGS_MutStrRef str, unsigned int 
         case CGS__DSTR_TY   : return cgs__dstr_replace_range(str.str.dstr, begin, end, replacement);
         case CGS__STRBUF_TY : return cgs__fmutstr_ref_replace_range(cgs__fmutstr_ref(str.str.strbuf), begin, end, replacement);
         case CGS__BUF_TY    : return cgs__fmutstr_ref_replace_range(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end, replacement);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -4015,7 +4035,7 @@ CGS_API CGS_ReplaceResult cgs__mutstr_ref_replace(CGS_MutStrRef str, const CGS_S
         case CGS__DSTR_TY   : return cgs__dstr_replace(str.str.dstr, target, replacement);
         case CGS__STRBUF_TY : return cgs__fmutstr_ref_replace(cgs__fmutstr_ref(str.str.strbuf), target, replacement);
         case CGS__BUF_TY    : return cgs__fmutstr_ref_replace(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -4075,7 +4095,7 @@ CGS_API CGS_Error cgs__mutstr_ref_replace_first(CGS_MutStrRef str, const CGS_Str
         case CGS__DSTR_TY   : return cgs__dstr_replace_first(str.str.dstr, target, replacement);
         case CGS__STRBUF_TY : return cgs__fmutstr_ref_replace_first(cgs__fmutstr_ref(str.str.strbuf), target, replacement);
         case CGS__BUF_TY    : return cgs__fmutstr_ref_replace_first(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -4260,7 +4280,7 @@ CGS_API CGS_Error cgs__mutstr_ref_clear(CGS_MutStrRef str)
             cgs__fmutstr_ref_clear(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}));
             break;
         default:
-            unreachable();
+            CGS_Unreachable();
     }
     return (CGS_Error){CGS_OK};
 }
@@ -4447,7 +4467,7 @@ CGS_API CGS_StrView cgs__strv_mutstr_ref1(const CGS_MutStrRef str)
         case CGS__DSTR_TY   : return cgs__strv_dstr_ptr1(str.str.dstr);
         case CGS__STRBUF_TY : return cgs__strv_strbuf_ptr1(str.str.strbuf);
         case CGS__BUF_TY    : return cgs__strv_cstr1(str.str.buf.ptr);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     }
 }
 
@@ -4560,7 +4580,7 @@ CGS_API CGS_StrView cgs__strv_mutstr_ref2(const CGS_MutStrRef str, unsigned int 
         case CGS__DSTR_TY   : return cgs__strv_dstr_ptr2(str.str.dstr, begin);
         case CGS__STRBUF_TY : return cgs__strv_strbuf_ptr2(str.str.strbuf, begin);
         case CGS__BUF_TY    : return cgs__strv_fmutstr_ref2(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     }
 }
 
@@ -4687,7 +4707,7 @@ CGS_API CGS_StrView cgs__strv_mutstr_ref3(CGS_MutStrRef str, unsigned int begin,
         case CGS__DSTR_TY   : return cgs__strv_dstr_ptr3(str.str.dstr, begin, end);
         case CGS__STRBUF_TY : return cgs__strv_strbuf_ptr3(str.str.strbuf, begin, end);
         case CGS__BUF_TY    : return cgs__strv_fmutstr_ref3(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     }
 }
 
@@ -4788,7 +4808,7 @@ CGS_API CGS_Error cgs__mutstr_ref_fread_until(CGS_MutStrRef dst, FILE *stream, i
         case CGS__DSTR_TY   : return cgs__dstr_fread_until(dst.str.dstr, stream, delim);
         case CGS__STRBUF_TY : return cgs__fmutstr_ref_fread_until(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream, delim);
         case CGS__BUF_TY    : return cgs__fmutstr_ref_fread_until(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream, delim);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -4821,7 +4841,7 @@ CGS_API CGS_Error cgs__mutstr_ref_append_fread_until(CGS_MutStrRef dst, FILE *st
         case CGS__DSTR_TY   : return cgs__dstr_append_fread_until(dst.str.dstr, stream, delim);
         case CGS__STRBUF_TY : return cgs__fmutstr_ref_append_fread_until(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream, delim);
         case CGS__BUF_TY    : return cgs__fmutstr_ref_append_fread_until(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream, delim);
-        default             : unreachable();
+        default             : CGS_Unreachable();
     };
 }
 
@@ -4866,9 +4886,18 @@ CGS_API CGS_Error cgs__file_append(void *ctx, const CGS_StrView str)
     return (CGS_Error){CGS_OK};
 }
 
-// Note fmt is guaranteed to be nul terminated
 CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*))
 {
+    enum
+    {
+        UNKNOWN_INDEXING,
+        AUTO_INDEX,
+        SPECIFY_INDEX
+    } index_mode = UNKNOWN_INDEXING; // SPECIFY_INDEX is "%index" (e.g. "%0" is the first arg). AUTO_INDEX requires "%?", cannot mix
+    // This should proably be:
+    // do first format specififer, determine mode from it,
+    // and have one outer branch.
+    
     CGS_StrView fmt_walk = fmt;
     
     size_t how_many_formatted = 0;
@@ -4882,7 +4911,67 @@ CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t n
             CGS_StrView chunk = { .chars = fmt_walk.chars, .len = index };
             fmt_walk.chars += (index + 1);
             fmt_walk.len   -= (index + 1);
-            if(fmt_walk.len > 0 && fmt_walk.chars[0] == '%') // escape %%
+            
+            // '%' without espace "%%" or without format "%?" is UB
+            if(fmt_walk.len == 0)
+            {
+                CGS_Unreachable();
+                err.ec = CGS_BAD_FORMAT;
+                break;
+            }
+            
+            if(fmt_walk.len > 0 && found[1] == '?')
+            {
+                if(index_mode == SPECIFY_INDEX)
+                {
+                    CGS_Unreachable(); // cannot change arg indexing mode. either all formats use index, or all automatic index
+                    err.ec = CGS_BAD_FORMAT;
+                    break;
+                }
+                index_mode = AUTO_INDEX;
+                
+                err = cgs__invoke_writer(writer, chunk);
+                
+                if(how_many_formatted >= nargs)
+                {
+                    CGS_Unreachable(); // not enough format args
+                    err.ec = CGS_NOT_ENOUGH_ARGS;
+                    break;
+                }
+                err = tostr_p_funcs[how_many_formatted](writer, args[how_many_formatted]);
+                how_many_formatted += 1;
+                
+                // skip the '?'
+                fmt_walk.chars += 1;
+                fmt_walk.len -= 1;
+            }
+            else if(fmt_walk.len > 0 && isdigit(found[1]))
+            {
+                if(index_mode == AUTO_INDEX)
+                {
+                    CGS_Unreachable(); // cannot change arg indexing mode. either all formats use index, or all automatic index
+                    err.ec = CGS_BAD_FORMAT;
+                    break;
+                }
+                index_mode = SPECIFY_INDEX;
+                
+                char *end = NULL;
+                unsigned long arg_index = strtoul(found + 1, &end, 10); // we can assume fmt is null terminated
+                ptrdiff_t end_idx = end - fmt_walk.chars;
+                fmt_walk.chars += end_idx;
+                fmt_walk.len   -= end_idx;
+                
+                if(arg_index >= nargs)
+                {
+                    CGS_Unreachable(); // not enough format args
+                    err.ec = CGS_INDEX_OUT_OF_BOUNDS;
+                    break;
+                }
+                
+                err = cgs__invoke_writer(writer, chunk);
+                err = tostr_p_funcs[arg_index](writer, args[arg_index]);
+            }
+            else if(fmt_walk.len > 0 && found[1] == '%')
             {
                 chunk.len += 1; // to include the first %
                 fmt_walk.chars += 1;
@@ -4891,14 +4980,9 @@ CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t n
             }
             else
             {
-                err = cgs__invoke_writer(writer, chunk);
-                if(how_many_formatted >= nargs)
-                {
-                    err.ec = CGS_NOT_ENOUGH_ARGS;
-                    break;
-                }
-                err = tostr_p_funcs[how_many_formatted](writer, args[how_many_formatted]);
-                how_many_formatted += 1;
+                CGS_Unreachable(); // lone percent
+                err.ec = CGS_BAD_FORMAT;
+                break;
             }
         }
         else
@@ -4909,7 +4993,7 @@ CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t n
         }
     }
     
-    if(err.ec == CGS_OK && how_many_formatted < nargs)
+    if(err.ec == CGS_OK && how_many_formatted < nargs && index_mode != SPECIFY_INDEX)
     {
         return (CGS_Error){CGS_TOO_MANY_ARGS};
     }
@@ -5052,7 +5136,7 @@ do { \
     } \
     unsigned int numlen = cgs__numstr_len(obj); \
     char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
-    if(numlen >= sizeof(cgs__tmp_buf)) unreachable(); \
+    if(numlen >= sizeof(cgs__tmp_buf)) CGS_Unreachable(); \
     \
     if(isneg) \
     { \
@@ -5072,7 +5156,7 @@ do { \
 do { \
     unsigned int numlen = cgs__numstr_len(obj); \
     char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
-    if(numlen >= sizeof(cgs__tmp_buf)) unreachable(); \
+    if(numlen >= sizeof(cgs__tmp_buf)) CGS_Unreachable(); \
     \
     for (unsigned int i = 0; i < numlen ; i++) \
     { \
