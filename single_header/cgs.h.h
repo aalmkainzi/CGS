@@ -1686,31 +1686,28 @@ CGS__DECL_TOSTR_FUNC(32)
 #define CGS__STR_C_INCLUDED
 
 #ifndef CGS_Unreachable
-    
-#endif
-
-
-#if !defined(CGS_NDEBUG)
-    #if defined(_MSC_VER)
-        #define CGS_Unreachable() __debugbreak()
-    #elif defined(__clang__)
-        #define CGS_Unreachable() __builtin_debugtrap()
-    #elif defined(__GNUC__)
-        #define CGS_Unreachable() __builtin_trap()
-    #elif defined(unreachable)
-        #define CGS_Unreachable() unreachable()
+    #if !defined(CGS_NDEBUG)
+        #if defined(_MSC_VER)
+            #define CGS_Unreachable() __debugbreak()
+        #elif defined(__clang__)
+            #define CGS_Unreachable() __builtin_debugtrap()
+        #elif defined(__GNUC__)
+            #define CGS_Unreachable() __builtin_trap()
+        #elif defined(unreachable)
+            #define CGS_Unreachable() unreachable()
+        #else
+            #define CGS_Unreachable()
+        #endif
     #else
-        #define CGS_Unreachable()
-    #endif
-#else
-    #if defined(_MSC_VER)
-        #define CGS_Unreachable() __assume(0)
-    #elif defined(__GNUC__)
-        #define CGS_Unreachable() __builtin_unreachable()
-    #elif defined(unreachable)
-        #define CGS_Unreachable() unreachable()
-    #else
-        #define CGS_Unreachable()
+        #if defined(_MSC_VER)
+            #define CGS_Unreachable() __assume(0)
+        #elif defined(__GNUC__)
+            #define CGS_Unreachable() __builtin_unreachable()
+        #elif defined(unreachable)
+            #define CGS_Unreachable() unreachable()
+        #else
+            #define CGS_Unreachable()
+        #endif
     #endif
 #endif
 
