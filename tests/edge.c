@@ -3,7 +3,7 @@
 #include <string.h>
 #include <limits.h>
 
-#define CGS_Unreachable()
+#define CGS_debug_break()
 #define CGS_SHORT_NAMES
 #include "../cgs.c"
 // Forward declaration for appender state
