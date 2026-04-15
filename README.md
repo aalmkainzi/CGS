@@ -129,8 +129,8 @@ bool              cgs_has_tostr(T);
 unsigned int      cgs_tostr_len(T val);
 unsigned int      cgs_tostr_p_len(T *val);
 
-CGS_Error         cgs_format(mutstr_t dst, const char *fmt, ...args with tostr);
-CGS_Error         cgs_format_append(writer_t dst, const char *fmt, ...args with tostr);
+CGS_Error         cgs_interp(mutstr_t dst, const char *fmt, ...args with tostr);
+CGS_Error         cgs_interp_append(writer_t dst, const char *fmt, ...args with tostr);
 
                   cgs_print(...args with tostr);
                   cgs_println(...args with tostr);
@@ -319,6 +319,32 @@ int main()
     char buf[64];
     cgs_sprint(buf, "hello", 123);
 }
+```
+
+## interp
+
+```C
+CGS_Error cgs_interp(mutstr_t, const char *fmt, ...args with tostr); 
+CGS_Error cgs_interp_append(writer_t dst, const char *fmt, ...args with tostr); 
+```
+
+Similar to `cgs_sprint`, but takes a printf-like fmt string.
+
+e.g.
+```C
+#include "cgs.h"
+
+int main()
+{
+    char buf[64];
+    
+    cgs_interp(buf, "%? + %? = %?\n", 2, 3, 5);
+    
+    cgs_interp_append(buf, "%1 + %0 = %2", 2, 3, 5); // positional arguments
+    
+    cgs_println(buf);
+}
+
 ```
 
 ## nfmt and arrfmt
