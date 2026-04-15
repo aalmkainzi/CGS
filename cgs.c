@@ -3219,7 +3219,7 @@ CGS_API CGS_Error cgs__file_append(void *ctx, const CGS_StrView str)
     return (CGS_Error){CGS_OK};
 }
 
-CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*))
+CGS_API CGS_Error cgs__interp(CGS_Writer writer, const CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*))
 {
     enum
     {

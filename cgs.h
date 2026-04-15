@@ -796,13 +796,13 @@ cgs_fprintln(stdout, __VA_ARGS__)
 #define cgs__tostr_p_func_elm(a) \
 (CGS_Error(*)(CGS_Writer, const void*))cgs__get_tostr_p_func(__typeof__(a)),
 
-#define cgs_format_append(writer_dst, fmt, ...) \
-    __VA_OPT__(cgs__format(cgs_writer(writer_dst), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
-    CGS__IF_EMPTY((cgs__format(cgs_writer(writer_dst), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0, NULL, NULL)), __VA_ARGS__)
+#define cgs_interp_append(writer_dst, fmt, ...) \
+    __VA_OPT__(cgs__interp(cgs_writer(writer_dst), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
+    CGS__IF_EMPTY((cgs__interp(cgs_writer(writer_dst), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0, NULL, NULL)), __VA_ARGS__)
 
-#define cgs_format(mutstr_dst, fmt, ...) \
-    __VA_OPT__(cgs__format(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
-    CGS__IF_EMPTY((cgs__format(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0, NULL, NULL)), __VA_ARGS__)
+#define cgs_interp(mutstr_dst, fmt, ...) \
+    __VA_OPT__(cgs__interp(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
+    CGS__IF_EMPTY((cgs__interp(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0, NULL, NULL)), __VA_ARGS__)
 
 typedef char               cgs__c;
 typedef signed char        cgs__sc;
@@ -1357,7 +1357,7 @@ CGS_API CGS_Error cgs__fmutstr_ref_append_fread_until(CGS__FixedMutStrRef dst, F
 CGS_API unsigned int cgs__fprint_strv(FILE *stream, const CGS_StrView str);
 CGS_API unsigned int cgs__fprintln_strv(FILE *stream, const CGS_StrView str);
 
-CGS_API CGS_Error cgs__format(CGS_Writer writer, const CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*));
+CGS_API CGS_Error cgs__interp(CGS_Writer writer, const CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*));
 
 CGS_API CGS_Error cgs__bool_tostr(CGS_Writer writer, bool obj);
 CGS_API CGS_Error cgs__cstr_tostr(CGS_Writer writer, const char *obj);
