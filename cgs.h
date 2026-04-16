@@ -839,22 +839,27 @@ last_call(double, extra)
 typedef struct CGS__Integer_d_Fmt_##ty \
 { \
     ty obj; \
+    char sep; \
 } CGS__Integer_d_Fmt_##ty; \
 typedef struct CGS__Integer_x_Fmt_##ty \
 { \
     ty obj; \
+    char sep; \
 } CGS__Integer_x_Fmt_##ty; \
 typedef struct CGS__Integer_o_Fmt_##ty \
 { \
     ty obj; \
+    char sep; \
 } CGS__Integer_o_Fmt_##ty; \
 typedef struct CGS__Integer_b_Fmt_##ty \
 { \
     ty obj; \
+    char sep; \
 } CGS__Integer_b_Fmt_##ty; \
 typedef struct CGS__Integer_X_Fmt_##ty \
 { \
     ty obj; \
+    char sep; \
 } CGS__Integer_X_Fmt_##ty;
 
 CGS__INTEGER_TYPES(CGS__X, ignore)
@@ -920,18 +925,21 @@ _Generic(obj, \
 CGS__INTEGER_TYPES(CGS__X_IS_TY, ignore) \
 default: 0)
 
+#define CGS__3_VA_OR(otherwise, a,b, ...) \
+CGS__VA_OR(otherwise, __VA_ARGS__)
+
+#define CGS__ARG2_IF_EXISTS(a,...) \
+__VA_ARGS__
+
 #define CGS__INTEGER_FMT_GENERIC_BRANCHES(ty, extra) \
 ty: \
 _Generic((char(*)[CGS__ARG2 extra]){0}, \
-char(*)['d']: (CGS__Integer_d_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty)},  \
-char(*)['x']: (CGS__Integer_x_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty)},  \
-char(*)['o']: (CGS__Integer_o_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty)},  \
-char(*)['b']: (CGS__Integer_b_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty)},  \
-char(*)['X']: (CGS__Integer_X_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty)},  \
+char(*)['d']: (CGS__Integer_d_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), .sep = ((CGS__ARG2_IF_EXISTS extra) +0)},  \
+char(*)['x']: (CGS__Integer_x_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), .sep = ((CGS__ARG2_IF_EXISTS extra) +0)},  \
+char(*)['o']: (CGS__Integer_o_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), .sep = ((CGS__ARG2_IF_EXISTS extra) +0)},  \
+char(*)['b']: (CGS__Integer_b_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), .sep = ((CGS__ARG2_IF_EXISTS extra) +0)},  \
+char(*)['X']: (CGS__Integer_X_Fmt_##ty){cgs__coerce(CGS__ARG1 extra, ty), .sep = ((CGS__ARG2_IF_EXISTS extra) +0)},  \
 default: 0),
-
-#define CGS__3_VA_OR(otherwise, a,b, ...) \
-CGS__VA_OR(otherwise, __VA_ARGS__)
 
 #define CGS__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra) \
 ty: \
@@ -949,18 +957,17 @@ default: 0)
 #define CGS__FLOATING_FMT_GENERIC_BRANCH(ty, extra) \
 CGS__FLOATING_FMT_LAST_GENERIC_BRANCH(ty, extra),
 
-#define cgs_nfmt(x, fmt_chr, ...) \
+#define cgs_nfmt(ty, fmt_chr, ...) \
 ( \
-    cgs__static_assertx( (CGS__IS_FLOATING(x) && (fmt_chr == 'f' || fmt_chr == 'g' || fmt_chr == 'e' || fmt_chr == 'a' || fmt_chr == 'F' || fmt_chr == 'G' || fmt_chr == 'E' || fmt_chr == 'A')  ) || (CGS__IS_INTEGER(x) && (fmt_chr == 'd' || fmt_chr == 'x' || fmt_chr == 'o' || fmt_chr == 'b' || fmt_chr == 'X')), "Incorrect formatting char for the type"), \
-    cgs__static_assertx((CGS__IS_FLOATING(x) || (1 __VA_OPT__(-1))), "nfmt Integers dont take a third parameter"), \
-    _Generic((x), \
-        CGS__INTEGER_TYPES(CGS__INTEGER_FMT_GENERIC_BRANCHES, (x, fmt_chr)) \
-        CGS__FLOATING_TYPES(CGS__FLOATING_FMT_GENERIC_BRANCH, (x, fmt_chr __VA_OPT__(,) __VA_ARGS__), CGS__FLOATING_FMT_LAST_GENERIC_BRANCH) \
+    cgs__static_assertx( (CGS__IS_FLOATING(ty) && (fmt_chr == 'f' || fmt_chr == 'g' || fmt_chr == 'e' || fmt_chr == 'a' || fmt_chr == 'F' || fmt_chr == 'G' || fmt_chr == 'E' || fmt_chr == 'A')  ) || (CGS__IS_INTEGER(ty) && (fmt_chr == 'd' || fmt_chr == 'x' || fmt_chr == 'o' || fmt_chr == 'b' || fmt_chr == 'X')), "Incorrect formatting char for the type"), \
+    _Generic((ty), \
+        CGS__INTEGER_TYPES(CGS__INTEGER_FMT_GENERIC_BRANCHES, (ty, fmt_chr __VA_OPT__(,) __VA_ARGS__)) \
+        CGS__FLOATING_TYPES(CGS__FLOATING_FMT_GENERIC_BRANCH, (ty, fmt_chr __VA_OPT__(,) __VA_ARGS__), CGS__FLOATING_FMT_LAST_GENERIC_BRANCH) \
     ) \
 )
 
-#define cgs_nfmt_t(ty, fmt_chr) \
-__typeof__(cgs_nfmt((ty)0, fmt_chr))
+#define cgs_nfmt_t(ty, fmt_chr, ...) \
+__typeof__(cgs_nfmt((ty)0, fmt_chr __VA_OPT__(,) __VA_ARGS__))
 
 #define cgs_arrfmt(array, nb, ...) \
 CGS__IF_EMPTY(cgs__arrfmt_, __VA_ARGS__) \

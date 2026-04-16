@@ -3671,6 +3671,51 @@ CGS_PRIVATE CGS_Error cgs__uchar_d_tostr(CGS_Writer writer, unsigned char obj)
     return cgs__invoke_writer(writer, cgs__uc_to_string[obj]);
 }
 
+#define cgs__sinteger_fmt_tostr() \
+do { \
+    if(obj.obj == cgs__sinteger_min(__typeof__(obj))) \
+    { \
+        return cgs__min_tostr(__typeof__(obj))(writer); \
+    } \
+    bool isneg = false; \
+    if(obj.obj < 0) \
+    { \
+        isneg = true; \
+        obj *= -1; \
+    } \
+    unsigned int numlen = cgs__numstr_len(obj); \
+    char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
+    if(numlen >= sizeof(cgs__tmp_buf)) CGS_unreachable(); \
+    \
+    if(isneg) \
+    { \
+        cgs__tmp_buf[0] = '-'; \
+    } \
+    \
+    for (unsigned int i = 0; i < numlen ; i++) \
+    { \
+        unsigned char rem = (unsigned char)(obj % 10); \
+        obj = obj / 10; \
+        cgs__tmp_buf[isneg + numlen - (i + 1)] = (char)(rem + '0'); \
+    } \
+    return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = numlen + isneg}); \
+} while(0)
+
+#define cgs__uinteger_fmt_tostr() \
+do { \
+    unsigned int numlen = cgs__numstr_len(obj); \
+    char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
+    if(numlen >= sizeof(cgs__tmp_buf)) CGS_unreachable(); \
+    \
+    for (unsigned int i = 0; i < numlen ; i++) \
+    { \
+        unsigned char rem = (unsigned char)(obj % 10); \
+        obj = obj / 10; \
+        cgs__tmp_buf[numlen - (i + 1)] = (char)(rem + '0'); \
+    } \
+    return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = numlen}); \
+} while(0)
+
 #define cgs__if_else(cond, then, else) \
 _Generic((char(*)[(cond) + 1])0, char(*)[1]: else, char(*)[2]: (then))
 
