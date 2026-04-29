@@ -317,7 +317,7 @@ int main()
     
     cgs_append_fmt(buf, "%1 + %0 = %2", 2, 3, 5); // positional arguments
     
-    cgs_append(stdout, buf);
+    cgs_printf("%?", buf);
 }
 ```
 
