@@ -266,6 +266,12 @@ typedef struct CGS__FixedMutStrRef
     unsigned int cap;
 } CGS__FixedMutStrRef;
 
+typedef struct CGS__const_StrView
+{
+    const char *chars;
+    unsigned int len;
+} CGS__const_StrView;
+
 typedef struct CGS_ArrayFmt
 {
     const void * const array;
@@ -746,47 +752,29 @@ cgs__dstr_shrink_to_fit(dstr)
 cgs__dstr_ensure_cap(dstr, new_cap)
 
 // helper macro
-#define cgs__str_print_each(x) \
+#define cgs__tostr_each(x) \
 cgs__get_tostr_func(__typeof__(x))(cgs__as_writer, x); \
 
-#define cgs__sprint_foreach_arg(...) \
+#define cgs__tostr_foreach_arg(...) \
 __VA_OPT__( \
-CGS__FOREACH(cgs__str_print_each, __VA_ARGS__); \
+CGS__FOREACH(cgs__tostr_each, __VA_ARGS__); \
 )
 
-#define cgs_sprint_append(mutstr_dst, ...) \
+#define cgs_append_tostr_all(writer_dst, ...) \
 do \
 { \
-    CGS_Writer cgs__as_writer = cgs_writer(mutstr_dst); \
+    CGS_Writer cgs__as_writer = cgs_writer(writer_dst); \
     (void)cgs__as_writer; \
-    cgs__sprint_foreach_arg(__VA_ARGS__); \
+    cgs__tostr_foreach_arg(__VA_ARGS__); \
 } while(0)
 
-#define cgs_sprint(mutstr_dst, ...) \
+#define cgs_tostr_all(mutstr_dst, ...) \
 do \
 { \
     cgs_clear(mutstr_dst); \
     CGS_Writer cgs__as_writer = cgs_writer(mutstr_dst); \
-    cgs__sprint_foreach_arg(__VA_ARGS__); \
+    cgs__tostr_foreach_arg(__VA_ARGS__); \
 } while(0)
-
-#define cgs_fprint(f, ...) \
-cgs_sprint_append(_Generic(f, FILE*:f) __VA_OPT__(,) __VA_ARGS__)
-
-#define cgs_print(...) \
-cgs_fprint(stdout, __VA_ARGS__)
-
-#define cgs_fprintln(f, ...)                \
-do                                          \
-{                                           \
-    FILE *cgs__tmp_file = f;                \
-    (void) cgs__tmp_file;                   \
-    cgs_fprint(cgs__tmp_file, __VA_ARGS__); \
-    fputc('\n', cgs__tmp_file);             \
-} while(0)
-
-#define cgs_println(...) \
-cgs_fprintln(stdout, __VA_ARGS__)
 
 #define cgs__arg_count_each(a) \
 +1
@@ -797,13 +785,30 @@ cgs_fprintln(stdout, __VA_ARGS__)
 #define cgs__tostr_p_func_elm(a) \
 (CGS_Error(*)(CGS_Writer, const void*))cgs__get_tostr_p_func(__typeof__(a)),
 
-#define cgs_interp_append(writer_dst, fmt, ...) \
-    __VA_OPT__(cgs__interp(cgs_writer(writer_dst), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
-    CGS__IF_EMPTY((cgs__interp(cgs_writer(writer_dst), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0, NULL, NULL)), __VA_ARGS__)
+#define cgs__fmt_helper(fmt_func, writer, fmt, ...) \
+    __VA_OPT__(fmt_func(writer, (CGS__const_StrView){.chars = (fmt), .len = strlen(fmt)}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
+    CGS__IF_EMPTY((fmt_func(cgs_writer(writer), (CGS__const_StrView){.chars = (fmt), .len = strlen(fmt)}, 0, NULL, NULL)), __VA_ARGS__)
 
-#define cgs_interp(mutstr_dst, fmt, ...) \
-    __VA_OPT__(cgs__interp(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
-    CGS__IF_EMPTY((cgs__interp(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), (CGS_StrView){.chars = (char*)(fmt), .len = strlen(fmt)}, 0, NULL, NULL)), __VA_ARGS__)
+#define cgs_append_fmt(writer_dst, fmt, ...) \
+cgs__fmt_helper(cgs__append_fmt, cgs_writer(writer_dst), fmt, __VA_ARGS__)
+
+#define cgs__append_fmt_ln(writer_dst, fmt, ...) \
+cgs__fmt_helper(cgs__append_fmt_ln_, cgs_writer(writer_dst), fmt, __VA_ARGS__)
+
+#define cgs_fmt(mutstr_dst, fmt, ...) \
+cgs__fmt_helper(cgs__append_fmt, cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), fmt, __VA_ARGS__)
+
+#define cgs_fprintf(f, fmt, ...) \
+cgs_append_fmt(_Generic(f, FILE*:f), fmt, __VA_ARGS__)
+
+#define cgs_fprintfln(f, fmt, ...) \
+cgs__append_fmt_ln(_Generic(f, FILE*:f), fmt, __VA_ARGS__)
+
+#define cgs_printf(fmt, ...) \
+cgs_fprintf(stdout, fmt, __VA_ARGS__)
+
+#define cgs_printfln(fmt, ...) \
+cgs_fprintfln(stdout, fmt, __VA_ARGS__)
 
 typedef char               cgs__c;
 typedef signed char        cgs__sc;
@@ -1174,7 +1179,7 @@ _Generic((ty){0}, \
     CGS__TOSTR_FUNCS_GENERIC_BRANCHES \
 )
 
-#define cgs__get_tostr_func_ft(ty) \
+#define cgs__get_tostr_func_with_default(ty) \
 _Generic((ty){0}, \
     CGS__TOSTR_FUNCS_GENERIC_BRANCHES, \
     default: (cgs__tostr_fail){0} \
@@ -1189,11 +1194,11 @@ _Generic((ty){0}, \
 #define cgs_tostr(dst, src) \
 cgs__get_tostr_func(__typeof__(src))(cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(dst))), (src))
 
-#define cgs_tostr_append(dst, src) \
+#define cgs_append_tostr(dst, src) \
 cgs__get_tostr_func(__typeof__(src))(cgs_writer(dst), (src))
 
 #define cgs_has_tostr(ty) \
-(!cgs__has_type(cgs__get_tostr_func_ft(__typeof__(ty)), cgs__tostr_fail))
+(!cgs__has_type(cgs__get_tostr_func_with_default(__typeof__(ty)), cgs__tostr_fail))
 
 #define cgs_tostr_p(dst, srcp) \
 cgs__get_tostr_p_func(__typeof__(*(srcp)))(cgs_writer(dst), (srcp))
@@ -1358,7 +1363,8 @@ CGS_API CGS_Error cgs__fmutstr_ref_append_fread_until(CGS__FixedMutStrRef dst, F
 CGS_API unsigned int cgs__fprint_strv(FILE *stream, const CGS_StrView str);
 CGS_API unsigned int cgs__fprintln_strv(FILE *stream, const CGS_StrView str);
 
-CGS_API CGS_Error cgs__interp(CGS_Writer writer, const CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*));
+CGS_API CGS_Error cgs__append_fmt(CGS_Writer writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*));
+CGS_API CGS_Error cgs__append_fmt_ln_(CGS_Writer writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*));
 
 CGS_API CGS_Error cgs__bool_tostr(CGS_Writer writer, bool obj);
 CGS_API CGS_Error cgs__cstr_tostr(CGS_Writer writer, const char *obj);
@@ -1486,6 +1492,11 @@ static inline CGS_Error cgs__invoke_writer(CGS_Writer writer, const CGS_StrView 
     return writer.append(writer.ctx, str);
 }
 
+static inline CGS_Error cgs__invoke_writer_c(CGS_Writer writer, const CGS__const_StrView str)
+{
+    return writer.append(writer.ctx, (CGS_StrView){.chars = (char*)str.chars, .len = str.len});
+}
+
 static inline CGS_Error cgs__writer_putc(CGS_Writer writer, char c)
 {
     return writer.append(writer.ctx, (CGS_StrView){.chars = &c, .len = 1});
@@ -1536,19 +1547,14 @@ static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer,
 #define mutstr_ref(mutstr, ...) cgs_mutstr_ref(mutstr __VA_OPT__(,) __VA_ARGS__)
 
 #define tostr(dst, src) cgs_tostr(dst, src)
-#define tostr_append(dst, src) cgs_tostr_append(dst, src)
+#define append_tostr(dst, src) cgs_append_tostr(dst, src)
 #define tostr_p(dst, srcp) cgs_tostr_p(dst, srcp)
 #define has_tostr(T) cgs_has_tostr(T)
 #define tostr_len(srcp) cgs_tostr_len(srcp)
 #define tostr_p_len(srcp) cgs_tostr_p_len(srcp)
 
-#define sprint(dst, ...) cgs_sprint(dst __VA_OPT__(,) __VA_ARGS__)
-#define sprint_append(dst, ...) cgs_sprint_append(dst __VA_OPT__(,) __VA_ARGS__)
-
-#define print(...) cgs_print(__VA_ARGS__)
-#define println(...) cgs_println(__VA_ARGS__)
-#define fprint(stream, ...) cgs_fprint(stream, __VA_ARGS__)
-#define fprintln(stream, ...) cgs_fprintln(stream, __VA_ARGS__)
+#define tostr_all(dst, ...) cgs_fmt(dst __VA_OPT__(,) __VA_ARGS__)
+#define append_tostr_all(dst, ...) cgs_append_fmt(dst __VA_OPT__(,) __VA_ARGS__)
 
 #define nfmt(exp, fmt_char, ...) cgs_nfmt(exp, fmt_char __VA_OPT__(,) __VA_ARGS__)
 #define nfmt_t(T, fmt_char, ...) cgs_nfmt_t(T, fmt_char __VA_OPT__(,) __VA_ARGS__)
@@ -1558,7 +1564,7 @@ static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer,
 
 #if defined(ADD_TOSTR)
 
-_Static_assert( cgs__has_type(cgs__get_tostr_func_ft(CGS__ARG1 ADD_TOSTR), cgs__tostr_fail), "Type already has a tostr" );
+_Static_assert( cgs__has_type(cgs__get_tostr_func_with_default(CGS__ARG1 ADD_TOSTR), cgs__tostr_fail), "Type already has a tostr" );
 
 #if !defined(CGS__TOSTR1)
 #define CGS__TOSTR1
@@ -4769,7 +4775,7 @@ CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, int
         dstr->len += count;
     }
     dstr->chars[dstr->len] = '\0';
-    return (CGS_Error){CGS_OK};
+    return ferror(stream) ? (CGS_Error){CGS_IO_ERROR} : (CGS_Error){CGS_OK};
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *stream, int delim)
@@ -4793,10 +4799,13 @@ CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *st
     dst.chars[len] = '\0';
     *dst.len = len;
     
+    bool io_err = ferror(stream);
     bool dst_too_small = (len == dst.cap - 1) && (c != delim) && (c != EOF);
     
     if(dst_too_small)
         return (CGS_Error){CGS_DST_TOO_SMALL};
+    else if(io_err)
+        return (CGS_Error){CGS_IO_ERROR};
     else
         return (CGS_Error){CGS_OK};
 }
@@ -4886,19 +4895,20 @@ CGS_API CGS_Error cgs__file_append(void *ctx, const CGS_StrView str)
     return (CGS_Error){CGS_OK};
 }
 
-CGS_API CGS_Error cgs__interp(CGS_Writer writer, const CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*))
+CGS_API CGS_Error cgs__append_fmt(CGS_Writer writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*))
 {
+    // This should proably be:
+    // do first format specififer, determine mode from it,
+    // and have one outer branch.
     enum
     {
         UNKNOWN_INDEXING,
         AUTO_INDEX,
         SPECIFY_INDEX
     } index_mode = UNKNOWN_INDEXING; // SPECIFY_INDEX is "%index" (e.g. "%0" is the first arg). AUTO_INDEX requires "%?", cannot mix
-    // This should proably be:
-    // do first format specififer, determine mode from it,
-    // and have one outer branch.
+
     
-    CGS_StrView fmt_walk = fmt;
+    CGS__const_StrView fmt_walk = fmt;
     
     size_t how_many_formatted = 0;
     CGS_Error err = {CGS_OK};
@@ -4908,7 +4918,7 @@ CGS_API CGS_Error cgs__interp(CGS_Writer writer, const CGS_StrView fmt, size_t n
         if(found)
         {
             ptrdiff_t index = found - fmt_walk.chars;
-            CGS_StrView chunk = { .chars = fmt_walk.chars, .len = index };
+            CGS_StrView chunk = { .chars = (char*) fmt_walk.chars, .len = index };
             fmt_walk.chars += (index + 1);
             fmt_walk.len   -= (index + 1);
             
@@ -4987,7 +4997,7 @@ CGS_API CGS_Error cgs__interp(CGS_Writer writer, const CGS_StrView fmt, size_t n
         }
         else
         {
-            err = cgs__invoke_writer(writer, fmt_walk);
+            err = cgs__invoke_writer_c(writer, fmt_walk);
             fmt_walk.chars += fmt_walk.len;
             fmt_walk.len = 0;
         }
@@ -4997,6 +5007,15 @@ CGS_API CGS_Error cgs__interp(CGS_Writer writer, const CGS_StrView fmt, size_t n
     {
         return (CGS_Error){CGS_TOO_MANY_ARGS};
     }
+    return err;
+}
+
+CGS_API CGS_Error cgs__append_fmt_ln_(CGS_Writer writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*))
+{
+    CGS_Error err = cgs__append_fmt(writer, fmt, nargs, args, tostr_p_funcs);
+    if(err.ec == CGS_OK)
+        err = cgs__invoke_writer(writer, cgs_strv("\n"));
+    
     return err;
 }
 

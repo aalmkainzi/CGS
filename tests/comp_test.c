@@ -177,7 +177,7 @@ void test_00018_writer_cross_ptr_ptr(void) {
     char ptr_b[8] = "a"; char *ptr = ptr_b;
     cgs_putc(ptr, '!');
     cgs_append(ptr, ptr);
-    cgs_tostr_append(ptr, 42);
+    cgs_append_tostr(ptr, 42);
 }
 
 void test_00019_writer_cross_ptr_uptr(void) {
@@ -185,7 +185,7 @@ void test_00019_writer_cross_ptr_uptr(void) {
     unsigned char uptr_b[8] = "a"; unsigned char *uptr = uptr_b;
     cgs_putc(ptr, '!');
     cgs_append(ptr, uptr);
-    cgs_tostr_append(ptr, 42);
+    cgs_append_tostr(ptr, 42);
 }
 
 void test_00020_writer_cross_ptr_arr(void) {
@@ -193,7 +193,7 @@ void test_00020_writer_cross_ptr_arr(void) {
     char arr[] = "a";
     cgs_putc(ptr, '!');
     cgs_append(ptr, arr);
-    cgs_tostr_append(ptr, 42);
+    cgs_append_tostr(ptr, 42);
 }
 
 void test_00021_writer_cross_ptr_uarr(void) {
@@ -201,7 +201,7 @@ void test_00021_writer_cross_ptr_uarr(void) {
     unsigned char uarr[] = "a";
     cgs_putc(ptr, '!');
     cgs_append(ptr, uarr);
-    cgs_tostr_append(ptr, 42);
+    cgs_append_tostr(ptr, 42);
 }
 
 void test_00022_writer_cross_ptr_sv(void) {
@@ -209,7 +209,7 @@ void test_00022_writer_cross_ptr_sv(void) {
     CGS_StrView sv = cgs_strv("a");
     cgs_putc(ptr, '!');
     cgs_append(ptr, sv);
-    cgs_tostr_append(ptr, 42);
+    cgs_append_tostr(ptr, 42);
 }
 
 void test_00023_writer_cross_ptr_ds(void) {
@@ -217,7 +217,7 @@ void test_00023_writer_cross_ptr_ds(void) {
     CGS_DStr ds = cgs_dstr_init();
     cgs_putc(ptr, '!');
     cgs_append(ptr, ds);
-    cgs_tostr_append(ptr, 42);
+    cgs_append_tostr(ptr, 42);
     cgs_dstr_deinit(&ds);
 }
 
@@ -226,7 +226,7 @@ void test_00024_writer_cross_ptr_pds(void) {
     CGS_DStr ds_o = cgs_dstr_init(); CGS_DStr *pds = &ds_o;
     cgs_putc(ptr, '!');
     cgs_append(ptr, pds);
-    cgs_tostr_append(ptr, 42);
+    cgs_append_tostr(ptr, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -235,7 +235,7 @@ void test_00025_writer_cross_ptr_sb(void) {
     char sb_b[8] = "a"; CGS_StrBuf sb = cgs_strbuf_init_from_buf(sb_b, 8);
     cgs_putc(ptr, '!');
     cgs_append(ptr, sb);
-    cgs_tostr_append(ptr, 42);
+    cgs_append_tostr(ptr, 42);
 }
 
 void test_00026_writer_cross_ptr_psb(void) {
@@ -243,7 +243,7 @@ void test_00026_writer_cross_ptr_psb(void) {
     char psb_b[8] = "a"; CGS_StrBuf psb_o = cgs_strbuf_init_from_buf(psb_b, 8); CGS_StrBuf *psb = &psb_o;
     cgs_putc(ptr, '!');
     cgs_append(ptr, psb);
-    cgs_tostr_append(ptr, 42);
+    cgs_append_tostr(ptr, 42);
 }
 
 void test_00027_writer_cross_ptr_msr(void) {
@@ -251,7 +251,7 @@ void test_00027_writer_cross_ptr_msr(void) {
     char msr_b[8] = "a"; CGS_MutStrRef msr = cgs_mutstr_ref(msr_b, 8);
     cgs_putc(ptr, '!');
     cgs_append(ptr, msr);
-    cgs_tostr_append(ptr, 42);
+    cgs_append_tostr(ptr, 42);
 }
 
 void test_00028_writer_cross_uptr_ptr(void) {
@@ -259,14 +259,14 @@ void test_00028_writer_cross_uptr_ptr(void) {
     char ptr_b[8] = "a"; char *ptr = ptr_b;
     cgs_putc(uptr, '!');
     cgs_append(uptr, ptr);
-    cgs_tostr_append(uptr, 42);
+    cgs_append_tostr(uptr, 42);
 }
 
 void test_00029_writer_cross_uptr_uptr(void) {
     unsigned char uptr_b[8] = "a"; unsigned char *uptr = uptr_b;
     cgs_putc(uptr, '!');
     cgs_append(uptr, uptr);
-    cgs_tostr_append(uptr, 42);
+    cgs_append_tostr(uptr, 42);
 }
 
 void test_00030_writer_cross_uptr_arr(void) {
@@ -274,7 +274,7 @@ void test_00030_writer_cross_uptr_arr(void) {
     char arr[] = "a";
     cgs_putc(uptr, '!');
     cgs_append(uptr, arr);
-    cgs_tostr_append(uptr, 42);
+    cgs_append_tostr(uptr, 42);
 }
 
 void test_00031_writer_cross_uptr_uarr(void) {
@@ -282,7 +282,7 @@ void test_00031_writer_cross_uptr_uarr(void) {
     unsigned char uarr[] = "a";
     cgs_putc(uptr, '!');
     cgs_append(uptr, uarr);
-    cgs_tostr_append(uptr, 42);
+    cgs_append_tostr(uptr, 42);
 }
 
 void test_00032_writer_cross_uptr_sv(void) {
@@ -290,7 +290,7 @@ void test_00032_writer_cross_uptr_sv(void) {
     CGS_StrView sv = cgs_strv("a");
     cgs_putc(uptr, '!');
     cgs_append(uptr, sv);
-    cgs_tostr_append(uptr, 42);
+    cgs_append_tostr(uptr, 42);
 }
 
 void test_00033_writer_cross_uptr_ds(void) {
@@ -298,7 +298,7 @@ void test_00033_writer_cross_uptr_ds(void) {
     CGS_DStr ds = cgs_dstr_init();
     cgs_putc(uptr, '!');
     cgs_append(uptr, ds);
-    cgs_tostr_append(uptr, 42);
+    cgs_append_tostr(uptr, 42);
     cgs_dstr_deinit(&ds);
 }
 
@@ -307,7 +307,7 @@ void test_00034_writer_cross_uptr_pds(void) {
     CGS_DStr ds_o = cgs_dstr_init(); CGS_DStr *pds = &ds_o;
     cgs_putc(uptr, '!');
     cgs_append(uptr, pds);
-    cgs_tostr_append(uptr, 42);
+    cgs_append_tostr(uptr, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -316,7 +316,7 @@ void test_00035_writer_cross_uptr_sb(void) {
     char sb_b[8] = "a"; CGS_StrBuf sb = cgs_strbuf_init_from_buf(sb_b, 8);
     cgs_putc(uptr, '!');
     cgs_append(uptr, sb);
-    cgs_tostr_append(uptr, 42);
+    cgs_append_tostr(uptr, 42);
 }
 
 void test_00036_writer_cross_uptr_psb(void) {
@@ -324,7 +324,7 @@ void test_00036_writer_cross_uptr_psb(void) {
     char psb_b[8] = "a"; CGS_StrBuf psb_o = cgs_strbuf_init_from_buf(psb_b, 8); CGS_StrBuf *psb = &psb_o;
     cgs_putc(uptr, '!');
     cgs_append(uptr, psb);
-    cgs_tostr_append(uptr, 42);
+    cgs_append_tostr(uptr, 42);
 }
 
 void test_00037_writer_cross_uptr_msr(void) {
@@ -332,7 +332,7 @@ void test_00037_writer_cross_uptr_msr(void) {
     char msr_b[8] = "a"; CGS_MutStrRef msr = cgs_mutstr_ref(msr_b, 8);
     cgs_putc(uptr, '!');
     cgs_append(uptr, msr);
-    cgs_tostr_append(uptr, 42);
+    cgs_append_tostr(uptr, 42);
 }
 
 void test_00038_writer_cross_arr_ptr(void) {
@@ -340,7 +340,7 @@ void test_00038_writer_cross_arr_ptr(void) {
     char ptr_b[8] = "a"; char *ptr = ptr_b;
     cgs_putc(arr, '!');
     cgs_append(arr, ptr);
-    cgs_tostr_append(arr, 42);
+    cgs_append_tostr(arr, 42);
 }
 
 void test_00039_writer_cross_arr_uptr(void) {
@@ -348,14 +348,14 @@ void test_00039_writer_cross_arr_uptr(void) {
     unsigned char uptr_b[8] = "a"; unsigned char *uptr = uptr_b;
     cgs_putc(arr, '!');
     cgs_append(arr, uptr);
-    cgs_tostr_append(arr, 42);
+    cgs_append_tostr(arr, 42);
 }
 
 void test_00040_writer_cross_arr_arr(void) {
     char arr[] = "a";
     cgs_putc(arr, '!');
     cgs_append(arr, arr);
-    cgs_tostr_append(arr, 42);
+    cgs_append_tostr(arr, 42);
 }
 
 void test_00041_writer_cross_arr_uarr(void) {
@@ -363,7 +363,7 @@ void test_00041_writer_cross_arr_uarr(void) {
     unsigned char uarr[] = "a";
     cgs_putc(arr, '!');
     cgs_append(arr, uarr);
-    cgs_tostr_append(arr, 42);
+    cgs_append_tostr(arr, 42);
 }
 
 void test_00042_writer_cross_arr_sv(void) {
@@ -371,7 +371,7 @@ void test_00042_writer_cross_arr_sv(void) {
     CGS_StrView sv = cgs_strv("a");
     cgs_putc(arr, '!');
     cgs_append(arr, sv);
-    cgs_tostr_append(arr, 42);
+    cgs_append_tostr(arr, 42);
 }
 
 void test_00043_writer_cross_arr_ds(void) {
@@ -379,7 +379,7 @@ void test_00043_writer_cross_arr_ds(void) {
     CGS_DStr ds = cgs_dstr_init();
     cgs_putc(arr, '!');
     cgs_append(arr, ds);
-    cgs_tostr_append(arr, 42);
+    cgs_append_tostr(arr, 42);
     cgs_dstr_deinit(&ds);
 }
 
@@ -388,7 +388,7 @@ void test_00044_writer_cross_arr_pds(void) {
     CGS_DStr ds_o = cgs_dstr_init(); CGS_DStr *pds = &ds_o;
     cgs_putc(arr, '!');
     cgs_append(arr, pds);
-    cgs_tostr_append(arr, 42);
+    cgs_append_tostr(arr, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -397,7 +397,7 @@ void test_00045_writer_cross_arr_sb(void) {
     char sb_b[8] = "a"; CGS_StrBuf sb = cgs_strbuf_init_from_buf(sb_b, 8);
     cgs_putc(arr, '!');
     cgs_append(arr, sb);
-    cgs_tostr_append(arr, 42);
+    cgs_append_tostr(arr, 42);
 }
 
 void test_00046_writer_cross_arr_psb(void) {
@@ -405,7 +405,7 @@ void test_00046_writer_cross_arr_psb(void) {
     char psb_b[8] = "a"; CGS_StrBuf psb_o = cgs_strbuf_init_from_buf(psb_b, 8); CGS_StrBuf *psb = &psb_o;
     cgs_putc(arr, '!');
     cgs_append(arr, psb);
-    cgs_tostr_append(arr, 42);
+    cgs_append_tostr(arr, 42);
 }
 
 void test_00047_writer_cross_arr_msr(void) {
@@ -413,7 +413,7 @@ void test_00047_writer_cross_arr_msr(void) {
     char msr_b[8] = "a"; CGS_MutStrRef msr = cgs_mutstr_ref(msr_b, 8);
     cgs_putc(arr, '!');
     cgs_append(arr, msr);
-    cgs_tostr_append(arr, 42);
+    cgs_append_tostr(arr, 42);
 }
 
 void test_00048_writer_cross_uarr_ptr(void) {
@@ -421,7 +421,7 @@ void test_00048_writer_cross_uarr_ptr(void) {
     char ptr_b[8] = "a"; char *ptr = ptr_b;
     cgs_putc(uarr, '!');
     cgs_append(uarr, ptr);
-    cgs_tostr_append(uarr, 42);
+    cgs_append_tostr(uarr, 42);
 }
 
 void test_00049_writer_cross_uarr_uptr(void) {
@@ -429,7 +429,7 @@ void test_00049_writer_cross_uarr_uptr(void) {
     unsigned char uptr_b[8] = "a"; unsigned char *uptr = uptr_b;
     cgs_putc(uarr, '!');
     cgs_append(uarr, uptr);
-    cgs_tostr_append(uarr, 42);
+    cgs_append_tostr(uarr, 42);
 }
 
 void test_00050_writer_cross_uarr_arr(void) {
@@ -437,14 +437,14 @@ void test_00050_writer_cross_uarr_arr(void) {
     char arr[] = "a";
     cgs_putc(uarr, '!');
     cgs_append(uarr, arr);
-    cgs_tostr_append(uarr, 42);
+    cgs_append_tostr(uarr, 42);
 }
 
 void test_00051_writer_cross_uarr_uarr(void) {
     unsigned char uarr[] = "a";
     cgs_putc(uarr, '!');
     cgs_append(uarr, uarr);
-    cgs_tostr_append(uarr, 42);
+    cgs_append_tostr(uarr, 42);
 }
 
 void test_00052_writer_cross_uarr_sv(void) {
@@ -452,7 +452,7 @@ void test_00052_writer_cross_uarr_sv(void) {
     CGS_StrView sv = cgs_strv("a");
     cgs_putc(uarr, '!');
     cgs_append(uarr, sv);
-    cgs_tostr_append(uarr, 42);
+    cgs_append_tostr(uarr, 42);
 }
 
 void test_00053_writer_cross_uarr_ds(void) {
@@ -460,7 +460,7 @@ void test_00053_writer_cross_uarr_ds(void) {
     CGS_DStr ds = cgs_dstr_init();
     cgs_putc(uarr, '!');
     cgs_append(uarr, ds);
-    cgs_tostr_append(uarr, 42);
+    cgs_append_tostr(uarr, 42);
     cgs_dstr_deinit(&ds);
 }
 
@@ -469,7 +469,7 @@ void test_00054_writer_cross_uarr_pds(void) {
     CGS_DStr ds_o = cgs_dstr_init(); CGS_DStr *pds = &ds_o;
     cgs_putc(uarr, '!');
     cgs_append(uarr, pds);
-    cgs_tostr_append(uarr, 42);
+    cgs_append_tostr(uarr, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -478,7 +478,7 @@ void test_00055_writer_cross_uarr_sb(void) {
     char sb_b[8] = "a"; CGS_StrBuf sb = cgs_strbuf_init_from_buf(sb_b, 8);
     cgs_putc(uarr, '!');
     cgs_append(uarr, sb);
-    cgs_tostr_append(uarr, 42);
+    cgs_append_tostr(uarr, 42);
 }
 
 void test_00056_writer_cross_uarr_psb(void) {
@@ -486,7 +486,7 @@ void test_00056_writer_cross_uarr_psb(void) {
     char psb_b[8] = "a"; CGS_StrBuf psb_o = cgs_strbuf_init_from_buf(psb_b, 8); CGS_StrBuf *psb = &psb_o;
     cgs_putc(uarr, '!');
     cgs_append(uarr, psb);
-    cgs_tostr_append(uarr, 42);
+    cgs_append_tostr(uarr, 42);
 }
 
 void test_00057_writer_cross_uarr_msr(void) {
@@ -494,7 +494,7 @@ void test_00057_writer_cross_uarr_msr(void) {
     char msr_b[8] = "a"; CGS_MutStrRef msr = cgs_mutstr_ref(msr_b, 8);
     cgs_putc(uarr, '!');
     cgs_append(uarr, msr);
-    cgs_tostr_append(uarr, 42);
+    cgs_append_tostr(uarr, 42);
 }
 
 void test_00058_writer_cross_pds_ptr(void) {
@@ -502,7 +502,7 @@ void test_00058_writer_cross_pds_ptr(void) {
     char ptr_b[8] = "a"; char *ptr = ptr_b;
     cgs_putc(pds, '!');
     cgs_append(pds, ptr);
-    cgs_tostr_append(pds, 42);
+    cgs_append_tostr(pds, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -511,7 +511,7 @@ void test_00059_writer_cross_pds_uptr(void) {
     unsigned char uptr_b[8] = "a"; unsigned char *uptr = uptr_b;
     cgs_putc(pds, '!');
     cgs_append(pds, uptr);
-    cgs_tostr_append(pds, 42);
+    cgs_append_tostr(pds, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -520,7 +520,7 @@ void test_00060_writer_cross_pds_arr(void) {
     char arr[] = "a";
     cgs_putc(pds, '!');
     cgs_append(pds, arr);
-    cgs_tostr_append(pds, 42);
+    cgs_append_tostr(pds, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -529,7 +529,7 @@ void test_00061_writer_cross_pds_uarr(void) {
     unsigned char uarr[] = "a";
     cgs_putc(pds, '!');
     cgs_append(pds, uarr);
-    cgs_tostr_append(pds, 42);
+    cgs_append_tostr(pds, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -538,7 +538,7 @@ void test_00062_writer_cross_pds_sv(void) {
     CGS_StrView sv = cgs_strv("a");
     cgs_putc(pds, '!');
     cgs_append(pds, sv);
-    cgs_tostr_append(pds, 42);
+    cgs_append_tostr(pds, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -547,7 +547,7 @@ void test_00063_writer_cross_pds_ds(void) {
     CGS_DStr ds = cgs_dstr_init();
     cgs_putc(pds, '!');
     cgs_append(pds, ds);
-    cgs_tostr_append(pds, 42);
+    cgs_append_tostr(pds, 42);
     cgs_dstr_deinit(&ds);
     cgs_dstr_deinit(&ds_o);
 }
@@ -556,7 +556,7 @@ void test_00064_writer_cross_pds_pds(void) {
     CGS_DStr ds_o = cgs_dstr_init(); CGS_DStr *pds = &ds_o;
     cgs_putc(pds, '!');
     cgs_append(pds, pds);
-    cgs_tostr_append(pds, 42);
+    cgs_append_tostr(pds, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -565,7 +565,7 @@ void test_00065_writer_cross_pds_sb(void) {
     char sb_b[8] = "a"; CGS_StrBuf sb = cgs_strbuf_init_from_buf(sb_b, 8);
     cgs_putc(pds, '!');
     cgs_append(pds, sb);
-    cgs_tostr_append(pds, 42);
+    cgs_append_tostr(pds, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -574,7 +574,7 @@ void test_00066_writer_cross_pds_psb(void) {
     char psb_b[8] = "a"; CGS_StrBuf psb_o = cgs_strbuf_init_from_buf(psb_b, 8); CGS_StrBuf *psb = &psb_o;
     cgs_putc(pds, '!');
     cgs_append(pds, psb);
-    cgs_tostr_append(pds, 42);
+    cgs_append_tostr(pds, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -583,7 +583,7 @@ void test_00067_writer_cross_pds_msr(void) {
     char msr_b[8] = "a"; CGS_MutStrRef msr = cgs_mutstr_ref(msr_b, 8);
     cgs_putc(pds, '!');
     cgs_append(pds, msr);
-    cgs_tostr_append(pds, 42);
+    cgs_append_tostr(pds, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -592,7 +592,7 @@ void test_00068_writer_cross_psb_ptr(void) {
     char ptr_b[8] = "a"; char *ptr = ptr_b;
     cgs_putc(psb, '!');
     cgs_append(psb, ptr);
-    cgs_tostr_append(psb, 42);
+    cgs_append_tostr(psb, 42);
 }
 
 void test_00069_writer_cross_psb_uptr(void) {
@@ -600,7 +600,7 @@ void test_00069_writer_cross_psb_uptr(void) {
     unsigned char uptr_b[8] = "a"; unsigned char *uptr = uptr_b;
     cgs_putc(psb, '!');
     cgs_append(psb, uptr);
-    cgs_tostr_append(psb, 42);
+    cgs_append_tostr(psb, 42);
 }
 
 void test_00070_writer_cross_psb_arr(void) {
@@ -608,7 +608,7 @@ void test_00070_writer_cross_psb_arr(void) {
     char arr[] = "a";
     cgs_putc(psb, '!');
     cgs_append(psb, arr);
-    cgs_tostr_append(psb, 42);
+    cgs_append_tostr(psb, 42);
 }
 
 void test_00071_writer_cross_psb_uarr(void) {
@@ -616,7 +616,7 @@ void test_00071_writer_cross_psb_uarr(void) {
     unsigned char uarr[] = "a";
     cgs_putc(psb, '!');
     cgs_append(psb, uarr);
-    cgs_tostr_append(psb, 42);
+    cgs_append_tostr(psb, 42);
 }
 
 void test_00072_writer_cross_psb_sv(void) {
@@ -624,7 +624,7 @@ void test_00072_writer_cross_psb_sv(void) {
     CGS_StrView sv = cgs_strv("a");
     cgs_putc(psb, '!');
     cgs_append(psb, sv);
-    cgs_tostr_append(psb, 42);
+    cgs_append_tostr(psb, 42);
 }
 
 void test_00073_writer_cross_psb_ds(void) {
@@ -632,7 +632,7 @@ void test_00073_writer_cross_psb_ds(void) {
     CGS_DStr ds = cgs_dstr_init();
     cgs_putc(psb, '!');
     cgs_append(psb, ds);
-    cgs_tostr_append(psb, 42);
+    cgs_append_tostr(psb, 42);
     cgs_dstr_deinit(&ds);
 }
 
@@ -641,7 +641,7 @@ void test_00074_writer_cross_psb_pds(void) {
     CGS_DStr ds_o = cgs_dstr_init(); CGS_DStr *pds = &ds_o;
     cgs_putc(psb, '!');
     cgs_append(psb, pds);
-    cgs_tostr_append(psb, 42);
+    cgs_append_tostr(psb, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -650,14 +650,14 @@ void test_00075_writer_cross_psb_sb(void) {
     char sb_b[8] = "a"; CGS_StrBuf sb = cgs_strbuf_init_from_buf(sb_b, 8);
     cgs_putc(psb, '!');
     cgs_append(psb, sb);
-    cgs_tostr_append(psb, 42);
+    cgs_append_tostr(psb, 42);
 }
 
 void test_00076_writer_cross_psb_psb(void) {
     char psb_b[8] = "a"; CGS_StrBuf psb_o = cgs_strbuf_init_from_buf(psb_b, 8); CGS_StrBuf *psb = &psb_o;
     cgs_putc(psb, '!');
     cgs_append(psb, psb);
-    cgs_tostr_append(psb, 42);
+    cgs_append_tostr(psb, 42);
 }
 
 void test_00077_writer_cross_psb_msr(void) {
@@ -665,7 +665,7 @@ void test_00077_writer_cross_psb_msr(void) {
     char msr_b[8] = "a"; CGS_MutStrRef msr = cgs_mutstr_ref(msr_b, 8);
     cgs_putc(psb, '!');
     cgs_append(psb, msr);
-    cgs_tostr_append(psb, 42);
+    cgs_append_tostr(psb, 42);
 }
 
 void test_00078_writer_cross_msr_ptr(void) {
@@ -673,7 +673,7 @@ void test_00078_writer_cross_msr_ptr(void) {
     char ptr_b[8] = "a"; char *ptr = ptr_b;
     cgs_putc(msr, '!');
     cgs_append(msr, ptr);
-    cgs_tostr_append(msr, 42);
+    cgs_append_tostr(msr, 42);
 }
 
 void test_00079_writer_cross_msr_uptr(void) {
@@ -681,7 +681,7 @@ void test_00079_writer_cross_msr_uptr(void) {
     unsigned char uptr_b[8] = "a"; unsigned char *uptr = uptr_b;
     cgs_putc(msr, '!');
     cgs_append(msr, uptr);
-    cgs_tostr_append(msr, 42);
+    cgs_append_tostr(msr, 42);
 }
 
 void test_00080_writer_cross_msr_arr(void) {
@@ -689,7 +689,7 @@ void test_00080_writer_cross_msr_arr(void) {
     char arr[] = "a";
     cgs_putc(msr, '!');
     cgs_append(msr, arr);
-    cgs_tostr_append(msr, 42);
+    cgs_append_tostr(msr, 42);
 }
 
 void test_00081_writer_cross_msr_uarr(void) {
@@ -697,7 +697,7 @@ void test_00081_writer_cross_msr_uarr(void) {
     unsigned char uarr[] = "a";
     cgs_putc(msr, '!');
     cgs_append(msr, uarr);
-    cgs_tostr_append(msr, 42);
+    cgs_append_tostr(msr, 42);
 }
 
 void test_00082_writer_cross_msr_sv(void) {
@@ -705,7 +705,7 @@ void test_00082_writer_cross_msr_sv(void) {
     CGS_StrView sv = cgs_strv("a");
     cgs_putc(msr, '!');
     cgs_append(msr, sv);
-    cgs_tostr_append(msr, 42);
+    cgs_append_tostr(msr, 42);
 }
 
 void test_00083_writer_cross_msr_ds(void) {
@@ -713,7 +713,7 @@ void test_00083_writer_cross_msr_ds(void) {
     CGS_DStr ds = cgs_dstr_init();
     cgs_putc(msr, '!');
     cgs_append(msr, ds);
-    cgs_tostr_append(msr, 42);
+    cgs_append_tostr(msr, 42);
     cgs_dstr_deinit(&ds);
 }
 
@@ -722,7 +722,7 @@ void test_00084_writer_cross_msr_pds(void) {
     CGS_DStr ds_o = cgs_dstr_init(); CGS_DStr *pds = &ds_o;
     cgs_putc(msr, '!');
     cgs_append(msr, pds);
-    cgs_tostr_append(msr, 42);
+    cgs_append_tostr(msr, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -731,7 +731,7 @@ void test_00085_writer_cross_msr_sb(void) {
     char sb_b[8] = "a"; CGS_StrBuf sb = cgs_strbuf_init_from_buf(sb_b, 8);
     cgs_putc(msr, '!');
     cgs_append(msr, sb);
-    cgs_tostr_append(msr, 42);
+    cgs_append_tostr(msr, 42);
 }
 
 void test_00086_writer_cross_msr_psb(void) {
@@ -739,14 +739,14 @@ void test_00086_writer_cross_msr_psb(void) {
     char psb_b[8] = "a"; CGS_StrBuf psb_o = cgs_strbuf_init_from_buf(psb_b, 8); CGS_StrBuf *psb = &psb_o;
     cgs_putc(msr, '!');
     cgs_append(msr, psb);
-    cgs_tostr_append(msr, 42);
+    cgs_append_tostr(msr, 42);
 }
 
 void test_00087_writer_cross_msr_msr(void) {
     char msr_b[8] = "a"; CGS_MutStrRef msr = cgs_mutstr_ref(msr_b, 8);
     cgs_putc(msr, '!');
     cgs_append(msr, msr);
-    cgs_tostr_append(msr, 42);
+    cgs_append_tostr(msr, 42);
 }
 
 void test_00088_writer_cross_fp_ptr(void) {
@@ -754,7 +754,7 @@ void test_00088_writer_cross_fp_ptr(void) {
     char ptr_b[8] = "a"; char *ptr = ptr_b;
     cgs_putc(fp, '!');
     cgs_append(fp, ptr);
-    cgs_tostr_append(fp, 42);
+    cgs_append_tostr(fp, 42);
 }
 
 void test_00089_writer_cross_fp_uptr(void) {
@@ -762,7 +762,7 @@ void test_00089_writer_cross_fp_uptr(void) {
     unsigned char uptr_b[8] = "a"; unsigned char *uptr = uptr_b;
     cgs_putc(fp, '!');
     cgs_append(fp, uptr);
-    cgs_tostr_append(fp, 42);
+    cgs_append_tostr(fp, 42);
 }
 
 void test_00090_writer_cross_fp_arr(void) {
@@ -770,7 +770,7 @@ void test_00090_writer_cross_fp_arr(void) {
     char arr[] = "a";
     cgs_putc(fp, '!');
     cgs_append(fp, arr);
-    cgs_tostr_append(fp, 42);
+    cgs_append_tostr(fp, 42);
 }
 
 void test_00091_writer_cross_fp_uarr(void) {
@@ -778,7 +778,7 @@ void test_00091_writer_cross_fp_uarr(void) {
     unsigned char uarr[] = "a";
     cgs_putc(fp, '!');
     cgs_append(fp, uarr);
-    cgs_tostr_append(fp, 42);
+    cgs_append_tostr(fp, 42);
 }
 
 void test_00092_writer_cross_fp_sv(void) {
@@ -786,7 +786,7 @@ void test_00092_writer_cross_fp_sv(void) {
     CGS_StrView sv = cgs_strv("a");
     cgs_putc(fp, '!');
     cgs_append(fp, sv);
-    cgs_tostr_append(fp, 42);
+    cgs_append_tostr(fp, 42);
 }
 
 void test_00093_writer_cross_fp_ds(void) {
@@ -794,7 +794,7 @@ void test_00093_writer_cross_fp_ds(void) {
     CGS_DStr ds = cgs_dstr_init();
     cgs_putc(fp, '!');
     cgs_append(fp, ds);
-    cgs_tostr_append(fp, 42);
+    cgs_append_tostr(fp, 42);
     cgs_dstr_deinit(&ds);
 }
 
@@ -803,7 +803,7 @@ void test_00094_writer_cross_fp_pds(void) {
     CGS_DStr ds_o = cgs_dstr_init(); CGS_DStr *pds = &ds_o;
     cgs_putc(fp, '!');
     cgs_append(fp, pds);
-    cgs_tostr_append(fp, 42);
+    cgs_append_tostr(fp, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -812,7 +812,7 @@ void test_00095_writer_cross_fp_sb(void) {
     char sb_b[8] = "a"; CGS_StrBuf sb = cgs_strbuf_init_from_buf(sb_b, 8);
     cgs_putc(fp, '!');
     cgs_append(fp, sb);
-    cgs_tostr_append(fp, 42);
+    cgs_append_tostr(fp, 42);
 }
 
 void test_00096_writer_cross_fp_psb(void) {
@@ -820,7 +820,7 @@ void test_00096_writer_cross_fp_psb(void) {
     char psb_b[8] = "a"; CGS_StrBuf psb_o = cgs_strbuf_init_from_buf(psb_b, 8); CGS_StrBuf *psb = &psb_o;
     cgs_putc(fp, '!');
     cgs_append(fp, psb);
-    cgs_tostr_append(fp, 42);
+    cgs_append_tostr(fp, 42);
 }
 
 void test_00097_writer_cross_fp_msr(void) {
@@ -828,7 +828,7 @@ void test_00097_writer_cross_fp_msr(void) {
     char msr_b[8] = "a"; CGS_MutStrRef msr = cgs_mutstr_ref(msr_b, 8);
     cgs_putc(fp, '!');
     cgs_append(fp, msr);
-    cgs_tostr_append(fp, 42);
+    cgs_append_tostr(fp, 42);
 }
 
 void test_00098_writer_cross_wr_ptr(void) {
@@ -836,7 +836,7 @@ void test_00098_writer_cross_wr_ptr(void) {
     char ptr_b[8] = "a"; char *ptr = ptr_b;
     cgs_putc(wr, '!');
     cgs_append(wr, ptr);
-    cgs_tostr_append(wr, 42);
+    cgs_append_tostr(wr, 42);
 }
 
 void test_00099_writer_cross_wr_uptr(void) {
@@ -844,7 +844,7 @@ void test_00099_writer_cross_wr_uptr(void) {
     unsigned char uptr_b[8] = "a"; unsigned char *uptr = uptr_b;
     cgs_putc(wr, '!');
     cgs_append(wr, uptr);
-    cgs_tostr_append(wr, 42);
+    cgs_append_tostr(wr, 42);
 }
 
 void test_00100_writer_cross_wr_arr(void) {
@@ -852,7 +852,7 @@ void test_00100_writer_cross_wr_arr(void) {
     char arr[] = "a";
     cgs_putc(wr, '!');
     cgs_append(wr, arr);
-    cgs_tostr_append(wr, 42);
+    cgs_append_tostr(wr, 42);
 }
 
 void test_00101_writer_cross_wr_uarr(void) {
@@ -860,7 +860,7 @@ void test_00101_writer_cross_wr_uarr(void) {
     unsigned char uarr[] = "a";
     cgs_putc(wr, '!');
     cgs_append(wr, uarr);
-    cgs_tostr_append(wr, 42);
+    cgs_append_tostr(wr, 42);
 }
 
 void test_00102_writer_cross_wr_sv(void) {
@@ -868,7 +868,7 @@ void test_00102_writer_cross_wr_sv(void) {
     CGS_StrView sv = cgs_strv("a");
     cgs_putc(wr, '!');
     cgs_append(wr, sv);
-    cgs_tostr_append(wr, 42);
+    cgs_append_tostr(wr, 42);
 }
 
 void test_00103_writer_cross_wr_ds(void) {
@@ -876,7 +876,7 @@ void test_00103_writer_cross_wr_ds(void) {
     CGS_DStr ds = cgs_dstr_init();
     cgs_putc(wr, '!');
     cgs_append(wr, ds);
-    cgs_tostr_append(wr, 42);
+    cgs_append_tostr(wr, 42);
     cgs_dstr_deinit(&ds);
 }
 
@@ -885,7 +885,7 @@ void test_00104_writer_cross_wr_pds(void) {
     CGS_DStr ds_o = cgs_dstr_init(); CGS_DStr *pds = &ds_o;
     cgs_putc(wr, '!');
     cgs_append(wr, pds);
-    cgs_tostr_append(wr, 42);
+    cgs_append_tostr(wr, 42);
     cgs_dstr_deinit(&ds_o);
 }
 
@@ -894,7 +894,7 @@ void test_00105_writer_cross_wr_sb(void) {
     char sb_b[8] = "a"; CGS_StrBuf sb = cgs_strbuf_init_from_buf(sb_b, 8);
     cgs_putc(wr, '!');
     cgs_append(wr, sb);
-    cgs_tostr_append(wr, 42);
+    cgs_append_tostr(wr, 42);
 }
 
 void test_00106_writer_cross_wr_psb(void) {
@@ -902,7 +902,7 @@ void test_00106_writer_cross_wr_psb(void) {
     char psb_b[8] = "a"; CGS_StrBuf psb_o = cgs_strbuf_init_from_buf(psb_b, 8); CGS_StrBuf *psb = &psb_o;
     cgs_putc(wr, '!');
     cgs_append(wr, psb);
-    cgs_tostr_append(wr, 42);
+    cgs_append_tostr(wr, 42);
 }
 
 void test_00107_writer_cross_wr_msr(void) {
@@ -910,7 +910,7 @@ void test_00107_writer_cross_wr_msr(void) {
     char msr_b[8] = "a"; CGS_MutStrRef msr = cgs_mutstr_ref(msr_b, 8);
     cgs_putc(wr, '!');
     cgs_append(wr, msr);
-    cgs_tostr_append(wr, 42);
+    cgs_append_tostr(wr, 42);
 }
 
 void test_00108_replace_cross_ptr_ptr(void) {
@@ -1785,10 +1785,10 @@ void test_00222_variadic_kitchen_sink(void) {
     char sb_b[8] = "a"; CGS_StrBuf sb = cgs_strbuf_init_from_buf(sb_b, 8);
     char psb_b[8] = "a"; CGS_StrBuf psb_o = cgs_strbuf_init_from_buf(psb_b, 8); CGS_StrBuf *psb = &psb_o;
     char msr_b[8] = "a"; CGS_MutStrRef msr = cgs_mutstr_ref(msr_b, 8);
-    cgs_print(ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
-    cgs_println(ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
-    cgs_fprint(stdout, ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
-    cgs_sprint(pds, ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
+    cgs_printf(ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
+    cgs_printfln(ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
+    cgs_append_tostr_all(stdout, ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
+    cgs_fmt(pds, ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
     cgs_dstr_deinit(&ds);
     cgs_dstr_deinit(&ds_o);
 }

@@ -17,14 +17,14 @@ typedef struct S
 
 CGS_Error s2str(CGS_Writer dst, S s)
 {
-    cgs_sprint_append(dst, s.f, " -- ", s.i);
+    cgs_append_tostr_all(dst, s.f, " -- ", s.i);
     return (CGS_Error){CGS_OK};
 }
 
 CGS_Error fp2str(CGS_Writer dst, FILE *s)
 {
     (void )s;
-    cgs_sprint_append(dst, "FILE_PTR");
+    cgs_append_tostr_all(dst, "FILE_PTR");
     return (CGS_Error){CGS_OK};
 }
 
@@ -91,40 +91,39 @@ bool expect_sv(StrView sv, void *ctx)
 
 void test_split()
 {
-    cgs_split_iter("a,b,c", ",", expect_sv, &(StrvWalker){cgs_strv_arr("a","b","c")}); /* ["a","b","c"] */ println(" --- ");
-    cgs_split_iter("abc", ",", expect_sv, &(StrvWalker){cgs_strv_arr("abc")}); /* ["abc"] */ println(" --- ");
-    cgs_split_iter(",", ",", expect_sv, &(StrvWalker){cgs_strv_arr("","")}); /* ["",""] */ println(" --- ");
-    cgs_split_iter("", ",", expect_sv, &(StrvWalker){cgs_strv_arr("")}); /* [""] */ println(" --- ");
+    cgs_split_iter("a,b,c", ",", expect_sv, &(StrvWalker){cgs_strv_arr("a","b","c")}); /* ["a","b","c"] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter("abc", ",", expect_sv, &(StrvWalker){cgs_strv_arr("abc")}); /* ["abc"] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter(",", ",", expect_sv, &(StrvWalker){cgs_strv_arr("","")}); /* ["",""] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter("", ",", expect_sv, &(StrvWalker){cgs_strv_arr("")}); /* [""] */ cgs_printfln("%?", " --- ");
     
-    cgs_split_iter(",a,b", ",", expect_sv, &(StrvWalker){cgs_strv_arr("","a","b")}); /* ["","a","b"] */ println(" --- ");
-    cgs_split_iter("a,b,", ",", expect_sv, &(StrvWalker){cgs_strv_arr("a","b","")}); /* ["a","b",""] */ println(" --- ");
-    cgs_split_iter(",a,b,", ",", expect_sv, &(StrvWalker){cgs_strv_arr("","a","b","")}); /* ["","a","b",""] */ println(" --- ");
+    cgs_split_iter(",a,b", ",", expect_sv, &(StrvWalker){cgs_strv_arr("","a","b")}); /* ["","a","b"] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter("a,b,", ",", expect_sv, &(StrvWalker){cgs_strv_arr("a","b","")}); /* ["a","b",""] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter(",a,b,", ",", expect_sv, &(StrvWalker){cgs_strv_arr("","a","b","")}); /* ["","a","b",""] */ cgs_printfln("%?", " --- ");
     
-    cgs_split_iter("a,,b", ",", expect_sv, &(StrvWalker){cgs_strv_arr("a","","b")}); /* ["a","","b"] */ println(" --- ");
-    cgs_split_iter(",,", ",", expect_sv, &(StrvWalker){cgs_strv_arr("","","")}); /* ["","",""] */ println(" --- ");
-    cgs_split_iter("a,,,b", ",", expect_sv, &(StrvWalker){cgs_strv_arr("a","","","b")}); /* ["a","","","b"] */ println(" --- ");
+    cgs_split_iter("a,,b", ",", expect_sv, &(StrvWalker){cgs_strv_arr("a","","b")}); /* ["a","","b"] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter(",,", ",", expect_sv, &(StrvWalker){cgs_strv_arr("","","")}); /* ["","",""] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter("a,,,b", ",", expect_sv, &(StrvWalker){cgs_strv_arr("a","","","b")}); /* ["a","","","b"] */ cgs_printfln("%?", " --- ");
     
-    cgs_split_iter("aaabaaa", "aa", expect_sv, &(StrvWalker){cgs_strv_arr("","ab","a")}); /* ["","ab","a"] */ println(" --- ");
-    cgs_split_iter("aaaa", "aa", expect_sv, &(StrvWalker){cgs_strv_arr("","","")}); /* ["","",""] */ println(" --- ");
-    cgs_split_iter("aaa", "aa", expect_sv, &(StrvWalker){cgs_strv_arr("","a")}); /* ["","a"] */ println(" --- ");
+    cgs_split_iter("aaabaaa", "aa", expect_sv, &(StrvWalker){cgs_strv_arr("","ab","a")}); /* ["","ab","a"] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter("aaaa", "aa", expect_sv, &(StrvWalker){cgs_strv_arr("","","")}); /* ["","",""] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter("aaa", "aa", expect_sv, &(StrvWalker){cgs_strv_arr("","a")}); /* ["","a"] */ cgs_printfln("%?", " --- ");
     
-    cgs_split_iter("aabaaab", "aa", expect_sv, &(StrvWalker){cgs_strv_arr("","b","ab")}); /* ["","b","ab"] */ println(" --- ");
+    cgs_split_iter("aabaaab", "aa", expect_sv, &(StrvWalker){cgs_strv_arr("","b","ab")}); /* ["","b","ab"] */ cgs_printfln("%?", " --- ");
     
-    cgs_split_iter("aaaaa", "aaa", expect_sv, &(StrvWalker){cgs_strv_arr("","aa")}); /* ["","aa"] */ println(" --- ");
-    cgs_split_iter("abababa", "aba", expect_sv, &(StrvWalker){cgs_strv_arr("","b","")}); /* ["","b",""] */ println(" --- ");
+    cgs_split_iter("aaaaa", "aaa", expect_sv, &(StrvWalker){cgs_strv_arr("","aa")}); /* ["","aa"] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter("abababa", "aba", expect_sv, &(StrvWalker){cgs_strv_arr("","b","")}); /* ["","b",""] */ cgs_printfln("%?", " --- ");
     
-    cgs_split_iter("hello", "xyz", expect_sv, &(StrvWalker){cgs_strv_arr("hello")}); /* ["hello"] */ println(" --- ");
-    cgs_split_iter("abc", "abc", expect_sv, &(StrvWalker){cgs_strv_arr("","")}); /* ["",""] */ println(" --- ");
-    cgs_split_iter("abcabc", "abc", expect_sv, &(StrvWalker){cgs_strv_arr("","","")}); /* ["","",""] */ println(" --- ");
+    cgs_split_iter("hello", "xyz", expect_sv, &(StrvWalker){cgs_strv_arr("hello")}); /* ["hello"] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter("abc", "abc", expect_sv, &(StrvWalker){cgs_strv_arr("","")}); /* ["",""] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter("abcabc", "abc", expect_sv, &(StrvWalker){cgs_strv_arr("","","")}); /* ["","",""] */ cgs_printfln("%?", " --- ");
     
-    cgs_split_iter("a", "aa", expect_sv, &(StrvWalker){cgs_strv_arr("a")}); /* ["a"] */ println(" --- ");
-    cgs_split_iter("", "aa", expect_sv, &(StrvWalker){cgs_strv_arr("")}); /* [""] */ println(" --- ");
+    cgs_split_iter("a", "aa", expect_sv, &(StrvWalker){cgs_strv_arr("a")}); /* ["a"] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter("", "aa", expect_sv, &(StrvWalker){cgs_strv_arr("")}); /* [""] */ cgs_printfln("%?", " --- ");
     
-    cgs_split_iter("aaaa", "a", expect_sv, &(StrvWalker){cgs_strv_arr("","","","","")}); /* ["","","","",""] */ println(" --- ");
-    cgs_split_iter("a", "a", expect_sv, &(StrvWalker){cgs_strv_arr("","")}); /* ["",""] */ println(" --- ");
-    cgs_split_iter("ba", "a", expect_sv, &(StrvWalker){cgs_strv_arr("b","")}); /* ["b",""] */ println(" --- ");
+    cgs_split_iter("aaaa", "a", expect_sv, &(StrvWalker){cgs_strv_arr("","","","","")}); /* ["","","","",""] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter("a", "a", expect_sv, &(StrvWalker){cgs_strv_arr("","")}); /* ["",""] */ cgs_printfln("%?", " --- ");
+    cgs_split_iter("ba", "a", expect_sv, &(StrvWalker){cgs_strv_arr("b","")}); /* ["b",""] */ cgs_printfln("%?", " --- ");
 }
-
 
 void test_hex()
 {
@@ -135,68 +134,68 @@ void test_hex()
     tostr(&str, nfmt((unsigned char)0, 'x'));
     
     
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "0"));
     
     tostr(&str, nfmt((uint8_t)255, 'x'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "ff"));
     
     // Signed char / int8_t (Two's complement)
     tostr(&str, nfmt((int8_t)-1, 'x'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "ff"));
     
     tostr(&str, nfmt((int8_t)-128, 'x')); // SCHAR_MIN
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "80"));
     
     
     tostr(&str, nfmt((unsigned short)0xABCD, 'x'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "abcd"));
     
     tostr(&str, nfmt((int16_t)-2, 'x'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "fffe"));
     
     tostr(&str, nfmt((uint16_t)65535, 'x')); // USHRT_MAX
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "ffff"));
     
     tostr(&str, nfmt(0, 'x'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "0"));
     
     tostr(&str, nfmt(2147483647, 'x')); // INT_MAX (32-bit)
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "7fffffff"));
     
     tostr(&str, nfmt(-1, 'x')); // int -1
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "ffffffff"));
     
     tostr(&str, nfmt(0x12345678, 'x'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "12345678"));
     
     tostr(&str, nfmt(0xFFFFFFFFFFFFFFFFULL, 'x'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "ffffffffffffffff"));
     
     // 64-bit signed
     tostr(&str, nfmt(-1LL, 'x'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "ffffffffffffffff"));
     
     tostr(&str, nfmt(9223372036854775807LL, 'x')); // LLONG_MAX
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "7fffffffffffffff"));
     
     tostr(&str, nfmt(-9223372036854775807LL - 1LL, 'x')); // LLONG_MIN
     assert(cgs_equal(str, "8000000000000000"));
     
-    println(str);
+    cgs_append_tostr_all(stdout, str);
 }
 
 void test_octal()
@@ -206,80 +205,80 @@ void test_octal()
     
     // --- Basic Positive Tests (Common for all types) ---
     tostr(&str, nfmt(0, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "0"));
     
     tostr(&str, nfmt(10, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "12"));
     
     tostr(&str, nfmt(64, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "100"));
     
     tostr(&str, nfmt(511, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "777"));
     
     // --- 8-bit types (int8_t / uint8_t) ---
     tostr(&str, nfmt((uint8_t)255, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "377"));
     
     tostr(&str, nfmt((int8_t)-1, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "377")); // -1 in 8-bit two's complement
     
     tostr(&str, nfmt((int8_t)-128, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "200")); // -128 is 0x80
     
     // --- 16-bit types (int16_t / uint16_t) ---
     tostr(&str, nfmt((uint16_t)65535, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "177777"));
     
     tostr(&str, nfmt((int16_t)-1, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "177777"));
     
     tostr(&str, nfmt((int16_t)4096, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "10000"));
     
     // --- 32-bit types (int32_t / uint32_t) ---
     tostr(&str, nfmt((uint32_t)4294967295U, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "37777777777"));
     
     tostr(&str, nfmt((int32_t)-1, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "37777777777"));
     
     tostr(&str, nfmt((int32_t)123456, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "361100"));
     
     // --- 64-bit types (int64_t / uint64_t) ---
     tostr(&str, nfmt((uint64_t)18446744073709551615ULL, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "1777777777777777777777"));
     
     tostr(&str, nfmt((int64_t)-1, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "1777777777777777777777"));
     
     tostr(&str, nfmt((int64_t)0x123456789ABCDEFLL, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "4432126361152746757"));
     
     // --- Size types (size_t / ssize_t) ---
     tostr(&str, nfmt((size_t)1024, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "2000"));
     
     tostr(&str, nfmt((long long)-2, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     // On 64-bit: 1777777777777777777776. On 32-bit: 37777777776.
     // Adjust this assertion if you are testing on a specific architecture.
     #if __SIZEOF_SIZE_T__ == 8
@@ -290,11 +289,11 @@ void test_octal()
     
     // --- Edge cases for Signed/Unsigned logic ---
     tostr(&str, nfmt((unsigned char)8, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "10"));
     
     tostr(&str, nfmt((long long)0, 'o'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "0"));
 }
 
@@ -306,82 +305,82 @@ void test_bin()
     
     // Zero should return a single "0"
     tostr(&str, nfmt((uint8_t)0, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "0"));
     
     // Single bit (no padding)
     tostr(&str, nfmt((uint8_t)1, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "1"));
     
     // Value 10 (binary 1010)
     tostr(&str, nfmt((uint8_t)10, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "1010"));
     
     // Max uint8 (255)
     tostr(&str, nfmt((uint8_t)255, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "11111111"));
     
     // --- int8_t Tests (Two's Complement) ---
     
     // Negative 1 in 8-bit is 11111111
     tostr(&str, nfmt((int8_t)-1, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "11111111"));
     
     // Positive 127 is 01111111, without padding it is seven 1s
     tostr(&str, nfmt((int8_t)127, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "1111111"));
     
     // Minimum negative value (-128) is 10000000
     tostr(&str, nfmt((int8_t)-128, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "10000000"));
     
     // --- uint16_t Tests ---
     
     // 256 is 1 followed by eight 0s
     tostr(&str, nfmt((uint16_t)256, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "100000000"));
     
     // 1024 is 1 followed by ten 0s
     tostr(&str, nfmt((uint16_t)1024, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "10000000000"));
     
     // --- int16_t Tests ---
     
     // -2 in 16-bit is 1111111111111110 (15 ones)
     tostr(&str, nfmt((int16_t)-2, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "1111111111111110"));
     
     // --- uint32_t Tests ---
     
     // Power of 2 (2^31)
     tostr(&str, nfmt((uint32_t)0x80000000, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "10000000000000000000000000000000"));
     
     // A random small value in a large type (checks no padding)
     tostr(&str, nfmt((uint32_t)42, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "101010"));
     
     // --- uint64_t Tests ---
     
     // 64-bit Max (64 ones)
     tostr(&str, nfmt((uint64_t)-1, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "1111111111111111111111111111111111111111111111111111111111111111"));
     
     // Large 64-bit number (1 followed by 60 zeros)
     tostr(&str, nfmt((uint64_t)1ULL << 60, 'b'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     assert(cgs_equal(str, "1000000000000000000000000000000000000000000000000000000000000"));
 }
 
@@ -396,38 +395,38 @@ void test_ffmt()
     CGS_Error er;
     
     er = tostr(&str, nfmt(10.5f, 'f'));
-    println(er);
-    println(str);
+    cgs_append_tostr_all(stdout, er);
+    cgs_append_tostr_all(stdout, str);
     f = strtof((char*)str.chars, NULL);
     assert(fabsf(10.5f - f) < f_eps);
     
     // 2. Negative Fixed-point
     tostr(&str, nfmt(-123.456f, 'f'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     f = strtof((char*)str.chars, NULL);
     assert(fabsf(-123.456f - f) < f_eps);
     
     // 3. Scientific Notation (Small)
     tostr(&str, nfmt(0.0000123f, 'e'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     f = strtof((char*)str.chars, NULL);
     assert(fabsf(0.0000123f - f) < 1e-10f);
     
     // 4. Scientific Notation (Large)
     tostr(&str, nfmt(1234567.0f, 'e'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     f = strtof((char*)str.chars, NULL);
     assert(fabsf(1234567.0f - f) < 1.0f);
     
     // 5. Shortest Representation (No trailing zeros)
     tostr(&str, nfmt(100.0f, 'g'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     f = strtof((char*)str.chars, NULL);
     assert(fabsf(100.0f - f) < f_eps);
     
     // 6. Hex-Float (Exact representation)
     tostr(&str, nfmt(10.5f, 'a'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     f = strtof((char*)str.chars, NULL);
     assert(10.5f == f); 
     
@@ -435,19 +434,19 @@ void test_ffmt()
     
     // 7. Double Precision Fixed
     tostr(&str, nfmt(3.14159265358979, 'f'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     d = strtod((char*)str.chars, NULL);
     assert(fabs(3.14159265358979 - d) < d_eps);
     
     // 8. Double Precision Scientific
     tostr(&str, nfmt(1.2345678901234e-20, 'e'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     d = strtod((char*)str.chars, NULL);
     assert(fabs(1.2345678901234e-20 - d) < d_eps);
     
     // 9. Double Hex-Float
     tostr(&str, nfmt(0.1, 'a'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     d = strtod((char*)str.chars, NULL);
     printf("printf: %a\n", 0.1);
     assert(0.1 == d);
@@ -456,43 +455,43 @@ void test_ffmt()
     
     // 10. Positive Zero
     tostr(&str, nfmt(0.0f, 'f'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     f = strtof((char*)str.chars, NULL);
     assert(f == 0.0f);
     
     // 11. Negative Zero (Must show '-' sign)
     tostr(&str, nfmt(-0.0f, 'f'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     f = strtof((char*)str.chars, NULL);
     assert(f == 0.0f && signbit(f));
     
     // 12. Infinity
     tostr(&str, nfmt(INFINITY, 'f'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     f = strtof((char*)str.chars, NULL);
     assert(isinf(f) && f > 0);
     
     // 13. Negative Infinity
     tostr(&str, nfmt(-INFINITY, 'f'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     f = strtof((char*)str.chars, NULL);
     assert(isinf(f) && f < 0);
     
     // 14. NaN
     tostr(&str, nfmt(NAN, 'f'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     f = strtof((char*)str.chars, NULL);
     assert(isnan(f));
     
     // 15. FLT_MAX
     tostr(&str, nfmt(FLT_MAX, 'e', 8));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     f = strtof((char*)str.chars, NULL);
     assert(fabs(f - FLT_MAX) <= (f_eps));
     
     // 16. DBL_MIN
     tostr(&str, nfmt(DBL_MIN, 'e'));
-    println(str);
+    cgs_append_tostr_all(stdout, str);
     d = strtod((char*)str.chars, NULL);
     assert(fabs(d - DBL_MIN) <= (d_eps));
     
@@ -513,7 +512,7 @@ void test_read()
         
         FILE *f = fopen("files/test_basic.txt", "rb");
         cgs_fread_line(&str, f);
-        println(str);
+        cgs_append_tostr_all(stdout, str);
         fclose(f);
         assert(cgs_equal(str, "hello world\n"));
     }
@@ -545,7 +544,7 @@ cgs_clear(&str);
         
         FILE *f = fopen("files/test_no_nl.txt", "rb");
         cgs_fread_line(&str, f);
-        println(str);
+        cgs_append_tostr_all(stdout, str);
         fclose(f);
         assert(cgs_equal(str, "missing newline"));
     }
@@ -572,7 +571,7 @@ cgs_clear(&str);
         
         FILE *f = fopen("files/test_crlf.txt", "rb");
         cgs_fread_line(&str, f);
-        println(str);
+        cgs_append_tostr_all(stdout, str);
         fclose(f);
         assert(cgs_equal(str, "windows line\r\n"));
     }
@@ -623,7 +622,7 @@ cgs_clear(&str);
         
         FILE *f = fopen("files/test1.txt", "rb");
         cgs_append_fread_line(&str, f);
-        println(str);
+        cgs_append_tostr_all(stdout, str);
         fclose(f);
         assert(cgs_equal(str, "hello\n"));
         
@@ -639,7 +638,7 @@ cgs_clear(&str);
         cgs_copy(&str, "hello "); // Manually set initial content
         FILE *f = fopen("files/test2.txt", "rb");
         cgs_append_fread_line(&str, f);
-        println(str);
+        cgs_append_tostr_all(stdout, str);
         fclose(f);
         assert(cgs_equal(str, "hello world\n"));
         
@@ -655,7 +654,7 @@ cgs_clear(&str);
         FILE *f = fopen("files/test3.txt", "rb");
         cgs_append_fread_line(&str, f); // Appends "line1\n"
         cgs_append_fread_line(&str, f); // Appends "line2\n"
-        println(str);
+        cgs_append_tostr_all(stdout, str);
         fclose(f);
         assert(cgs_equal(str, "line1\nline2\n"));
         
@@ -671,7 +670,7 @@ cgs_clear(&str);
         cgs_copy(&str, "part1\n");
         FILE *f = fopen("files/test4.txt", "rb");
         cgs_append_fread_line(&str, f);
-        println(str);
+        cgs_append_tostr_all(stdout, str);
         fclose(f);
         assert(cgs_equal(str, "part1\npart2"));
         
@@ -686,7 +685,7 @@ cgs_clear(&str);
         cgs_copy(&str, "preserved");
         FILE *f = fopen("files/test5.txt", "rb");
         cgs_append_fread_line(&str, f);
-        println(str);
+        cgs_append_tostr_all(stdout, str);
         fclose(f);
         assert(cgs_equal(str, "preserved"));
         
@@ -722,7 +721,7 @@ cgs_clear(&str);
         cgs_copy(&str, "unix\n");
         FILE *f = fopen("files/test7.txt", "rb");
         cgs_append_fread_line(&str, f);
-        println(str);
+        cgs_append_tostr_all(stdout, str);
         fclose(f);
         assert(cgs_equal(str, "unix\ndos\r\n"));
         
@@ -740,7 +739,7 @@ typedef struct S2
 
 CGS_Error s22str(CGS_Writer dst, S2 s)
 {
-    cgs_sprint_append(dst, s.c, "--", s.f);
+    cgs_append_tostr_all(dst, s.c, "--", s.f);
     return (CGS_Error){CGS_OK};
 }
 
@@ -759,7 +758,7 @@ struct FOO {
 
 CGS_Error foo_to_str(CGS_Writer dst, struct FOO f )
 {
-    cgs_sprint_append(dst, "FOO{ .drive=", f.drive, ":/", ", .capacity=", f.capacity, "}");
+    cgs_append_tostr_all(dst, "FOO{ .drive=", f.drive, ":/", ", .capacity=", f.capacity, "}");
     return (CGS_Error){CGS_OK};
 }
 
@@ -770,7 +769,7 @@ struct BAR {
 
 CGS_Error bar_tostr(CGS_Writer str, struct BAR b)
 {
-    cgs_sprint_append(str, "BAR{ b=", b.b, ", i=", b.i, " }");
+    cgs_append_tostr_all(str, "BAR{ b=", b.b, ", i=", b.i, " }");
     return (CGS_Error){CGS_OK};
 }
 
@@ -792,7 +791,7 @@ void test_tostr()
     StrBuf sb = strbuf_init_from_buf(C);
     struct BAR bar = {.b = false, .i = 25};
     
-    cgs_sprint(&sb, bar);
+    cgs_tostr(&sb, bar);
     assert(cgs_equal(sb, "BAR{ b=false, i=25 }"));
 }
 
@@ -816,7 +815,7 @@ void test_str_count()
     assert(cgs_count(str, "b") == 1);
     assert(cgs_count(str, "c") == 2);
     assert(cgs_count(str, "d") == 4);
-    println(cgs_count("vvv", "vv"));
+    cgs_append_tostr_all(stdout, cgs_count("vvv", "vv"));
     assert(cgs_count("vvv", "vv") == 1);
     assert(cgs_count(str, "") == str.len + 1);
     
@@ -844,7 +843,7 @@ void test_str_replace()
     StrBuf sb = strbuf_init_from_buf(C);
     cgs_copy(&sb, "h-e-l-l-o-,- -w-o-r-l-d");
     ReplaceResult replaced = cgs_replace(&sb, "-", "");
-    println("replaced :: ", replaced.nb_replaced);
+    cgs_append_tostr_all(stdout, "replaced :: ", replaced.nb_replaced);
     assert(cgs_equal(sb, "hello, world"));
     assert(replaced.nb_replaced == 11);
     
@@ -897,7 +896,7 @@ void test_read2()
     
     FILE *f = fopen("file", "rb");
     cgs_fread_line(&sb, f);
-    println(sb.len, " :: '", sb, "'");
+    cgs_append_tostr_all(stdout, sb.len, " :: '", sb, "'");
     assert(cgs_equal(sb, "this is the first line\n"));
     unsigned int linelen = cgs_len(sb);
     cgs_append_fread_line(&sb, f);
@@ -926,9 +925,9 @@ void test_misc()
     StrBuf sb = strbuf_init_from_buf((char[128]){0});
     for(unsigned i = 0, len = cgs_len(s) ; i < len ; i++)
     {
-        cgs_sprint_append(&sb, (s[ i ]));
+        cgs_append_tostr(&sb, (s[ i ]));
     }
-    println("sb == ", sb);
+    cgs_append_tostr_all(stdout, "sb == ", sb);
     assert(cgs_equal(sb, "this is my cstr"));
     assert(cgs_equal(sb, s));
     assert(cgs_starts_with(sb, sb));
@@ -956,28 +955,28 @@ void test_sprint()
     char C[128] = {0};
     StrBuf sb = strbuf_init_from_buf(C);
     
-    cgs_sprint(&sb, sb);
+    cgs_append_tostr(&sb, sb);
     assert(cgs_equal(sb, ""));
     
     cgs_copy(&sb, "WOW");
-    cgs_sprint_append(&sb, 5);
+    cgs_append_tostr_all(&sb, 5);
     assert(cgs_equal(sb, "WOW5"));
     
-    cgs_sprint(&sb, "w", sb, "w", ".");
+    cgs_tostr_all(&sb, "w", sb, "w", ".");
     assert(cgs_equal(sb, "www."));
     
-    cgs_sprint(&sb, "hello", " ", "world", 123);
+    cgs_tostr_all(&sb, "hello", " ", "world", 123);
     assert(cgs_equal(&sb, "hello world123"));
     
-    cgs_sprint_append(&sb, sb);
+    cgs_append_tostr_all(&sb, sb);
     assert(cgs_equal(sb, "hello world123hello world123"));
     
     cgs_copy(&sb, "hello world123");
-    cgs_append(&sb, sb);
+    cgs_append_tostr_all(&sb, sb);
     assert(cgs_equal(sb, "hello world123hello world123"));
     
     cgs_copy(&sb, "X-");
-    cgs_sprint_append(&sb, sb, sb);
+    cgs_append_tostr_all(&sb, sb, sb);
     assert(cgs_equal(sb, "X-X-X-X-"));
     
     unsigned char CC2[256] = {0};
@@ -996,21 +995,21 @@ void test_sprint()
     long long long_max = LLONG_MAX;
     long long long_long_min = LLONG_MIN;
     long long long_long_max = LLONG_MAX;
-    cgs_sprint(&sb2,signed_char_min, " ", short_min, " ", int_min, " ", long_min, " ", long_long_min, " ", signed_char_max, " ", short_max, " ", int_max, " ", long_max, " "
+    cgs_append_tostr_all(&sb2,signed_char_min, " ", short_min, " ", int_min, " ", long_min, " ", long_long_min, " ", signed_char_max, " ", short_max, " ", int_max, " ", long_max, " "
     , long_long_max, " ",unsigned_short_max, " ", unsigned_int_max, " ", unsigned_long_max, " ", unsigned_long_long_max);
     
-    println("sb2 == '", sb2, "'");
+    cgs_append_tostr_all(stdout, "sb2 == '", sb2, "'");
     
     assert(cgs_equal(sb2, "-128 -32768 -2147483648 -9223372036854775808 -9223372036854775808 127 32767 2147483647 9223372036854775807 9223372036854775807 65535 4294967295 18446744073709551615 18446744073709551615"));
     
-    cgs_sprint(&sb2, 0);
+    cgs_tostr_all(&sb2, 0);
     assert(cgs_equal(sb2, "0"));
     
     unsigned char CC3[3] = {0};
     StrBuf sb3 = strbuf_init_from_buf(CC3);
-    cgs_sprint(&sb3, 123456);
+    cgs_append_tostr_all(&sb3, 123456);
     assert(cgs_equal(sb3, "12"));
-    cgs_sprint(&sb3, (unsigned long long) 5678);
+    cgs_tostr_all(&sb3, (unsigned long long) 5678);
     assert(cgs_equal(sb3, "56"));
 }
 
@@ -1117,7 +1116,7 @@ void comp_check()
     
     cgs_copy(&d, sv);                   // mutstr, anystr
     cgs_putc(mr, '!');                  // mutstr
-    cgs_append(&sb, "tail");            // mutstr, anystr
+    cgs_append_tostr_all(&sb, "tail");            // mutstr, anystr
     cgs_insert(c_ptr, d, 1);            // mutstr, anystr
     cgs_prepend(mr, uc_arr);            // mutstr, anystr
     cgs_del(&d, 0, 2);                  // mutstr
@@ -1149,12 +1148,12 @@ void comp_check()
     ArrayFmt af = arrfmt(int_arr, 3);
 
     // Variadic compile check
-    print("Values:", i, f_val, d, sv, err, af, nfmt(255, 'X'));
-    println(c_arr, uc_ptr, &sb, mr);
+    cgs_append_tostr_all(stdout, "Values:", i, f_val, d, sv, err, af, nfmt(255, 'X'));
+    cgs_append_tostr_all(stdout, c_arr, uc_ptr, &sb, mr);
     
     // Sprint variants
-    cgs_sprint(&d, "Result: ", nfmt(1.234, 'f', 2));
-    cgs_sprint_append(mr, " more ", i);
+    cgs_append_tostr_all(&d, "Result: ", nfmt(1.234, 'f', 2));
+    cgs_append_tostr_all(mr, " more ", i);
 
     // Explicit tostr calls
     tostr(&d, i);
@@ -1171,7 +1170,7 @@ void comp_check()
     // Appender pattern
     AppenderState state;
     MutStrRef app = cgs_appender(&d, &state);
-    cgs_append(app, "chunk");
+    cgs_append_tostr_all(app, "chunk");
     cgs_commit_appender(&d, app);
 
     // StrView Array helpers

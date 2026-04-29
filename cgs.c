@@ -3102,7 +3102,7 @@ CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, int
         dstr->len += count;
     }
     dstr->chars[dstr->len] = '\0';
-    return (CGS_Error){CGS_OK};
+    return ferror(stream) ? (CGS_Error){CGS_IO_ERROR} : (CGS_Error){CGS_OK};
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *stream, int delim)
@@ -3126,10 +3126,13 @@ CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *st
     dst.chars[len] = '\0';
     *dst.len = len;
     
+    bool io_err = ferror(stream);
     bool dst_too_small = (len == dst.cap - 1) && (c != delim) && (c != EOF);
     
     if(dst_too_small)
         return (CGS_Error){CGS_DST_TOO_SMALL};
+    else if(io_err)
+        return (CGS_Error){CGS_IO_ERROR};
     else
         return (CGS_Error){CGS_OK};
 }
@@ -3219,19 +3222,20 @@ CGS_API CGS_Error cgs__file_append(void *ctx, const CGS_StrView str)
     return (CGS_Error){CGS_OK};
 }
 
-CGS_API CGS_Error cgs__interp(CGS_Writer writer, const CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*))
+CGS_API CGS_Error cgs__append_fmt(CGS_Writer writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*))
 {
+    // This should proably be:
+    // do first format specififer, determine mode from it,
+    // and have one outer branch.
     enum
     {
         UNKNOWN_INDEXING,
         AUTO_INDEX,
         SPECIFY_INDEX
     } index_mode = UNKNOWN_INDEXING; // SPECIFY_INDEX is "%index" (e.g. "%0" is the first arg). AUTO_INDEX requires "%?", cannot mix
-    // This should proably be:
-    // do first format specififer, determine mode from it,
-    // and have one outer branch.
+
     
-    CGS_StrView fmt_walk = fmt;
+    CGS__const_StrView fmt_walk = fmt;
     
     size_t how_many_formatted = 0;
     CGS_Error err = {CGS_OK};
@@ -3241,7 +3245,7 @@ CGS_API CGS_Error cgs__interp(CGS_Writer writer, const CGS_StrView fmt, size_t n
         if(found)
         {
             ptrdiff_t index = found - fmt_walk.chars;
-            CGS_StrView chunk = { .chars = fmt_walk.chars, .len = index };
+            CGS_StrView chunk = { .chars = (char*) fmt_walk.chars, .len = index };
             fmt_walk.chars += (index + 1);
             fmt_walk.len   -= (index + 1);
             
@@ -3320,7 +3324,7 @@ CGS_API CGS_Error cgs__interp(CGS_Writer writer, const CGS_StrView fmt, size_t n
         }
         else
         {
-            err = cgs__invoke_writer(writer, fmt_walk);
+            err = cgs__invoke_writer_c(writer, fmt_walk);
             fmt_walk.chars += fmt_walk.len;
             fmt_walk.len = 0;
         }
@@ -3330,6 +3334,15 @@ CGS_API CGS_Error cgs__interp(CGS_Writer writer, const CGS_StrView fmt, size_t n
     {
         return (CGS_Error){CGS_TOO_MANY_ARGS};
     }
+    return err;
+}
+
+CGS_API CGS_Error cgs__append_fmt_ln_(CGS_Writer writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*))
+{
+    CGS_Error err = cgs__append_fmt(writer, fmt, nargs, args, tostr_p_funcs);
+    if(err.ec == CGS_OK)
+        err = cgs__invoke_writer(writer, cgs_strv("\n"));
+    
     return err;
 }
 

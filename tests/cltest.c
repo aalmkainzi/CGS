@@ -59,7 +59,7 @@ do { \
 #define ASSERT_ERR(err, expected) \
 do { \
     if ((err).ec != (expected)) { \
-        println("  Expected error ", (CGS_Error){expected}, " got ", err,  "(line ", __LINE__, ")"); \
+        cgs_printfln("%?", "  Expected error ", (CGS_Error){expected}, " got ", err,  "(line ", __LINE__, ")"); \
         return false; \
     } \
 } while(0)

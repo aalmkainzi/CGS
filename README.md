@@ -10,8 +10,7 @@ int main()
     CGS_StrView hello = cgs_strv(s, 0, 5);
     CGS_StrView world = cgs_strv(s, 7);
     
-    cgs_println(hello);
-    cgs_println(world);
+    cgs_printf("%? %?", hello, world);
 }
 
 ```
@@ -25,7 +24,7 @@ int main()
     cgs_append(&str, "world");
     cgs_prepend(&str, "hello, ");
     
-    cgs_println(str);
+    cgs_printf("%?", str);
     
     cgs_dstr_deinit(&str);
 }
@@ -123,21 +122,23 @@ CGS_MutStrRef     cgs_appender(mutstr_t owner, CGS_AppenderState *state);
 CGS_Error         cgs_commit_appender(mutstr_t owner, CGS_MutStrRef appender);
 
 CGS_Error         cgs_tostr(mutstr_t dst, T val);
-CGS_Error         cgs_tostr_append(writer_t dst, T val);
+CGS_Error         cgs_append_tostr(writer_t dst, T val);
 CGS_Error         cgs_tostr_p(mutstr_t dst, T *val);
 bool              cgs_has_tostr(T);
 unsigned int      cgs_tostr_len(T val);
 unsigned int      cgs_tostr_p_len(T *val);
 
-CGS_Error         cgs_interp(mutstr_t dst, const char *fmt, ...args with tostr);
-CGS_Error         cgs_interp_append(writer_t dst, const char *fmt, ...args with tostr);
+CGS_Error         cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr);
+CGS_Error         cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr);
 
-                  cgs_print(...args with tostr);
-                  cgs_println(...args with tostr);
-                  cgs_fprint(FILE *stream, ...args with tostr);
-                  cgs_fprintln(FILE *stream, ...args with tostr);
-                  cgs_sprint(mutstr_t dst, ...args with tostr);
-                  cgs_sprint_append(writer_t dst, ...args with tostr);
+CGS_Error         cgs_printf(const char *fmt, ...args with tostr);
+CGS_Error         cgs_printfln(const char *fmt, ...args with tostr);
+
+CGS_Error         cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr);
+CGS_Error         cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
+
+                  cgs_tostr_all(mutstr_t dst, ...args with tostr);
+                  cgs_append_tostr_all(writer_t dst, ...args with tostr);
 
 cgs_nfmt_t(integer_T, fmt_char)    cgs_nfmt(integer_T value, int fmt_char);
 cgs_nfmt_t(float/double, fmt_char) cgs_nfmt(float/double value, int fmt_char, int precision = (fmt_char == 'a' ? -1 : 6));
@@ -174,17 +175,12 @@ cgs_dstr_shrink_to_fit
 cgs_mutstr_ref
 
 cgs_tostr
-cgs_tostr_append
+cgs_append_tostr
 cgs_tostr_p
 cgs_has_tostr
 
-cgs_print
-cgs_println
-cgs_fprint
-cgs_fprintln
-
-cgs_sprint
-cgs_sprint_append
+cgs_tostr_all
+cgs_append_tostr_all
 
 cgs_nfmt
 cgs_nfmt_t
@@ -255,7 +251,7 @@ Used to convert values to string:
 
 ```C
 CGS_Error cgs_tostr(mutstr_t dst, T val);
-CGS_Error cgs_tostr_append(writer_t dst, T val);
+CGS_Error cgs_append_tostr(writer_t dst, T val);
 ```
 Example:
 ```C
@@ -276,9 +272,9 @@ struct FOO {
     char n;
 };
 
-CGS_Error foo_to_str(CGS_Writer dst, struct FOO *f )
+CGS_Error foo_to_str(CGS_Writer dst, struct FOO f )
 {
-    CGS_Error err = cgs_putc(dst, f->n);
+    CGS_Error err = cgs_putc(dst, f.n);
     return err;
 }
 
@@ -290,45 +286,24 @@ CGS_Error foo_to_str(CGS_Writer dst, struct FOO *f )
 int main()
 {
     struct FOO f = {'a'};
-    cgs_println(f); // can now use `struct FOO` in contexts that require a type with tostr
+    cgs_printf("%?", f); // can now use `struct FOO` in contexts that require a type with tostr
 }
 ```
 
-## fprint and sprint
+## cgs_fmt
 
-Types that have a `tostr` defined can use `fprint`/`sprint` and their variants:
+Types that have a `tostr` defined can be used in `cgs_fmt` and its variants:
 
 ```C++
-cgs_fprint(FILE *stream, ...args with tostr);
-cgs_fprintln(FILE *stream, ...args with tostr);
-cgs_print(...args with tostr);
-cgs_println(...args with tostr);
+CGS_Error cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr);
+CGS_Error cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr);
 
-cgs_sprint(mutstr_t dst, ...args with tostr);
-cgs_sprint_append(writer_t dst, ...args with tostr);
+CGS_Error cgs_printf(const char *fmt, ...args with tostr);
+CGS_Error cgs_printfln(const char *fmt, ...args with tostr);
+
+CGS_Error cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr);
+CGS_Error cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
 ```
-
-Example:
-```C
-#include "cgs.h"
-
-int main()
-{
-    cgs_println("hello", 123, "\n", 15.3);
-    
-    char buf[64];
-    cgs_sprint(buf, "hello", 123);
-}
-```
-
-## interp
-
-```C
-CGS_Error cgs_interp(mutstr_t, const char *fmt, ...args with tostr); 
-CGS_Error cgs_interp_append(writer_t dst, const char *fmt, ...args with tostr); 
-```
-
-Similar to `cgs_sprint`, but takes a printf-like fmt string.
 
 e.g.
 ```C
@@ -338,13 +313,12 @@ int main()
 {
     char buf[64];
     
-    cgs_interp(buf, "%? + %? = %?\n", 2, 3, 5);
+    cgs_fmt(buf, "%? + %? = %?\n", 2, 3, 5);
     
-    cgs_interp_append(buf, "%1 + %0 = %2", 2, 3, 5); // positional arguments
+    cgs_append_fmt(buf, "%1 + %0 = %2", 2, 3, 5); // positional arguments
     
-    cgs_println(buf);
+    cgs_append(stdout, buf);
 }
-
 ```
 
 ## nfmt and arrfmt
@@ -352,7 +326,7 @@ int main()
 These macros return a format object that has a `tostr`. For example:
 
 ```C
-cgs_println( cgs_nfmt(15, 'X') ); // prints "F"
+cgs_printf("%?", cgs_nfmt(15, 'X')); // prints "F"
 ```
 
 Note that `nfmt` is type-safe, you cannot use chars other than:

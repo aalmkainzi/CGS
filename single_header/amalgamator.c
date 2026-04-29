@@ -1,5 +1,4 @@
 #include <stdio.h>
-#define CGS_SHORT_NAMES
 #include "../cgs.c"
 
 int main()
@@ -7,7 +6,7 @@ int main()
     FILE *h = fopen("../cgs.h", "r");
     FILE *c = fopen("../cgs.c", "r");
     
-    DStr amalgam = dstr_init();
+    CGS_DStr amalgam = cgs_dstr_init();
     
     cgs_append(&amalgam, "// This file is generated from amalgamator.c\n");
     cgs_append_fread_until(&amalgam, h, EOF);
@@ -18,10 +17,10 @@ int main()
     cgs_replace_first(&amalgam, "#include \"cgs.h\"", "");
     
     FILE *hh = fopen("cgs.h.h", "w");
-    fprint(hh, amalgam);
+    cgs_append(hh, amalgam);
     
     fclose(h);
     fclose(c);
     fclose(hh);
-    dstr_deinit(&amalgam);
+    cgs_dstr_deinit(&amalgam);
 }

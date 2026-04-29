@@ -9,5 +9,5 @@ int main()
     cgs_append(app, "world");
     cgs_commit_appender(&buf, app);
     
-    cgs_println(buf);
+    cgs_printfln("%?", buf);
 }

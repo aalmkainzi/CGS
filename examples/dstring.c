@@ -7,7 +7,7 @@ int main()
     cgs_append(&str, "world");
     cgs_prepend(&str, "hello, ");
     
-    cgs_println(str);
+    cgs_append(stdout, str);
     
     cgs_dstr_deinit(&str);
 }

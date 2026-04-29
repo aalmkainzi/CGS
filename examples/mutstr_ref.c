@@ -15,8 +15,7 @@ int main()
     replace_dash(cgs_mutstr_ref(&sb));
     replace_dash(cgs_mutstr_ref(cstr));
     
-    cgs_println(sb);
-    cgs_println(cstr);
+    cgs_printf("%?\n%?\n", sb, cstr);
     
     free(cstr);
 }

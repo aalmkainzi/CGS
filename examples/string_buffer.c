@@ -6,11 +6,11 @@ int main()
     char c[128] = {0};
     CGS_StrBuf mystr = cgs_strbuf_init_from_buf(c);
     
-    cgs_sprint(&mystr, "hello, world", "\n", 123);
+    cgs_fmt(&mystr, "hello, world", "\n", 123);
     
     cgs_append(&mystr, "456");
     
-    cgs_println(mystr);
+    cgs_append(stdout, mystr);
     // example 1 end
     
     // example 2
@@ -20,7 +20,7 @@ int main()
     
     cgs_replace(&mystr2, ", ", " -- ");
     
-    cgs_println(mystr2);
+    cgs_printfln("%?", mystr2);
     
     free(cstr);
     // example 2 end

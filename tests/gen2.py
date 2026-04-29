@@ -100,7 +100,7 @@ for m in MUTSTR_META:
         f"cgs_del({v}, 0, 1);"
     ])
 
-# 3. writer_t combinations (putc, append, tostr_append)
+# 3. writer_t combinations (putc, append, append_tostr)
 # Every writer x every anystr type
 for wm in WRITER_META:
     for am in ANYSTR_META:
@@ -109,7 +109,7 @@ for wm in WRITER_META:
         generate_test(f"writer_cross_{wv}_{av}", [wv, av], [
             f"cgs_putc({wv}, '!');",
             f"cgs_append({wv}, {av});",
-            f"cgs_tostr_append({wv}, 42);"
+            f"cgs_append_tostr({wv}, 42);"
         ])
 
 # 4. Replacement combinations (mutstr x anystr)
@@ -160,10 +160,10 @@ for mm in MUTSTR_META:
 # Use ALL ANYSTR variables at once to test variadic macro limits
 all_vnames = [m[2] for m in ANYSTR_META]
 generate_test("variadic_kitchen_sink", all_vnames, [
-    "cgs_print(" + ", ".join(all_vnames) + ");",
-    "cgs_println(" + ", ".join(all_vnames) + ");",
-    "cgs_fprint(stdout, " + ", ".join(all_vnames) + ");",
-    "cgs_sprint(pds, " + ", ".join(all_vnames) + ");"
+    "cgs_printf(" + ", ".join(all_vnames) + ");",
+    "cgs_printfln(" + ", ".join(all_vnames) + ");",
+    "cgs_append_tostr_all(stdout, " + ", ".join(all_vnames) + ");",
+    "cgs_fmt(pds, " + ", ".join(all_vnames) + ");"
 ])
 
 # 9. Array formatters

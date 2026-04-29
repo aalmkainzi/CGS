@@ -8,7 +8,7 @@ int main()
     CGS_StrBuf dst = cgs_strbuf_init_from_buf(c);
     cgs_join(&dst, splitted, ", ");
 
-    cgs_println("the joined string: \n", dst);
+    cgs_printf("the joined string: %?\n", dst);
 
     free(splitted.strs);
 }

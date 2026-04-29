@@ -1654,15 +1654,15 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("writer_t: cgs_tostr_append with FILE*");;;
+    TEST("writer_t: cgs_append_tostr with FILE*");;;
     {
         FILE* tmp = tmpfile();
         
         // Testing integer conversion to file
-        cgs_tostr_append(tmp, 1234);
+        cgs_append_tostr(tmp, 1234);
         cgs_putc(tmp, ' ');
         // Testing float conversion to file
-        cgs_tostr_append(tmp, nfmt(5.5, 'f', 2));
+        cgs_append_tostr(tmp, nfmt(5.5, 'f', 2));
         
         rewind(tmp);
         DStr result = dstr_init();
@@ -1674,12 +1674,12 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("writer_t: cgs_sprint_append with FILE*");;;
+    TEST("writer_t: cgs_append_tostr_all with FILE*");;;
     {
         FILE* tmp = tmpfile();
         
         // Using the variadic printing macro directly to a FILE*
-        cgs_sprint_append(tmp, "Hex: ", nfmt(255, 'X'), ", Score: ", 100);
+        cgs_append_tostr_all(tmp, "Hex: ", nfmt(255, 'X'), ", Score: ", 100);
         
         rewind(tmp);
         DStr result = dstr_init();
@@ -1878,31 +1878,31 @@ void test_str_putc_edge_cases() {
     }
     
     /* =========================================================================
-     * cgs_format — basic copying (no specifiers)
+     * cgs_fmt — basic copying (no specifiers)
      * ========================================================================= */
     
-    TEST("cgs_format: no specifiers copies string as-is into DStr");
+    TEST("cgs_fmt: no specifiers copies string as-is into DStr");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "hello world");
+        CGS_Error err = cgs_fmt(&dst, "hello world");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: no specifiers copies string as-is into StrBuf");
+    TEST("cgs_fmt: no specifiers copies string as-is into StrBuf");
     {
         char buf[32];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        CGS_Error err = cgs_format(&dst, "hello world");
+        CGS_Error err = cgs_fmt(&dst, "hello world");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
     }
     
-    TEST("cgs_format: no specifiers copies string as-is into FILE*");
+    TEST("cgs_fmt: no specifiers copies string as-is into FILE*");
     {
         FILE *f = tmpfile();
-        CGS_Error err = cgs_format_append(f, "hello world");
+        CGS_Error err = cgs_append_fmt(f, "hello world");
         ASSERT_TRUE(err.ec == CGS_OK);
         rewind(f);
         char buf[32] = {0};
@@ -1912,86 +1912,86 @@ void test_str_putc_edge_cases() {
     }
     
     /* =========================================================================
-     * cgs_format — percent escape
+     * cgs_fmt — percent escape
      * ========================================================================= */
     
-    TEST("cgs_format: %% writes a literal percent sign");
+    TEST("cgs_fmt: %% writes a literal percent sign");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "100%%");
+        CGS_Error err = cgs_fmt(&dst, "100%%");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("100%")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: multiple %% escapes all produce literal percent signs");
+    TEST("cgs_fmt: multiple %% escapes all produce literal percent signs");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%%+%%=%%");
+        CGS_Error err = cgs_fmt(&dst, "%%+%%=%%");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("%+%=%")));
         cgs_dstr_deinit(&dst);
     }
     
     /* =========================================================================
-     * cgs_format — single substitution
+     * cgs_fmt — single substitution
      * ========================================================================= */
     
-    TEST("cgs_format: single % substituted with string arg");
+    TEST("cgs_fmt: single % substituted with string arg");
     {
         CGS_DStr dst = cgs_dstr_init();
         const char *fmt = "hello %?";
-        CGS_Error err = cgs_format(&dst, fmt, cgs_strv("world"));
+        CGS_Error err = cgs_fmt(&dst, fmt, cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: % at start of format string");
+    TEST("cgs_fmt: % at start of format string");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%? world", cgs_strv("hello"));
+        CGS_Error err = cgs_fmt(&dst, "%? world", cgs_strv("hello"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: % at end of format string");
+    TEST("cgs_fmt: % at end of format string");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "hello %?", cgs_strv("world"));
+        CGS_Error err = cgs_fmt(&dst, "hello %?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: % substituted with empty string arg");
+    TEST("cgs_fmt: % substituted with empty string arg");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "hello%?world", cgs_strv(""));
+        CGS_Error err = cgs_fmt(&dst, "hello%?world", cgs_strv(""));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("helloworld")));
         cgs_dstr_deinit(&dst);
     }
     
     /* =========================================================================
-     * cgs_format — multiple substitutions
+     * cgs_fmt — multiple substitutions
      * ========================================================================= */
     
-    TEST("cgs_format: multiple % substituted in order");
+    TEST("cgs_fmt: multiple % substituted in order");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%? %? %?",
+        CGS_Error err = cgs_fmt(&dst, "%? %? %?",
                                    cgs_strv("one"), cgs_strv("two"), cgs_strv("three"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("one two three")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: mixed %% escapes and % substitutions");
+    TEST("cgs_fmt: mixed %% escapes and % substitutions");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%% of %? is %?",
+        CGS_Error err = cgs_fmt(&dst, "%% of %? is %?",
                                    cgs_strv("50"), cgs_strv("done"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("% of 50 is done")));
@@ -1999,89 +1999,89 @@ void test_str_putc_edge_cases() {
     }
     
     /* =========================================================================
-     * cgs_format — arg count errors
+     * cgs_fmt — arg count errors
      * ========================================================================= */
     
-    TEST("cgs_format: more % than args returns CGS_NOT_ENOUGH_ARGS");
+    TEST("cgs_fmt: more % than args returns CGS_NOT_ENOUGH_ARGS");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%? and %?", cgs_strv("only one"));
+        CGS_Error err = cgs_fmt(&dst, "%? and %?", cgs_strv("only one"));
         ASSERT_TRUE(err.ec == CGS_NOT_ENOUGH_ARGS);
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: more args than % returns CGS_TOO_MANY_ARGS");
+    TEST("cgs_fmt: more args than % returns CGS_TOO_MANY_ARGS");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "hello",
+        CGS_Error err = cgs_fmt(&dst, "hello",
                                    cgs_strv("extra"), cgs_strv("args"));
         ASSERT_TRUE(err.ec == CGS_TOO_MANY_ARGS);
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: %% escape does not consume an arg");
+    TEST("cgs_fmt: %% escape does not consume an arg");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%% and %?", cgs_strv("hello"));
+        CGS_Error err = cgs_fmt(&dst, "%% and %?", cgs_strv("hello"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("% and hello")));
         cgs_dstr_deinit(&dst);
     }
     
     /* =========================================================================
-     * cgs_format — overflow / CGS_DST_TOO_SMALL
+     * cgs_fmt — overflow / CGS_DST_TOO_SMALL
      * ========================================================================= */
     
-    TEST("cgs_format: output exceeding StrBuf capacity returns CGS_DST_TOO_SMALL");
+    TEST("cgs_fmt: output exceeding StrBuf capacity returns CGS_DST_TOO_SMALL");
     {
         char buf[4];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        CGS_Error err = cgs_format(&dst, "hello world");
+        CGS_Error err = cgs_fmt(&dst, "hello world");
         ASSERT_TRUE(err.ec == CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_format: substitution exceeding StrBuf capacity returns CGS_DST_TOO_SMALL");
+    TEST("cgs_fmt: substitution exceeding StrBuf capacity returns CGS_DST_TOO_SMALL");
     {
         char buf[8];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        CGS_Error err = cgs_format(&dst, "hi %?", cgs_strv("this is way too long"));
+        CGS_Error err = cgs_fmt(&dst, "hi %?", cgs_strv("this is way too long"));
         ASSERT_TRUE(err.ec == CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_format: output exactly filling StrBuf capacity succeeds");
+    TEST("cgs_fmt: output exactly filling StrBuf capacity succeeds");
     {
         char buf[6];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        CGS_Error err = cgs_format(&dst, "hello");  /* 5 chars + null */
+        CGS_Error err = cgs_fmt(&dst, "hello");  /* 5 chars + null */
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello")));
     }
     
     /* =========================================================================
-     * cgs_format — writer type variants
+     * cgs_fmt — writer type variants
      * ========================================================================= */
     
-    TEST("cgs_format: writer as char[]");
+    TEST("cgs_fmt: writer as char[]");
     {
         char buf[32] = {0};
-        CGS_Error err = cgs_format(buf, "hello %?", cgs_strv("world"));
+        CGS_Error err = cgs_fmt(buf, "hello %?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(strcmp(buf, "hello world") == 0);
     }
     
-    TEST("cgs_format: writer as MutStrRef");
+    TEST("cgs_fmt: writer as MutStrRef");
     {
         char buf[32] = {0};
         CGS_MutStrRef dst = cgs_mutstr_ref(buf);
-        CGS_Error err = cgs_format(dst, "hello %?", cgs_strv("world"));
+        CGS_Error err = cgs_fmt(dst, "hello %?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(strcmp(buf, "hello world") == 0);
     }
     
-    TEST("cgs_format: writer as FILE*");
+    TEST("cgs_fmt: writer as FILE*");
     {
         FILE *f = tmpfile();
-        CGS_Error err = cgs_format_append(f, "hello %?", cgs_strv("world"));
+        CGS_Error err = cgs_append_fmt(f, "hello %?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         rewind(f);
         char buf[32] = {0};
@@ -2091,62 +2091,62 @@ void test_str_putc_edge_cases() {
     }
     
     /* =========================================================================
-     * cgs_format_append — appending behaviour
+     * cgs_append_fmt — appending behaviour
      * ========================================================================= */
     
-    TEST("cgs_format_append: appends to existing DStr content");
+    TEST("cgs_append_fmt: appends to existing DStr content");
     {
         CGS_DStr dst = cgs_dstr_init_from(cgs_strv("hello "));
-        CGS_Error err = cgs_format_append(&dst, "world");
+        CGS_Error err = cgs_append_fmt(&dst, "world");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format_append: appends with substitution to existing DStr content");
+    TEST("cgs_append_fmt: appends with substitution to existing DStr content");
     {
         CGS_DStr dst = cgs_dstr_init_from(cgs_strv("hello "));
-        CGS_Error err = cgs_format_append(&dst, "%?", cgs_strv("world"));
+        CGS_Error err = cgs_append_fmt(&dst, "%?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format_append: multiple appends accumulate correctly");
+    TEST("cgs_append_fmt: multiple appends accumulate correctly");
     {
         CGS_DStr dst = cgs_dstr_init();
-        cgs_format_append(&dst, "one");
-        cgs_format_append(&dst, ", two");
-        CGS_Error err = cgs_format_append(&dst, ", three");
+        cgs_append_fmt(&dst, "one");
+        cgs_append_fmt(&dst, ", two");
+        CGS_Error err = cgs_append_fmt(&dst, ", three");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("one, two, three")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format_append: appends to existing StrBuf content");
+    TEST("cgs_append_fmt: appends to existing StrBuf content");
     {
         char buf[32] = {0};
         CGS_StrBuf dst = cgs_strbuf_init_from_cstr(buf);
-        cgs_format_append(&dst, "hello ");
-        CGS_Error err = cgs_format_append(&dst, "world");
+        cgs_append_fmt(&dst, "hello ");
+        CGS_Error err = cgs_append_fmt(&dst, "world");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
     }
     
-    TEST("cgs_format_append: appending to StrBuf that leaves no remaining capacity returns CGS_DST_TOO_SMALL");
+    TEST("cgs_append_fmt: appending to StrBuf that leaves no remaining capacity returns CGS_DST_TOO_SMALL");
     {
         char buf[8];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        cgs_format_append(&dst, "hello");   /* 5 chars, 2 remaining (+ null) */
-        CGS_Error err = cgs_format_append(&dst, " world");
+        cgs_append_fmt(&dst, "hello");   /* 5 chars, 2 remaining (+ null) */
+        CGS_Error err = cgs_append_fmt(&dst, " world");
         ASSERT_TRUE(err.ec == CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_format_append: appends to FILE* after existing content");
+    TEST("cgs_append_fmt: appends to FILE* after existing content");
     {
         FILE *f = tmpfile();
         fwrite("hello ", 1, 6, f);
-        CGS_Error err = cgs_format_append(f, "world");
+        CGS_Error err = cgs_append_fmt(f, "world");
         ASSERT_TRUE(err.ec == CGS_OK);
         rewind(f);
         char buf[32] = {0};
@@ -2155,11 +2155,11 @@ void test_str_putc_edge_cases() {
         fclose(f);
     }
     
-    TEST("cgs_format_append: appends with substitution to FILE* after existing content");
+    TEST("cgs_append_fmt: appends with substitution to FILE* after existing content");
     {
         FILE *f = tmpfile();
         fwrite("hello ", 1, 6, f);
-        CGS_Error err = cgs_format_append(f, "%?", cgs_strv("world"));
+        CGS_Error err = cgs_append_fmt(f, "%?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         rewind(f);
         char buf[32] = {0};
@@ -2168,202 +2168,202 @@ void test_str_putc_edge_cases() {
         fclose(f);
     }
     
-    TEST("cgs_format_append: appends to StrBuf with sufficient remaining capacity");
+    TEST("cgs_append_fmt: appends to StrBuf with sufficient remaining capacity");
     {
         char buf[32];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        cgs_format_append(&dst, "hello ");
-        CGS_Error err = cgs_format_append(&dst, "world");
+        cgs_append_fmt(&dst, "hello ");
+        CGS_Error err = cgs_append_fmt(&dst, "world");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
     }
     
-    TEST("cgs_format_append: appends with substitution to StrBuf");
+    TEST("cgs_append_fmt: appends with substitution to StrBuf");
     {
         char buf[32];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        cgs_format_append(&dst, "hello ");
-        CGS_Error err = cgs_format_append(&dst, "%?", cgs_strv("world"));
+        cgs_append_fmt(&dst, "hello ");
+        CGS_Error err = cgs_append_fmt(&dst, "%?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
     }
     
     /* =========================================================================
-     * cgs_format — basic copying (no specifiers)
+     * cgs_fmt — basic copying (no specifiers)
      * ========================================================================= */
     
-    TEST("cgs_format: no specifiers copies string as-is into DStr");
+    TEST("cgs_fmt: no specifiers copies string as-is into DStr");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "hello world");
+        CGS_Error err = cgs_fmt(&dst, "hello world");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: no specifiers copies string as-is into StrBuf");
+    TEST("cgs_fmt: no specifiers copies string as-is into StrBuf");
     {
         char buf[32];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        CGS_Error err = cgs_format(&dst, "hello world");
+        CGS_Error err = cgs_fmt(&dst, "hello world");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
     }
     
     /* =========================================================================
-     * cgs_format — percent escape
+     * cgs_fmt — percent escape
      * ========================================================================= */
     
-    TEST("cgs_format: %% writes a literal percent sign");
+    TEST("cgs_fmt: %% writes a literal percent sign");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "100%%");
+        CGS_Error err = cgs_fmt(&dst, "100%%");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("100%")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: multiple %% escapes all produce literal percent signs");
+    TEST("cgs_fmt: multiple %% escapes all produce literal percent signs");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%%+%%=%%");
+        CGS_Error err = cgs_fmt(&dst, "%%+%%=%%");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("%+%=%")));
         cgs_dstr_deinit(&dst);
     }
     
     /* =========================================================================
-     * cgs_format — auto-indexed substitution (%?)
+     * cgs_fmt — auto-indexed substitution (%?)
      * ========================================================================= */
     
-    TEST("cgs_format: single %? substituted with string arg");
+    TEST("cgs_fmt: single %? substituted with string arg");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "hello %?", cgs_strv("world"));
+        CGS_Error err = cgs_fmt(&dst, "hello %?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: multiple %? substituted in order");
+    TEST("cgs_fmt: multiple %? substituted in order");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%? %? %?",
+        CGS_Error err = cgs_fmt(&dst, "%? %? %?",
                                    cgs_strv("one"), cgs_strv("two"), cgs_strv("three"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("one two three")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: %? substituted with integer arg");
+    TEST("cgs_fmt: %? substituted with integer arg");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "value is %?", 42);
+        CGS_Error err = cgs_fmt(&dst, "value is %?", 42);
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("value is 42")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: %? substituted with float arg");
+    TEST("cgs_fmt: %? substituted with float arg");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "pi is %?", 3.14f);
+        CGS_Error err = cgs_fmt(&dst, "pi is %?", 3.14f);
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("pi is 3.14")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: mixed %% escape and %? substitution");
+    TEST("cgs_fmt: mixed %% escape and %? substitution");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%% of %? is %?",
+        CGS_Error err = cgs_fmt(&dst, "%% of %? is %?",
                                    cgs_strv("50"), cgs_strv("done"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("% of 50 is done")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: %? at start of format string");
+    TEST("cgs_fmt: %? at start of format string");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%? world", cgs_strv("hello"));
+        CGS_Error err = cgs_fmt(&dst, "%? world", cgs_strv("hello"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: %? at end of format string");
+    TEST("cgs_fmt: %? at end of format string");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "hello %?", cgs_strv("world"));
+        CGS_Error err = cgs_fmt(&dst, "hello %?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: %? substituted with empty string arg");
+    TEST("cgs_fmt: %? substituted with empty string arg");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "hello%?world", cgs_strv(""));
+        CGS_Error err = cgs_fmt(&dst, "hello%?world", cgs_strv(""));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("helloworld")));
         cgs_dstr_deinit(&dst);
     }
     
     /* =========================================================================
-     * cgs_format — explicit indexed substitution (%0, %1, ...)
+     * cgs_fmt — explicit indexed substitution (%0, %1, ...)
      * ========================================================================= */
     
-    TEST("cgs_format: explicit index %0 selects first arg");
+    TEST("cgs_fmt: explicit index %0 selects first arg");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "hello %0", cgs_strv("world"));
+        CGS_Error err = cgs_fmt(&dst, "hello %0", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: explicit indices in order");
+    TEST("cgs_fmt: explicit indices in order");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%0 %1 %2",
+        CGS_Error err = cgs_fmt(&dst, "%0 %1 %2",
                                    cgs_strv("one"), cgs_strv("two"), cgs_strv("three"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("one two three")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: explicit indices out of order");
+    TEST("cgs_fmt: explicit indices out of order");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%2 %0 %1",
+        CGS_Error err = cgs_fmt(&dst, "%2 %0 %1",
                                    cgs_strv("one"), cgs_strv("two"), cgs_strv("three"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("three one two")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: explicit index can repeat an arg");
+    TEST("cgs_fmt: explicit index can repeat an arg");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%0 and %0", cgs_strv("hello"));
+        CGS_Error err = cgs_fmt(&dst, "%0 and %0", cgs_strv("hello"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello and hello")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: explicit index out of bounds returns CGS_INDEX_OUT_OF_BOUNDS");
+    TEST("cgs_fmt: explicit index out of bounds returns CGS_INDEX_OUT_OF_BOUNDS");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%3", cgs_strv("only one arg"));
+        CGS_Error err = cgs_fmt(&dst, "%3", cgs_strv("only one arg"));
         ASSERT_TRUE(err.ec == CGS_INDEX_OUT_OF_BOUNDS);
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: mixed %% escape and explicit index substitution");
+    TEST("cgs_fmt: mixed %% escape and explicit index substitution");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%% of %0 is %1",
+        CGS_Error err = cgs_fmt(&dst, "%% of %0 is %1",
                                    cgs_strv("50"), cgs_strv("done"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("% of 50 is done")));
@@ -2371,94 +2371,94 @@ void test_str_putc_edge_cases() {
     }
     
     /* =========================================================================
-     * cgs_format — mixing auto and explicit indexing
+     * cgs_fmt — mixing auto and explicit indexing
      * ========================================================================= */
     
-    TEST("cgs_format: mixing %? and explicit index returns CGS_BAD_FORMAT");
+    TEST("cgs_fmt: mixing %? and explicit index returns CGS_BAD_FORMAT");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%? and %0",
+        CGS_Error err = cgs_fmt(&dst, "%? and %0",
                                    cgs_strv("hello"), cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_BAD_FORMAT);
         cgs_dstr_deinit(&dst);
     }
     
     /* =========================================================================
-     * cgs_format — arg count errors
+     * cgs_fmt — arg count errors
      * ========================================================================= */
     
-    TEST("cgs_format: more %? than args returns CGS_NOT_ENOUGH_ARGS");
+    TEST("cgs_fmt: more %? than args returns CGS_NOT_ENOUGH_ARGS");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%? and %?", cgs_strv("only one"));
+        CGS_Error err = cgs_fmt(&dst, "%? and %?", cgs_strv("only one"));
         ASSERT_TRUE(err.ec == CGS_NOT_ENOUGH_ARGS);
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: more args than %? returns CGS_TOO_MANY_ARGS");
+    TEST("cgs_fmt: more args than %? returns CGS_TOO_MANY_ARGS");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "hello",
+        CGS_Error err = cgs_fmt(&dst, "hello",
                                    cgs_strv("extra"), cgs_strv("args"));
         ASSERT_TRUE(err.ec == CGS_TOO_MANY_ARGS);
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_format: %% escape does not consume an arg");
+    TEST("cgs_fmt: %% escape does not consume an arg");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_format(&dst, "%% and %?", cgs_strv("hello"));
+        CGS_Error err = cgs_fmt(&dst, "%% and %?", cgs_strv("hello"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("% and hello")));
         cgs_dstr_deinit(&dst);
     }
     
     /* =========================================================================
-     * cgs_format — overflow / CGS_DST_TOO_SMALL
+     * cgs_fmt — overflow / CGS_DST_TOO_SMALL
      * ========================================================================= */
     
-    TEST("cgs_format: output exceeding StrBuf capacity returns CGS_DST_TOO_SMALL");
+    TEST("cgs_fmt: output exceeding StrBuf capacity returns CGS_DST_TOO_SMALL");
     {
         char buf[4];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        CGS_Error err = cgs_format(&dst, "hello world");
+        CGS_Error err = cgs_fmt(&dst, "hello world");
         ASSERT_TRUE(err.ec == CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_format: substitution exceeding StrBuf capacity returns CGS_DST_TOO_SMALL");
+    TEST("cgs_fmt: substitution exceeding StrBuf capacity returns CGS_DST_TOO_SMALL");
     {
         char buf[8];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        CGS_Error err = cgs_format(&dst, "hi %?", cgs_strv("this is way too long"));
+        CGS_Error err = cgs_fmt(&dst, "hi %?", cgs_strv("this is way too long"));
         ASSERT_TRUE(err.ec == CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_format: output exactly filling StrBuf capacity succeeds");
+    TEST("cgs_fmt: output exactly filling StrBuf capacity succeeds");
     {
         char buf[6];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        CGS_Error err = cgs_format(&dst, "hello");  /* 5 chars + null */
+        CGS_Error err = cgs_fmt(&dst, "hello");  /* 5 chars + null */
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello")));
     }
     
     /* =========================================================================
-     * cgs_format — writer type variants
+     * cgs_fmt — writer type variants
      * ========================================================================= */
     
-    TEST("cgs_format: writer as char[]");
+    TEST("cgs_fmt: writer as char[]");
     {
         char buf[32] = {0};
-        CGS_Error err = cgs_format(buf, "hello %?", cgs_strv("world"));
+        CGS_Error err = cgs_fmt(buf, "hello %?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(strcmp(buf, "hello world") == 0);
     }
     
-    TEST("cgs_format: writer as MutStrRef");
+    TEST("cgs_fmt: writer as MutStrRef");
     {
         char buf[32] = {0};
         CGS_MutStrRef dst = cgs_mutstr_ref(buf);
-        CGS_Error err = cgs_format(dst, "hello %?", cgs_strv("world"));
+        CGS_Error err = cgs_fmt(dst, "hello %?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(strcmp(buf, "hello world") == 0);
     }
@@ -3976,14 +3976,14 @@ void test_tostr_edge_cases() {
     TEST("cgs_print: multiple arguments (concatenation)");;;
     {
         CGS_StrBuf sb = {0};
-        cgs_sprint(&sb, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
+        cgs_tostr_all(&sb, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
         ASSERT_TRUE(cgs_equal(sb, ""));
     }
     
     TEST("cgs_print: multiple arguments (concatenation)");;;
     {
         DStr dstr = dstr_init(50);
-        cgs_sprint(&dstr, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
+        cgs_tostr_all(&dstr, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
         ASSERT_TRUE(cgs_equal(&dstr, "123 test 456.78!-99"));
         dstr_deinit(&dstr);
     }
@@ -3993,7 +3993,7 @@ void test_tostr_edge_cases() {
         char backing[10];
         StrBuf sb = strbuf_init_from_buf(backing, 10);
         cgs_clear(&sb);
-        cgs_sprint(&sb, 1, " ", "long_string_here");
+        cgs_tostr_all(&sb, 1, " ", "long_string_here");
         ASSERT_TRUE(cgs_equal(sb, "1 long_st"));
     }
     
@@ -4009,7 +4009,7 @@ void test_tostr_edge_cases() {
     TEST("nfmt: integer decimal (signed/unsigned)");;;
     {
         DStr dstr = dstr_init(30);
-        cgs_sprint(&dstr, nfmt(0, 'd'), " ", nfmt(-123, 'd'), " ", nfmt(2147483647, 'd'));
+        cgs_tostr_all(&dstr, nfmt(0, 'd'), " ", nfmt(-123, 'd'), " ", nfmt(2147483647, 'd'));
         ASSERT_TRUE(cgs_equal(&dstr, "0 -123 2147483647"));
         dstr_deinit(&dstr);
     }
@@ -4029,7 +4029,7 @@ void test_tostr_edge_cases() {
     TEST("nfmt: integer octal and binary");;;
     {
         DStr dstr = dstr_init(20);
-        cgs_sprint(&dstr, nfmt(8, 'o'), " ", nfmt(5, 'b'));
+        cgs_tostr_all(&dstr, nfmt(8, 'o'), " ", nfmt(5, 'b'));
         // 8 in octal is 10, 5 in binary is 101
         ASSERT_TRUE(cgs_equal(&dstr, "10 101"));
         dstr_deinit(&dstr);
@@ -4039,7 +4039,7 @@ void test_tostr_edge_cases() {
     {
         DStr dstr = dstr_init(30);
         // Test precision and rounding
-        cgs_sprint(&dstr, nfmt(3.14159f, 'f', 2), " ", nfmt(-0.555f, 'f', 1));
+        cgs_tostr_all(&dstr, nfmt(3.14159f, 'f', 2), " ", nfmt(-0.555f, 'f', 1));
         ASSERT_TRUE(cgs_equal(&dstr, "3.14 -0.6"));
         dstr_deinit(&dstr);
     }
@@ -4047,11 +4047,11 @@ void test_tostr_edge_cases() {
     TEST("nfmt: scientific notation (e/E)");;;
     {
         DStr dstr = dstr_init(30);
-        cgs_sprint(&dstr, nfmt(1000.0, 'e', 2));
+        cgs_tostr_all(&dstr, nfmt(1000.0, 'e', 2));
         ASSERT_TRUE(cgs_equal(&dstr, "1.00e+03"));
         
         cgs_clear(&dstr);
-        cgs_sprint(&dstr, nfmt(0.001, 'E', 1));
+        cgs_tostr_all(&dstr, nfmt(0.001, 'E', 1));
         ASSERT_TRUE(cgs_equal(&dstr, "1.0E-03"));
         dstr_deinit(&dstr);
     }
@@ -4060,7 +4060,7 @@ void test_tostr_edge_cases() {
     {
         DStr dstr = dstr_init(30);
         // 'g' chooses between fixed and scientific based on magnitude
-        cgs_sprint(&dstr, nfmt(123.456, 'g', 4));
+        cgs_tostr_all(&dstr, nfmt(123.456, 'g', 4));
         ASSERT_TRUE(cgs_equal(&dstr, "123.5")); // 4 significant digits
         dstr_deinit(&dstr);
     }
@@ -4082,7 +4082,7 @@ void test_tostr_edge_cases() {
     {
         DStr dstr = dstr_init(50);
         long long max_val = 9223372036854775807LL;
-        cgs_sprint(&dstr, nfmt(0, 'x'), " ", nfmt(max_val, 'd'));
+        cgs_tostr_all(&dstr, nfmt(0, 'x'), " ", nfmt(max_val, 'd'));
         ASSERT_TRUE(cgs_equal(&dstr, "0 9223372036854775807"));
         dstr_deinit(&dstr);
     }
@@ -4092,17 +4092,17 @@ void test_tostr_edge_cases() {
         DStr dstr = dstr_init(50);
         // Test very small float with high precision
         double val = 0.0000123456;
-        cgs_sprint(&dstr, nfmt(val, 'f', 8));
+        cgs_tostr_all(&dstr, nfmt(val, 'f', 8));
         ASSERT_TRUE(cgs_equal(&dstr, "0.00001235"));
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_sprint: complex mixed types");;;
+    TEST("cgs_tostr_all: complex mixed types");;;
     {
         DStr dstr = dstr_init(100);
         int hex_val = 0xDEAD;
         float pi = 3.14159f;
-        cgs_sprint(&dstr, "Hex: ", nfmt(hex_val, 'X'), ", Pi: ", nfmt(pi, 'g', 3), ", Bin: ", nfmt(7, 'b'));
+        cgs_tostr_all(&dstr, "Hex: ", nfmt(hex_val, 'X'), ", Pi: ", nfmt(pi, 'g', 3), ", Bin: ", nfmt(7, 'b'));
         ASSERT_TRUE(cgs_equal(&dstr, "Hex: DEAD, Pi: 3.14, Bin: 111"));
         dstr_deinit(&dstr);
     }
@@ -4116,7 +4116,7 @@ void test_tostr_edge_cases() {
         
         cgs_clear(&dstr);
         // Small powers of 2
-        cgs_sprint(&dstr, nfmt(1, 'b'), ",", nfmt(2, 'b'), ",", nfmt(4, 'b'), ",", nfmt(8, 'b'));
+        cgs_tostr_all(&dstr, nfmt(1, 'b'), ",", nfmt(2, 'b'), ",", nfmt(4, 'b'), ",", nfmt(8, 'b'));
         ASSERT_TRUE(cgs_equal(&dstr, "1,10,100,1000"));
         dstr_deinit(&dstr);
     }
@@ -4129,7 +4129,7 @@ void test_tostr_edge_cases() {
         
         cgs_clear(&dstr);
         // Standard octal transitions
-        cgs_sprint(&dstr, nfmt(7, 'o'), ",", nfmt(8, 'o'), ",", nfmt(16, 'o'));
+        cgs_tostr_all(&dstr, nfmt(7, 'o'), ",", nfmt(8, 'o'), ",", nfmt(16, 'o'));
         ASSERT_TRUE(cgs_equal(&dstr, "7,10,20"));
         dstr_deinit(&dstr);
     }
@@ -4218,7 +4218,7 @@ void test_tostr_edge_cases() {
         unsigned int   v3 = 30;
         
         // Testing that the macro/generic correctly handles different sizes in one call
-        cgs_sprint(&dstr, nfmt(v1, 'b'), " ", nfmt(v2, 'o'), " ", nfmt(v3, 'x'));
+        cgs_tostr_all(&dstr, nfmt(v1, 'b'), " ", nfmt(v2, 'o'), " ", nfmt(v3, 'x'));
         // 10=1010(b), 20=24(o), 30=1e(x)
         ASSERT_TRUE(cgs_equal(&dstr, "1010 24 1e"));
         
