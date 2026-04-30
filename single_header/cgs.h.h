@@ -3020,7 +3020,7 @@ CGS_PRIVATE unsigned int cgs__uint_max(unsigned int a, unsigned int b)
 
 CGS_PRIVATE unsigned int cgs__chars_strlen(const char *chars, unsigned int cap)
 {
-    char *str_end = memchr(chars, '\0', cap);
+    const char *str_end = memchr(chars, '\0', cap);
     unsigned int len;
     
     if(str_end != NULL)
@@ -3683,7 +3683,7 @@ CGS_API CGS_StrView cgs__next_tok(CGS_StrView *base, CGS_StrView delim)
     CGS_StrView found = cgs__strv_find(*base, delim);
     if(found.chars)
     {
-        ptrdiff_t index = found.chars - base->chars;
+        unsigned int index = (unsigned int)(found.chars - base->chars);
         CGS_StrView ret = {
             .chars = base->chars,
             .len = index
@@ -4129,7 +4129,7 @@ CGS_API CGS_StrView cgs__strv_cspn(const CGS_StrView src, const CGS_StrView char
         char *found = (char*) memchr(src.chars, charset.chars[0], src.len);
         if(found)
         {
-            return (CGS_StrView){.chars = src.chars, .len = found - src.chars};
+            return (CGS_StrView){.chars = src.chars, .len = (unsigned int)(found - src.chars)};
         }
         else
         {
@@ -4914,10 +4914,10 @@ CGS_API CGS_Error cgs__append_fmt(CGS_Writer writer, const CGS__const_StrView fm
     CGS_Error err = {CGS_OK};
     while(fmt_walk.len != 0 && err.ec == CGS_OK)
     {
-        char *found = memchr(fmt_walk.chars, '%', fmt_walk.len);
+        const char *found = memchr(fmt_walk.chars, '%', fmt_walk.len);
         if(found)
         {
-            ptrdiff_t index = found - fmt_walk.chars;
+            unsigned int index = (unsigned int) (found - fmt_walk.chars);
             CGS_StrView chunk = { .chars = (char*) fmt_walk.chars, .len = index };
             fmt_walk.chars += (index + 1);
             fmt_walk.len   -= (index + 1);
@@ -4967,7 +4967,7 @@ CGS_API CGS_Error cgs__append_fmt(CGS_Writer writer, const CGS__const_StrView fm
                 
                 char *end = NULL;
                 unsigned long arg_index = strtoul(found + 1, &end, 10); // we can assume fmt is null terminated
-                ptrdiff_t end_idx = end - fmt_walk.chars;
+                unsigned int end_idx = (unsigned int) (end - fmt_walk.chars);
                 fmt_walk.chars += end_idx;
                 fmt_walk.len   -= end_idx;
                 
@@ -5153,7 +5153,7 @@ do { \
         isneg = true; \
         obj *= -1; \
     } \
-    unsigned int numlen = cgs__numstr_len(obj); \
+    unsigned int numlen = cgs__numstr_len((unsigned long long) obj); \
     char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
     if(numlen >= sizeof(cgs__tmp_buf)) CGS_unreachable(); \
     \
