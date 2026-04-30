@@ -402,6 +402,21 @@ cgs__invoke_writer(cgs_writer(writer_dst), (CGS_StrView){.chars = &(char){c}, .l
 #define cgs_append(writer_dst, anystr_src) \
 cgs__invoke_writer(cgs_writer(writer_dst), cgs_strv(anystr_src))
 
+#define cgs_appendln(writer_dst, anystr_src) \
+cgs__invoke_writer_ln(cgs_writer(writer_dst), cgs_strv(anystr_src))
+
+#define cgs_fwrite(stream, anystr_src) \
+cgs_append(_Generic(stream,FILE*:stream), anystr_src)
+
+#define cgs_fwriteln(stream, anystr_src) \
+cgs_appendln(_Generic(stream,FILE*:stream), anystr_src)
+
+#define cgs_write(anystr_src) \
+cgs_fwrite(stdout, anystr_src)
+
+#define cgs_writeln(anystr_src) \
+cgs_fwriteln(stdout, anystr_src
+
 #define cgs_insert(mutstr_dst, anystr_src, idx) \
 _Generic(mutstr_dst, \
     CGS_MutStrRef : cgs__mutstr_ref_insert(cgs__coerce(mutstr_dst, CGS_MutStrRef), cgs_strv(anystr_src), idx), \
@@ -1492,6 +1507,14 @@ static inline CGS_Error cgs__invoke_writer(CGS_Writer writer, const CGS_StrView 
     return writer.append(writer.ctx, str);
 }
 
+static inline CGS_Error cgs__invoke_writer_ln(CGS_Writer writer, const CGS_StrView str)
+{
+    CGS_Error err = writer.append(writer.ctx, str);
+    if(err.ec == CGS_OK)
+        err = writer.append(writer.ctx, (CGS_StrView){.chars = (char*) "\n", .len = 1});
+    return err;
+}
+
 static inline CGS_Error cgs__invoke_writer_c(CGS_Writer writer, const CGS__const_StrView str)
 {
     return writer.append(writer.ctx, (CGS_StrView){.chars = (char*)str.chars, .len = str.len});
@@ -1672,6 +1695,7 @@ CGS__DECL_TOSTR_FUNC(32)
 
 #if defined(CGS_IMPL)
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <assert.h>
 #include <limits.h>
@@ -4775,7 +4799,16 @@ CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, int
         dstr->len += count;
     }
     dstr->chars[dstr->len] = '\0';
-    return ferror(stream) ? (CGS_Error){CGS_IO_ERROR} : (CGS_Error){CGS_OK};
+    
+    bool io_err = ferror(stream);
+    bool delim_not_found = c != delim;
+    
+    if(io_err)
+        return (CGS_Error){CGS_IO_ERROR};
+    else if(delim_not_found)
+        return (CGS_Error){CGS_NOT_FOUND};
+    else
+        return err;
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *stream, int delim)
@@ -4801,11 +4834,14 @@ CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *st
     
     bool io_err = ferror(stream);
     bool dst_too_small = (len == dst.cap - 1) && (c != delim) && (c != EOF);
+    bool delim_not_found = c != delim;
     
     if(dst_too_small)
         return (CGS_Error){CGS_DST_TOO_SMALL};
     else if(io_err)
         return (CGS_Error){CGS_IO_ERROR};
+    else if(delim_not_found)
+        return (CGS_Error){CGS_NOT_FOUND};
     else
         return (CGS_Error){CGS_OK};
 }

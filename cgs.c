@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <assert.h>
 #include <limits.h>
@@ -3102,7 +3103,16 @@ CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, int
         dstr->len += count;
     }
     dstr->chars[dstr->len] = '\0';
-    return ferror(stream) ? (CGS_Error){CGS_IO_ERROR} : (CGS_Error){CGS_OK};
+    
+    bool io_err = ferror(stream);
+    bool delim_not_found = c != delim;
+    
+    if(io_err)
+        return (CGS_Error){CGS_IO_ERROR};
+    else if(delim_not_found)
+        return (CGS_Error){CGS_NOT_FOUND};
+    else
+        return err;
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *stream, int delim)
@@ -3128,11 +3138,14 @@ CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *st
     
     bool io_err = ferror(stream);
     bool dst_too_small = (len == dst.cap - 1) && (c != delim) && (c != EOF);
+    bool delim_not_found = c != delim;
     
     if(dst_too_small)
         return (CGS_Error){CGS_DST_TOO_SMALL};
     else if(io_err)
         return (CGS_Error){CGS_IO_ERROR};
+    else if(delim_not_found)
+        return (CGS_Error){CGS_NOT_FOUND};
     else
         return (CGS_Error){CGS_OK};
 }

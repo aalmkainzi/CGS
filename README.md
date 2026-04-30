@@ -109,6 +109,11 @@ CGS_StrViewArray  cgs_split(anystr_t str, anystr_t delim, CGS_Allocator *allocat
 CGS_Error         cgs_split_iter(anystr_t str, anystr_t delim, bool(*callback)(CGS_StrView found, void *arg), void *arg = NULL);
 CGS_Error         cgs_join(mutstr_t dst, CGS_StrViewArray arr, anystr_t delim);
 
+CGS_Error         cgs_fwrite(FILE *stream, anystr_t src);
+CGS_Error         cgs_fwriteln(FILE *stream, anystr_t src);
+CGS_Error         cgs_write(anystr_t src);
+CGS_Error         cgs_writeln(anystr_t src);
+
 CGS_Error         cgs_fread_line(mutstr_t dst, FILE *stream);
 CGS_Error         cgs_append_fread_line(mutstr_t dst, FILE *stream);
 CGS_Error         cgs_read_line(mutstr_t dst);

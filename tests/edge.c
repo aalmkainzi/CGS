@@ -3421,7 +3421,7 @@ void test_file_io_edge_cases() {
         
         DStr dstr = dstr_init(20);
         CGS_Error err = cgs_fread_line(&dstr, f);
-        ASSERT_EQ(err.ec, CGS_OK);
+        ASSERT_EQ(err.ec, CGS_NOT_FOUND);
         ASSERT_TRUE(cgs_equal(&dstr, "no newline"));
         fclose(f);
         dstr_deinit(&dstr);

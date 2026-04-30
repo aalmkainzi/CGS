@@ -401,6 +401,21 @@ cgs__invoke_writer(cgs_writer(writer_dst), (CGS_StrView){.chars = &(char){c}, .l
 #define cgs_append(writer_dst, anystr_src) \
 cgs__invoke_writer(cgs_writer(writer_dst), cgs_strv(anystr_src))
 
+#define cgs_appendln(writer_dst, anystr_src) \
+cgs__invoke_writer_ln(cgs_writer(writer_dst), cgs_strv(anystr_src))
+
+#define cgs_fwrite(stream, anystr_src) \
+cgs_append(_Generic(stream,FILE*:stream), anystr_src)
+
+#define cgs_fwriteln(stream, anystr_src) \
+cgs_appendln(_Generic(stream,FILE*:stream), anystr_src)
+
+#define cgs_write(anystr_src) \
+cgs_fwrite(stdout, anystr_src)
+
+#define cgs_writeln(anystr_src) \
+cgs_fwriteln(stdout, anystr_src
+
 #define cgs_insert(mutstr_dst, anystr_src, idx) \
 _Generic(mutstr_dst, \
     CGS_MutStrRef : cgs__mutstr_ref_insert(cgs__coerce(mutstr_dst, CGS_MutStrRef), cgs_strv(anystr_src), idx), \
@@ -1489,6 +1504,14 @@ static inline unsigned int cgs__strv_len(const CGS_StrView sv)
 static inline CGS_Error cgs__invoke_writer(CGS_Writer writer, const CGS_StrView str)
 {
     return writer.append(writer.ctx, str);
+}
+
+static inline CGS_Error cgs__invoke_writer_ln(CGS_Writer writer, const CGS_StrView str)
+{
+    CGS_Error err = writer.append(writer.ctx, str);
+    if(err.ec == CGS_OK)
+        err = writer.append(writer.ctx, (CGS_StrView){.chars = (char*) "\n", .len = 1});
+    return err;
 }
 
 static inline CGS_Error cgs__invoke_writer_c(CGS_Writer writer, const CGS__const_StrView str)
