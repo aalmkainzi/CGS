@@ -5708,3 +5708,4 @@ CGS_API CGS_Error cgs__array_fmt_tostr_p(CGS_Writer dst, const void *obj)
 #endif // CGS__STR_C_INCLUDED
 
 #endif // CGS_IMPL
+#undef CGS_IMPL

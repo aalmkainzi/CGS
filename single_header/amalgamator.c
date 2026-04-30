@@ -12,7 +12,7 @@ int main()
     cgs_append_fread_until(&amalgam, h, EOF);
     cgs_append(&amalgam, "\n#if defined(CGS_IMPL)\n");
     cgs_append_fread_until(&amalgam, c, EOF);
-    cgs_append(&amalgam, "\n#endif // CGS_IMPL\n");
+    cgs_append(&amalgam, "\n#endif // CGS_IMPL\n#undef CGS_IMPL\n");
     
     cgs_replace_first(&amalgam, "#include \"cgs.h\"", "");
     
