@@ -1215,9 +1215,9 @@ static inline CGS_Error cgs__tostr_func_##n (CGS_Writer writer, cgs__tostr_type_
     _Static_assert(cgs__has_type(CGS__MCALL(CGS__ARG2, ADD_TOSTR), __typeof__(CGS_Error(*)(CGS_Writer, cgs__tostr_type_##n))), "tostr functions must have signature `CGS_Error(CGS_Writer writer, T src)`"); \
     return CGS__MCALL(CGS__ARG2, ADD_TOSTR) (writer, obj); \
 } \
-static inline CGS_Error cgs__tostr_p_func_##n (CGS_Writer writer, const cgs__tostr_type_##n *obj) \
+static inline CGS_Error cgs__tostr_p_func_##n (CGS_Writer writer, const void *obj) \
 { \
-    return cgs__tostr_func_##n(writer, *obj); \
+    return cgs__tostr_func_##n(writer, * (cgs__tostr_type_##n*) obj); \
 }
 
 CGS_API CGS_StrView cgs__strv_cstr1(const char *str);
@@ -1392,32 +1392,32 @@ CGS_API CGS_Error cgs__mutstr_ref_tostr(CGS_Writer writer, const CGS_MutStrRef o
 CGS_API CGS_Error cgs__error_tostr(CGS_Writer writer, CGS_Error obj);
 CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer writer, CGS_ArrayFmt obj);
 
-CGS_API CGS_Error cgs__bool_tostr_p(CGS_Writer writer, const  bool *obj);
-CGS_API CGS_Error cgs__cstr_tostr_p(CGS_Writer writer, const char *const*obj);
-CGS_API CGS_Error cgs__ucstr_tostr_p(CGS_Writer writer, const unsigned char *const*obj);
-CGS_API CGS_Error cgs__char_tostr_p(CGS_Writer writer, const  char *obj);
-CGS_API CGS_Error cgs__schar_tostr_p(CGS_Writer writer, const  signed char *obj);
-CGS_API CGS_Error cgs__uchar_tostr_p(CGS_Writer writer, const  unsigned char *obj);
-CGS_API CGS_Error cgs__short_tostr_p(CGS_Writer writer, const  short *obj);
-CGS_API CGS_Error cgs__ushort_tostr_p(CGS_Writer writer, const  unsigned short *obj);
-CGS_API CGS_Error cgs__int_tostr_p(CGS_Writer writer, const  int *obj);
-CGS_API CGS_Error cgs__uint_tostr_p(CGS_Writer writer, const  unsigned int *obj);
-CGS_API CGS_Error cgs__long_tostr_p(CGS_Writer writer, const  long *obj);
-CGS_API CGS_Error cgs__ulong_tostr_p(CGS_Writer writer, const  unsigned long *obj);
-CGS_API CGS_Error cgs__llong_tostr_p(CGS_Writer writer, const  long long *obj);
-CGS_API CGS_Error cgs__ullong_tostr_p(CGS_Writer writer, const  unsigned long long *obj);
-CGS_API CGS_Error cgs__float_tostr_p(CGS_Writer writer, const  float *obj);
-CGS_API CGS_Error cgs__double_tostr_p(CGS_Writer writer, const  double *obj);
+CGS_API CGS_Error cgs__bool_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__cstr_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__ucstr_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__char_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__schar_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__uchar_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__short_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__ushort_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__int_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__uint_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__long_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__ulong_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__llong_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__ullong_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__float_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__double_tostr_p(CGS_Writer writer, const void *obj);
 
-CGS_API CGS_Error cgs__dstr_tostr_p(CGS_Writer writer, const CGS_DStr *obj);
-CGS_API CGS_Error cgs__dstr_ptr_tostr_p(CGS_Writer writer, const CGS_DStr *const*obj);
-CGS_API CGS_Error cgs__strv_tostr_p(CGS_Writer writer, const CGS_StrView *obj);
-CGS_API CGS_Error cgs__strbuf_tostr_p(CGS_Writer writer, const CGS_StrBuf *obj);
-CGS_API CGS_Error cgs__strbuf_ptr_tostr_p(CGS_Writer writer, const CGS_StrBuf *const*obj);
-CGS_API CGS_Error cgs__mutstr_ref_tostr_p(CGS_Writer writer, const CGS_MutStrRef *obj);
+CGS_API CGS_Error cgs__dstr_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__dstr_ptr_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__strv_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__strbuf_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__strbuf_ptr_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__mutstr_ref_tostr_p(CGS_Writer writer, const void *obj);
 
-CGS_API CGS_Error cgs__error_tostr_p(CGS_Writer writer, const CGS_Error *obj);
-CGS_API CGS_Error cgs__array_fmt_tostr_p(CGS_Writer writer, const CGS_ArrayFmt *obj);
+CGS_API CGS_Error cgs__error_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__array_fmt_tostr_p(CGS_Writer writer, const void *obj);
 
 #define CGS__X(ty, extra) \
 CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr(CGS_Writer writer, CGS__Integer_d_Fmt_##ty obj);    \
@@ -1427,11 +1427,11 @@ CGS_API CGS_Error cgs__Integer_b_Fmt_##ty##_tostr(CGS_Writer writer, CGS__Intege
 CGS_API CGS_Error cgs__Integer_X_Fmt_##ty##_tostr(CGS_Writer writer, CGS__Integer_X_Fmt_##ty obj);    \
                                                                                                       \
                                                                                                       \
-CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Integer_d_Fmt_##ty *obj); \
-CGS_API CGS_Error cgs__Integer_x_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Integer_x_Fmt_##ty *obj); \
-CGS_API CGS_Error cgs__Integer_o_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Integer_o_Fmt_##ty *obj); \
-CGS_API CGS_Error cgs__Integer_b_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Integer_b_Fmt_##ty *obj); \
-CGS_API CGS_Error cgs__Integer_X_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Integer_X_Fmt_##ty *obj);
+CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj); \
+CGS_API CGS_Error cgs__Integer_x_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj); \
+CGS_API CGS_Error cgs__Integer_o_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj); \
+CGS_API CGS_Error cgs__Integer_b_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj); \
+CGS_API CGS_Error cgs__Integer_X_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj);
 
 CGS__INTEGER_TYPES(CGS__X, ignore)
 
@@ -1447,14 +1447,14 @@ CGS_API CGS_Error cgs__Floating_G_Fmt_##ty##_tostr(CGS_Writer writer, CGS__Float
 CGS_API CGS_Error cgs__Floating_E_Fmt_##ty##_tostr(CGS_Writer writer, CGS__Floating_E_Fmt_##ty obj);    \
 CGS_API CGS_Error cgs__Floating_A_Fmt_##ty##_tostr(CGS_Writer writer, CGS__Floating_A_Fmt_##ty obj);    \
                                                                                                         \
-CGS_API CGS_Error cgs__Floating_f_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Floating_f_Fmt_##ty *obj); \
-CGS_API CGS_Error cgs__Floating_g_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Floating_g_Fmt_##ty *obj); \
-CGS_API CGS_Error cgs__Floating_e_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Floating_e_Fmt_##ty *obj); \
-CGS_API CGS_Error cgs__Floating_a_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Floating_a_Fmt_##ty *obj); \
-CGS_API CGS_Error cgs__Floating_F_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Floating_F_Fmt_##ty *obj); \
-CGS_API CGS_Error cgs__Floating_G_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Floating_G_Fmt_##ty *obj); \
-CGS_API CGS_Error cgs__Floating_E_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Floating_E_Fmt_##ty *obj); \
-CGS_API CGS_Error cgs__Floating_A_Fmt_##ty##_tostr_p(CGS_Writer writer, CGS__Floating_A_Fmt_##ty *obj);
+CGS_API CGS_Error cgs__Floating_f_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj); \
+CGS_API CGS_Error cgs__Floating_g_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj); \
+CGS_API CGS_Error cgs__Floating_e_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj); \
+CGS_API CGS_Error cgs__Floating_a_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj); \
+CGS_API CGS_Error cgs__Floating_F_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj); \
+CGS_API CGS_Error cgs__Floating_G_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj); \
+CGS_API CGS_Error cgs__Floating_E_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj); \
+CGS_API CGS_Error cgs__Floating_A_Fmt_##ty##_tostr_p(CGS_Writer writer, const void *obj);
 
 CGS__FLOATING_TYPES(CGS__X, ignore, CGS__X)
 
