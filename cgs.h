@@ -414,7 +414,7 @@ cgs_appendln(_Generic(stream,FILE*:stream), anystr_src)
 cgs_fwrite(stdout, anystr_src)
 
 #define cgs_writeln(anystr_src) \
-cgs_fwriteln(stdout, anystr_src
+cgs_fwriteln(stdout, anystr_src)
 
 #define cgs_insert(mutstr_dst, anystr_src, idx) \
 _Generic(mutstr_dst, \
