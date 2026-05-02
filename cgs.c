@@ -90,7 +90,7 @@ static const unsigned long long cgs__ten_pows_ull[] = {
     10000000000000000000ull,
 };
 
-static const CGS_StrView cgs__uc_to_string[256] = {
+static const CGS__const_StrView cgs__uc_to_string[256] = {
     {.chars = "0", .len = 1},
     {.chars = "1", .len = 1},
     {.chars = "2", .len = 1},
@@ -349,7 +349,7 @@ static const CGS_StrView cgs__uc_to_string[256] = {
     {.chars = "255", .len = 3},
 };
 
-static const CGS_StrView cgs__sc_to_string[] = {
+static const CGS__const_StrView cgs__sc_to_string[] = {
     {.chars = "0", .len = 1},
     {.chars = "1", .len = 1},
     {.chars = "2", .len = 1},
@@ -3561,7 +3561,7 @@ CGS_API CGS_Error cgs__char_tostr(CGS_Writer writer, char obj)
 
 CGS_API CGS_Error cgs__schar_tostr(CGS_Writer writer, signed char obj)
 {
-    return cgs__invoke_writer(writer, cgs__sc_to_string[(unsigned char)obj]);
+    return cgs__invoke_writer_c(writer, cgs__sc_to_string[(unsigned char)obj]);
 }
 
 CGS_API CGS_Error cgs__uchar_tostr(CGS_Writer writer, unsigned char obj)
@@ -3694,7 +3694,7 @@ CGS_API CGS_Error cgs__mutstr_ref_tostr(CGS_Writer writer, const CGS_MutStrRef o
 
 CGS_PRIVATE CGS_Error cgs__uchar_d_tostr(CGS_Writer writer, unsigned char obj)
 {
-    return cgs__invoke_writer(writer, cgs__uc_to_string[obj]);
+    return cgs__invoke_writer_c(writer, cgs__uc_to_string[obj]);
 }
 
 #define cgs__if_else(cond, then, else) \
