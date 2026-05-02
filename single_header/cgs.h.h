@@ -1754,7 +1754,7 @@ static const CGS_Allocator cgs__default_allocator = {
     .realloc = cgs__default_allocator_realloc,
 };
 
-static const CGS_StrView cgs__error_to_string[] = {
+static const CGS__const_StrView cgs__error_to_string[] = {
     #define CGS__ERROR_TO_STRV(e) \
     [CGS_##e] = {.len = sizeof(#e) - 1, .chars = #e},
 
@@ -5329,7 +5329,7 @@ CGS_API CGS_Error cgs__double_tostr(CGS_Writer writer, double obj)
 
 CGS_API CGS_Error cgs__error_tostr(CGS_Writer writer, CGS_Error obj)
 {
-    return cgs__invoke_writer(writer, cgs__error_to_string[obj.ec]);
+    return cgs__invoke_writer_c(writer, cgs__error_to_string[obj.ec]);
 }
 
 CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer writer, CGS_ArrayFmt obj)
