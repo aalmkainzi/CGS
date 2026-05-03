@@ -286,6 +286,31 @@ typedef struct CGS_ArrayFmt
     const CGS_StrView trailing_separator;
 } CGS_ArrayFmt;
 
+typedef enum CGS__AlignModeEnum
+{
+    CGS__ALIGNMODE_ENUM_ALIGN_CENTER,
+    CGS__ALIGNMODE_ENUM_ALIGN_LEFT,
+    CGS__ALIGNMODE_ENUM_ALIGN_RIGHT
+} CGS__AlignModeEnum;
+
+typedef struct CGS__AlignModeStruct
+{
+    unsigned char align_mode;
+} CGS__AlignModeStruct;
+
+#define CGS_ALIGN_CENTER (CGS__AlignModeStruct){CGS__ALIGNMODE_ENUM_ALIGN_CENTER}
+#define CGS_ALIGN_LEFT   (CGS__AlignModeStruct){CGS__ALIGNMODE_ENUM_ALIGN_LEFT}
+#define CGS_ALIGN_RIGHT  (CGS__AlignModeStruct){CGS__ALIGNMODE_ENUM_ALIGN_RIGHT}
+
+typedef struct CGS_AlignFmt
+{
+    void *obj;
+    CGS_Error(*tostr_p)(CGS_Writer writer, const void *obj);
+    unsigned int width;
+    CGS__AlignModeStruct align_mode;
+    char fill_char;
+} CGS_AlignFmt;
+
 typedef struct CGS__DStrAppendAllocator
 {
     CGS_Allocator base;
@@ -996,7 +1021,7 @@ __VA_OPT__(cgs__arrfmt_2) \
     .array = (array_), \
     .nb = (nb_), \
     .elm_size = sizeof((array_)[0]), \
-    .elm_tostr = (void*) cgs__get_tostr_p_func(__typeof__((array_)[0])), \
+    .elm_tostr = cgs__get_tostr_p_func(__typeof__((array_)[0])), \
     .open = cgs_strv("{"), \
     .close = cgs_strv("}"), \
     .separator = cgs_strv(", "), \
@@ -1008,11 +1033,20 @@ __VA_OPT__(cgs__arrfmt_2) \
     .array = (array_), \
     .nb = (nb_), \
     .elm_size = sizeof((array_)[0]), \
-    .elm_tostr = (void*) cgs__get_tostr_p_func(__typeof__((array_)[0])), \
+    .elm_tostr = cgs__get_tostr_p_func(__typeof__((array_)[0])), \
     .open = cgs_strv(open_), \
     .close = cgs_strv(close_), \
     .separator = cgs_strv(seperator_), \
     .trailing_separator = cgs_strv(CGS__VA_OR("", __VA_ARGS__)) \
+})
+
+#define cgs_alignfmt(obj_p, align_mode_, width_, ...) \
+((CGS_AlignFmt){ \
+    .obj = obj_p, \
+    .tostr_p = cgs__get_tostr_p_func(__typeof__(*(obj_p))), \
+    .align_mode = align_mode_, \
+    .width = width_, \
+    .fill_char = CGS__VA_OR(' ', __VA_ARGS__) \
 })
 
 #define CGS__INTEGER_TOSTR_GENERIC_CASE(ty, extra)         \
@@ -1084,6 +1118,7 @@ const CGS_DStr*           : cgs__dstr_ptr_tostr,            \
 const CGS_StrBuf*         : cgs__strbuf_ptr_tostr,          \
 CGS_Error                 : cgs__error_tostr,               \
 CGS_ArrayFmt              : cgs__array_fmt_tostr,           \
+CGS_AlignFmt              : cgs__align_fmt_tostr,           \
 CGS__INTEGER_TYPES(CGS__INTEGER_TOSTR_GENERIC_CASE, ignore) \
 CGS__FLOATING_TYPES(CGS__FLOATING_TOSTR_GENERIC_CASE, ignore, CGS__FLOATING_TOSTR_LAST_GENERIC_CASE)
 
@@ -1116,6 +1151,7 @@ const CGS_DStr*           : cgs__dstr_ptr_tostr_p,            \
 const CGS_StrBuf*         : cgs__strbuf_ptr_tostr_p,          \
 CGS_Error                 : cgs__error_tostr_p,               \
 CGS_ArrayFmt              : cgs__array_fmt_tostr_p,           \
+CGS_AlignFmt              : cgs__align_fmt_tostr_p,           \
 CGS__INTEGER_TYPES(CGS__INTEGER_TOSTR_P_GENERIC_CASE, ignore) \
 CGS__FLOATING_TYPES(CGS__FLOATING_TOSTR_P_GENERIC_CASE, ignore, CGS__FLOATING_TOSTR_P_LAST_GENERIC_CASE)
 
@@ -1222,10 +1258,10 @@ cgs__get_tostr_func(__typeof__(src))(cgs_writer(dst), (src))
 cgs__get_tostr_p_func(__typeof__(*(srcp)))(cgs_writer(dst), (srcp))
 
 #define cgs_tostr_len(src) \
-cgs__invoke_tostr_len((CGS_Error(*)(CGS_Writer,void*)) cgs__get_tostr_p_func(__typeof__(src)), &(__typeof__(src)[]){src}[0])
+cgs__invoke_tostr_len((CGS_Error(*)(CGS_Writer,const void*)) cgs__get_tostr_p_func(__typeof__(src)), &(__typeof__(src)[]){src}[0])
 
 #define cgs_tostr_p_len(srcp) \
-cgs__invoke_tostr_len((CGS_Error(*)(CGS_Writer,void*)) cgs__get_tostr_p_func(__typeof__(*(srcp))), (srcp))
+cgs__invoke_tostr_len((CGS_Error(*)(CGS_Writer,const void*)) cgs__get_tostr_p_func(__typeof__(*(srcp))), (srcp))
 
 #define CGS__DECL_TOSTR_FUNC(n) \
 typedef __typeof__(CGS__MCALL(CGS__ARG1, ADD_TOSTR)) cgs__tostr_type_##n; \
@@ -1410,6 +1446,7 @@ CGS_API CGS_Error cgs__mutstr_ref_tostr(CGS_Writer writer, const CGS_MutStrRef o
 
 CGS_API CGS_Error cgs__error_tostr(CGS_Writer writer, CGS_Error obj);
 CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer writer, CGS_ArrayFmt obj);
+CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer writer, CGS_AlignFmt obj);
 
 CGS_API CGS_Error cgs__bool_tostr_p(CGS_Writer writer, const void *obj);
 CGS_API CGS_Error cgs__cstr_tostr_p(CGS_Writer writer, const void *obj);
@@ -1437,6 +1474,7 @@ CGS_API CGS_Error cgs__mutstr_ref_tostr_p(CGS_Writer writer, const void *obj);
 
 CGS_API CGS_Error cgs__error_tostr_p(CGS_Writer writer, const void *obj);
 CGS_API CGS_Error cgs__array_fmt_tostr_p(CGS_Writer writer, const void *obj);
+CGS_API CGS_Error cgs__align_fmt_tostr_p(CGS_Writer writer, const void *obj);
 
 #define CGS__X(ty, extra) \
 CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr(CGS_Writer writer, CGS__Integer_d_Fmt_##ty obj);    \
@@ -1535,7 +1573,7 @@ static inline CGS_Error cgs__len_writer_append(void *ctx, const CGS_StrView str)
     return (CGS_Error){CGS_OK};
 }
 
-static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer, void*), void *obj)
+static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer, const void*), void *obj)
 {
     unsigned int len = 0;
     CGS_Writer len_writer = {.ctx = &len, .append = cgs__len_writer_append};
@@ -5318,6 +5356,79 @@ CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer writer, CGS_ArrayFmt obj)
     return err;
 }
 
+CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer writer, CGS_AlignFmt obj)
+{
+    // TODO for better perf, have a local 32 byte array so it can be filled fill char, to make as least writer invokes as possible.
+    unsigned int len = cgs__invoke_tostr_len(obj.tostr_p, obj.obj);
+    
+    if(len < obj.width)
+    {
+        const CGS__const_StrView fill_strv = { &obj.fill_char, .len = 1 };
+        unsigned int diff = obj.width - len;
+        CGS_Error err = {CGS_OK};
+        
+        switch(obj.align_mode.align_mode)
+        {
+            case CGS__ALIGNMODE_ENUM_ALIGN_CENTER:
+            {
+                unsigned int half_diff = diff / 2;
+                for(unsigned int i = 0 ; i < half_diff && err.ec == CGS_OK ; i++)
+                {
+                    err = cgs__invoke_writer_c(writer, fill_strv);
+                }
+                
+                if(err.ec != CGS_OK)
+                    return err;
+                
+                err = obj.tostr_p(writer, obj.obj);
+                if(err.ec != CGS_OK)
+                    return err;
+                
+                unsigned int remaining_diff = diff - half_diff;
+                for(unsigned int i = 0 ; i < remaining_diff && err.ec == CGS_OK ; i++)
+                {
+                    err = cgs__invoke_writer_c(writer, fill_strv);
+                }
+                
+                return err;
+            }
+            case CGS__ALIGNMODE_ENUM_ALIGN_LEFT  :
+            {
+                err = obj.tostr_p(writer, obj.obj);
+                if(err.ec != CGS_OK)
+                    return err;
+                
+                for(unsigned int i = 0 ; i < diff && err.ec == CGS_OK ; i++)
+                {
+                    err = cgs__invoke_writer_c(writer, fill_strv);
+                }
+                
+                return err;
+            }
+            case CGS__ALIGNMODE_ENUM_ALIGN_RIGHT :
+            {
+                for(unsigned int i = 0 ; i < diff && err.ec == CGS_OK ; i++)
+                {
+                    err = cgs__invoke_writer_c(writer, fill_strv);
+                }
+                
+                if(err.ec != CGS_OK)
+                    return err;
+                
+                err = obj.tostr_p(writer, obj.obj);
+                
+                return err;
+            }
+            
+            default: CGS_unreachable();
+        }
+    }
+    else
+    {
+        return obj.tostr_p(writer, obj.obj);
+    }
+}
+
 CGS_API CGS_Error cgs__dstr_tostr(CGS_Writer writer, const CGS_DStr obj)
 {
     return cgs__invoke_writer(writer, (CGS_StrView){.chars = obj.chars, .len = obj.len});
@@ -5699,6 +5810,11 @@ CGS_API CGS_Error cgs__error_tostr_p(CGS_Writer dst, const void *obj)
 CGS_API CGS_Error cgs__array_fmt_tostr_p(CGS_Writer dst, const void *obj)
 {
     return cgs__array_fmt_tostr(dst, *(CGS_ArrayFmt*) obj);
+}
+
+CGS_API CGS_Error cgs__align_fmt_tostr_p(CGS_Writer writer, const void *obj)
+{
+    return cgs__align_fmt_tostr(writer, *(CGS_AlignFmt*)obj);
 }
 
 #endif // CGS__STR_C_INCLUDED

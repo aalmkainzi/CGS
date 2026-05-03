@@ -3662,6 +3662,79 @@ CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer writer, CGS_ArrayFmt obj)
     return err;
 }
 
+CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer writer, CGS_AlignFmt obj)
+{
+    // TODO for better perf, have a local 32 byte array so it can be filled fill char, to make as least writer invokes as possible.
+    unsigned int len = cgs__invoke_tostr_len(obj.tostr_p, obj.obj);
+    
+    if(len < obj.width)
+    {
+        const CGS__const_StrView fill_strv = { &obj.fill_char, .len = 1 };
+        unsigned int diff = obj.width - len;
+        CGS_Error err = {CGS_OK};
+        
+        switch(obj.align_mode.align_mode)
+        {
+            case CGS__ALIGNMODE_ENUM_ALIGN_CENTER:
+            {
+                unsigned int half_diff = diff / 2;
+                for(unsigned int i = 0 ; i < half_diff && err.ec == CGS_OK ; i++)
+                {
+                    err = cgs__invoke_writer_c(writer, fill_strv);
+                }
+                
+                if(err.ec != CGS_OK)
+                    return err;
+                
+                err = obj.tostr_p(writer, obj.obj);
+                if(err.ec != CGS_OK)
+                    return err;
+                
+                unsigned int remaining_diff = diff - half_diff;
+                for(unsigned int i = 0 ; i < remaining_diff && err.ec == CGS_OK ; i++)
+                {
+                    err = cgs__invoke_writer_c(writer, fill_strv);
+                }
+                
+                return err;
+            }
+            case CGS__ALIGNMODE_ENUM_ALIGN_LEFT  :
+            {
+                err = obj.tostr_p(writer, obj.obj);
+                if(err.ec != CGS_OK)
+                    return err;
+                
+                for(unsigned int i = 0 ; i < diff && err.ec == CGS_OK ; i++)
+                {
+                    err = cgs__invoke_writer_c(writer, fill_strv);
+                }
+                
+                return err;
+            }
+            case CGS__ALIGNMODE_ENUM_ALIGN_RIGHT :
+            {
+                for(unsigned int i = 0 ; i < diff && err.ec == CGS_OK ; i++)
+                {
+                    err = cgs__invoke_writer_c(writer, fill_strv);
+                }
+                
+                if(err.ec != CGS_OK)
+                    return err;
+                
+                err = obj.tostr_p(writer, obj.obj);
+                
+                return err;
+            }
+            
+            default: CGS_unreachable();
+        }
+    }
+    else
+    {
+        return obj.tostr_p(writer, obj.obj);
+    }
+}
+
 CGS_API CGS_Error cgs__dstr_tostr(CGS_Writer writer, const CGS_DStr obj)
 {
     return cgs__invoke_writer(writer, (CGS_StrView){.chars = obj.chars, .len = obj.len});
@@ -4043,6 +4116,11 @@ CGS_API CGS_Error cgs__error_tostr_p(CGS_Writer dst, const void *obj)
 CGS_API CGS_Error cgs__array_fmt_tostr_p(CGS_Writer dst, const void *obj)
 {
     return cgs__array_fmt_tostr(dst, *(CGS_ArrayFmt*) obj);
+}
+
+CGS_API CGS_Error cgs__align_fmt_tostr_p(CGS_Writer writer, const void *obj)
+{
+    return cgs__align_fmt_tostr(writer, *(CGS_AlignFmt*)obj);
 }
 
 #endif // CGS__STR_C_INCLUDED
