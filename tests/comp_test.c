@@ -1787,7 +1787,7 @@ void test_00222_variadic_kitchen_sink(void) {
     char msr_b[8] = "a"; CGS_MutStrRef msr = cgs_mutstr_ref(msr_b, 8);
     cgs_printf(ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
     cgs_printfln(ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
-    cgs_append_tostr_all(stdout, ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
+    cgs_append_tostr_many(stdout, ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
     cgs_fmt(pds, ptr, uptr, arr, uarr, sv, ds, pds, sb, psb, msr);
     cgs_dstr_deinit(&ds);
     cgs_dstr_deinit(&ds_o);

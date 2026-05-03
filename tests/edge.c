@@ -1674,12 +1674,12 @@ void test_str_putc_edge_cases() {
         fclose(tmp);
     }
     
-    TEST("writer_t: cgs_append_tostr_all with FILE*");;;
+    TEST("writer_t: cgs_append_tostr_many with FILE*");;;
     {
         FILE* tmp = tmpfile();
         
         // Using the variadic printing macro directly to a FILE*
-        cgs_append_tostr_all(tmp, "Hex: ", nfmt(255, 'X'), ", Score: ", 100);
+        cgs_append_tostr_many(tmp, "Hex: ", nfmt(255, 'X'), ", Score: ", 100);
         
         rewind(tmp);
         DStr result = dstr_init();
@@ -3976,14 +3976,14 @@ void test_tostr_edge_cases() {
     TEST("cgs_print: multiple arguments (concatenation)");;;
     {
         CGS_StrBuf sb = {0};
-        cgs_tostr_all(&sb, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
+        cgs_tostr_many(&sb, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
         ASSERT_TRUE(cgs_equal(sb, ""));
     }
     
     TEST("cgs_print: multiple arguments (concatenation)");;;
     {
         DStr dstr = dstr_init(50);
-        cgs_tostr_all(&dstr, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
+        cgs_tostr_many(&dstr, 123, " ", "test", " ", nfmt(456.78f, 'f', 2), "!", -99);
         ASSERT_TRUE(cgs_equal(&dstr, "123 test 456.78!-99"));
         dstr_deinit(&dstr);
     }
@@ -3993,7 +3993,7 @@ void test_tostr_edge_cases() {
         char backing[10];
         StrBuf sb = strbuf_init_from_buf(backing, 10);
         cgs_clear(&sb);
-        cgs_tostr_all(&sb, 1, " ", "long_string_here");
+        cgs_tostr_many(&sb, 1, " ", "long_string_here");
         ASSERT_TRUE(cgs_equal(sb, "1 long_st"));
     }
     
@@ -4009,7 +4009,7 @@ void test_tostr_edge_cases() {
     TEST("nfmt: integer decimal (signed/unsigned)");;;
     {
         DStr dstr = dstr_init(30);
-        cgs_tostr_all(&dstr, nfmt(0, 'd'), " ", nfmt(-123, 'd'), " ", nfmt(2147483647, 'd'));
+        cgs_tostr_many(&dstr, nfmt(0, 'd'), " ", nfmt(-123, 'd'), " ", nfmt(2147483647, 'd'));
         ASSERT_TRUE(cgs_equal(&dstr, "0 -123 2147483647"));
         dstr_deinit(&dstr);
     }
@@ -4029,7 +4029,7 @@ void test_tostr_edge_cases() {
     TEST("nfmt: integer octal and binary");;;
     {
         DStr dstr = dstr_init(20);
-        cgs_tostr_all(&dstr, nfmt(8, 'o'), " ", nfmt(5, 'b'));
+        cgs_tostr_many(&dstr, nfmt(8, 'o'), " ", nfmt(5, 'b'));
         // 8 in octal is 10, 5 in binary is 101
         ASSERT_TRUE(cgs_equal(&dstr, "10 101"));
         dstr_deinit(&dstr);
@@ -4039,7 +4039,7 @@ void test_tostr_edge_cases() {
     {
         DStr dstr = dstr_init(30);
         // Test precision and rounding
-        cgs_tostr_all(&dstr, nfmt(3.14159f, 'f', 2), " ", nfmt(-0.555f, 'f', 1));
+        cgs_tostr_many(&dstr, nfmt(3.14159f, 'f', 2), " ", nfmt(-0.555f, 'f', 1));
         ASSERT_TRUE(cgs_equal(&dstr, "3.14 -0.6"));
         dstr_deinit(&dstr);
     }
@@ -4047,11 +4047,11 @@ void test_tostr_edge_cases() {
     TEST("nfmt: scientific notation (e/E)");;;
     {
         DStr dstr = dstr_init(30);
-        cgs_tostr_all(&dstr, nfmt(1000.0, 'e', 2));
+        cgs_tostr_many(&dstr, nfmt(1000.0, 'e', 2));
         ASSERT_TRUE(cgs_equal(&dstr, "1.00e+03"));
         
         cgs_clear(&dstr);
-        cgs_tostr_all(&dstr, nfmt(0.001, 'E', 1));
+        cgs_tostr_many(&dstr, nfmt(0.001, 'E', 1));
         ASSERT_TRUE(cgs_equal(&dstr, "1.0E-03"));
         dstr_deinit(&dstr);
     }
@@ -4060,7 +4060,7 @@ void test_tostr_edge_cases() {
     {
         DStr dstr = dstr_init(30);
         // 'g' chooses between fixed and scientific based on magnitude
-        cgs_tostr_all(&dstr, nfmt(123.456, 'g', 4));
+        cgs_tostr_many(&dstr, nfmt(123.456, 'g', 4));
         ASSERT_TRUE(cgs_equal(&dstr, "123.5")); // 4 significant digits
         dstr_deinit(&dstr);
     }
@@ -4082,7 +4082,7 @@ void test_tostr_edge_cases() {
     {
         DStr dstr = dstr_init(50);
         long long max_val = 9223372036854775807LL;
-        cgs_tostr_all(&dstr, nfmt(0, 'x'), " ", nfmt(max_val, 'd'));
+        cgs_tostr_many(&dstr, nfmt(0, 'x'), " ", nfmt(max_val, 'd'));
         ASSERT_TRUE(cgs_equal(&dstr, "0 9223372036854775807"));
         dstr_deinit(&dstr);
     }
@@ -4092,17 +4092,17 @@ void test_tostr_edge_cases() {
         DStr dstr = dstr_init(50);
         // Test very small float with high precision
         double val = 0.0000123456;
-        cgs_tostr_all(&dstr, nfmt(val, 'f', 8));
+        cgs_tostr_many(&dstr, nfmt(val, 'f', 8));
         ASSERT_TRUE(cgs_equal(&dstr, "0.00001235"));
         dstr_deinit(&dstr);
     }
     
-    TEST("cgs_tostr_all: complex mixed types");;;
+    TEST("cgs_tostr_many: complex mixed types");;;
     {
         DStr dstr = dstr_init(100);
         int hex_val = 0xDEAD;
         float pi = 3.14159f;
-        cgs_tostr_all(&dstr, "Hex: ", nfmt(hex_val, 'X'), ", Pi: ", nfmt(pi, 'g', 3), ", Bin: ", nfmt(7, 'b'));
+        cgs_tostr_many(&dstr, "Hex: ", nfmt(hex_val, 'X'), ", Pi: ", nfmt(pi, 'g', 3), ", Bin: ", nfmt(7, 'b'));
         ASSERT_TRUE(cgs_equal(&dstr, "Hex: DEAD, Pi: 3.14, Bin: 111"));
         dstr_deinit(&dstr);
     }
@@ -4116,7 +4116,7 @@ void test_tostr_edge_cases() {
         
         cgs_clear(&dstr);
         // Small powers of 2
-        cgs_tostr_all(&dstr, nfmt(1, 'b'), ",", nfmt(2, 'b'), ",", nfmt(4, 'b'), ",", nfmt(8, 'b'));
+        cgs_tostr_many(&dstr, nfmt(1, 'b'), ",", nfmt(2, 'b'), ",", nfmt(4, 'b'), ",", nfmt(8, 'b'));
         ASSERT_TRUE(cgs_equal(&dstr, "1,10,100,1000"));
         dstr_deinit(&dstr);
     }
@@ -4129,7 +4129,7 @@ void test_tostr_edge_cases() {
         
         cgs_clear(&dstr);
         // Standard octal transitions
-        cgs_tostr_all(&dstr, nfmt(7, 'o'), ",", nfmt(8, 'o'), ",", nfmt(16, 'o'));
+        cgs_tostr_many(&dstr, nfmt(7, 'o'), ",", nfmt(8, 'o'), ",", nfmt(16, 'o'));
         ASSERT_TRUE(cgs_equal(&dstr, "7,10,20"));
         dstr_deinit(&dstr);
     }
@@ -4218,7 +4218,7 @@ void test_tostr_edge_cases() {
         unsigned int   v3 = 30;
         
         // Testing that the macro/generic correctly handles different sizes in one call
-        cgs_tostr_all(&dstr, nfmt(v1, 'b'), " ", nfmt(v2, 'o'), " ", nfmt(v3, 'x'));
+        cgs_tostr_many(&dstr, nfmt(v1, 'b'), " ", nfmt(v2, 'o'), " ", nfmt(v3, 'x'));
         // 10=1010(b), 20=24(o), 30=1e(x)
         ASSERT_TRUE(cgs_equal(&dstr, "1010 24 1e"));
         

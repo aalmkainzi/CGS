@@ -774,7 +774,7 @@ __VA_OPT__( \
 CGS__FOREACH(cgs__tostr_each, __VA_ARGS__); \
 )
 
-#define cgs_append_tostr_all(writer_dst, ...) \
+#define cgs_append_tostr_many(writer_dst, ...) \
 do \
 { \
     CGS_Writer cgs__as_writer = cgs_writer(writer_dst); \
@@ -782,7 +782,7 @@ do \
     cgs__tostr_foreach_arg(__VA_ARGS__); \
 } while(0)
 
-#define cgs_tostr_all(mutstr_dst, ...) \
+#define cgs_tostr_many(mutstr_dst, ...) \
 do \
 { \
     cgs_clear(mutstr_dst); \
@@ -823,6 +823,9 @@ cgs_fprintf(stdout, fmt, __VA_ARGS__)
 
 #define cgs_printfln(fmt, ...) \
 cgs_fprintfln(stdout, fmt, __VA_ARGS__)
+
+#define cgs_sprint(mutstr_dst, fmt, ...) \
+cgs_fmt(mutstr_dst, fmt, __VA_ARGS__)
 
 typedef char               cgs__c;
 typedef signed char        cgs__sc;
@@ -1575,8 +1578,8 @@ static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer,
 #define tostr_len(srcp) cgs_tostr_len(srcp)
 #define tostr_p_len(srcp) cgs_tostr_p_len(srcp)
 
-#define tostr_all(dst, ...) cgs_fmt(dst __VA_OPT__(,) __VA_ARGS__)
-#define append_tostr_all(dst, ...) cgs_append_fmt(dst __VA_OPT__(,) __VA_ARGS__)
+#define tostr_many(dst, ...) cgs_fmt(dst __VA_OPT__(,) __VA_ARGS__)
+#define append_tostr_many(dst, ...) cgs_append_fmt(dst __VA_OPT__(,) __VA_ARGS__)
 
 #define nfmt(exp, fmt_char, ...) cgs_nfmt(exp, fmt_char __VA_OPT__(,) __VA_ARGS__)
 #define nfmt_t(T, fmt_char, ...) cgs_nfmt_t(T, fmt_char __VA_OPT__(,) __VA_ARGS__)

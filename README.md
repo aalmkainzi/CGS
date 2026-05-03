@@ -142,8 +142,10 @@ CGS_Error         cgs_printfln(const char *fmt, ...args with tostr);
 CGS_Error         cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr);
 CGS_Error         cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
 
-                  cgs_tostr_all(mutstr_t dst, ...args with tostr);
-                  cgs_append_tostr_all(writer_t dst, ...args with tostr);
+CGS_Error         cgs_sprint(mutstr_t dst, const char *fmt, ...args with tostr);
+
+                  cgs_tostr_many(mutstr_t dst, ...args with tostr);
+                  cgs_append_tostr_many(writer_t dst, ...args with tostr);
 
 cgs_nfmt_t(integer_T, fmt_char)    cgs_nfmt(integer_T value, int fmt_char);
 cgs_nfmt_t(float/double, fmt_char) cgs_nfmt(float/double value, int fmt_char, int precision = (fmt_char == 'a' ? -1 : 6));
@@ -184,8 +186,8 @@ cgs_append_tostr
 cgs_tostr_p
 cgs_has_tostr
 
-cgs_tostr_all
-cgs_append_tostr_all
+cgs_tostr_many
+cgs_append_tostr_many
 
 cgs_nfmt
 cgs_nfmt_t

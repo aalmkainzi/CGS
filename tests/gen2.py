@@ -162,7 +162,7 @@ all_vnames = [m[2] for m in ANYSTR_META]
 generate_test("variadic_kitchen_sink", all_vnames, [
     "cgs_printf(" + ", ".join(all_vnames) + ");",
     "cgs_printfln(" + ", ".join(all_vnames) + ");",
-    "cgs_append_tostr_all(stdout, " + ", ".join(all_vnames) + ");",
+    "cgs_append_tostr_many(stdout, " + ", ".join(all_vnames) + ");",
     "cgs_fmt(pds, " + ", ".join(all_vnames) + ");"
 ])
 
