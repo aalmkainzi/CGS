@@ -270,6 +270,8 @@ CGS_Error cgs_printfln(const char *fmt, ...args with tostr);
 
 CGS_Error cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr);
 CGS_Error cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
+
+CGS_Error cgs_sprintf(mutstr_t dst, const char *fmt, ...args with tostr);
 ```
 
 e.g.
