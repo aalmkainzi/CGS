@@ -1,6 +1,6 @@
 CC := cc
 SRCS := $(wildcard *.c)
-CFLAGS := -Wall -Wextra -I../.. -ggdb
+CFLAGS := -Wall -Wextra -Wno-unused-function -I../.. -ggdb
 
 
 .PHONY: all clean

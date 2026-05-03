@@ -109,9 +109,9 @@ CGS_StrViewArray  cgs_split(anystr_t str, anystr_t delim, CGS_Allocator *allocat
 CGS_Error         cgs_split_iter(anystr_t str, anystr_t delim, bool(*callback)(CGS_StrView found, void *arg), void *arg = NULL);
 CGS_Error         cgs_join(mutstr_t dst, CGS_StrViewArray arr, anystr_t delim);
 
-CGS_Error         cgs_fwrite(FILE *stream, anystr_t src);
+CGS_Error         cgs_fwrite(FILE *stream, anystr_t src); // identical to cgs_append, but restricted to FILE*
 CGS_Error         cgs_fwriteln(FILE *stream, anystr_t src);
-CGS_Error         cgs_write(anystr_t src);
+CGS_Error         cgs_write(anystr_t src); // calls cgs_fwrite on stdout
 CGS_Error         cgs_writeln(anystr_t src);
 
 CGS_Error         cgs_fread_line(mutstr_t dst, FILE *stream);
@@ -136,11 +136,11 @@ unsigned int      cgs_tostr_p_len(T *val);
 CGS_Error         cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%arg_index" for positional arguments, cannot mix and match.
 CGS_Error         cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr); // same as cgs_fmt, but appends
 
-CGS_Error         cgs_printf(const char *fmt, ...args with tostr); // calls cgs_append_fmt on stdout
-CGS_Error         cgs_printfln(const char *fmt, ...args with tostr);
-
 CGS_Error         cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_append_fmt, but restricted to FILE*
 CGS_Error         cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
+
+CGS_Error         cgs_printf(const char *fmt, ...args with tostr); // calls cgs_fprintf on stdout
+CGS_Error         cgs_printfln(const char *fmt, ...args with tostr);
 
 CGS_Error         cgs_sprintf(mutstr_t dst, const char *fmt, ...args with tostr); // alias for cgs_fmt
 
