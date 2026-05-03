@@ -386,8 +386,8 @@ _Generic(any_str,                                    \
 #define cgs_equal(anystr1, anystr2) \
 cgs__strv_equal(cgs_strv(anystr1), cgs_strv(anystr2))
 
-#define cgs_dup(anystr, ...) \
-cgs__dstr_init_from(cgs_strv(anystr), CGS__VA_OR(cgs_get_default_allocator(), __VA_ARGS__))
+#define cgs_dup(anystr_src, ...) \
+cgs__dstr_init_from(cgs_strv(anystr_src), CGS__VA_OR(cgs_get_default_allocator(), __VA_ARGS__))
 
 #define cgs_copy(mutstr_dst, anystr_src) \
 _Generic(mutstr_dst, \
