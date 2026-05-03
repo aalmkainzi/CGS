@@ -849,7 +849,7 @@ cgs_fprintf(stdout, fmt, __VA_ARGS__)
 #define cgs_printfln(fmt, ...) \
 cgs_fprintfln(stdout, fmt, __VA_ARGS__)
 
-#define cgs_sprint(mutstr_dst, fmt, ...) \
+#define cgs_sprintf(mutstr_dst, fmt, ...) \
 cgs_fmt(mutstr_dst, fmt, __VA_ARGS__)
 
 typedef char               cgs__c;

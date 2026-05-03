@@ -142,7 +142,7 @@ CGS_Error         cgs_printfln(const char *fmt, ...args with tostr);
 CGS_Error         cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_append_fmt, but restricted to FILE*
 CGS_Error         cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
 
-CGS_Error         cgs_sprint(mutstr_t dst, const char *fmt, ...args with tostr); // alias for cgs_append_fmt
+CGS_Error         cgs_sprintf(mutstr_t dst, const char *fmt, ...args with tostr); // alias for cgs_fmt
 
                   cgs_tostr_many(mutstr_t dst, ...args with tostr); // clears dst, calls the tostr of each ... arg, and appends them to dst
                   cgs_append_tostr_many(writer_t dst, ...args with tostr); // calls the tostr of each ... arg, and appends them to dst
