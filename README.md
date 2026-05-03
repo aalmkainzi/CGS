@@ -153,47 +153,6 @@ CGS_ArrayFmt                       cgs_arrfmt(T *array, size_t len); // an array
 CGS_ArrayFmt                       cgs_arrfmt(T *array, size_t len, anystr_t open, anystr_t close, anystr_t delim, anystr_t trailing_delim = "");
 ```
 
-## Short names
-If you define the macro `CGS_SHORT_NAMES` before including the `cgs.h` header, unprefixed variants of the following identifiers will be `#define`d:
-```C
-CGS_Allocator
-CGS_DStr
-CGS_StrBuf
-CGS_StrView
-CGS_StrViewArray
-CGS_MutStrRef
-CGS_ReplaceResult
-CGS_AppenderState
-CGS_ArrayFmt
-
-cgs_strv
-cgs_strv_arr
-cgs_strv_arr_from
-
-cgs_strbuf_init_from_cstr
-cgs_strbuf_init_from_buf
-
-cgs_dstr_init
-cgs_dstr_init_from
-cgs_dstr_deinit
-cgs_dstr_ensure_cap
-cgs_dstr_shrink_to_fit
-
-cgs_mutstr_ref
-
-cgs_tostr
-cgs_append_tostr
-cgs_tostr_p
-cgs_has_tostr
-
-cgs_tostr_many
-cgs_append_tostr_many
-
-cgs_nfmt
-cgs_nfmt_t
-cgs_arrfmt
-```
-
 ## DStr
 
 Dynamic String.

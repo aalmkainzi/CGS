@@ -1544,49 +1544,6 @@ static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer,
 
 #endif // CGS__H_INCLUDED
 
-#ifdef CGS_SHORT_NAMES
-
-#define Allocator     CGS_Allocator
-#define DStr          CGS_DStr
-#define StrBuf        CGS_StrBuf
-#define StrView       CGS_StrView
-#define StrViewArray  CGS_StrViewArray
-#define MutStrRef     CGS_MutStrRef
-#define ReplaceResult CGS_ReplaceResult
-#define AppenderState CGS_AppenderState
-#define ArrayFmt      CGS_ArrayFmt
-
-#define strv(anystr, ...) cgs_strv(anystr __VA_OPT__(,) __VA_ARGS__)
-#define strv_arr(...) cgs_strv_arr(__VA_ARGS__)
-#define strv_arr_from(arr, ...) cgs_strv_arr_from(arr __VA_OPT__(,) __VA_ARGS__)
-
-#define strbuf_init_from_cstr(cstr, ...) cgs_strbuf_init_from_cstr(cstr __VA_OPT__(,) __VA_ARGS__)
-#define strbuf_init_from_buf(buf, ...) cgs_strbuf_init_from_buf(buf __VA_OPT__(,) __VA_ARGS__)
-
-#define dstr_init(...) cgs_dstr_init(__VA_ARGS__)
-#define dstr_init_from(anystr, ...) cgs_dstr_init_from(anystr __VA_OPT__(,) __VA_ARGS__)
-#define dstr_deinit(dstr) cgs_dstr_deinit(dstr)
-#define dstr_ensure_cap(dstr, new_cap) cgs_dstr_ensure_cap(dstr, new_cap)
-#define dstr_shrink_to_fit(dstr) cgs_dstr_shrink_to_fit(dstr)
-
-#define mutstr_ref(mutstr, ...) cgs_mutstr_ref(mutstr __VA_OPT__(,) __VA_ARGS__)
-
-#define tostr(dst, src) cgs_tostr(dst, src)
-#define append_tostr(dst, src) cgs_append_tostr(dst, src)
-#define tostr_p(dst, srcp) cgs_tostr_p(dst, srcp)
-#define has_tostr(T) cgs_has_tostr(T)
-#define tostr_len(srcp) cgs_tostr_len(srcp)
-#define tostr_p_len(srcp) cgs_tostr_p_len(srcp)
-
-#define tostr_many(dst, ...) cgs_fmt(dst __VA_OPT__(,) __VA_ARGS__)
-#define append_tostr_many(dst, ...) cgs_append_fmt(dst __VA_OPT__(,) __VA_ARGS__)
-
-#define nfmt(exp, fmt_char, ...) cgs_nfmt(exp, fmt_char __VA_OPT__(,) __VA_ARGS__)
-#define nfmt_t(T, fmt_char, ...) cgs_nfmt_t(T, fmt_char __VA_OPT__(,) __VA_ARGS__)
-#define arrfmt(arr, n, ...) cgs_arrfmt(arr, n, __VA_ARGS__)
-
-#endif // CGS_SHORT_NAMES
-
 #if defined(ADD_TOSTR)
 
 _Static_assert( cgs__has_type(cgs__get_tostr_func_with_default(CGS__ARG1 ADD_TOSTR), cgs__tostr_fail), "Type already has a tostr" );

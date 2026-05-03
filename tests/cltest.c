@@ -68,16 +68,16 @@ do { \
 // cgs_at tests
 // ============================================================================
 
-bool test_str_at_dstring() {
-    DStr ds = dstr_init_from("test");
+bool test_str_at_cgs_dstring() {
+    CGS_DStr ds = cgs_dstr_init_from("test");
     ASSERT_EQ(ds.chars[ 0], 't');
     ASSERT_EQ(ds.chars[ 3], 't');
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
 bool test_str_at_string_view() {
-    StrView sv = strv("example", 0, 7);
+    CGS_StrView sv = cgs_strv("example", 0, 7);
     ASSERT_EQ(sv.chars[ 0], 'e');
     ASSERT_EQ(sv.chars[ 6], 'e');
     return true;
@@ -106,15 +106,15 @@ bool test_str_len_array() {
     return true;
 }
 
-bool test_str_len_dstring() {
-    DStr ds = dstr_init_from("dynamic");
+bool test_str_len_cgs_dstring() {
+    CGS_DStr ds = cgs_dstr_init_from("dynamic");
     ASSERT_EQ(cgs_len(ds), 7);
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
 bool test_str_len_string_view() {
-    StrView sv = strv("hello world", 6, 11);
+    CGS_StrView sv = cgs_strv("hello world", 6, 11);
     ASSERT_EQ(cgs_len(sv), 5);
     return true;
 }
@@ -129,16 +129,16 @@ bool test_str_cap_array() {
     return true;
 }
 
-bool test_str_cap_dstring() {
-    DStr ds = dstr_init(100);
+bool test_str_cap_cgs_dstring() {
+    CGS_DStr ds = cgs_dstr_init(100);
     ASSERT(cgs_cap(ds) >= 100);
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
 bool test_str_cap_string_buffer() {
     char buf[64];
-    StrBuf sb = strbuf_init_from_buf(buf);
+    CGS_StrBuf sb = cgs_strbuf_init_from_buf(buf);
     ASSERT_EQ(cgs_cap(sb), 64);
     return true;
 }
@@ -162,8 +162,8 @@ bool test_str_equal_different() {
 
 bool test_str_equal_mixed_types() {
     char arr[] = "test";
-    DStr ds = dstr_init_from("test");
-    StrView sv = strv("test", 0, 4);
+    CGS_DStr ds = cgs_dstr_init_from("test");
+    CGS_StrView sv = cgs_strv("test", 0, 4);
     
     ASSERT(cgs_equal(arr, "test"));
     ASSERT(cgs_equal(ds, "test"));
@@ -171,7 +171,7 @@ bool test_str_equal_mixed_types() {
     ASSERT(cgs_equal(arr, ds));
     ASSERT(cgs_equal(ds, sv));
     
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
@@ -185,10 +185,10 @@ bool test_str_chars_cstr() {
     return true;
 }
 
-bool test_str_chars_dstring() {
-    DStr ds = dstr_init_from("world");
+bool test_str_chars_cgs_dstring() {
+    CGS_DStr ds = cgs_dstr_init_from("world");
     ASSERT_STR_EQ(cgs_chars(ds), "world");
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
@@ -197,38 +197,38 @@ bool test_str_chars_dstring() {
 // ============================================================================
 
 bool test_str_find_exists() {
-    StrView result = cgs_find("hello world", "world");
+    CGS_StrView result = cgs_find("hello world", "world");
     ASSERT_EQ(cgs_len(result), 5);
     ASSERT(cgs_equal(result, "world"));
     return true;
 }
 
 bool test_str_find_not_found() {
-    StrView result = cgs_find("hello world", "xyz");
+    CGS_StrView result = cgs_find("hello world", "xyz");
     ASSERT_EQ(cgs_len(result), 0);
     return true;
 }
 
 bool test_str_find_empty_needle() {
-    StrView result = cgs_find("hello", "");
+    CGS_StrView result = cgs_find("hello", "");
     ASSERT_EQ(cgs_len(result), 0);
     return true;
 }
 
 bool test_str_find_at_start() {
-    StrView result = cgs_find("hello world", "hello");
+    CGS_StrView result = cgs_find("hello world", "hello");
     ASSERT(cgs_equal(result, "hello"));
     return true;
 }
 
 bool test_str_find_at_end() {
-    StrView result = cgs_find("hello world", "world");
+    CGS_StrView result = cgs_find("hello world", "world");
     ASSERT(cgs_equal(result, "world"));
     return true;
 }
 
 bool test_str_find_multiple_occurrences() {
-    StrView result = cgs_find("abcabc", "abc");
+    CGS_StrView result = cgs_find("abcabc", "abc");
     ASSERT_EQ(cgs_len(result), 3);
     // Should find the first occurrence
     return true;
@@ -263,12 +263,12 @@ bool test_str_count_empty_needle() {
 // cgs_clear tests
 // ============================================================================
 
-bool test_str_clear_dstring() {
-    DStr ds = dstr_init_from("hello");
+bool test_str_clear_cgs_dstring() {
+    CGS_DStr ds = cgs_dstr_init_from("hello");
     ASSERT_OK(cgs_clear(&ds));
     ASSERT_EQ(cgs_len(ds), 0);
     ASSERT_STR_EQ(cgs_chars(ds), "");
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
@@ -340,10 +340,10 @@ bool test_str_tolower_basic() {
 }
 
 bool test_str_tolower_already_lower() {
-    DStr ds = dstr_init_from("already lowercase");
+    CGS_DStr ds = cgs_dstr_init_from("already lowercase");
     cgs_tolower(&ds);
     ASSERT(cgs_equal(ds, "already lowercase"));
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
@@ -366,10 +366,10 @@ bool test_str_toupper_basic() {
 }
 
 bool test_str_toupper_already_upper() {
-    DStr ds = dstr_init_from("ALREADY UPPERCASE");
+    CGS_DStr ds = cgs_dstr_init_from("ALREADY UPPERCASE");
     (cgs_toupper(&ds));
     ASSERT(cgs_equal(ds, "ALREADY UPPERCASE"));
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
@@ -398,11 +398,11 @@ bool test_str_copy_empty() {
     return true;
 }
 
-bool test_str_copy_dstring() {
-    DStr dst = dstr_init(50);
+bool test_str_copy_cgs_dstring() {
+    CGS_DStr dst = cgs_dstr_init(50);
     ASSERT_OK(cgs_copy(&dst, "test string"));
     ASSERT(cgs_equal(dst, "test string"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -432,13 +432,13 @@ bool test_str_putc_basic() {
     return true;
 }
 
-bool test_str_putc_dstring() {
-    DStr ds = dstr_init();
+bool test_str_putc_cgs_dstring() {
+    CGS_DStr ds = cgs_dstr_init();
     ASSERT_OK(cgs_putc(&ds, 'x'));
     ASSERT_OK(cgs_putc(&ds, 'y'));
     ASSERT_OK(cgs_putc(&ds, 'z'));
     ASSERT(cgs_equal(ds, "xyz"));
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
@@ -454,25 +454,25 @@ bool test_str_putc_full_buffer() {
 // ============================================================================
 
 bool test_str_dup_basic() {
-    DStr dup = cgs_dup("hello world");
+    CGS_DStr dup = cgs_dup("hello world");
     ASSERT(cgs_equal(dup, "hello world"));
-    dstr_deinit(&dup);
+    cgs_dstr_deinit(&dup);
     return true;
 }
 
 bool test_str_dup_empty() {
-    DStr dup = cgs_dup("");
+    CGS_DStr dup = cgs_dup("");
     ASSERT_EQ(cgs_len(dup), 0);
-    dstr_deinit(&dup);
+    cgs_dstr_deinit(&dup);
     return true;
 }
 
-bool test_str_dup_from_dstring() {
-    DStr src = dstr_init_from("source");
-    DStr dup = cgs_dup(src);
+bool test_str_dup_from_cgs_dstring() {
+    CGS_DStr src = cgs_dstr_init_from("source");
+    CGS_DStr dup = cgs_dup(src);
     ASSERT(cgs_equal(dup, "source"));
-    dstr_deinit(&src);
-    dstr_deinit(&dup);
+    cgs_dstr_deinit(&src);
+    cgs_dstr_deinit(&dup);
     return true;
 }
 
@@ -488,10 +488,10 @@ bool test_str_append_basic() {
 }
 
 bool test_str_append_empty_dst() {
-    DStr dst = dstr_init();
+    CGS_DStr dst = cgs_dstr_init();
     ASSERT_OK(cgs_append(&dst, "first"));
     ASSERT(cgs_equal(dst, "first"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -510,12 +510,12 @@ bool test_str_append_too_small() {
 }
 
 bool test_str_append_multiple() {
-    DStr dst = dstr_init();
+    CGS_DStr dst = cgs_dstr_init();
     ASSERT_OK(cgs_append(&dst, "one"));
     ASSERT_OK(cgs_append(&dst, "two"));
     ASSERT_OK(cgs_append(&dst, "three"));
     ASSERT(cgs_equal(dst, "onetwothree"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -524,18 +524,18 @@ bool test_str_append_multiple() {
 // ============================================================================
 
 bool test_str_prepend_basic() {
-    DStr dst = dstr_init_from("world");
+    CGS_DStr dst = cgs_dstr_init_from("world");
     ASSERT_OK(cgs_prepend(&dst, "hello "));
     ASSERT(cgs_equal(dst, "hello world"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_prepend_empty_dst() {
-    DStr dst = dstr_init();
+    CGS_DStr dst = cgs_dstr_init();
     ASSERT_OK(cgs_prepend(&dst, "first"));
     ASSERT(cgs_equal(dst, "first"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -547,11 +547,11 @@ bool test_str_prepend_empty_src() {
 }
 
 bool test_str_prepend_multiple() {
-    DStr dst = dstr_init_from("three");
+    CGS_DStr dst = cgs_dstr_init_from("three");
     ASSERT_OK(cgs_prepend(&dst, "two"));
     ASSERT_OK(cgs_prepend(&dst, "one"));
     ASSERT(cgs_equal(dst, "onetwothree"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -560,18 +560,18 @@ bool test_str_prepend_multiple() {
 // ============================================================================
 
 bool test_str_insert_middle() {
-    DStr dst = dstr_init_from("helo");
+    CGS_DStr dst = cgs_dstr_init_from("helo");
     ASSERT_OK(cgs_insert(&dst, "l", 3)); // insert 'l' at index 3
     ASSERT(cgs_equal(dst, "hello"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_insert_beginning() {
-    DStr dst = dstr_init_from("orld");
+    CGS_DStr dst = cgs_dstr_init_from("orld");
     ASSERT_OK(cgs_insert(&dst, "w", 0));
     ASSERT(cgs_equal(dst, "world"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -583,34 +583,34 @@ bool test_str_insert_end() {
 }
 
 bool test_str_insert_empty_src() {
-    DStr dst = dstr_init_from("test");
+    CGS_DStr dst = cgs_dstr_init_from("test");
     ASSERT_OK(cgs_insert(&dst, "", 2));
     ASSERT(cgs_equal(dst, "test"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_insert_empty_dst() {
-    DStr dst = dstr_init();
+    CGS_DStr dst = cgs_dstr_init();
     ASSERT_OK(cgs_insert(&dst, "first", 0));
     ASSERT(cgs_equal(dst, "first"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_insert_multi_char() {
-    DStr dst = dstr_init_from("hello world");
+    CGS_DStr dst = cgs_dstr_init_from("hello world");
     ASSERT_OK(cgs_insert(&dst, "beautiful ", 6));
     ASSERT(cgs_equal(dst, "hello beautiful world"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_insert_out_of_bounds() {
-    DStr dst = dstr_init_from("test");
+    CGS_DStr dst = cgs_dstr_init_from("test");
     CGS_Error err = cgs_insert(&dst, "x", 100);
     ASSERT_ERR(err, CGS_INDEX_OUT_OF_BOUNDS);
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -626,10 +626,10 @@ bool test_str_insert_too_small() {
 // ============================================================================
 
 bool test_str_del_basic() {
-    DStr dst = dstr_init_from("hello world");
+    CGS_DStr dst = cgs_dstr_init_from("hello world");
     ASSERT_OK(cgs_del(&dst, 5, 11)); // delete " world"
     ASSERT(cgs_equal(dst, "hello"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -641,10 +641,10 @@ bool test_str_del_from_start() {
 }
 
 bool test_str_del_to_end() {
-    DStr dst = dstr_init_from("hello world");
+    CGS_DStr dst = cgs_dstr_init_from("hello world");
     ASSERT_OK(cgs_del(&dst, 5, cgs_len(dst)));
     ASSERT(cgs_equal(dst, "hello"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -656,18 +656,18 @@ bool test_str_del_entire() {
 }
 
 bool test_str_del_invalid_range() {
-    DStr dst = dstr_init_from("hello");
+    CGS_DStr dst = cgs_dstr_init_from("hello");
     CGS_Error err = cgs_del(&dst, 10, 20);
     ASSERT_ERR(err, CGS_INDEX_OUT_OF_BOUNDS);
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_del_reversed_range() {
-    DStr dst = dstr_init_from("hello");
+    CGS_DStr dst = cgs_dstr_init_from("hello");
     CGS_Error err = cgs_del(&dst, 4, 2);
     ASSERT_ERR(err, CGS_BAD_RANGE);
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -676,60 +676,60 @@ bool test_str_del_reversed_range() {
 // ============================================================================
 
 bool test_str_replace_single() {
-    DStr dst = dstr_init_from("hello world");
-    ReplaceResult result = cgs_replace(&dst, "world", "universe");
+    CGS_DStr dst = cgs_dstr_init_from("hello world");
+    CGS_ReplaceResult result = cgs_replace(&dst, "world", "universe");
     ASSERT_OK(result.err);
     ASSERT_EQ(result.nb_replaced, 1);
     ASSERT(cgs_equal(dst, "hello universe"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_replace_multiple() {
-    DStr dst = dstr_init_from("abc abc abc");
-    ReplaceResult result = cgs_replace(&dst, "abc", "xyz");
+    CGS_DStr dst = cgs_dstr_init_from("abc abc abc");
+    CGS_ReplaceResult result = cgs_replace(&dst, "abc", "xyz");
     ASSERT_OK(result.err);
     ASSERT_EQ(result.nb_replaced, 3);
     ASSERT(cgs_equal(dst, "xyz xyz xyz"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_replace_none() {
-    DStr dst = dstr_init_from("hello world");
-    ReplaceResult result = cgs_replace(&dst, "xyz", "abc");
+    CGS_DStr dst = cgs_dstr_init_from("hello world");
+    CGS_ReplaceResult result = cgs_replace(&dst, "xyz", "abc");
     ASSERT_ERR(result.err, CGS_NOT_FOUND);
     ASSERT_EQ(result.nb_replaced, 0);
     ASSERT(cgs_equal(dst, "hello world"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_replace_empty_target() {
-    DStr dst = dstr_init_from("hello");
-    ReplaceResult result = cgs_replace(&dst, "", "x");
+    CGS_DStr dst = cgs_dstr_init_from("hello");
+    CGS_ReplaceResult result = cgs_replace(&dst, "", "x");
     ASSERT_EQ(result.nb_replaced, 6);
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_replace_longer() {
-    DStr dst = dstr_init_from("a b c");
-    ReplaceResult result = cgs_replace(&dst, " ", " - ");
+    CGS_DStr dst = cgs_dstr_init_from("a b c");
+    CGS_ReplaceResult result = cgs_replace(&dst, " ", " - ");
     ASSERT_OK(result.err);
     ASSERT_EQ(result.nb_replaced, 2);
     ASSERT(cgs_equal(dst, "a - b - c"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_replace_shorter() {
-    DStr dst = dstr_init_from("hello world");
-    ReplaceResult result = cgs_replace(&dst, "hello", "hi");
+    CGS_DStr dst = cgs_dstr_init_from("hello world");
+    CGS_ReplaceResult result = cgs_replace(&dst, "hello", "hi");
     ASSERT_OK(result.err);
     ASSERT_EQ(result.nb_replaced, 1);
     ASSERT(cgs_equal(dst, "hi world"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -738,19 +738,19 @@ bool test_str_replace_shorter() {
 // ============================================================================
 
 bool test_str_replace_first_found() {
-    DStr dst = dstr_init_from("abc abc abc");
+    CGS_DStr dst = cgs_dstr_init_from("abc abc abc");
     ASSERT_OK(cgs_replace_first(&dst, "abc", "xyz"));
     ASSERT(cgs_equal(dst, "xyz abc abc"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_replace_first_not_found() {
-    DStr dst = dstr_init_from("hello world");
+    CGS_DStr dst = cgs_dstr_init_from("hello world");
     CGS_Error err = cgs_replace_first(&dst, "xyz", "abc");
     // Could be OK or NOT_FOUND depending on implementation
     ASSERT(cgs_equal(dst, "hello world"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -759,34 +759,34 @@ bool test_str_replace_first_not_found() {
 // ============================================================================
 
 bool test_str_replace_range_basic() {
-    DStr dst = dstr_init_from("hello world");
+    CGS_DStr dst = cgs_dstr_init_from("hello world");
     ASSERT_OK(cgs_replace_range(&dst, 6, 11, "universe"));
     ASSERT(cgs_equal(dst, "hello universe"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_replace_range_empty() {
-    DStr dst = dstr_init_from("hello world");
+    CGS_DStr dst = cgs_dstr_init_from("hello world");
     ASSERT_OK(cgs_replace_range(&dst, 5, 6, ""));
     ASSERT(cgs_equal(dst, "helloworld"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_replace_range_expand() {
-    DStr dst = dstr_init_from("abc");
+    CGS_DStr dst = cgs_dstr_init_from("abc");
     ASSERT_OK(cgs_replace_range(&dst, 1, 2, "123"));
     ASSERT(cgs_equal(dst, "a123c"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_replace_range_invalid() {
-    DStr dst = dstr_init_from("hello");
+    CGS_DStr dst = cgs_dstr_init_from("hello");
     CGS_Error err = cgs_replace_range(&dst, 10, 20, "x");
     ASSERT_ERR(err, CGS_INDEX_OUT_OF_BOUNDS);
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
@@ -795,7 +795,7 @@ bool test_str_replace_range_invalid() {
 // ============================================================================
 
 bool test_str_split_basic() {
-    StrViewArray arr = cgs_split("one,two,three", ",");
+    CGS_StrViewArray arr = cgs_split("one,two,three", ",");
     ASSERT_EQ(arr.len, 3);
     ASSERT(cgs_equal(arr.strs[0], "one"));
     ASSERT(cgs_equal(arr.strs[1], "two"));
@@ -805,7 +805,7 @@ bool test_str_split_basic() {
 }
 
 bool test_str_split_no_delimiter() {
-    StrViewArray arr = cgs_split("hello", ",");
+    CGS_StrViewArray arr = cgs_split("hello", ",");
     ASSERT_EQ(arr.len, 1);
     ASSERT(cgs_equal(arr.strs[0], "hello"));
     free(arr.strs);
@@ -813,7 +813,7 @@ bool test_str_split_no_delimiter() {
 }
 
 bool test_str_split_empty_parts() {
-    StrViewArray arr = cgs_split("a,,b", ",");
+    CGS_StrViewArray arr = cgs_split("a,,b", ",");
     ASSERT_EQ(arr.len, 3);
     ASSERT(cgs_equal(arr.strs[0], "a"));
     ASSERT(cgs_equal(arr.strs[1], ""));
@@ -823,7 +823,7 @@ bool test_str_split_empty_parts() {
 }
 
 bool test_str_split_multi_char_delim() {
-    StrViewArray arr = cgs_split("one::two::three", "::");
+    CGS_StrViewArray arr = cgs_split("one::two::three", "::");
     ASSERT_EQ(arr.len, 3);
     ASSERT(cgs_equal(arr.strs[0], "one"));
     ASSERT(cgs_equal(arr.strs[1], "two"));
@@ -837,117 +837,117 @@ bool test_str_split_multi_char_delim() {
 // ============================================================================
 
 bool test_str_join_basic() {
-    StrView parts[] = {
-        strv("one", 0, 3),
-        strv("two", 0, 3),
-        strv("three", 0, 5)
+    CGS_StrView parts[] = {
+        cgs_strv("one", 0, 3),
+        cgs_strv("two", 0, 3),
+        cgs_strv("three", 0, 5)
     };
-    StrViewArray arr = cgs_strv_arr_from(parts);
+    CGS_StrViewArray arr = cgs_strv_arr_from(parts);
     
-    DStr dst = dstr_init();
+    CGS_DStr dst = cgs_dstr_init();
     ASSERT_OK(cgs_join(&dst, arr, ", "));
     ASSERT(cgs_equal(dst, "one, two, three"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_join_empty_array() {
-    StrViewArray arr = {.strs = NULL, .len = 0};
-    DStr dst = dstr_init();
+    CGS_StrViewArray arr = {.strs = NULL, .len = 0};
+    CGS_DStr dst = cgs_dstr_init();
     ASSERT_OK(cgs_join(&dst, arr, ","));
     ASSERT(cgs_equal(dst, ""));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 bool test_str_join_single_element() {
-    StrView parts[] = {strv("only", 0, 4)};
-    StrViewArray arr = cgs_strv_arr_from(parts);
+    CGS_StrView parts[] = {cgs_strv("only", 0, 4)};
+    CGS_StrViewArray arr = cgs_strv_arr_from(parts);
     
-    DStr dst = dstr_init();
+    CGS_DStr dst = cgs_dstr_init();
     ASSERT_OK(cgs_join(&dst, arr, ","));
     ASSERT(cgs_equal(dst, "only"));
-    dstr_deinit(&dst);
+    cgs_dstr_deinit(&dst);
     return true;
 }
 
 // ============================================================================
-// dstr_init tests
+// cgs_dstr_init tests
 // ============================================================================
 
-bool test_dstr_init_default() {
-    DStr ds = dstr_init();
+bool test_cgs_dstr_init_default() {
+    CGS_DStr ds = cgs_dstr_init();
     ASSERT_EQ(cgs_len(ds), 0);
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
-bool test_dstr_init_with_cap() {
-    DStr ds = dstr_init(100);
+bool test_cgs_dstr_init_with_cap() {
+    CGS_DStr ds = cgs_dstr_init(100);
     ASSERT_EQ(cgs_len(ds), 0);
     ASSERT(cgs_cap(ds) >= 100);
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
-bool test_dstr_init_from_cstr() {
-    DStr ds = dstr_init_from("hello world");
+bool test_cgs_dstr_init_from_cstr() {
+    CGS_DStr ds = cgs_dstr_init_from("hello world");
     ASSERT_EQ(cgs_len(ds), 11);
     ASSERT(cgs_equal(ds, "hello world"));
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
-bool test_dstr_init_from_empty() {
-    DStr ds = dstr_init_from("");
+bool test_cgs_dstr_init_from_empty() {
+    CGS_DStr ds = cgs_dstr_init_from("");
     ASSERT_EQ(cgs_len(ds), 0);
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
 // ============================================================================
-// dstr_ensure_cap tests
+// cgs_dstr_ensure_cap tests
 // ============================================================================
 
-bool test_dstr_ensure_cap_grow() {
-    DStr ds = dstr_init(10);
+bool test_cgs_dstr_ensure_cap_grow() {
+    CGS_DStr ds = cgs_dstr_init(10);
     unsigned int old_cap = cgs_cap(ds);
-    ASSERT_OK(dstr_ensure_cap(&ds, 100));
+    ASSERT_OK(cgs_dstr_ensure_cap(&ds, 100));
     ASSERT(cgs_cap(ds) >= 100);
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
-bool test_dstr_ensure_cap_no_grow() {
-    DStr ds = dstr_init(100);
+bool test_cgs_dstr_ensure_cap_no_grow() {
+    CGS_DStr ds = cgs_dstr_init(100);
     unsigned int old_cap = cgs_cap(ds);
-    ASSERT_OK(dstr_ensure_cap(&ds, 50));
+    ASSERT_OK(cgs_dstr_ensure_cap(&ds, 50));
     ASSERT_EQ(cgs_cap(ds), old_cap);
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
 // ============================================================================
-// dstr_shrink_to_fit tests
+// cgs_dstr_shrink_to_fit tests
 // ============================================================================
 
-bool test_dstr_shrink_to_fit() {
-    DStr ds = dstr_init(1000);
+bool test_cgs_dstr_shrink_to_fit() {
+    CGS_DStr ds = cgs_dstr_init(1000);
     cgs_copy(&ds, "short");
-    ASSERT_OK(dstr_shrink_to_fit(&ds));
+    ASSERT_OK(cgs_dstr_shrink_to_fit(&ds));
     ASSERT(cgs_cap(ds) < 1000);
     ASSERT(cgs_equal(ds, "short"));
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
 // ============================================================================
-// StrBuf tests
+// CGS_StrBuf tests
 // ============================================================================
 
 bool test_strbuf_init_from_cstr() {
     char buf[50] = "hello";
-    StrBuf sb = strbuf_init_from_cstr(buf);
+    CGS_StrBuf sb = cgs_strbuf_init_from_cstr(buf);
     ASSERT(cgs_equal(sb, "hello"));
     ASSERT_EQ(cgs_cap(sb), 50);
     return true;
@@ -955,7 +955,7 @@ bool test_strbuf_init_from_cstr() {
 
 bool test_strbuf_init_from_buf() {
     char buf[64];
-    StrBuf sb = strbuf_init_from_buf(buf);
+    CGS_StrBuf sb = cgs_strbuf_init_from_buf(buf);
     ASSERT_EQ(cgs_cap(sb), 64);
     ASSERT_EQ(cgs_len(sb), 0);
     return true;
@@ -963,7 +963,7 @@ bool test_strbuf_init_from_buf() {
 
 bool test_strbuf_operations() {
     char buf[100] = "";
-    StrBuf sb = strbuf_init_from_buf(buf);
+    CGS_StrBuf sb = cgs_strbuf_init_from_buf(buf);
     
     ASSERT_OK(cgs_copy(&sb, "hello"));
     ASSERT(cgs_equal(sb, "hello"));
@@ -975,43 +975,43 @@ bool test_strbuf_operations() {
 }
 
 // ============================================================================
-// strv tests
+// cgs_strv tests
 // ============================================================================
 
 bool test_strv_basic() {
-    StrView sv = strv("hello world", 0, 5);
+    CGS_StrView sv = cgs_strv("hello world", 0, 5);
     ASSERT_EQ(cgs_len(sv), 5);
     ASSERT(cgs_equal(sv, "hello"));
     return true;
 }
 
 bool test_strv_middle() {
-    StrView sv = strv("hello world", 6, 11);
+    CGS_StrView sv = cgs_strv("hello world", 6, 11);
     ASSERT_EQ(cgs_len(sv), 5);
     ASSERT(cgs_equal(sv, "world"));
     return true;
 }
 
 bool test_strv_empty() {
-    StrView sv = strv("hello", 2, 2);
+    CGS_StrView sv = cgs_strv("hello", 2, 2);
     ASSERT_EQ(cgs_len(sv), 0);
     return true;
 }
 
 bool test_strv_entire() {
     const char *s = "test";
-    StrView sv = strv(s, 0, cgs_len(s));
+    CGS_StrView sv = cgs_strv(s, 0, cgs_len(s));
     ASSERT(cgs_equal(sv, "test"));
     return true;
 }
 
 // ============================================================================
-// MutStrRef / cgs_appender tests
+// CGS_MutStrRef / cgs_appender tests
 // ============================================================================
 
 bool test_str_appender_basic() {
     char buf[100] = "hello";
-    MutStrRef appender = cgs_appender(buf, &(AppenderState){});
+    CGS_MutStrRef appender = cgs_appender(buf, &(CGS_AppenderState){});
     
     ASSERT_OK(cgs_append(appender, " world"));
     ASSERT_OK(cgs_commit_appender(buf, appender));
@@ -1021,22 +1021,22 @@ bool test_str_appender_basic() {
 }
 
 // ============================================================================
-// tostr tests (basic types)
+// cgs_tostr tests (basic types)
 // ============================================================================
 
 bool test_tostr_int() {
     char buf[50];
-    ASSERT_OK(tostr(buf, 42));
+    ASSERT_OK(cgs_tostr(buf, 42));
     ASSERT_STR_EQ(buf, "42");
     
-    ASSERT_OK(tostr(buf, -123));
+    ASSERT_OK(cgs_tostr(buf, -123));
     ASSERT_STR_EQ(buf, "-123");
     return true;
 }
 
 bool test_tostr_string() {
     char buf[50];
-    ASSERT_OK(tostr(buf, "hello"));
+    ASSERT_OK(cgs_tostr(buf, "hello"));
     ASSERT_STR_EQ(buf, "hello");
     return true;
 }
@@ -1044,51 +1044,51 @@ bool test_tostr_string() {
 bool test_tostr_error() {
     char buf[50];
     CGS_Error err = {.ec = CGS_ALLOC_ERR};
-    ASSERT_OK(tostr(buf, err));
+    ASSERT_OK(cgs_tostr(buf, err));
     ASSERT_STR_EQ(buf, "ALLOC_ERR");
     return true;
 }
 
 // ============================================================================
-// nfmt tests
+// cgs_nfmt tests
 // ============================================================================
 
 bool test_nfmt_int_decimal() {
     char buf[50];
-    ASSERT_OK(tostr(buf, nfmt(42, 'd')));
+    ASSERT_OK(cgs_tostr(buf, cgs_nfmt(42, 'd')));
     ASSERT_STR_EQ(buf, "42");
     return true;
 }
 
 bool test_nfmt_int_hex() {
     char buf[50];
-    ASSERT_OK(tostr(buf, nfmt(255, 'x')));
+    ASSERT_OK(cgs_tostr(buf, cgs_nfmt(255, 'x')));
     ASSERT_STR_EQ(buf, "ff");
     return true;
 }
 
 bool test_nfmt_int_HEX() {
     char buf[50];
-    ASSERT_OK(tostr(buf, nfmt(255, 'x')));
+    ASSERT_OK(cgs_tostr(buf, cgs_nfmt(255, 'x')));
     ASSERT_STR_EQ(buf, "ff");
     return true;
 }
 
 bool test_nfmt_float() {
     char buf[50];
-    ASSERT_OK(tostr(buf, nfmt(3.14159, 'f', 2)));
+    ASSERT_OK(cgs_tostr(buf, cgs_nfmt(3.14159, 'f', 2)));
     ASSERT_STR_EQ(buf, "3.14");
     return true;
 }
 
 // ============================================================================
-// arrfmt tests
+// cgs_arrfmt tests
 // ============================================================================
 
 bool test_arrfmt_basic() {
     int arr[] = {1, 2, 3, 4, 5};
     char buf[100];
-    ASSERT_OK(tostr(buf, arrfmt(arr, 5)));
+    ASSERT_OK(cgs_tostr(buf, cgs_arrfmt(arr, 5)));
     ASSERT_STR_EQ(buf, "{1, 2, 3, 4, 5}");
     return true;
 }
@@ -1096,7 +1096,7 @@ bool test_arrfmt_basic() {
 bool test_arrfmt_custom_delim() {
     int arr[] = {1, 2, 3};
     char buf[100];
-    ASSERT_OK(tostr(buf, arrfmt(arr, 3, "[", "]", " | ", "")));
+    ASSERT_OK(cgs_tostr(buf, cgs_arrfmt(arr, 3, "[", "]", " | ", "")));
     ASSERT_STR_EQ(buf, "[1 | 2 | 3]");
     return true;
 }
@@ -1104,7 +1104,7 @@ bool test_arrfmt_custom_delim() {
 bool test_arrfmt_empty() {
     int *arr = NULL;
     char buf[100];
-    ASSERT_OK(tostr(buf, arrfmt(arr, 0)));
+    ASSERT_OK(cgs_tostr(buf, cgs_arrfmt(arr, 0)));
     ASSERT_STR_EQ(buf, "{}");
     return true;
 }
@@ -1114,29 +1114,29 @@ bool test_arrfmt_empty() {
 // ============================================================================
 
 bool test_unicode_support() {
-    DStr ds = dstr_init_from("Hello 世界");
+    CGS_DStr ds = cgs_dstr_init_from("Hello 世界");
     ASSERT(cgs_len(ds) > 0);
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
 bool test_long_string() {
-    DStr ds = dstr_init();
+    CGS_DStr ds = cgs_dstr_init();
     for (int i = 0; i < 1000; i++) {
         ASSERT_OK(cgs_append(&ds, "x"));
     }
     ASSERT_EQ(cgs_len(ds), 1000);
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
 bool test_chained_operations() {
-    DStr ds = dstr_init_from("hello");
+    CGS_DStr ds = cgs_dstr_init_from("hello");
     ASSERT_OK(cgs_append(&ds, " world"));
     (cgs_toupper(&ds));
     ASSERT_OK(cgs_replace_first(&ds, "WORLD", "UNIVERSE"));
     ASSERT(cgs_equal(ds, "HELLO UNIVERSE"));
-    dstr_deinit(&ds);
+    cgs_dstr_deinit(&ds);
     return true;
 }
 
@@ -1153,23 +1153,23 @@ bool test_null_termination() {
 // ============================================================================
 
 int main() {
-    printf("Running String Library Test Suite\n");
+    printf("Running CGS_String Library Test Suite\n");
     printf("==================================\n\n");
     
     // cgs_at
-    TEST(test_str_at_dstring);
+    TEST(test_str_at_cgs_dstring);
     TEST(test_str_at_string_view);
     
     // cgs_len
     TEST(test_str_len_empty);
     TEST(test_str_len_cstr);
     TEST(test_str_len_array);
-    TEST(test_str_len_dstring);
+    TEST(test_str_len_cgs_dstring);
     TEST(test_str_len_string_view);
     
     // cgs_cap
     TEST(test_str_cap_array);
-    TEST(test_str_cap_dstring);
+    TEST(test_str_cap_cgs_dstring);
     TEST(test_str_cap_string_buffer);
     
     // cgs_equal
@@ -1179,7 +1179,7 @@ int main() {
     
     // cgs_chars
     TEST(test_str_chars_cstr);
-    TEST(test_str_chars_dstring);
+    TEST(test_str_chars_cgs_dstring);
     
     // cgs_find
     TEST(test_str_find_exists);
@@ -1196,7 +1196,7 @@ int main() {
     TEST(test_str_count_empty_needle);
     
     // cgs_clear
-    TEST(test_str_clear_dstring);
+    TEST(test_str_clear_cgs_dstring);
     TEST(test_str_clear_array);
     
     // cgs_starts_with
@@ -1222,19 +1222,19 @@ int main() {
     // cgs_copy
     TEST(test_str_copy_basic);
     TEST(test_str_copy_empty);
-    TEST(test_str_copy_dstring);
+    TEST(test_str_copy_cgs_dstring);
     TEST(test_str_copy_too_small);
     TEST(test_str_copy_exact_fit);
     
     // cgs_putc
     TEST(test_str_putc_basic);
-    TEST(test_str_putc_dstring);
+    TEST(test_str_putc_cgs_dstring);
     TEST(test_str_putc_full_buffer);
     
     // cgs_dup
     TEST(test_str_dup_basic);
     TEST(test_str_dup_empty);
-    TEST(test_str_dup_from_dstring);
+    TEST(test_str_dup_from_cgs_dstring);
     
     // cgs_append
     TEST(test_str_append_basic);
@@ -1296,23 +1296,23 @@ int main() {
     TEST(test_str_join_empty_array);
     TEST(test_str_join_single_element);
     
-    // dstr_init
-    TEST(test_dstr_init_default);
-    TEST(test_dstr_init_with_cap);
-    TEST(test_dstr_init_from_cstr);
-    TEST(test_dstr_init_from_empty);
+    // cgs_dstr_init
+    TEST(test_cgs_dstr_init_default);
+    TEST(test_cgs_dstr_init_with_cap);
+    TEST(test_cgs_dstr_init_from_cstr);
+    TEST(test_cgs_dstr_init_from_empty);
     
-    // dstr capacity
-    TEST(test_dstr_ensure_cap_grow);
-    TEST(test_dstr_ensure_cap_no_grow);
-    TEST(test_dstr_shrink_to_fit);
+    // cgs_dstr capacity
+    TEST(test_cgs_dstr_ensure_cap_grow);
+    TEST(test_cgs_dstr_ensure_cap_no_grow);
+    TEST(test_cgs_dstr_shrink_to_fit);
     
-    // StrBuf
+    // CGS_StrBuf
     TEST(test_strbuf_init_from_cstr);
     TEST(test_strbuf_init_from_buf);
     TEST(test_strbuf_operations);
     
-    // strv
+    // cgs_strv
     TEST(test_strv_basic);
     TEST(test_strv_middle);
     TEST(test_strv_empty);
@@ -1321,18 +1321,18 @@ int main() {
     // cgs_appender
     TEST(test_str_appender_basic);
     
-    // tostr
+    // cgs_tostr
     TEST(test_tostr_int);
     TEST(test_tostr_string);
     TEST(test_tostr_error);
     
-    // nfmt
+    // cgs_nfmt
     TEST(test_nfmt_int_decimal);
     TEST(test_nfmt_int_hex);
     TEST(test_nfmt_int_HEX);
     TEST(test_nfmt_float);
     
-    // arrfmt
+    // cgs_arrfmt
     TEST(test_arrfmt_basic);
     TEST(test_arrfmt_custom_delim);
     TEST(test_arrfmt_empty);
