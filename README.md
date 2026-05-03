@@ -290,7 +290,7 @@ int main()
 }
 ```
 
-## nfmt and arrfmt
+## nfmt, arrfmt, alignfmt
 
 These macros return a format object that has a `tostr`. For example:
 
