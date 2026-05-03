@@ -176,7 +176,7 @@ typedef struct CGS_StrBuf
 } CGS_StrBuf;
 ```
 
-You can construct it by calling `strbuf_init_from_*` macros, or by constructing it yourself.
+You can construct it by calling `cgs_strbuf_init_from_*` macros, or by constructing it yourself.
 
 ## StrView
 
