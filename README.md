@@ -65,8 +65,8 @@ CGS_MutStrRef     cgs_mutstr_ref(cstr, cap);
 CGS_Writer        cgs_writer(writer_t);
 
 CGS_StrViewArray  cgs_strv_arr(...anystr_t);
-CGS_StrViewArray  cgs_strv_arr_from_carr(CGS_StrView strs[N]);
-CGS_StrViewArray  cgs_strv_arr_from_carr(CGS_StrView *strs, unsigned int len);
+CGS_StrViewArray  cgs_strv_arr_from(CGS_StrView strs[N]);
+CGS_StrViewArray  cgs_strv_arr_from(CGS_StrView *strs, unsigned int len);
 
 unsigned int      cgs_len(anystr_t);
 unsigned int      cgs_cap(anystr_t);
@@ -82,18 +82,18 @@ bool              cgs_ends_with(anystr_t hay, anystr_t needle);
 CGS_StrView       cgs_trim_view(anystr_t str);
 CGS_Error         cgs_trim(mutstr_t str);
 
-CGS_StrView       cgs_spn(anystr_t src, anystr_t charset);
-CGS_StrView       cgs_cspn(anystr_t src, anystr_t charset);
+CGS_StrView       cgs_spn(anystr_t src, anystr_t charset); // return view of first chunk that contains characters only found in charset
+CGS_StrView       cgs_cspn(anystr_t src, anystr_t charset); // return view of first chunk that contains characters not found in charset
 
-CGS_StrView       cgs_next_tok(CGS_StrView *base, anystr_t delim);
+CGS_StrView       cgs_next_tok(CGS_StrView *base, anystr_t delim); // returns view of base until the next delim, or end of string. modifies base such that it skips the next delim
 CGS_StrView       cgs_next_tok_any(CGS_StrView *base, anystr_t delim_set);
 
-CGS_Error         cgs_map_chars(mutstr_t, bool(*map_func)(char *c, void *arg), void *arg = NULL);
+CGS_Error         cgs_map_chars(mutstr_t, bool(*map_func)(char *c, void *arg), void *arg = NULL); // iterates each char and calls map_func on it. If false is returned from map_func, iteration is stopped and CGS_CALLBACK_EXIT error code is returned
 void              cgs_tolower(mutstr_t);
 void              cgs_toupper(mutstr_t);
 
 CGS_Error         cgs_copy(mutstr_t dst, anystr_t src);
-CGS_DStr          cgs_dup(anystr_t src, CGS_Allocator *allocator = cgs_get_default_allocator());
+CGS_DStr          cgs_dup(anystr_t src, CGS_Allocator *allocator = cgs_get_default_allocator()); // alias for cgs_dstr_init_from
 
 CGS_Error         cgs_putc(writer_t dst, char c);
 CGS_Error         cgs_append(writer_t dst, anystr_t src);
@@ -123,8 +123,8 @@ CGS_Error         cgs_append_fread_until(mutstr_t dst, FILE *stream, int delim);
 CGS_Error         cgs_read_until(mutstr_t dst, int delim);
 CGS_Error         cgs_append_read_until(mutstr_t dst, int delim);
 
-CGS_MutStrRef     cgs_appender(mutstr_t owner, CGS_AppenderState *state);
-CGS_Error         cgs_commit_appender(mutstr_t owner, CGS_MutStrRef appender);
+CGS_MutStrRef     cgs_appender(mutstr_t owner, CGS_AppenderState *state); // returns a string reference that appends to owner. must call cgs_commit_appender to update the length of owner
+CGS_Error         cgs_commit_appender(mutstr_t owner, CGS_MutStrRef appender); // appender must be what cgs_appender returned on the same owner, and owner must not have had its length changed between cgs_appender and cgs_commit_appender
 
 CGS_Error         cgs_tostr(mutstr_t dst, T val);
 CGS_Error         cgs_append_tostr(writer_t dst, T val);
@@ -133,23 +133,23 @@ bool              cgs_has_tostr(T);
 unsigned int      cgs_tostr_len(T val);
 unsigned int      cgs_tostr_p_len(T *val);
 
-CGS_Error         cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr);
-CGS_Error         cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr);
+CGS_Error         cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%arg_index" for positional arguments, cannot mix and match.
+CGS_Error         cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr); // same as cgs_fmt, but appends
 
-CGS_Error         cgs_printf(const char *fmt, ...args with tostr);
+CGS_Error         cgs_printf(const char *fmt, ...args with tostr); // calls cgs_append_fmt on stdout
 CGS_Error         cgs_printfln(const char *fmt, ...args with tostr);
 
-CGS_Error         cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr);
+CGS_Error         cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_append_fmt, but restricted to FILE*
 CGS_Error         cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
 
-CGS_Error         cgs_sprint(mutstr_t dst, const char *fmt, ...args with tostr);
+CGS_Error         cgs_sprint(mutstr_t dst, const char *fmt, ...args with tostr); // alias for cgs_append_fmt
 
-                  cgs_tostr_many(mutstr_t dst, ...args with tostr);
-                  cgs_append_tostr_many(writer_t dst, ...args with tostr);
+                  cgs_tostr_many(mutstr_t dst, ...args with tostr); // clears dst, calls the tostr of each ... arg, and appends them to dst
+                  cgs_append_tostr_many(writer_t dst, ...args with tostr); // calls the tostr of each ... arg, and appends them to dst
 
-cgs_nfmt_t(integer_T, fmt_char)    cgs_nfmt(integer_T value, int fmt_char);
-cgs_nfmt_t(float/double, fmt_char) cgs_nfmt(float/double value, int fmt_char, int precision = (fmt_char == 'a' ? -1 : 6));
-CGS_ArrayFmt                       cgs_arrfmt(T *array, size_t len);
+cgs_nfmt_t(integer_T, fmt_char)    cgs_nfmt(integer_T value, int fmt_char); // a number format object that has a tostr
+cgs_nfmt_t(float/double, fmt_char) cgs_nfmt(float/double value, int fmt_char, int precision = (fmt_char == 'a' ? -1 : 6)); // a number format object that has a tostr
+CGS_ArrayFmt                       cgs_arrfmt(T *array, size_t len); // an array format object that has a tostr, prints in this format `{1, 2, 3}`
 CGS_ArrayFmt                       cgs_arrfmt(T *array, size_t len, anystr_t open, anystr_t close, anystr_t delim, anystr_t trailing_delim = "");
 ```
 
@@ -168,7 +168,7 @@ CGS_ArrayFmt
 
 cgs_strv
 cgs_strv_arr
-cgs_strv_arr_from_carr
+cgs_strv_arr_from
 
 cgs_strbuf_init_from_cstr
 cgs_strbuf_init_from_buf

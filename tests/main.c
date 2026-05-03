@@ -1175,7 +1175,7 @@ void comp_check()
 
     // StrView Array helpers
     StrViewArray sva = cgs_strv_arr("a", d, sv, c_ptr);
-    StrViewArray sva2 = cgs_strv_arr_from_carr(sva.strs, sva.len);
+    StrViewArray sva2 = cgs_strv_arr_from(sva.strs, sva.len);
 
     // --- 9. CLEANUP ---
     dstr_deinit(&d);

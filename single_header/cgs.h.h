@@ -582,8 +582,8 @@ _Generic(mutstr, \
         } \
 )
 
-#define cgs_strv_arr_from_carr(strv_carr, ...) \
-cgs__strv_arr_from_carr(strv_carr, CGS__VA_OR((cgs__static_assertx(cgs__is_array_of((strv_carr), CGS_StrView), "Must pass StrView[N] or StrView* with length argument"), CGS__CARR_LEN(strv_carr)), __VA_ARGS__))
+#define cgs_strv_arr_from(strv_carr, ...) \
+cgs__strv_arr_from(strv_carr, CGS__VA_OR((cgs__static_assertx(cgs__is_array_of((strv_carr), CGS_StrView), "Must pass StrView[N] or StrView* with length argument"), CGS__CARR_LEN(strv_carr)), __VA_ARGS__))
 
 #define CGS__STRV_COMMA(anystr) \
 cgs_strv(anystr),
@@ -1356,7 +1356,7 @@ CGS__NODISCARD("str_split returns a heap allocated array")
 CGS_API CGS_StrViewArray cgs__strv_split(const CGS_StrView str, const CGS_StrView delim, CGS_Allocator* allocator);
 CGS_API CGS_Error cgs__strv_split_iter(const CGS_StrView str, const CGS_StrView delim, bool(*cb)(CGS_StrView found, void *ctx), void *ctx);
 
-CGS_API CGS_StrViewArray cgs__strv_arr_from_carr(const CGS_StrView *carr, unsigned int nb);
+CGS_API CGS_StrViewArray cgs__strv_arr_from(const CGS_StrView *carr, unsigned int nb);
 
 CGS_API bool cgs__strv_equal(const CGS_StrView str1, const CGS_StrView str2);
 CGS_API CGS_StrView cgs__strv_find(const CGS_StrView hay, const CGS_StrView needle);
@@ -1559,7 +1559,7 @@ static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer,
 
 #define strv(anystr, ...) cgs_strv(anystr __VA_OPT__(,) __VA_ARGS__)
 #define strv_arr(...) cgs_strv_arr(__VA_ARGS__)
-#define strv_arr_from_carr(arr, ...) cgs_strv_arr_from_carr(arr __VA_OPT__(,) __VA_ARGS__)
+#define strv_arr_from(arr, ...) cgs_strv_arr_from(arr __VA_OPT__(,) __VA_ARGS__)
 
 #define strbuf_init_from_cstr(cstr, ...) cgs_strbuf_init_from_cstr(cstr __VA_OPT__(,) __VA_ARGS__)
 #define strbuf_init_from_buf(buf, ...) cgs_strbuf_init_from_buf(buf __VA_OPT__(,) __VA_ARGS__)
@@ -3565,7 +3565,7 @@ CGS_API CGS_Error cgs__mutstr_ref_delete_range(CGS_MutStrRef str, unsigned int b
     };
 }
 
-CGS_API CGS_StrViewArray cgs__strv_arr_from_carr(const CGS_StrView *carr, unsigned int nb)
+CGS_API CGS_StrViewArray cgs__strv_arr_from(const CGS_StrView *carr, unsigned int nb)
 {
     return (CGS_StrViewArray){
         .cap  = nb,

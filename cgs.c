@@ -1866,7 +1866,7 @@ CGS_API CGS_Error cgs__mutstr_ref_delete_range(CGS_MutStrRef str, unsigned int b
     };
 }
 
-CGS_API CGS_StrViewArray cgs__strv_arr_from_carr(const CGS_StrView *carr, unsigned int nb)
+CGS_API CGS_StrViewArray cgs__strv_arr_from(const CGS_StrView *carr, unsigned int nb)
 {
     return (CGS_StrViewArray){
         .cap  = nb,

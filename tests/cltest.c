@@ -842,7 +842,7 @@ bool test_str_join_basic() {
         strv("two", 0, 3),
         strv("three", 0, 5)
     };
-    StrViewArray arr = cgs_strv_arr_from_carr(parts);
+    StrViewArray arr = cgs_strv_arr_from(parts);
     
     DStr dst = dstr_init();
     ASSERT_OK(cgs_join(&dst, arr, ", "));
@@ -862,7 +862,7 @@ bool test_str_join_empty_array() {
 
 bool test_str_join_single_element() {
     StrView parts[] = {strv("only", 0, 4)};
-    StrViewArray arr = cgs_strv_arr_from_carr(parts);
+    StrViewArray arr = cgs_strv_arr_from(parts);
     
     DStr dst = dstr_init();
     ASSERT_OK(cgs_join(&dst, arr, ","));
