@@ -1280,9 +1280,9 @@ CGS_API CGS_Allocation cgs__allocator_invoke_realloc(CGS_Allocator *allocator, v
     return allocator->realloc(allocator, ptr, align, old_nb * obj_size, new_nb * obj_size);
 }
 
-CGS_API CGS_Allocator *cgs_get_default_allocator()
+CGS_API const CGS_Allocator *cgs_get_default_allocator()
 {
-    return (CGS_Allocator*) &cgs__default_allocator;
+    return &cgs__default_allocator;
 }
 
 CGS_PRIVATE void cgs__make_dstr_append_allocator(CGS_DStr *dstr, CGS__DStrAppendAllocator *out)

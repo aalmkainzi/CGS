@@ -34,7 +34,7 @@ CGS_API CGS_Allocation cgs__allocator_invoke_alloc(CGS_Allocator *allocator, siz
 CGS_API void cgs__allocator_invoke_dealloc(CGS_Allocator *allocator, void *ptr, size_t obj_size, size_t nb);
 CGS_API CGS_Allocation cgs__allocator_invoke_realloc(CGS_Allocator *allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb);
 
-CGS_API CGS_Allocator *cgs_get_default_allocator();
+CGS_API const CGS_Allocator *cgs_get_default_allocator();
 
 #define cgs_alloc(allocator, T, n) \
 cgs__allocator_invoke_alloc(allocator, _Alignof(T), sizeof((T){0}), (n))
