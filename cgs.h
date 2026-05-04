@@ -251,7 +251,7 @@ CGS_API CGS_Error    cgs__istrbuf_append(void *ctx, const CGS_StrView str);
 CGS_API CGS_Error    cgs__ibuf_append   (void *ctx, const CGS_StrView str);
 CGS_API CGS_Error    cgs__file_append   (void *ctx, const CGS_StrView str);
 
-static CGS_Error (* const cgs__mutstr_ref_interfaces[])(void *ctx, const CGS_StrView str) =
+static CGS_Error (* const cgs__mutstr_ref_append_func[])(void *ctx, const CGS_StrView str) =
 {
     [CGS__DSTR_TY]   = cgs__idstr_append,
     [CGS__STRBUF_TY] = cgs__istrbuf_append,
@@ -273,16 +273,16 @@ typedef struct CGS__const_StrView
 
 typedef struct CGS_ArrayFmt
 {
-    const void * const array;
-    const size_t nb;
-    const size_t elm_size;
+    void *array;
+    size_t nb;
+    size_t elm_size;
     
-    CGS_Error(* const elm_tostr)(CGS_Writer writer, const void *obj);
+    CGS_Error(*elm_tostr)(CGS_Writer writer, const void *obj);
     
-    const CGS_StrView open;
-    const CGS_StrView close;
-    const CGS_StrView separator;
-    const CGS_StrView trailing_separator;
+    CGS_StrView open;
+    CGS_StrView close;
+    CGS_StrView separator;
+    CGS_StrView trailing_separator;
 } CGS_ArrayFmt;
 
 typedef enum CGS__AlignModeEnum
@@ -566,7 +566,7 @@ cgs_append_fread_until(mutstr_dst, stdin, delim)
 _Generic(mutstr, \
     CGS_DStr*: cgs__idstr_append, \
     CGS_StrBuf*: cgs__istrbuf_append, \
-    CGS_MutStrRef: cgs__mutstr_ref_interfaces[cgs__coerce(mutstr, CGS_MutStrRef).ty], \
+    CGS_MutStrRef: cgs__mutstr_ref_append_func[cgs__coerce(mutstr, CGS_MutStrRef).ty], \
     char*: cgs__ibuf_append,  \
     unsigned char*: cgs__ibuf_append, \
     FILE*: cgs__file_append \
@@ -831,8 +831,8 @@ do \
 #define cgs_append_fmt(writer_dst, fmt, ...) \
 cgs__fmt_helper(cgs__append_fmt, cgs_writer(writer_dst), fmt, __VA_ARGS__)
 
-#define cgs__append_fmt_ln(writer_dst, fmt, ...) \
-cgs__fmt_helper(cgs__append_fmt_ln_, cgs_writer(writer_dst), fmt, __VA_ARGS__)
+#define cgs_appendln_fmt(writer_dst, fmt, ...) \
+cgs__fmt_helper(cgs__appendln_fmt_, cgs_writer(writer_dst), fmt, __VA_ARGS__)
 
 #define cgs_fmt(mutstr_dst, fmt, ...) \
 cgs__fmt_helper(cgs__append_fmt, cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), fmt, __VA_ARGS__)
@@ -841,7 +841,7 @@ cgs__fmt_helper(cgs__append_fmt, cgs_writer(cgs__clear_and_return(cgs_mutstr_ref
 cgs_append_fmt(_Generic(f, FILE*:f), fmt, __VA_ARGS__)
 
 #define cgs_fprintfln(f, fmt, ...) \
-cgs__append_fmt_ln(_Generic(f, FILE*:f), fmt, __VA_ARGS__)
+cgs_appendln_fmt(_Generic(f, FILE*:f), fmt, __VA_ARGS__)
 
 #define cgs_printf(fmt, ...) \
 cgs_fprintf(stdout, fmt, __VA_ARGS__)
@@ -851,6 +851,9 @@ cgs_fprintfln(stdout, fmt, __VA_ARGS__)
 
 #define cgs_sprintf(mutstr_dst, fmt, ...) \
 cgs_fmt(mutstr_dst, fmt, __VA_ARGS__)
+
+#define cgs_sprintfln(mutstr_dst, fmt, ...) \
+cgs__fmt_helper(cgs__appendln_fmt_, cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), fmt, __VA_ARGS__)
 
 typedef char               cgs__c;
 typedef signed char        cgs__sc;
@@ -1417,7 +1420,7 @@ CGS_API unsigned int cgs__fprint_strv(FILE *stream, const CGS_StrView str);
 CGS_API unsigned int cgs__fprintln_strv(FILE *stream, const CGS_StrView str);
 
 CGS_API CGS_Error cgs__append_fmt(CGS_Writer writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*));
-CGS_API CGS_Error cgs__append_fmt_ln_(CGS_Writer writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*));
+CGS_API CGS_Error cgs__appendln_fmt_(CGS_Writer writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*));
 
 CGS_API CGS_Error cgs__bool_tostr(CGS_Writer writer, bool obj);
 CGS_API CGS_Error cgs__cstr_tostr(CGS_Writer writer, const char *obj);

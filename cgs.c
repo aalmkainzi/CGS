@@ -3350,7 +3350,7 @@ CGS_API CGS_Error cgs__append_fmt(CGS_Writer writer, const CGS__const_StrView fm
     return err;
 }
 
-CGS_API CGS_Error cgs__append_fmt_ln_(CGS_Writer writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*))
+CGS_API CGS_Error cgs__appendln_fmt_(CGS_Writer writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer, const void*))
 {
     CGS_Error err = cgs__append_fmt(writer, fmt, nargs, args, tostr_p_funcs);
     if(err.ec == CGS_OK)
