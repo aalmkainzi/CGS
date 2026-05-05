@@ -567,8 +567,8 @@ _Generic(mutstr, \
     CGS_DStr*: cgs__idstr_append, \
     CGS_StrBuf*: cgs__istrbuf_append, \
     CGS_MutStrRef: cgs__mutstr_ref_append_func[cgs__coerce(mutstr, CGS_MutStrRef).ty], \
-    char*: cgs__ibuf_append,  \
-    unsigned char*: cgs__ibuf_append, \
+    char*: cgs__cstr_append,  \
+    unsigned char*: cgs__cstr_append, \
     FILE*: cgs__file_append \
 )
 
@@ -810,8 +810,9 @@ do \
 #define cgs_tostr_many(mutstr_dst, ...) \
 do \
 { \
-    cgs_clear(mutstr_dst); \
-    CGS_Writer cgs__as_writer = cgs_writer(mutstr_dst); \
+    CGS_MutStrRef cgs__dst_as_mutstr_ref = cgs_mutstr_ref(mutstr_dst); \
+    cgs_clear(cgs__dst_as_mutstr_ref); \
+    CGS_Writer cgs__as_writer = cgs_writer(cgs__dst_as_mutstr_ref); \
     cgs__tostr_foreach_arg(__VA_ARGS__); \
 } while(0)
 
@@ -1581,6 +1582,15 @@ static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer,
     CGS_Writer len_writer = {.ctx = &len, .append = cgs__len_writer_append};
     tostr_p(len_writer, obj);
     return len;
+}
+
+static inline CGS_Error cgs__cstr_append(void *ctx, const CGS_StrView str)
+{
+    (void)ctx;
+    if(str.len != 0)
+        return (CGS_Error){CGS_DST_TOO_SMALL};
+    else
+        return (CGS_Error){CGS_OK};
 }
 
 #endif // CGS__H_INCLUDED

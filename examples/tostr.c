@@ -17,6 +17,7 @@ CGS_Error foo_to_str(CGS_Writer dst, struct FOO foo)
 
 int main()
 {
-    struct FOO f = {'a'};
-    cgs_printf("%?\n", f); // can now use `struct FOO` variables in contexts that require a type with tostr
+    char *dst = (char[]){"ab"};
+    cgs_tostr_many(dst, 1, 2, 3);
+    cgs_writeln(dst);
 }
