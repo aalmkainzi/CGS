@@ -34,7 +34,7 @@ CGS_API CGS_Allocation cgs__allocator_invoke_alloc(CGS_Allocator *allocator, siz
 CGS_API void cgs__allocator_invoke_dealloc(CGS_Allocator *allocator, void *ptr, size_t obj_size, size_t nb);
 CGS_API CGS_Allocation cgs__allocator_invoke_realloc(CGS_Allocator *allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb);
 
-CGS_API const CGS_Allocator *cgs_get_default_allocator();
+CGS_API CGS_Allocator *cgs_get_default_allocator();
 
 #define cgs_alloc(allocator, T, n) \
 cgs__allocator_invoke_alloc(allocator, _Alignof(T), sizeof((T){0}), (n))
@@ -70,7 +70,7 @@ cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old
 
 #if !defined(__clang__)
     #define cgs__static_assertx(exp, msg) \
-    ((void)_Generic((char(*)[!!(exp) + 1])0, char(*)[2]: (msg) && (0)))
+    ((void)_Generic((char(*)[!!(exp) + 1])0, char(*)[2]: (msg)))
 #else
     #define cgs__static_assertx(exp, msg) \
     ((void)sizeof(struct { _Static_assert(exp, msg); int dummy; }))
@@ -512,7 +512,7 @@ _Generic(mutstr_dst, \
 cgs__strv_split(cgs_strv(anystr), cgs_strv(anystr_delim), CGS__VA_OR(cgs_get_default_allocator(), __VA_ARGS__))
 
 #define cgs_split_iter(anystr, anystr_delim, callback, ...) \
-cgs__strv_split_iter(cgs_strv(anystr), cgs_strv(anystr_delim), callback, CGS__VA_OR(NULL, __VA_ARGS__));
+cgs__strv_split_iter(cgs_strv(anystr), cgs_strv(anystr_delim), callback, CGS__VA_OR(NULL, __VA_ARGS__))
 
 #define cgs_join(mutstr_dst, strv_arr, anystr_delim) \
 _Generic(mutstr_dst, \

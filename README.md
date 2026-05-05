@@ -24,7 +24,7 @@ int main()
     cgs_append(&str, "world");
     cgs_prepend(&str, "hello, ");
     
-    cgs_printf("%?", str);
+    cgs_writeln(str);
     
     cgs_dstr_deinit(&str);
 }
@@ -115,8 +115,8 @@ CGS_Error         cgs_fwriteln(FILE *stream, anystr_t src); // identical to cgs_
 CGS_Error         cgs_write(anystr_t src); // calls cgs_fwrite on stdout
 CGS_Error         cgs_writeln(anystr_t src); // calls cgs_fwriteln on stdout
 
-CGS_Error         cgs_fread_until(mutstr_t dst, FILE *stream, int delim); // clears dst, writes to dst from stream until delim is reached, the delim is consumed from stream but not written to dst
-CGS_Error         cgs_append_fread_until(mutstr_t dst, FILE *stream, int delim); // appends to dst from stream until delim is reached, the delim is consumed from stream but not written to dst
+CGS_Error         cgs_fread_until(mutstr_t dst, FILE *stream, int delim); // clears dst, writes to dst from stream until delim is reached. If delim is reached before EOF, it is written to dst
+CGS_Error         cgs_append_fread_until(mutstr_t dst, FILE *stream, int delim); // appends to dst from stream until delim is reached. If delim is reached before EOF, it is written to dst
 CGS_Error         cgs_read_until(mutstr_t dst, int delim) // calls cgs_fread_until on stdin
 CGS_Error         cgs_append_read_until(mutstr_t dst, int delim); // calls cgs_append_fread_until on stdin
 CGS_Error         cgs_fread_line(mutstr_t dst, FILE *stream); // calls cgs_fread_until with '\n' delim
@@ -135,8 +135,8 @@ unsigned int      cgs_tostr_len(T val);
 unsigned int      cgs_tostr_p_len(T *val);
 
 CGS_Error         cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%arg_index" for positional arguments, cannot mix and match.
-CGS_Error         cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr); // same as cgs_fmt, but appends
-CGS_Error         cgs_appendln_fmt(writer_t dst, const char *fmt, ...args with tostr); // same as cgs_append_fmt, but also appends '\n'
+CGS_Error         cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr); // identical to cgs_fmt, but appends
+CGS_Error         cgs_appendln_fmt(writer_t dst, const char *fmt, ...args with tostr); // identical to cgs_append_fmt, but also appends '\n'
 
 CGS_Error         cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_append_fmt, but restricted to FILE*
 CGS_Error         cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
@@ -145,7 +145,7 @@ CGS_Error         cgs_printf(const char *fmt, ...args with tostr); // calls cgs_
 CGS_Error         cgs_printfln(const char *fmt, ...args with tostr);
 
 CGS_Error         cgs_sprintf(mutstr_t dst, const char *fmt, ...args with tostr); // alias for cgs_fmt
-CGS_Error         cgs_sprintfln(mutstr_t dst, const char *fmt, ...args with tostr); // same as cgs_sprintf, but also appends '\n'
+CGS_Error         cgs_sprintfln(mutstr_t dst, const char *fmt, ...args with tostr); // identical to cgs_sprintf, but also appends '\n'
 
                   cgs_tostr_many(mutstr_t dst, ...args with tostr); // clears dst, calls the tostr of each ... arg, and appends them to dst
                   cgs_append_tostr_many(writer_t dst, ...args with tostr); // calls the tostr of each ... arg, and appends them to dst
