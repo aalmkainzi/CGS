@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>
+#include <signal.h>
 
 #ifndef CGS_API
     // for functions exposed in the header

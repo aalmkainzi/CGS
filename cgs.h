@@ -563,13 +563,15 @@ cgs_fread_until(mutstr_dst, stdin, delim)
 cgs_append_fread_until(mutstr_dst, stdin, delim)
 
 #define cgs__mutstr_append_fn(mutstr) \
-_Generic(mutstr, \
-    CGS_DStr*: cgs__idstr_append, \
-    CGS_StrBuf*: cgs__istrbuf_append, \
-    CGS_MutStrRef: cgs__mutstr_ref_append_func[cgs__coerce(mutstr, CGS_MutStrRef).ty], \
-    char*: cgs__cstr_append,  \
-    unsigned char*: cgs__cstr_append, \
-    FILE*: cgs__file_append \
+_Generic((__typeof__(mutstr)*)0, \
+    CGS_DStr**: cgs__idstr_append, \
+    CGS_StrBuf**: cgs__istrbuf_append, \
+    CGS_MutStrRef*: cgs__mutstr_ref_append_func[cgs__coerce(mutstr, CGS_MutStrRef).ty], \
+    char**: cgs__cstr_append,  \
+    unsigned char**: cgs__cstr_append, \
+    char(*)         [sizeof(__typeof__(mutstr))]: cgs__ibuf_append, \
+    unsigned char(*)[sizeof(__typeof__(mutstr))]: cgs__ibuf_append, \
+    FILE**: cgs__file_append \
 )
 
 static inline void *cgs__mutstr_ref_ctx(CGS_MutStrRef ref, CGS_Buffer *buffer_opt)

@@ -1,5 +1,5 @@
 CC := cc
-BASE_CFLAGS := -Wall -Wextra -g -I.. ../cgs.c
+BASE_CFLAGS := -Wall -Wextra -g -I.. ../cgs.c -std=c23 -D_GNU_SOURCE
 SRCS := $(wildcard *.c)
 BINS := $(SRCS:.c=)
 
