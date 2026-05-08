@@ -17,7 +17,6 @@ CGS_Error foo_to_str(CGS_Writer dst, struct FOO foo)
 
 int main()
 {
-    char *dst = (char[]){"ab"};
-    cgs_tostr_many(dst, 1, 2, 3);
-    cgs_writeln(dst);
+    struct FOO f = { 'a' };
+    cgs_printf("%?\n", f);
 }
