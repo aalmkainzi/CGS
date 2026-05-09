@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #if !defined(CGS_API)
     #define CGS_API
@@ -822,13 +823,16 @@ do \
 +1
 
 #define cgs__as_ptr_elm(a) \
-(void*)&(__typeof__(((void)0,a))[]){(a),}[0],
+(void*)&(__typeof__(((void)0,a))[]){(a),}[0]
+
+#define cgs__as_ptr_elm_comma(a) \
+cgs__as_ptr_elm(a),
 
 #define cgs__tostr_p_func_elm(a) \
 (CGS_Error(*)(CGS_Writer, const void*))cgs__get_tostr_p_func(__typeof__(a)),
 
 #define cgs__fmt_helper(fmt_func, writer, fmt, ...) \
-    __VA_OPT__(fmt_func(writer, (CGS__const_StrView){.chars = (fmt), .len = strlen(fmt)}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
+    __VA_OPT__(fmt_func(writer, (CGS__const_StrView){.chars = (fmt), .len = strlen(fmt)}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm_comma, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
     CGS__IF_EMPTY((fmt_func(cgs_writer(writer), (CGS__const_StrView){.chars = (fmt), .len = strlen(fmt)}, 0, NULL, NULL)), __VA_ARGS__)
 
 #define cgs_append_fmt(writer_dst, fmt, ...) \
@@ -857,6 +861,43 @@ cgs_fmt(mutstr_dst, fmt, __VA_ARGS__)
 
 #define cgs_sprintfln(mutstr_dst, fmt, ...) \
 cgs__fmt_helper(cgs__appendln_fmt_, cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), fmt, __VA_ARGS__)
+
+#if defined(__slimcc__) && defined(__INTERP_AT__)
+
+typedef struct CGS__Stringable
+{
+    void *obj;
+    CGS_Error(*tostr_p)(CGS_Writer, const void *obj);
+} CGS__Stringable;
+
+#define cgs__elm_ptr_comma_tostr(elm) \
+(cgs__as_ptr_elm(elm)), (cgs__get_tostr_p_func(__typeof__(elm)))
+
+#define cgs__iprint_lits(interp, base) \
+__REPEAT__(__INTERP_LITERAL_COUNT__(interp), __INTERP_LITERAL_AT__(interp, __COUNTER__ - base - 1),)
+
+#define cgs__iprint_interps(interp, base) \
+__REPEAT__(__INTERP_COUNT__(interp), (CGS__Stringable){ cgs__elm_ptr_comma_tostr(__INTERP_AT__(interp, __COUNTER__ - base - 1)) } ,)
+
+#define cgs_append_ifmt(writer_dst, interp) \
+cgs__iprint_impl( \
+    cgs_writer(writer_dst), \
+    (char*[]){cgs__iprint_lits(interp, __COUNTER__)}, \
+    __INTERP_LITERAL_COUNT__(interp), \
+    (CGS__Stringable[]){cgs__iprint_interps(interp, __COUNTER__)}, \
+    __INTERP_COUNT__(interp) \
+)
+
+#define cgs_ifmt(mutstr_dst, interp) \
+cgs_append_ifmt(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst)), interp)
+
+#define cgs_fprinti(stream, interp) \
+cgs_append_ifmt(_Generic(stream,FILE*:stream), interp)
+
+#define cgs_printi(interp) \
+cgs_fprinti(stdout, interp)
+
+#endif
 
 typedef char               cgs__c;
 typedef signed char        cgs__sc;
@@ -1594,6 +1635,24 @@ static inline CGS_Error cgs__cstr_append(void *ctx, const CGS_StrView str)
     else
         return (CGS_Error){CGS_OK};
 }
+
+#if defined(__slimcc__) && defined(__INTERP_AT__)
+static inline CGS_Error cgs__iprint_impl(CGS_Writer writer, const char **lits, int nlits, CGS__Stringable *interps, int ninterps)
+{
+    assert(nlits == ninterps + 1);
+    
+    CGS_Error err = {CGS_OK};
+    
+    for(int i = 0 ; i < nlits - 1 ; i++)
+    {
+        err = cgs__invoke_writer(writer, cgs_strv(lits[i]));
+        err = interps[i].tostr_p(writer, interps[i].obj);
+    }
+    err = cgs__invoke_writer(writer, cgs_strv(lits[nlits - 1]));
+    
+    return err;
+}
+#endif
 
 #endif // CGS__H_INCLUDED
 
