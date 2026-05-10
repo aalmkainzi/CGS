@@ -873,11 +873,20 @@ typedef struct CGS__Stringable
 #define cgs__elm_ptr_comma_tostr(elm) \
 (cgs__as_ptr_elm(elm)), (cgs__get_tostr_p_func(__typeof__(elm)))
 
+#define cgs__wrap_as_stringable(elm) \
+(CGS__Stringable){ cgs__elm_ptr_comma_tostr(elm) }
+
+#define cgs__wrap_as_stringable_comma(elm) \
+cgs__wrap_as_stringable(elm),
+
+#define cgs__elm_comma(elm) \
+elm,
+
 #define cgs__iprint_lits(interp, base) \
-__REPEAT__(__INTERP_LITERAL_COUNT__(interp), __INTERP_LITERAL_AT__(interp, __COUNTER__ - base - 1),)
+__INTERP_LITERAL_LIST__(interp, cgs__elm_comma)
 
 #define cgs__iprint_interps(interp, base) \
-__REPEAT__(__INTERP_COUNT__(interp), (CGS__Stringable){ cgs__elm_ptr_comma_tostr(__INTERP_AT__(interp, __COUNTER__ - base - 1)) } ,)
+__INTERP_LIST__(interp, cgs__wrap_as_stringable_comma)
 
 #define cgs_append_ifmt(writer_dst, interp) \
 cgs__iprint_impl( \
