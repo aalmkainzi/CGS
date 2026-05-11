@@ -870,11 +870,11 @@ typedef struct CGS__Stringable
     CGS_Error(*tostr_p)(CGS_Writer, const void *obj);
 } CGS__Stringable;
 
-#define cgs__elm_ptr_comma_tostr(elm) \
-(cgs__as_ptr_elm((elm))), (cgs__get_tostr_p_func(__typeof__(elm)))
-
 #define cgs__wrap_as_stringable(elm) \
-(CGS__Stringable){ cgs__elm_ptr_comma_tostr(elm) }
+(CGS__Stringable){ \
+    (cgs__as_ptr_elm((elm))), \
+    (cgs__get_tostr_p_func(__typeof__(elm))) \
+}
 
 #define cgs__wrap_as_stringable_comma(...) \
 cgs__wrap_as_stringable((__VA_ARGS__)),
