@@ -3,7 +3,7 @@ CC := cc
 ifeq ($(CC), clang)
     CFLAGS := -O3 -Wall -Wextra -Wno-unused-value -Wno-unused-but-set-variable -Wno-unused-variable -Wno-missing-field-initializers -I.. -lm -ggdb -std=gnu23
 else
-    CFLAGS := -Wall -Wextra -Wno-unused-value -Wno-unused-but-set-variable -Wno-unused-variable -Wno-missing-field-initializers -I.. -lm -ggdb -std=gnu23 -fsanitize=address,undefined
+    CFLAGS := -Wall -Wextra -Wno-unused-value -Wno-unused-but-set-variable -Wno-unused-variable -Wno-missing-field-initializers -I.. -lm -ggdb -std=gnu23
 endif
 
 SRCS := $(wildcard *.c)

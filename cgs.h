@@ -871,13 +871,13 @@ typedef struct CGS__Stringable
 } CGS__Stringable;
 
 #define cgs__elm_ptr_comma_tostr(elm) \
-(cgs__as_ptr_elm(elm)), (cgs__get_tostr_p_func(__typeof__(elm)))
+(cgs__as_ptr_elm((elm))), (cgs__get_tostr_p_func(__typeof__(elm)))
 
 #define cgs__wrap_as_stringable(elm) \
 (CGS__Stringable){ cgs__elm_ptr_comma_tostr(elm) }
 
-#define cgs__wrap_as_stringable_comma(elm) \
-cgs__wrap_as_stringable(elm),
+#define cgs__wrap_as_stringable_comma(...) \
+cgs__wrap_as_stringable((__VA_ARGS__)),
 
 #define cgs__elm_comma(elm) \
 elm,
