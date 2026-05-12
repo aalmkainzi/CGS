@@ -117,7 +117,7 @@ CGS_Error         cgs_writeln(anystr_t src); // calls cgs_fwriteln on stdout
 
 CGS_Error         cgs_fread_until(mutstr_t dst, FILE *stream, int delim); // clears dst, writes to dst from stream until delim is reached. If delim is reached before EOF, it is written to dst
 CGS_Error         cgs_append_fread_until(mutstr_t dst, FILE *stream, int delim); // appends to dst from stream until delim is reached. If delim is reached before EOF, it is written to dst
-CGS_Error         cgs_read_until(mutstr_t dst, int delim) // calls cgs_fread_until on stdin
+CGS_Error         cgs_read_until(mutstr_t dst, int delim); // calls cgs_fread_until on stdin
 CGS_Error         cgs_append_read_until(mutstr_t dst, int delim); // calls cgs_append_fread_until on stdin
 CGS_Error         cgs_fread_line(mutstr_t dst, FILE *stream); // calls cgs_fread_until with '\n' delim
 CGS_Error         cgs_append_fread_line(mutstr_t dst, FILE *stream); // cgs_append_fread_until with '\n' delim
