@@ -2044,6 +2044,38 @@ CGS_API CGS_Result(CGS_StrView) cgs__next_tok_any(CGS_StrView *base, CGS_StrView
     return tok;
 }
 
+CGS_API CGS_Result(CGS_StrView) cgs__skip(CGS_StrView src, CGS_StrView delim)
+{
+    CGS_Error err = {CGS_NOT_FOUND};
+    while(cgs_starts_with(src, delim))
+    {
+        err.ec = CGS_OK;
+        src.len -= delim.len;
+        src.chars += delim.len;
+    }
+    
+    return (CGS_Result(CGS_StrView)){
+        .val = src,
+        .err = err
+    };
+}
+
+CGS_API CGS_Result(CGS_StrView) cgs__skip_any(CGS_StrView src, CGS_StrView delim_set)
+{
+    CGS_Error err = {CGS_NOT_FOUND};
+    while(src.len > 0 && memchr(delim_set.chars, src.chars[0], delim_set.len))
+    {
+        err.ec = CGS_OK;
+        src.len -= 1;
+        src.chars += 1;
+    }
+    
+    return (CGS_Result(CGS_StrView)){
+        .val = src,
+        .err = err
+    };
+}
+
 CGS_API CGS_Error cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int begin, unsigned int end, const CGS_StrView replacement)
 {
     if(begin > dstr->len || end > dstr->len)

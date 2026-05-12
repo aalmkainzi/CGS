@@ -530,6 +530,12 @@ cgs__next_tok(strv_ptr, cgs_strv(delim))
 #define cgs_next_tok_any(strv_ptr, delim_set) \
 cgs__next_tok_any(strv_ptr, cgs_strv(delim_set))
 
+#define cgs_skip(anystr_src, delim) \
+cgs__skip(cgs_strv(anystr_src), cgs_strv(delim))
+
+#define cgs_skip_any(anystr_src, delim_set) \
+cgs__skip_any(cgs_strv(anystr_src), cgs_strv(delim_set))
+
 #define cgs_del(mutstr_dst, begin, end) \
 cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(mutstr_dst), begin, end)
 
@@ -1377,6 +1383,8 @@ CGS_API CGS_Error cgs__mutstr_ref_clear(CGS_MutStrRef str);
 CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, CGS_StrViewArray strs, CGS_StrView delim);
 CGS_API CGS_Result(CGS_StrView) cgs__next_tok(CGS_StrView *base, CGS_StrView delim);
 CGS_API CGS_Result(CGS_StrView) cgs__next_tok_any(CGS_StrView *base, CGS_StrView delim_set);
+CGS_API CGS_Result(CGS_StrView) cgs__skip(CGS_StrView src, CGS_StrView delim);
+CGS_API CGS_Result(CGS_StrView) cgs__skip_any(CGS_StrView src, CGS_StrView delim_set);
 
 CGS_API CGS_Error cgs__fmutstr_ref_putc(CGS__FixedMutStrRef dst, char c);
 CGS_API CGS_Error cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, const CGS_StrView src);
