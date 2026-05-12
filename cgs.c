@@ -2007,7 +2007,7 @@ CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, const CGS_StrViewArray s
     };
 }
 
-CGS_API CGS_StrView cgs__next_tok(CGS_StrView *base, CGS_StrView delim)
+CGS_API CGS_Result(CGS_StrView) cgs__next_tok(CGS_StrView *base, CGS_StrView delim)
 {
     CGS_StrView found = cgs__strv_find(*base, delim);
     if(found.chars)
@@ -2021,7 +2021,7 @@ CGS_API CGS_StrView cgs__next_tok(CGS_StrView *base, CGS_StrView delim)
         base->chars += index;
         base->len -= index;
         
-        return ret;
+        return (CGS_Result(CGS_StrView)){.val = ret, .err = {CGS_OK}};
     }
     else
     {
@@ -2029,17 +2029,17 @@ CGS_API CGS_StrView cgs__next_tok(CGS_StrView *base, CGS_StrView delim)
         base->chars += base->len;
         base->len = 0;
         
-        return ret;
+        return (CGS_Result(CGS_StrView)){.val = ret, .err = {CGS_NOT_FOUND}};;
     }
 }
 
-CGS_API CGS_StrView cgs__next_tok_any(CGS_StrView *base, CGS_StrView delim_set)
+CGS_API CGS_Result(CGS_StrView) cgs__next_tok_any(CGS_StrView *base, CGS_StrView delim_set)
 {
-    CGS_StrView tok = cgs__strv_cspn(*base, delim_set);
-    bool found = tok.len != base->len;
+    CGS_Result(CGS_StrView) tok = cgs__strv_cspn(*base, delim_set);
+    bool found = tok.err.ec != CGS_NOT_FOUND;
     
-    base->chars += (tok.len + found);
-    base->len   -= (tok.len + found);
+    base->chars += (tok.val.len + found);
+    base->len   -= (tok.val.len + found);
     
     return tok;
 }
@@ -2138,12 +2138,12 @@ CGS_API CGS_Error cgs__mutstr_ref_replace_range(CGS_MutStrRef str, unsigned int 
     };
 }
 
-CGS_API CGS_ReplaceResult cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, const CGS_StrView target, const CGS_StrView replacement)
+CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, const CGS_StrView target, const CGS_StrView replacement)
 {
     CGS_StrView as_strv = cgs__strv_fmutstr_ref2(str, 0);
     if(cgs__is_strv_within(as_strv, target) || cgs__is_strv_within(as_strv, replacement))
     {
-        return (CGS_ReplaceResult){.nb_replaced = 0, .err = {CGS_ALIASING_NOT_SUPPORTED}};
+        return (CGS_Result(int)){.val = 0, .err = {CGS_ALIASING_NOT_SUPPORTED}};
     }
     
     CGS_Error err = {CGS_OK};
@@ -2251,15 +2251,15 @@ CGS_API CGS_ReplaceResult cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, cons
     out:
     if(replace_count == 0 && err.ec == CGS_OK)
         err.ec = CGS_NOT_FOUND;
-    return (CGS_ReplaceResult){.nb_replaced = replace_count, .err = err};
+    return (CGS_Result(int)){.val = replace_count, .err = err};
 }
 
-CGS_API CGS_ReplaceResult cgs__dstr_replace(CGS_DStr *dstr, const CGS_StrView target, const CGS_StrView replacement)
+CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, const CGS_StrView target, const CGS_StrView replacement)
 {
     CGS_StrView as_strv = cgs__strv_dstr_ptr2(dstr, 0);
     if(cgs__is_strv_within(as_strv, target) || cgs__is_strv_within(as_strv, replacement))
     {
-        return (CGS_ReplaceResult){.nb_replaced = 0, .err = {CGS_ALIASING_NOT_SUPPORTED}};
+        return (CGS_Result(int)){.val = 0, .err = {CGS_ALIASING_NOT_SUPPORTED}};
     }
     
     CGS_Error err = {CGS_OK};
@@ -2360,10 +2360,10 @@ CGS_API CGS_ReplaceResult cgs__dstr_replace(CGS_DStr *dstr, const CGS_StrView ta
     out:
     if(replace_count == 0 && err.ec == CGS_OK)
         err.ec = CGS_NOT_FOUND;
-    return (CGS_ReplaceResult){.nb_replaced = replace_count, .err = err};
+    return (CGS_Result(int)){.val = replace_count, .err = err};
 }
 
-CGS_API CGS_ReplaceResult cgs__mutstr_ref_replace(CGS_MutStrRef str, const CGS_StrView target, const CGS_StrView replacement)
+CGS_API CGS_Result(int) cgs__mutstr_ref_replace(CGS_MutStrRef str, const CGS_StrView target, const CGS_StrView replacement)
 {
     switch(str.ty)
     {
@@ -2451,37 +2451,66 @@ CGS_API unsigned int cgs__strv_count(const CGS_StrView hay, const CGS_StrView ne
     return count;
 }
 
-CGS_API CGS_StrView cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset)
+CGS_API CGS_Result(CGS_StrView) cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset)
 {
     if(charset.len == 1)
     {
         char *found = (char*) memchr(src.chars, charset.chars[0], src.len);
         if(found)
         {
-            return (CGS_StrView){.chars = src.chars, .len = (unsigned int)(found - src.chars)};
+            CGS_Result(CGS_StrView) ret = {
+                .val = {.chars = src.chars, .len = (unsigned int)(found - src.chars)},
+                .err = {CGS_OK}
+            };
+            return ret;
         }
         else
         {
-            return src;
+            CGS_Result(CGS_StrView) ret = {
+                .val = src,
+                .err = {CGS_NOT_FOUND}
+            };
+            return ret;
         }
     }
     
     for(unsigned int i = 0 ; i < src.len ; i++)
     {
         if(memchr(charset.chars, src.chars[i], charset.len))
-            return (CGS_StrView){.chars = src.chars, .len = i};
+        {
+            CGS_Result(CGS_StrView) ret = {
+                .val = {.chars = src.chars, .len = i},
+                .err = {CGS_OK}
+            };
+            return ret;
+        }
     }
-    return src;
+    
+    CGS_Result(CGS_StrView) ret = {
+        .val = src,
+        .err = {CGS_NOT_FOUND}
+    };
+    return ret;
 }
 
-CGS_API CGS_StrView cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset)
+CGS_API CGS_Result(CGS_StrView) cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset)
 {
     for(unsigned int i = 0 ; i < src.len ; i++)
     {
         if(memchr(charset.chars, src.chars[i], charset.len) == NULL)
-            return (CGS_StrView){.chars = src.chars, .len = i};
+        {
+            CGS_Result(CGS_StrView) ret = {
+                .val = {.chars = src.chars, .len = i},
+                .err = {CGS_OK}
+            };
+            return ret;
+        }
     }
-    return src;
+    CGS_Result(CGS_StrView) ret = {
+        .val = src,
+        .err = {CGS_NOT_FOUND}
+    };
+    return ret;
 }
 
 CGS_API CGS_StrView cgs__trim_view(const CGS_StrView str)

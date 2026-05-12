@@ -323,11 +323,14 @@ typedef struct CGS_AppenderState
     CGS_StrBuf appender_buf;
 } CGS_AppenderState;
 
-typedef struct CGS_ReplaceResult
-{
-    unsigned int nb_replaced;
-    CGS_Error err;
-} CGS_ReplaceResult;
+#define CGS_Result(T) \
+CGS__Result_##T
+
+#define CGS__DeclResult(T) \
+typedef struct CGS_Result(T) { T val; CGS_Error err; } CGS_Result(T)
+
+CGS__DeclResult(int);
+CGS__DeclResult(CGS_StrView);
 
 #define cgs__fmutstr_ref(s, ...) \
 _Generic(&(__typeof__(s)){0}, \
@@ -1367,20 +1370,20 @@ CGS_API CGS_Error cgs__mutstr_ref_copy(CGS_MutStrRef dst, const CGS_StrView src)
 CGS_API CGS_Error cgs__mutstr_ref_append(CGS_MutStrRef dst, const CGS_StrView src);
 CGS_API CGS_Error cgs__mutstr_ref_delete_range(CGS_MutStrRef str, unsigned int begin, unsigned int end);
 CGS_API CGS_Error cgs__mutstr_ref_insert(CGS_MutStrRef dst, const CGS_StrView src, unsigned int idx);
-CGS_API CGS_ReplaceResult cgs__mutstr_ref_replace(CGS_MutStrRef str, const CGS_StrView target, const CGS_StrView replacement);
+CGS_API CGS_Result(int) cgs__mutstr_ref_replace(CGS_MutStrRef str, const CGS_StrView target, const CGS_StrView replacement);
 CGS_API CGS_Error cgs__mutstr_ref_replace_first(CGS_MutStrRef str, const CGS_StrView target, const CGS_StrView replacement);
 CGS_API CGS_Error cgs__mutstr_ref_replace_range(CGS_MutStrRef str, unsigned int begin, unsigned int end, const CGS_StrView replacement);
 CGS_API CGS_Error cgs__mutstr_ref_clear(CGS_MutStrRef str);
 CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, CGS_StrViewArray strs, CGS_StrView delim);
-CGS_API CGS_StrView cgs__next_tok(CGS_StrView *base, CGS_StrView delim);
-CGS_API CGS_StrView cgs__next_tok_any(CGS_StrView *base, CGS_StrView delim_set);
+CGS_API CGS_Result(CGS_StrView) cgs__next_tok(CGS_StrView *base, CGS_StrView delim);
+CGS_API CGS_Result(CGS_StrView) cgs__next_tok_any(CGS_StrView *base, CGS_StrView delim_set);
 
 CGS_API CGS_Error cgs__fmutstr_ref_putc(CGS__FixedMutStrRef dst, char c);
 CGS_API CGS_Error cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, const CGS_StrView src);
 CGS_API CGS_Error cgs__fmutstr_ref_append(CGS__FixedMutStrRef dst, const CGS_StrView src);
 CGS_API CGS_Error cgs__fmutstr_ref_delete_range(CGS__FixedMutStrRef str, unsigned int begin, unsigned int end);
 CGS_API CGS_Error cgs__fmutstr_ref_insert(CGS__FixedMutStrRef dst, const CGS_StrView src, unsigned int idx);
-CGS_API CGS_ReplaceResult cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, const CGS_StrView target, const CGS_StrView replacement);
+CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, const CGS_StrView target, const CGS_StrView replacement);
 CGS_API CGS_Error cgs__fmutstr_ref_replace_first(CGS__FixedMutStrRef str, const CGS_StrView target, const CGS_StrView replacement);
 CGS_API CGS_Error cgs__fmutstr_ref_replace_range(CGS__FixedMutStrRef str, unsigned int begin, unsigned int end, const CGS_StrView replacement);
 CGS_API CGS_Error cgs__fmutstr_ref_clear(CGS__FixedMutStrRef str);
@@ -1388,7 +1391,7 @@ CGS_API CGS_Error cgs__strv_arr_join_into_fmutstr_ref(CGS__FixedMutStrRef dst, c
 
 CGS_API CGS_Error cgs__dstr_putc(CGS_DStr *dst, char c);
 CGS_API CGS_Error cgs__dstr_copy(CGS_DStr *dstr, const CGS_StrView src);
-CGS_API CGS_ReplaceResult cgs__dstr_replace(CGS_DStr *dstr, const CGS_StrView target, const CGS_StrView replacement);
+CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, const CGS_StrView target, const CGS_StrView replacement);
 CGS_API CGS_Error cgs__dstr_replace_first(CGS_DStr *dstr, const CGS_StrView target, const CGS_StrView replacement);
 CGS_API CGS_Error cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int begin, unsigned int end, const CGS_StrView replacement);
 CGS_API CGS_Error cgs__strv_arr_join_into_dstr(CGS_DStr *dstr, const CGS_StrViewArray strs, const CGS_StrView delim);
@@ -1404,8 +1407,8 @@ CGS_API CGS_StrView cgs__strv_find(const CGS_StrView hay, const CGS_StrView need
 CGS_API unsigned int cgs__strv_count(const CGS_StrView hay, const CGS_StrView needle);
 CGS_API CGS_StrView cgs__trim_view(const CGS_StrView str);
 CGS_API CGS_Error cgs__trim(CGS__FixedMutStrRef str);
-CGS_API CGS_StrView cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset);
-CGS_API CGS_StrView cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset);
+CGS_API CGS_Result(CGS_StrView) cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset);
+CGS_API CGS_Result(CGS_StrView) cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset);
 CGS_API bool cgs__strv_starts_with(const CGS_StrView hay, const CGS_StrView needle);
 CGS_API bool cgs__strv_ends_with(const CGS_StrView hay, const CGS_StrView needle);
 
