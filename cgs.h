@@ -213,10 +213,11 @@ typedef struct CGS_MutStrRef
 #define CGS__ERROR_NAMES(X) \
 X(OK)                       \
 X(DST_TOO_SMALL)            \
-X(ALLOC_ERR)                \
+X(ALLOC_ERROR)              \
 X(INDEX_OUT_OF_BOUNDS)      \
 X(BAD_RANGE)                \
 X(NOT_FOUND)                \
+X(END_OF_STRING)            \
 X(ALIASING_NOT_SUPPORTED)   \
 X(WRONG_TYPE)               \
 X(ENCODING_ERROR)           \

@@ -82,10 +82,13 @@ bool                    cgs_ends_with(anystr_t hay, anystr_t needle);
 CGS_StrView             cgs_trim_view(anystr_t str);
 CGS_Error               cgs_trim(mutstr_t str);
 
+CGS_Result(CGS_StrView) cgs_skip(anystr_t str, anystr_t delim); // returns view of after non-delim is reached
+CGS_Result(CGS_StrView) cgs_skip_any(anystr_t str, anystr_t delim_set);
+
 CGS_Result(CGS_StrView) cgs_spn(anystr_t src, anystr_t charset); // return view of first chunk that contains characters only found in charset
 CGS_Result(CGS_StrView) cgs_cspn(anystr_t src, anystr_t charset); // return view of first chunk that contains characters not found in charset
 
-CGS_Result(CGS_StrView) cgs_next_tok(CGS_StrView *base, anystr_t delim); // returns view of base until the next delim. modifies base such that it skips the next delim. If delim not found, returned view is remaining of base, and base is entirely consumed (length is 0, and points to one past last character)
+CGS_Result(CGS_StrView) cgs_next_tok(CGS_StrView *base, anystr_t delim); // skips leading delims, returns next token. modifies base such that its after the returned token
 CGS_Result(CGS_StrView) cgs_next_tok_any(CGS_StrView *base, anystr_t delim_set);
 
 CGS_Error               cgs_map_chars(mutstr_t, bool(*map_func)(char *c, void *arg), void *arg = NULL); // iterates each char and calls map_func on it. If false is returned from map_func, iteration is stopped and CGS_CALLBACK_EXIT error code is returned
@@ -136,7 +139,7 @@ unsigned int            cgs_tostr_p_len(T *val);
 
 CGS_Error               cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%arg_index" for positional arguments, cannot mix and match.
 CGS_Error               cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr); // identical to cgs_fmt, but appends
-CGS_Error               cgs_appendln_fmt(writer_t dst, const char *fmt, ...args with tostr); // identical to cgs_append_fmt, but also appends '\n'
+CGS_Error               cgs_appendln_fmt(writer_t dst, const char *fmt, ...args with tostr); // cgs_append_fmt + '\n'
 
 CGS_Error               cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_append_fmt, but restricted to FILE*
 CGS_Error               cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
@@ -145,7 +148,7 @@ CGS_Error               cgs_printf(const char *fmt, ...args with tostr); // call
 CGS_Error               cgs_printfln(const char *fmt, ...args with tostr);
 
 CGS_Error               cgs_sprintf(mutstr_t dst, const char *fmt, ...args with tostr); // alias for cgs_fmt
-CGS_Error               cgs_sprintfln(mutstr_t dst, const char *fmt, ...args with tostr); // identical to cgs_sprintf, but also appends '\n'
+CGS_Error               cgs_sprintfln(mutstr_t dst, const char *fmt, ...args with tostr); // cgs_sprintf + '\n'
 
                         cgs_tostr_many(mutstr_t dst, ...args with tostr); // clears dst, calls the tostr of each ... arg, and appends them to dst
                         cgs_append_tostr_many(writer_t dst, ...args with tostr); // calls the tostr of each ... arg, and appends them to dst
