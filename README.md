@@ -127,8 +127,8 @@ CGS_Error               cgs_append_fread_line(mutstr_t dst, FILE *stream); // cg
 CGS_Error               cgs_read_line(mutstr_t dst); // calls cgs_fread_line on stdin
 CGS_Error               cgs_append_read_line(mutstr_t dst); // calls cgs_append_fread_line on stdin
 
-CGS_MutStrRef           cgs_appender(mutstr_t owner, CGS_AppenderState *state); // returns a string reference that appends to owner. must call cgs_commit_appender to update the length of owner
-CGS_Error               cgs_commit_appender(mutstr_t owner, CGS_MutStrRef appender); // appender must be what cgs_appender returned on the same owner, and owner must not have had its length changed between cgs_appender and cgs_commit_appender
+CGS_MutStrRef           cgs_appender(mutstr_t owner, CGS_AppenderState *state); // returns a string reference that appends to owner. must call cgs_commit_appender to update the length of owner. If owner is a CGS_DStr, the appender may make it grow
+CGS_Error               cgs_commit_appender(mutstr_t owner, CGS_MutStrRef appender); // commit the appender to the owning string. The owner must not have its capacity or length modified between cgs_appender and cgs_commit_appender
 
 CGS_Error               cgs_tostr(mutstr_t dst, T val);
 CGS_Error               cgs_append_tostr(writer_t dst, T val);
@@ -137,7 +137,7 @@ bool                    cgs_has_tostr(T);
 unsigned int            cgs_tostr_len(T val);
 unsigned int            cgs_tostr_p_len(T *val);
 
-CGS_Error               cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%arg_index" for positional arguments, cannot mix and match.
+CGS_Error               cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%arg_index" for positional arguments, cannot mix and match
 CGS_Error               cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr); // identical to cgs_fmt, but appends
 CGS_Error               cgs_appendln_fmt(writer_t dst, const char *fmt, ...args with tostr); // cgs_append_fmt + '\n'
 
