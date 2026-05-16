@@ -862,7 +862,7 @@ cgs_fmt(mutstr_dst, fmt, __VA_ARGS__)
 #define cgs_sprintfln(mutstr_dst, fmt, ...) \
 cgs__fmt_helper(cgs__appendln_fmt_, cgs_writer(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), fmt, __VA_ARGS__)
 
-#if defined(__slimcc__) && defined(__INTERP_AT__)
+#if defined(__slimcc__) && defined(__INTERP_LIST__)
 
 typedef struct CGS__Stringable
 {
@@ -882,18 +882,21 @@ cgs__wrap_as_stringable((__VA_ARGS__)),
 #define cgs__elm_comma(elm) \
 elm,
 
-#define cgs__iprint_lits(interp, base) \
-__INTERP_LITERAL_LIST__(interp, cgs__elm_comma)
+#define cgs__iprint_lits(interp) \
+__INTERP_LITERAL_LIST__(interp)
 
-#define cgs__iprint_interps(interp, base) \
-__INTERP_LIST__(interp, cgs__wrap_as_stringable_comma)
+#define cgs__wrap_all_args_as_stringable(a, ...) \
+cgs__wrap_as_stringable(a) __VA_OPT__( , __VA_TAIL__() )
+
+#define cgs__iprint_interps(interp) \
+cgs__wrap_all_args_as_stringable(__INTERP_LIST__(interp))
 
 #define cgs_append_ifmt(writer_dst, interp) \
 cgs__iprint_impl( \
     cgs_writer(writer_dst), \
-    (char*[]){cgs__iprint_lits(interp, __COUNTER__)}, \
+    (char*[]){cgs__iprint_lits(interp)}, \
     __INTERP_LITERAL_COUNT__(interp), \
-    (CGS__Stringable[]){cgs__iprint_interps(interp, __COUNTER__)}, \
+    (CGS__Stringable[]){cgs__iprint_interps(interp)}, \
     __INTERP_COUNT__(interp) \
 )
 
@@ -1645,7 +1648,7 @@ static inline CGS_Error cgs__cstr_append(void *ctx, const CGS_StrView str)
         return (CGS_Error){CGS_OK};
 }
 
-#if defined(__slimcc__) && defined(__INTERP_AT__)
+#if defined(__slimcc__) && defined(__INTERP_LIST__)
 static inline CGS_Error cgs__iprint_impl(CGS_Writer writer, const char **lits, int nlits, CGS__Stringable *interps, int ninterps)
 {
     assert(nlits == ninterps + 1);
