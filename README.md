@@ -46,109 +46,112 @@ There are three categories of string types:
 
 This is a list of all the utility macros CGS provides:
 ```C++
-CGS_StrView       cgs_strv(anystr_t str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
+CGS_StrView             cgs_strv(anystr_t str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
                   
-CGS_StrBuf        cgs_strbuf_init_from_cstr([unsigned] char *cstr, unsigned int cap = strlen(cstr) + 1);
-CGS_StrBuf        cgs_strbuf_init_from_cstr([unsigned] char cstr[], unsigned int cap = sizeof(cstr));
-CGS_StrBuf        cgs_strbuf_init_from_buf([unsigned] char *buf, unsigned int cap);
-CGS_StrBuf        cgs_strbuf_init_from_buf([unsigned] char buf[], unsigned int cap = sizeof(buf));
+CGS_StrBuf              cgs_strbuf_init_from_cstr([unsigned] char *cstr, unsigned int cap = strlen(cstr) + 1);
+CGS_StrBuf              cgs_strbuf_init_from_cstr([unsigned] char cstr[], unsigned int cap = sizeof(cstr));
+CGS_StrBuf              cgs_strbuf_init_from_buf([unsigned] char *buf, unsigned int cap);
+CGS_StrBuf              cgs_strbuf_init_from_buf([unsigned] char buf[], unsigned int cap = sizeof(buf));
 
-CGS_DStr          cgs_dstr_init(unsigned int initial_cap = 0, CGS_Allocator *allocator = cgs_get_default_allocator());
-CGS_DStr          cgs_dstr_init_from(anystr_t src, CGS_Allocator *allocator = cgs_get_default_allocator());
-void              cgs_dstr_deinit(CGS_DStr *dstr);
-CGS_Error         cgs_dstr_shrink_to_fit(CGS_DStr *dstr);
-CGS_Error         cgs_dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_least);
+CGS_DStr                cgs_dstr_init(unsigned int initial_cap = 0, CGS_Allocator *allocator = cgs_get_default_allocator());
+CGS_DStr                cgs_dstr_init_from(anystr_t src, CGS_Allocator *allocator = cgs_get_default_allocator());
+void                    cgs_dstr_deinit(CGS_DStr *dstr);
+CGS_Error               cgs_dstr_shrink_to_fit(CGS_DStr *dstr);
+CGS_Error               cgs_dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_least);
 
-CGS_MutStrRef     cgs_mutstr_ref(mutstr_t str);
-CGS_MutStrRef     cgs_mutstr_ref(cstr, cap);
+CGS_MutStrRef           cgs_mutstr_ref(mutstr_t str);
+CGS_MutStrRef           cgs_mutstr_ref(cstr, cap);
 
-CGS_Writer        cgs_writer(writer_t);
+CGS_Writer              cgs_writer(writer_t);
 
-CGS_StrViewArray  cgs_strv_arr(...anystr_t);
-CGS_StrViewArray  cgs_strv_arr_from(CGS_StrView strs[N]);
-CGS_StrViewArray  cgs_strv_arr_from(CGS_StrView *strs, unsigned int len);
+CGS_StrViewArray        cgs_strv_arr(...anystr_t);
+CGS_StrViewArray        cgs_strv_arr_from(CGS_StrView strs[N]);
+CGS_StrViewArray        cgs_strv_arr_from(CGS_StrView *strs, unsigned int len);
 
-unsigned int      cgs_len(anystr_t);
-unsigned int      cgs_cap(anystr_t);
-bool              cgs_equal(anystr_t a, anystr_t b);
-char*             cgs_chars(anystr_t);
+unsigned int            cgs_len(anystr_t);
+unsigned int            cgs_cap(anystr_t);
+bool                    cgs_equal(anystr_t a, anystr_t b);
+char*                   cgs_chars(anystr_t);
 
-CGS_StrView       cgs_find(anystr_t hay, anystr_t needle);
-unsigned int      cgs_count(anystr_t hay, anystr_t needle);
-CGS_Error         cgs_clear(mutstr_t);
-bool              cgs_starts_with(anystr_t hay, anystr_t needle);
-bool              cgs_ends_with(anystr_t hay, anystr_t needle);
+CGS_StrView             cgs_find(anystr_t hay, anystr_t needle);
+unsigned int            cgs_count(anystr_t hay, anystr_t needle);
+CGS_Error               cgs_clear(mutstr_t);
+bool                    cgs_starts_with(anystr_t hay, anystr_t needle);
+bool                    cgs_ends_with(anystr_t hay, anystr_t needle);
 
-CGS_StrView       cgs_trim_view(anystr_t str);
-CGS_Error         cgs_trim(mutstr_t str);
+CGS_StrView             cgs_trim_view(anystr_t str);
+CGS_Error               cgs_trim(mutstr_t str);
 
-CGS_StrView       cgs_spn(anystr_t src, anystr_t charset); // return view of first chunk that contains characters only found in charset
-CGS_StrView       cgs_cspn(anystr_t src, anystr_t charset); // return view of first chunk that contains characters not found in charset
+CGS_Result(CGS_StrView) cgs_skip(anystr_t str, anystr_t delim); // returns view of after non-delim is reached
+CGS_Result(CGS_StrView) cgs_skip_any(anystr_t str, anystr_t delim_set);
 
-CGS_StrView       cgs_next_tok(CGS_StrView *base, anystr_t delim); // returns view of base until the next delim, or end of string. modifies base such that it skips the next delim
-CGS_StrView       cgs_next_tok_any(CGS_StrView *base, anystr_t delim_set);
+CGS_Result(CGS_StrView) cgs_spn(anystr_t src, anystr_t charset); // return view of first chunk that contains characters only found in charset
+CGS_Result(CGS_StrView) cgs_cspn(anystr_t src, anystr_t charset); // return view of first chunk that contains characters not found in charset
 
-CGS_Error         cgs_map_chars(mutstr_t, bool(*map_func)(char *c, void *arg), void *arg = NULL); // iterates each char and calls map_func on it. If false is returned from map_func, iteration is stopped and CGS_CALLBACK_EXIT error code is returned
-void              cgs_tolower(mutstr_t);
-void              cgs_toupper(mutstr_t);
+CGS_Result(CGS_StrView) cgs_next_tok(CGS_StrView *base, anystr_t delim); // skips leading delims, returns next token. modifies base such that it's after the returned token
+CGS_Result(CGS_StrView) cgs_next_tok_any(CGS_StrView *base, anystr_t delim_set);
 
-CGS_Error         cgs_copy(mutstr_t dst, anystr_t src);
-CGS_DStr          cgs_dup(anystr_t src, CGS_Allocator *allocator = cgs_get_default_allocator()); // alias for cgs_dstr_init_from
+CGS_Error               cgs_map_chars(mutstr_t, bool(*map_func)(char *c, void *arg), void *arg = NULL); // iterates each char and calls map_func on it. If false is returned from map_func, iteration is stopped and CGS_CALLBACK_EXIT error code is returned
+void                    cgs_tolower(mutstr_t);
+void                    cgs_toupper(mutstr_t);
 
-CGS_Error         cgs_putc(writer_t dst, char c);
-CGS_Error         cgs_append(writer_t dst, anystr_t src);
-CGS_Error         cgs_appendln(writer_t dst, anystr_t src);
-CGS_Error         cgs_insert(mutstr_t dst, anystr_t src, unsigned int pos);
-CGS_Error         cgs_prepend(mutstr_t dst, anystr_t src);
-CGS_Error         cgs_del(mutstr_t, unsigned int from, unsigned int to_exclusive);
+CGS_Error               cgs_copy(mutstr_t dst, anystr_t src);
+CGS_DStr                cgs_dup(anystr_t src, CGS_Allocator *allocator = cgs_get_default_allocator()); // alias for cgs_dstr_init_from
 
-CGS_ReplaceResult cgs_replace(mutstr_t dst, anystr_t target, anystr_t replacement);
-CGS_Error         cgs_replace_first(mutstr_t dst, anystr_t target, anystr_t replacement);
-CGS_Error         cgs_replace_range(mutstr_t dst, unsigned int from, unsigned int to_exclusive, anystr_t replacement);
+CGS_Error               cgs_putc(writer_t dst, char c);
+CGS_Error               cgs_append(writer_t dst, anystr_t src);
+CGS_Error               cgs_appendln(writer_t dst, anystr_t src);
+CGS_Error               cgs_insert(mutstr_t dst, anystr_t src, unsigned int pos);
+CGS_Error               cgs_prepend(mutstr_t dst, anystr_t src);
+CGS_Error               cgs_del(mutstr_t, unsigned int from, unsigned int to_exclusive);
 
-CGS_StrViewArray  cgs_split(anystr_t str, anystr_t delim, CGS_Allocator *allocator = cgs_get_default_allocator());
-CGS_Error         cgs_split_iter(anystr_t str, anystr_t delim, bool(*callback)(CGS_StrView found, void *arg), void *arg = NULL);
-CGS_Error         cgs_join(mutstr_t dst, CGS_StrViewArray arr, anystr_t delim);
+CGS_Result(int)         cgs_replace(mutstr_t dst, anystr_t target, anystr_t replacement);
+CGS_Error               cgs_replace_first(mutstr_t dst, anystr_t target, anystr_t replacement);
+CGS_Error               cgs_replace_range(mutstr_t dst, unsigned int from, unsigned int to_exclusive, anystr_t replacement);
 
-CGS_Error         cgs_fwrite(FILE *stream, anystr_t src); // identical to cgs_append, but restricted to FILE*
-CGS_Error         cgs_fwriteln(FILE *stream, anystr_t src); // identical to cgs_appendln, but restricted to FILE*
-CGS_Error         cgs_write(anystr_t src); // calls cgs_fwrite on stdout
-CGS_Error         cgs_writeln(anystr_t src); // calls cgs_fwriteln on stdout
+CGS_StrViewArray        cgs_split(anystr_t str, anystr_t delim, CGS_Allocator *allocator = cgs_get_default_allocator());
+CGS_Error               cgs_split_iter(anystr_t str, anystr_t delim, bool(*callback)(CGS_StrView found, void *arg), void *arg = NULL);
+CGS_Error               cgs_join(mutstr_t dst, CGS_StrViewArray arr, anystr_t delim);
 
-CGS_Error         cgs_fread_until(mutstr_t dst, FILE *stream, int delim); // clears dst, writes to dst from stream until delim is reached. If delim is reached before EOF, it is written to dst
-CGS_Error         cgs_append_fread_until(mutstr_t dst, FILE *stream, int delim); // appends to dst from stream until delim is reached. If delim is reached before EOF, it is written to dst
-CGS_Error         cgs_read_until(mutstr_t dst, int delim); // calls cgs_fread_until on stdin
-CGS_Error         cgs_append_read_until(mutstr_t dst, int delim); // calls cgs_append_fread_until on stdin
-CGS_Error         cgs_fread_line(mutstr_t dst, FILE *stream); // calls cgs_fread_until with '\n' delim
-CGS_Error         cgs_append_fread_line(mutstr_t dst, FILE *stream); // cgs_append_fread_until with '\n' delim
-CGS_Error         cgs_read_line(mutstr_t dst); // calls cgs_fread_line on stdin
-CGS_Error         cgs_append_read_line(mutstr_t dst); // calls cgs_append_fread_line on stdin
+CGS_Error               cgs_fwrite(FILE *stream, anystr_t src); // identical to cgs_append, but restricted to FILE*
+CGS_Error               cgs_fwriteln(FILE *stream, anystr_t src); // identical to cgs_appendln, but restricted to FILE*
+CGS_Error               cgs_write(anystr_t src); // calls cgs_fwrite on stdout
+CGS_Error               cgs_writeln(anystr_t src); // calls cgs_fwriteln on stdout
 
-CGS_MutStrRef     cgs_appender(mutstr_t owner, CGS_AppenderState *state); // returns a string reference that appends to owner. must call cgs_commit_appender to update the length of owner
-CGS_Error         cgs_commit_appender(mutstr_t owner, CGS_MutStrRef appender); // appender must be what cgs_appender returned on the same owner, and owner must not have had its length changed between cgs_appender and cgs_commit_appender
+CGS_Error               cgs_fread_until(mutstr_t dst, FILE *stream, int delim); // clears dst, writes to dst from stream until delim is reached. If delim is reached before EOF, it is written to dst
+CGS_Error               cgs_append_fread_until(mutstr_t dst, FILE *stream, int delim); // appends to dst from stream until delim is reached. If delim is reached before EOF, it is written to dst
+CGS_Error               cgs_read_until(mutstr_t dst, int delim); // calls cgs_fread_until on stdin
+CGS_Error               cgs_append_read_until(mutstr_t dst, int delim); // calls cgs_append_fread_until on stdin
+CGS_Error               cgs_fread_line(mutstr_t dst, FILE *stream); // calls cgs_fread_until with '\n' delim
+CGS_Error               cgs_append_fread_line(mutstr_t dst, FILE *stream); // cgs_append_fread_until with '\n' delim
+CGS_Error               cgs_read_line(mutstr_t dst); // calls cgs_fread_line on stdin
+CGS_Error               cgs_append_read_line(mutstr_t dst); // calls cgs_append_fread_line on stdin
 
-CGS_Error         cgs_tostr(mutstr_t dst, T val);
-CGS_Error         cgs_append_tostr(writer_t dst, T val);
-CGS_Error         cgs_tostr_p(mutstr_t dst, T *val);
-bool              cgs_has_tostr(T);
-unsigned int      cgs_tostr_len(T val);
-unsigned int      cgs_tostr_p_len(T *val);
+CGS_MutStrRef           cgs_appender(mutstr_t owner, CGS_AppenderState *state); // returns a string reference that appends to owner. must call cgs_commit_appender to update the length of owner. If owner is a CGS_DStr, the appender may make it grow
+CGS_Error               cgs_commit_appender(mutstr_t owner, CGS_MutStrRef appender); // commit the appender to the owning string. The owner must not have its capacity or length modified between cgs_appender and cgs_commit_appender
 
-CGS_Error         cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%arg_index" for positional arguments, cannot mix and match.
-CGS_Error         cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr); // identical to cgs_fmt, but appends
-CGS_Error         cgs_appendln_fmt(writer_t dst, const char *fmt, ...args with tostr); // identical to cgs_append_fmt, but also appends '\n'
+CGS_Error               cgs_tostr(mutstr_t dst, T val);
+CGS_Error               cgs_append_tostr(writer_t dst, T val);
+CGS_Error               cgs_tostr_p(mutstr_t dst, T *val);
+bool                    cgs_has_tostr(T);
+unsigned int            cgs_tostr_len(T val);
+unsigned int            cgs_tostr_p_len(T *val);
 
-CGS_Error         cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_append_fmt, but restricted to FILE*
-CGS_Error         cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
+CGS_Error               cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%arg_index" for positional arguments, cannot mix and match
+CGS_Error               cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr); // identical to cgs_fmt, but appends
+CGS_Error               cgs_appendln_fmt(writer_t dst, const char *fmt, ...args with tostr); // cgs_append_fmt + '\n'
 
-CGS_Error         cgs_printf(const char *fmt, ...args with tostr); // calls cgs_fprintf on stdout
-CGS_Error         cgs_printfln(const char *fmt, ...args with tostr);
+CGS_Error               cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_append_fmt, but restricted to FILE*
+CGS_Error               cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
 
-CGS_Error         cgs_sprintf(mutstr_t dst, const char *fmt, ...args with tostr); // alias for cgs_fmt
-CGS_Error         cgs_sprintfln(mutstr_t dst, const char *fmt, ...args with tostr); // identical to cgs_sprintf, but also appends '\n'
+CGS_Error               cgs_printf(const char *fmt, ...args with tostr); // calls cgs_fprintf on stdout
+CGS_Error               cgs_printfln(const char *fmt, ...args with tostr);
 
-                  cgs_tostr_many(mutstr_t dst, ...args with tostr); // clears dst, calls the tostr of each ... arg, and appends them to dst
-                  cgs_append_tostr_many(writer_t dst, ...args with tostr); // calls the tostr of each ... arg, and appends them to dst
+CGS_Error               cgs_sprintf(mutstr_t dst, const char *fmt, ...args with tostr); // alias for cgs_fmt
+CGS_Error               cgs_sprintfln(mutstr_t dst, const char *fmt, ...args with tostr); // cgs_sprintf + '\n'
+
+                        cgs_tostr_many(mutstr_t dst, ...args with tostr); // clears dst, calls the tostr of each ... arg, and appends them to dst
+                        cgs_append_tostr_many(writer_t dst, ...args with tostr); // calls the tostr of each ... arg, and appends them to dst
 
 cgs_nfmt_t(integer_T, fmt_char)    cgs_nfmt(integer_T value, int fmt_char); // a number format object that has a tostr
 cgs_nfmt_t(float/double, fmt_char) cgs_nfmt(float/double value, int fmt_char, int precision = (fmt_char == 'a' ? -1 : 6)); // a number format object that has a tostr
