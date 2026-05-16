@@ -886,27 +886,18 @@ typedef struct CGS__Stringable
     (cgs__get_tostr_p_func(__typeof__(elm))) \
 }
 
-#define cgs__wrap_as_stringable_comma(...) \
-cgs__wrap_as_stringable((__VA_ARGS__)),
-
-#define cgs__elm_comma(elm) \
-elm,
-
-#define cgs__iprint_lits(interp) \
-__INTERP_LITERAL_LIST__(interp)
-
 #define cgs__wrap_all_args_as_stringable(a, ...) \
 cgs__wrap_as_stringable(a) __VA_OPT__( , __VA_TAIL__() )
 
-#define cgs__iprint_interps(interp) \
-cgs__wrap_all_args_as_stringable(__INTERP_LIST__(interp))
+#define cgs__iprint_interps(...) \
+cgs__wrap_all_args_as_stringable(__VA_ARGS__)
 
 #define cgs_append_ifmt(writer_dst, interp) \
 cgs__iprint_impl( \
     cgs_writer(writer_dst), \
-    (char*[]){cgs__iprint_lits(interp)}, \
+    (char*[]){__INTERP_LITERAL_LIST__(interp)}, \
     __INTERP_LITERAL_COUNT__(interp), \
-    (CGS__Stringable[]){cgs__iprint_interps(interp)}, \
+    (CGS__Stringable[]){cgs__iprint_interps(__INTERP_LIST__(interp))}, \
     __INTERP_COUNT__(interp) \
 )
 
