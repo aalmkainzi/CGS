@@ -304,7 +304,7 @@ typedef struct CGS__AlignModeStruct
 
 typedef struct CGS_AlignFmt
 {
-    void *obj;
+    const void *obj;
     CGS_Error(*tostr_p)(CGS_Writer writer, const void *obj);
     unsigned int width;
     CGS__AlignModeStruct align_mode;
@@ -1590,7 +1590,7 @@ static inline CGS_Error cgs__len_writer_append(void *ctx, const CGS_StrView str)
     return (CGS_Error){CGS_OK};
 }
 
-static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer, const void*), void *obj)
+static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer, const void*), const void *obj)
 {
     unsigned int len = 0;
     CGS_Writer len_writer = {.ctx = &len, .append = cgs__len_writer_append};
