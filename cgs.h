@@ -618,6 +618,9 @@ _Generic(mutstr, \
         } \
 )
 
+#define cgs_writer_counter(uint_ptr) \
+cgs__writer_counter(uint_ptr)
+
 #define cgs_strv_arr_from(strv_carr, ...) \
 cgs__strv_arr_from(strv_carr, CGS__VA_OR((cgs__static_assertx(cgs__is_array_of((strv_carr), CGS_StrView), "Must pass StrView[N] or StrView* with length argument"), CGS__CARR_LEN(strv_carr)), __VA_ARGS__))
 
@@ -1597,6 +1600,20 @@ static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer,
     tostr_p(len_writer, obj);
     return len;
 }
+
+static inline CGS_Error cgs__writer_counter_append_callback(void *ctx, const CGS_StrView str)
+{
+    unsigned int *c = ctx;
+    *c += str.len;
+    
+    return (CGS_Error){CGS_OK};
+}
+
+static inline CGS_Writer cgs__writer_counter(unsigned int *countp)
+{
+    return (CGS_Writer){.ctx = countp, .append = cgs__writer_counter_append_callback};
+}
+
 
 static inline CGS_Error cgs__cstr_append(void *ctx, const CGS_StrView str)
 {
