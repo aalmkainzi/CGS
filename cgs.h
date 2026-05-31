@@ -1056,10 +1056,10 @@ __VA_OPT__(cgs__arrfmt_2) \
     .trailing_separator = cgs_strv(CGS__VA_OR("", __VA_ARGS__)) \
 })
 
-#define cgs_alignfmt(_obj, align_mode_, width_, ...) \
+#define cgs_alignfmt(obj_, align_mode_, width_, ...) \
 ((CGS__AlignFmt){ \
-    .obj = &(__typeof__(((void)0,_obj))[]){_obj}, \
-    .tostr_p = cgs__get_tostr_p_func(__typeof__(_obj)), \
+    .obj = &(__typeof__(((void)0,obj_))[]){obj_}, \
+    .tostr_p = cgs__get_tostr_p_func(__typeof__(obj_)), \
     .align_mode = align_mode_, \
     .width = width_, \
     .fill_char = CGS__VA_OR(' ', __VA_ARGS__) \
