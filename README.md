@@ -42,7 +42,7 @@ All of which are null terminated, except for `StrView`.
 There are three categories of string types:
 - `anystr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `StrView`, `DStr`, `DStr*`, `StrBuf`, `StrBuf*`, `MutStrRef`)
 - `mutstr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `DStr*`, `StrBuf*`, `MutStrRef`)
-- `writer_t`: anything from `mutstr_t`, also `CGS_Writer` and `FILE*`
+- `writer_t`: anything from `mutstr_t`, also `CGS_Writer`, `FILE*`, and `unsigned int*`
 
 This is a list of all the utility macros CGS provides:
 ```C++
