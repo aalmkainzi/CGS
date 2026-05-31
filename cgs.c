@@ -3347,7 +3347,7 @@ CGS_API CGS_Error cgs__append_fmt(CGS_Writer writer, const CGS__const_StrView fm
             fmt_walk.chars += (index + 1);
             fmt_walk.len   -= (index + 1);
             
-            // '%' without espace "%%" or without format "%?" is UB
+            // '%' without espace "%%" or without format "%?" is rejected
             if(fmt_walk.len == 0)
             {
                 CGS_debug_break();
