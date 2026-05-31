@@ -572,16 +572,17 @@ cgs_fread_until(mutstr_dst, stdin, delim)
 #define cgs_append_read_until(mutstr_dst, delim) \
 cgs_append_fread_until(mutstr_dst, stdin, delim)
 
-#define cgs__mutstr_append_fn(mutstr) \
-_Generic((__typeof__(mutstr)*)0, \
+#define cgs__writer_append_fn(writer_p) \
+_Generic((__typeof__(writer_p)*)0, \
     CGS_DStr**: cgs__idstr_append, \
     CGS_StrBuf**: cgs__istrbuf_append, \
-    CGS_MutStrRef*: cgs__mutstr_ref_append_func[cgs__coerce(mutstr, CGS_MutStrRef).ty], \
+    CGS_MutStrRef*: cgs__mutstr_ref_append_func[cgs__coerce(writer_p, CGS_MutStrRef).ty], \
     char**: cgs__cstr_append,  \
     unsigned char**: cgs__cstr_append, \
-    char(*)         [sizeof(__typeof__(mutstr))]: cgs__ibuf_append, \
-    unsigned char(*)[sizeof(__typeof__(mutstr))]: cgs__ibuf_append, \
-    FILE**: cgs__file_append \
+    char(*)         [sizeof(__typeof__(writer_p))]: cgs__ibuf_append, \
+    unsigned char(*)[sizeof(__typeof__(writer_p))]: cgs__ibuf_append, \
+    FILE**: cgs__file_append, \
+    unsigned int**: cgs__writer_counter_append \
 )
 
 static inline void *cgs__mutstr_ref_ctx(CGS_MutStrRef ref, CGS_Buffer *buffer_opt)
@@ -600,7 +601,7 @@ static inline void *cgs__mutstr_ref_ctx(CGS_MutStrRef ref, CGS_Buffer *buffer_op
 }
 
 // return mutstr, unless MutStrRef, in which case &buf
-#define cgs__mutstr_ctx(mutstr) \
+#define cgs__writer_ctx(mutstr) \
 _Generic((__typeof__(mutstr)*){0}, \
     CGS_MutStrRef*                               : cgs__mutstr_ref_ctx(cgs__coerce(mutstr, CGS_MutStrRef), &(CGS_Buffer){0}), \
     char(*)         [sizeof(__typeof__(mutstr))] : &(CGS_Buffer){.ptr = (char*) cgs__coerce_not_mutstr_ref(mutstr), .cap = sizeof(__typeof__(mutstr))}, \
@@ -608,18 +609,15 @@ _Generic((__typeof__(mutstr)*){0}, \
     default                                      : (mutstr) \
 )
 
-#define cgs_writer(mutstr) \
-_Generic(mutstr, \
-    CGS_Writer: (mutstr), \
+#define cgs_writer(writer) \
+_Generic(writer, \
+    CGS_Writer: (writer), \
     default: \
         (CGS_Writer){ \
-            .ctx = cgs__mutstr_ctx(cgs__coerce_not(mutstr, CGS_Writer, CGS_StrBuf*)), \
-            .append = cgs__mutstr_append_fn(cgs__coerce_not(mutstr, CGS_Writer, CGS_StrBuf*)), \
+            .ctx = cgs__writer_ctx(cgs__coerce_not(writer, CGS_Writer, CGS_StrBuf*)), \
+            .append = cgs__writer_append_fn(cgs__coerce_not(writer, CGS_Writer, CGS_StrBuf*)), \
         } \
 )
-
-#define cgs_writer_counter(uint_ptr) \
-cgs__writer_counter(uint_ptr)
 
 #define cgs_strv_arr_from(strv_carr, ...) \
 cgs__strv_arr_from(strv_carr, CGS__VA_OR((cgs__static_assertx(cgs__is_array_of((strv_carr), CGS_StrView), "Must pass StrView[N] or StrView* with length argument"), CGS__CARR_LEN(strv_carr)), __VA_ARGS__))
@@ -1601,7 +1599,7 @@ static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer,
     return len;
 }
 
-static inline CGS_Error cgs__writer_counter_append_callback(void *ctx, const CGS_StrView str)
+static inline CGS_Error cgs__writer_counter_append(void *ctx, const CGS_StrView str)
 {
     unsigned int *c = ctx;
     *c += str.len;
@@ -1611,9 +1609,8 @@ static inline CGS_Error cgs__writer_counter_append_callback(void *ctx, const CGS
 
 static inline CGS_Writer cgs__writer_counter(unsigned int *countp)
 {
-    return (CGS_Writer){.ctx = countp, .append = cgs__writer_counter_append_callback};
+    return (CGS_Writer){.ctx = countp, .append = cgs__writer_counter_append};
 }
-
 
 static inline CGS_Error cgs__cstr_append(void *ctx, const CGS_StrView str)
 {
