@@ -4395,21 +4395,21 @@ void test_alignfmt(void)
     TEST("cgs_alignfmt: left-align 'hello' width=10 space fill");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_LEFT, 10, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_LEFT, 10, ' '));
         ASSERT_TRUE(cgs_equal (buf, "hello     "));
     }
 
     TEST("cgs_alignfmt: left-align 'hello' width=10 dash fill");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_LEFT, 10, '-'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_LEFT, 10, '-'));
         ASSERT_TRUE(cgs_equal (buf, "hello-----"));
     }
 
     TEST("cgs_alignfmt: left-align default fill (space)");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_LEFT, 8));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_LEFT, 8));
         ASSERT_TRUE(cgs_equal (buf, "hello   "));
     }
 
@@ -4418,21 +4418,21 @@ void test_alignfmt(void)
     TEST("cgs_alignfmt: right-align 'hello' width=10 space fill");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_RIGHT, 10, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_RIGHT, 10, ' '));
         ASSERT_TRUE(cgs_equal (buf, "     hello"));
     }
 
     TEST("cgs_alignfmt: right-align 'hello' width=10 dash fill");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_RIGHT, 10, '-'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_RIGHT, 10, '-'));
         ASSERT_TRUE(cgs_equal (buf, "-----hello"));
     }
 
     TEST("cgs_alignfmt: right-align default fill (space)");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_RIGHT, 8));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_RIGHT, 8));
         ASSERT_TRUE(cgs_equal (buf, "   hello"));
     }
 
@@ -4441,21 +4441,21 @@ void test_alignfmt(void)
     TEST("cgs_alignfmt: center 'hi' width=6 even padding → 2 left 2 right");
     {
         char *s = "hi";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 6, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 6, ' '));
         ASSERT_TRUE(cgs_equal (buf, "  hi  "));
     }
 
     TEST("cgs_alignfmt: center 'hi' width=6 star fill even padding");
     {
         char *s = "hi";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 6, '*'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 6, '*'));
         ASSERT_TRUE(cgs_equal (buf, "**hi**"));
     }
 
     TEST("cgs_alignfmt: center 'hello' width=9 even padding → 2 left 2 right");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 9, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 9, ' '));
         ASSERT_TRUE(cgs_equal (buf, "  hello  "));
     }
 
@@ -4464,21 +4464,21 @@ void test_alignfmt(void)
     TEST("cgs_alignfmt: center 'hi' width=7 odd padding → 2 left 3 right");
     {
         char *s = "hi";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 7, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 7, ' '));
         ASSERT_TRUE(cgs_equal (buf, "  hi   "));
     }
 
     TEST("cgs_alignfmt: center 'hi' width=7 star fill odd → extra right");
     {
         char *s = "hi";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 7, '*'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 7, '*'));
         ASSERT_TRUE(cgs_equal (buf, "**hi***"));
     }
 
     TEST("cgs_alignfmt: center 'abc' width=8 odd padding → 2 left 3 right");
     {
         char *s = "abc";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 8, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 8, ' '));
         ASSERT_TRUE(cgs_equal (buf, "  abc   "));
     }
 
@@ -4486,7 +4486,7 @@ void test_alignfmt(void)
     {
         /* 4-1=3 padding, 3/2=1 left, 2 right */
         char *s = "x";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 4, '.'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 4, '.'));
         ASSERT_TRUE(cgs_equal (buf, ".x.."));
     }
 
@@ -4494,7 +4494,7 @@ void test_alignfmt(void)
     {
         /* 20-1=19 padding, 19/2=9 left, 10 right */
         char *s = "X";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 20, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 20, ' '));
         ASSERT_TRUE(strlen(buf) == 20);
         ASSERT_TRUE(buf[9]  == 'X');
         ASSERT_TRUE(buf[0]  == ' ');
@@ -4506,28 +4506,28 @@ void test_alignfmt(void)
     TEST("cgs_alignfmt: left-align exact width → no padding");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_LEFT, 5, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_LEFT, 5, ' '));
         ASSERT_TRUE(cgs_equal (buf, "hello"));
     }
 
     TEST("cgs_alignfmt: right-align exact width → no padding");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_RIGHT, 5, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_RIGHT, 5, ' '));
         ASSERT_TRUE(cgs_equal (buf, "hello"));
     }
 
     TEST("cgs_alignfmt: center exact width → no padding");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 5, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 5, ' '));
         ASSERT_TRUE(cgs_equal (buf, "hello"));
     }
 
     TEST("cgs_alignfmt: center 'x' width=1 exact → no padding");
     {
         char *s = "x";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 1, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 1, ' '));
         ASSERT_TRUE(cgs_equal (buf, "x"));
     }
 
@@ -4536,21 +4536,21 @@ void test_alignfmt(void)
     TEST("cgs_alignfmt: left-align width < length → full content, no truncation");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_LEFT, 3, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_LEFT, 3, ' '));
         ASSERT_TRUE(cgs_equal (buf, "hello"));
     }
 
     TEST("cgs_alignfmt: right-align width < length → full content, no truncation");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_RIGHT, 3, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_RIGHT, 3, ' '));
         ASSERT_TRUE(cgs_equal (buf, "hello"));
     }
 
     TEST("cgs_alignfmt: center width < length → full content, no truncation");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 3, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 3, ' '));
         ASSERT_TRUE(cgs_equal (buf, "hello"));
     }
 
@@ -4559,21 +4559,21 @@ void test_alignfmt(void)
     TEST("cgs_alignfmt: left-align width=0 → content unchanged");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_LEFT, 0, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_LEFT, 0, ' '));
         ASSERT_TRUE(cgs_equal (buf, "hello"));
     }
 
     TEST("cgs_alignfmt: right-align width=0 → content unchanged");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_RIGHT, 0, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_RIGHT, 0, ' '));
         ASSERT_TRUE(cgs_equal (buf, "hello"));
     }
 
     TEST("cgs_alignfmt: center width=0 → content unchanged");
     {
         char *s = "hello";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 0, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 0, ' '));
         ASSERT_TRUE(cgs_equal (buf, "hello"));
     }
 
@@ -4582,14 +4582,14 @@ void test_alignfmt(void)
     TEST("cgs_alignfmt: left-align empty string width=4 → all fill");
     {
         char *s = "";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_LEFT, 4, '_'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_LEFT, 4, '_'));
         ASSERT_TRUE(cgs_equal (buf, "____"));
     }
 
     TEST("cgs_alignfmt: right-align empty string width=4 → all fill");
     {
         char *s = "";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_RIGHT, 4, '_'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_RIGHT, 4, '_'));
         ASSERT_TRUE(cgs_equal (buf, "____"));
     }
 
@@ -4597,7 +4597,7 @@ void test_alignfmt(void)
     {
         /* 4-0=4 padding, even → 2 left 2 right */
         char *s = "";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 4, '_'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 4, '_'));
         ASSERT_TRUE(cgs_equal (buf, "____"));
     }
 
@@ -4605,7 +4605,7 @@ void test_alignfmt(void)
     {
         /* 5 padding, odd → 2 left 3 right */
         char *s = "";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 5, '_'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_CENTER, 5, '_'));
         ASSERT_TRUE(cgs_equal (buf, "_____"));
     }
 
@@ -4614,14 +4614,14 @@ void test_alignfmt(void)
     TEST("cgs_alignfmt: right-align int 42 width=6 zero fill → '000042'");
     {
         int n = 42;
-        cgs_fmt(buf, "%?", cgs_alignfmt(&n, CGS_ALIGN_RIGHT, 6, '0'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(n, CGS_ALIGN_RIGHT, 6, '0'));
         ASSERT_TRUE(cgs_equal (buf, "000042"));
     }
 
     TEST("cgs_alignfmt: left-align int 42 width=6 zero fill → '420000'");
     {
         int n = 42;
-        cgs_fmt(buf, "%?", cgs_alignfmt(&n, CGS_ALIGN_LEFT, 6, '0'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(n, CGS_ALIGN_LEFT, 6, '0'));
         ASSERT_TRUE(cgs_equal (buf, "420000"));
     }
 
@@ -4629,21 +4629,21 @@ void test_alignfmt(void)
     {
         /* "42" len=2, 6-2=4 padding, even → 2 left 2 right */
         int n = 42;
-        cgs_fmt(buf, "%?", cgs_alignfmt(&n, CGS_ALIGN_CENTER, 6, '0'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(n, CGS_ALIGN_CENTER, 6, '0'));
         ASSERT_TRUE(cgs_equal (buf, "004200"));
     }
 
     TEST("cgs_alignfmt: right-align int 42 width=2 exact → '42'");
     {
         int n = 42;
-        cgs_fmt(buf, "%?", cgs_alignfmt(&n, CGS_ALIGN_RIGHT, 2, '0'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(n, CGS_ALIGN_RIGHT, 2, '0'));
         ASSERT_TRUE(cgs_equal (buf, "42"));
     }
 
     TEST("cgs_alignfmt: right-align int 42 width=1 smaller → '42' no truncation");
     {
         int n = 42;
-        cgs_fmt(buf, "%?", cgs_alignfmt(&n, CGS_ALIGN_RIGHT, 1, '0'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(n, CGS_ALIGN_RIGHT, 1, '0'));
         ASSERT_TRUE(cgs_equal (buf, "42"));
     }
 
@@ -4652,7 +4652,7 @@ void test_alignfmt(void)
     TEST("cgs_alignfmt: left-align 'X' width=20 → 'X' followed by 19 spaces");
     {
         char *s = "X";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_LEFT, 20, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_LEFT, 20, ' '));
         ASSERT_TRUE(strlen(buf) == 20);
         ASSERT_TRUE(buf[0] == 'X');
         ASSERT_TRUE(buf[1] == ' ');
@@ -4662,7 +4662,7 @@ void test_alignfmt(void)
     TEST("cgs_alignfmt: right-align 'X' width=20 → 19 spaces then 'X'");
     {
         char *s = "X";
-        cgs_fmt(buf, "%?", cgs_alignfmt(&s, CGS_ALIGN_RIGHT, 20, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(s, CGS_ALIGN_RIGHT, 20, ' '));
         ASSERT_TRUE(strlen(buf) == 20);
         ASSERT_TRUE(buf[0]  == ' ');
         ASSERT_TRUE(buf[19] == 'X');
@@ -4673,7 +4673,7 @@ void test_alignfmt(void)
     TEST("cgs_alignfmt: embedded in fmt string with brackets");
     {
         char *s = "ok";
-        cgs_fmt(buf, "[%?]", cgs_alignfmt(&s, CGS_ALIGN_CENTER, 6, '-'));
+        cgs_fmt(buf, "[%?]", cgs_alignfmt(s, CGS_ALIGN_CENTER, 6, '-'));
         ASSERT_TRUE(cgs_equal (buf, "[--ok--]"));
     }
 
@@ -4681,8 +4681,8 @@ void test_alignfmt(void)
     {
         char *s = "hello";
         cgs_fmt(buf, "%? | %?",
-                cgs_alignfmt(&s, CGS_ALIGN_LEFT, 8,  '.'),
-                cgs_alignfmt(&s, CGS_ALIGN_RIGHT, 8, '.'));
+                cgs_alignfmt(s, CGS_ALIGN_LEFT, 8,  '.'),
+                cgs_alignfmt(s, CGS_ALIGN_RIGHT, 8, '.'));
         ASSERT_TRUE(cgs_equal (buf, "hello... | ...hello"));
     }
 
@@ -4693,7 +4693,7 @@ void test_alignfmt(void)
         /* "{1, 2, 3}" is 9 chars, width=14 → 5 spaces right */
         int arr[] = {1, 2, 3};
         CGS_ArrayFmt af = cgs_arrfmt(arr, 3);
-        cgs_fmt(buf, "%?", cgs_alignfmt(&af, CGS_ALIGN_LEFT, 14, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(af, CGS_ALIGN_LEFT, 14, ' '));
         ASSERT_TRUE(cgs_equal (buf, "{1, 2, 3}     "));
     }
 
@@ -4701,7 +4701,7 @@ void test_alignfmt(void)
     {
         int arr[] = {1, 2, 3};
         CGS_ArrayFmt af = cgs_arrfmt(arr, 3);
-        cgs_fmt(buf, "%?", cgs_alignfmt(&af, CGS_ALIGN_RIGHT, 14, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(af, CGS_ALIGN_RIGHT, 14, ' '));
         ASSERT_TRUE(cgs_equal (buf, "     {1, 2, 3}"));
     }
 
@@ -4710,7 +4710,7 @@ void test_alignfmt(void)
         /* "{1, 2, 3}" is 9 chars, width=13 → 4 padding even → 2 left 2 right */
         int arr[] = {1, 2, 3};
         CGS_ArrayFmt af = cgs_arrfmt(arr, 3);
-        cgs_fmt(buf, "%?", cgs_alignfmt(&af, CGS_ALIGN_CENTER, 13, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(af, CGS_ALIGN_CENTER, 13, ' '));
         ASSERT_TRUE(cgs_equal (buf, "  {1, 2, 3}  "));
     }
 
@@ -4719,7 +4719,7 @@ void test_alignfmt(void)
         /* "{1, 2, 3}" is 9 chars, width=14 → 5 padding odd → 2 left 3 right */
         int arr[] = {1, 2, 3};
         CGS_ArrayFmt af = cgs_arrfmt(arr, 3);
-        cgs_fmt(buf, "%?", cgs_alignfmt(&af, CGS_ALIGN_CENTER, 14, '-'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(af, CGS_ALIGN_CENTER, 14, '-'));
         ASSERT_TRUE(cgs_equal (buf, "--{1, 2, 3}---"));
     }
 
@@ -4728,7 +4728,7 @@ void test_alignfmt(void)
         /* "[1|2|3]" is 7 chars, width=11 → 4 spaces left */
         int arr[] = {1, 2, 3};
         CGS_ArrayFmt af = cgs_arrfmt(arr, 3, "[", "]", "|", "");
-        cgs_fmt(buf, "%?", cgs_alignfmt(&af, CGS_ALIGN_RIGHT, 11, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(af, CGS_ALIGN_RIGHT, 11, ' '));
         ASSERT_TRUE(cgs_equal (buf, "    [1|2|3]"));
     }
 
@@ -4737,7 +4737,7 @@ void test_alignfmt(void)
         /* "{1, 2, 3}" is 9 chars, width=9 → no padding */
         int arr[] = {1, 2, 3};
         CGS_ArrayFmt af = cgs_arrfmt(arr, 3);
-        cgs_fmt(buf, "%?", cgs_alignfmt(&af, CGS_ALIGN_CENTER, 9, '*'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(af, CGS_ALIGN_CENTER, 9, '*'));
         ASSERT_TRUE(cgs_equal (buf, "{1, 2, 3}"));
     }
 
@@ -4745,7 +4745,7 @@ void test_alignfmt(void)
     {
         int arr[] = {1, 2, 3};
         CGS_ArrayFmt af = cgs_arrfmt(arr, 3);
-        cgs_fmt(buf, "%?", cgs_alignfmt(&af, CGS_ALIGN_LEFT, 3, ' '));
+        cgs_fmt(buf, "%?", cgs_alignfmt(af, CGS_ALIGN_LEFT, 3, ' '));
         ASSERT_TRUE(cgs_equal (buf, "{1, 2, 3}"));
     }
 
@@ -4757,12 +4757,12 @@ void test_alignfmt(void)
          * 1 → "0001", 20 → "0020", 300 → "0300"
          * arrfmt default: "{0001, 0020, 0300}" */
         /* arrfmt takes T* and size_t, elements must have tostr.
-         * CGS_AlignFmt has tostr, so make an array of them. */
+         * CGS__AlignFmt has tostr, so make an array of them. */
         int n1 = 1, n2 = 20, n3 = 300;
-        CGS_AlignFmt elems[3] = {
-            cgs_alignfmt(&n1, CGS_ALIGN_RIGHT, 4, '0'),
-            cgs_alignfmt(&n2, CGS_ALIGN_RIGHT, 4, '0'),
-            cgs_alignfmt(&n3, CGS_ALIGN_RIGHT, 4, '0'),
+        CGS__AlignFmt elems[3] = {
+            cgs_alignfmt(n1, CGS_ALIGN_RIGHT, 4, '0'),
+            cgs_alignfmt(n2, CGS_ALIGN_RIGHT, 4, '0'),
+            cgs_alignfmt(n3, CGS_ALIGN_RIGHT, 4, '0'),
         };
         CGS_ArrayFmt af = cgs_arrfmt(elems, 3);
         cgs_fmt(buf, "%?", af);
@@ -4772,10 +4772,10 @@ void test_alignfmt(void)
     TEST("cgs_arrfmt: array of center-aligned strings");
     {
         char *a = "a", *bb = "bb", *ccc = "ccc";
-        CGS_AlignFmt elems[3] = {
-            cgs_alignfmt(&a,   CGS_ALIGN_CENTER, 5, '-'),
-            cgs_alignfmt(&bb,  CGS_ALIGN_CENTER, 5, '-'),
-            cgs_alignfmt(&ccc, CGS_ALIGN_CENTER, 5, '-'),
+        CGS__AlignFmt elems[3] = {
+            cgs_alignfmt(a,   CGS_ALIGN_CENTER, 5, '-'),
+            cgs_alignfmt(bb,  CGS_ALIGN_CENTER, 5, '-'),
+            cgs_alignfmt(ccc, CGS_ALIGN_CENTER, 5, '-'),
         };
         /* "a"   width=5 → 2 left 2 right → "--a--"
          * "bb"  width=5 → 1 left 2 right → "-bb--" (odd extra right)
@@ -4793,7 +4793,7 @@ void test_alignfmt(void)
         CGS_ArrayFmt af = cgs_arrfmt(arr, 3);
         char *label = "data";
         cgs_fmt(buf, "%?: %?",
-                cgs_alignfmt(&label, CGS_ALIGN_LEFT, 8, '.'),
+                cgs_alignfmt(label, CGS_ALIGN_LEFT, 8, '.'),
                 af);
         ASSERT_TRUE(cgs_equal (buf, "data....: {7, 8, 9}"));
     }
@@ -4804,8 +4804,8 @@ void test_alignfmt(void)
         CGS_ArrayFmt af  = cgs_arrfmt(arr, 2);
         int          n   = 42;
         cgs_fmt(buf, "[%?][%?]",
-                cgs_alignfmt(&af, CGS_ALIGN_RIGHT, 10, ' '),
-                cgs_alignfmt(&n,   CGS_ALIGN_LEFT, 6,  '0'));
+                cgs_alignfmt(af, CGS_ALIGN_RIGHT, 10, ' '),
+                cgs_alignfmt(n,   CGS_ALIGN_LEFT, 6,  '0'));
         /* "{1, 2}" is 6 chars, right in 10 → "    {1, 2}"
          * "42"    is 2 chars, left  in  6 → "420000" */
         ASSERT_TRUE(cgs_equal (buf, "[    {1, 2}][420000]"));
@@ -4816,14 +4816,14 @@ void test_alignfmt(void)
         /* inner: array of right-aligned ints → "{  1,  2,  3}"
          * outer: that whole string centered in width 17            */
         int n1 = 1, n2 = 2, n3 = 3;
-        CGS_AlignFmt inner_elems[3] = {
-            cgs_alignfmt(&n1, CGS_ALIGN_RIGHT, 2, ' '),
-            cgs_alignfmt(&n2, CGS_ALIGN_RIGHT, 2, ' '),
-            cgs_alignfmt(&n3, CGS_ALIGN_RIGHT, 2, ' '),
+        CGS__AlignFmt inner_elems[3] = {
+            cgs_alignfmt(n1, CGS_ALIGN_RIGHT, 2, ' '),
+            cgs_alignfmt(n2, CGS_ALIGN_RIGHT, 2, ' '),
+            cgs_alignfmt(n3, CGS_ALIGN_RIGHT, 2, ' '),
         };
         CGS_ArrayFmt inner_af = cgs_arrfmt(inner_elems, 3);
         /* inner_af tostr → "{ 1,  2,  3}" (13 chars) */
-        cgs_fmt(buf, "%?", cgs_alignfmt(&inner_af, CGS_ALIGN_CENTER, 17, '='));
+        cgs_fmt(buf, "%?", cgs_alignfmt(inner_af, CGS_ALIGN_CENTER, 17, '='));
         /* 17-13=4 padding even → 2 left 2 right */
         ASSERT_TRUE(cgs_equal (buf, "=={ 1,  2,  3}==="));
     }
@@ -4835,13 +4835,13 @@ void test_alignfmt(void)
          * level 2: arrfmt with custom brackets → "<001|022|333>"  (13 chars)
          * level 3: left-align that in width 16 with '.' */
         int n1 = 1, n2 = 22, n3 = 333;
-        CGS_AlignFmt l1[3] = {
-            cgs_alignfmt(&n1, CGS_ALIGN_RIGHT, 3, '0'),
-            cgs_alignfmt(&n2, CGS_ALIGN_RIGHT, 3, '0'),
-            cgs_alignfmt(&n3, CGS_ALIGN_RIGHT, 3, '0'),
+        CGS__AlignFmt l1[3] = {
+            cgs_alignfmt(n1, CGS_ALIGN_RIGHT, 3, '0'),
+            cgs_alignfmt(n2, CGS_ALIGN_RIGHT, 3, '0'),
+            cgs_alignfmt(n3, CGS_ALIGN_RIGHT, 3, '0'),
         };
         CGS_ArrayFmt l2 = cgs_arrfmt(l1, 3, "<", ">", "|", "");
-        cgs_fmt(buf, "%?", cgs_alignfmt(&l2, CGS_ALIGN_LEFT, 16, '.'));
+        cgs_fmt(buf, "%?", cgs_alignfmt(l2, CGS_ALIGN_LEFT, 16, '.'));
         ASSERT_TRUE(cgs_equal (buf, "<001|022|333>..."));
     }
 }
@@ -4949,7 +4949,7 @@ void test_writer_counter(void)
         /* "hello" left-aligned in width 10 → "hello     " → 10 chars */
         char *s = "hello";
         unsigned int n = 0;
-        cgs_append_fmt(&n, "%?", cgs_alignfmt(&s, CGS_ALIGN_LEFT, 10, ' '));
+        cgs_append_fmt(&n, "%?", cgs_alignfmt(s, CGS_ALIGN_LEFT, 10, ' '));
         ASSERT_TRUE(n == 10);
     }
     
@@ -5007,10 +5007,10 @@ void test_writer_counter(void)
         char *label = "vals";
         
         unsigned int n = 0;
-        cgs_append_fmt(&n, "%?: %?", cgs_alignfmt(&label, CGS_ALIGN_LEFT, 8, '.'), cgs_arrfmt(arr, 3));
+        cgs_append_fmt(&n, "%?: %?", cgs_alignfmt(label, CGS_ALIGN_LEFT, 8, '.'), cgs_arrfmt(arr, 3));
         
         char buf[64];
-        cgs_fmt(buf, "%?: %?", cgs_alignfmt(&label, CGS_ALIGN_LEFT, 8 , '.'), cgs_arrfmt(arr, 3));
+        cgs_fmt(buf, "%?: %?", cgs_alignfmt(label, CGS_ALIGN_LEFT, 8 , '.'), cgs_arrfmt(arr, 3));
         
         ASSERT_TRUE(n == cgs_len(buf));
     }

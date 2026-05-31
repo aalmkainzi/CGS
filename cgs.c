@@ -3759,7 +3759,7 @@ CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer writer, CGS_ArrayFmt obj)
     return err;
 }
 
-CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer writer, CGS_AlignFmt obj)
+CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer writer, CGS__AlignFmt obj)
 {
     // TODO for better perf, have a local 32 byte array so it can be filled fill char, to make as least writer invokes as possible.
     unsigned int len = cgs__invoke_tostr_len(obj.tostr_p, obj.obj);
@@ -4217,7 +4217,7 @@ CGS_API CGS_Error cgs__array_fmt_tostr_p(CGS_Writer dst, const void *obj)
 
 CGS_API CGS_Error cgs__align_fmt_tostr_p(CGS_Writer writer, const void *obj)
 {
-    return cgs__align_fmt_tostr(writer, *(CGS_AlignFmt*)obj);
+    return cgs__align_fmt_tostr(writer, *(CGS__AlignFmt*)obj);
 }
 
 #endif // CGS__STR_C_INCLUDED

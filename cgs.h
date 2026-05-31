@@ -302,14 +302,14 @@ typedef struct CGS__AlignModeStruct
 #define CGS_ALIGN_LEFT   (CGS__AlignModeStruct){CGS__ALIGNMODE_ENUM_ALIGN_LEFT}
 #define CGS_ALIGN_RIGHT  (CGS__AlignModeStruct){CGS__ALIGNMODE_ENUM_ALIGN_RIGHT}
 
-typedef struct CGS_AlignFmt
+typedef struct CGS__AlignFmt
 {
     const void *obj;
     CGS_Error(*tostr_p)(CGS_Writer writer, const void *obj);
     unsigned int width;
     CGS__AlignModeStruct align_mode;
     char fill_char;
-} CGS_AlignFmt;
+} CGS__AlignFmt;
 
 typedef struct CGS__DStrAppendAllocator
 {
@@ -1056,10 +1056,10 @@ __VA_OPT__(cgs__arrfmt_2) \
     .trailing_separator = cgs_strv(CGS__VA_OR("", __VA_ARGS__)) \
 })
 
-#define cgs_alignfmt(obj_p, align_mode_, width_, ...) \
-((CGS_AlignFmt){ \
-    .obj = obj_p, \
-    .tostr_p = cgs__get_tostr_p_func(__typeof__(*(obj_p))), \
+#define cgs_alignfmt(_obj, align_mode_, width_, ...) \
+((CGS__AlignFmt){ \
+    .obj = &(__typeof__(((void)0,_obj))[]){_obj}, \
+    .tostr_p = cgs__get_tostr_p_func(__typeof__(_obj)), \
     .align_mode = align_mode_, \
     .width = width_, \
     .fill_char = CGS__VA_OR(' ', __VA_ARGS__) \
@@ -1134,7 +1134,7 @@ const CGS_DStr*           : cgs__dstr_ptr_tostr,            \
 const CGS_StrBuf*         : cgs__strbuf_ptr_tostr,          \
 CGS_Error                 : cgs__error_tostr,               \
 CGS_ArrayFmt              : cgs__array_fmt_tostr,           \
-CGS_AlignFmt              : cgs__align_fmt_tostr,           \
+CGS__AlignFmt              : cgs__align_fmt_tostr,           \
 CGS__INTEGER_TYPES(CGS__INTEGER_TOSTR_GENERIC_CASE, ignore) \
 CGS__FLOATING_TYPES(CGS__FLOATING_TOSTR_GENERIC_CASE, ignore, CGS__FLOATING_TOSTR_LAST_GENERIC_CASE)
 
@@ -1167,7 +1167,7 @@ const CGS_DStr*           : cgs__dstr_ptr_tostr_p,            \
 const CGS_StrBuf*         : cgs__strbuf_ptr_tostr_p,          \
 CGS_Error                 : cgs__error_tostr_p,               \
 CGS_ArrayFmt              : cgs__array_fmt_tostr_p,           \
-CGS_AlignFmt              : cgs__align_fmt_tostr_p,           \
+CGS__AlignFmt              : cgs__align_fmt_tostr_p,           \
 CGS__INTEGER_TYPES(CGS__INTEGER_TOSTR_P_GENERIC_CASE, ignore) \
 CGS__FLOATING_TYPES(CGS__FLOATING_TOSTR_P_GENERIC_CASE, ignore, CGS__FLOATING_TOSTR_P_LAST_GENERIC_CASE)
 
@@ -1464,7 +1464,7 @@ CGS_API CGS_Error cgs__mutstr_ref_tostr(CGS_Writer writer, const CGS_MutStrRef o
 
 CGS_API CGS_Error cgs__error_tostr(CGS_Writer writer, CGS_Error obj);
 CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer writer, CGS_ArrayFmt obj);
-CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer writer, CGS_AlignFmt obj);
+CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer writer, CGS__AlignFmt obj);
 
 CGS_API CGS_Error cgs__bool_tostr_p(CGS_Writer writer, const void *obj);
 CGS_API CGS_Error cgs__cstr_tostr_p(CGS_Writer writer, const void *obj);
