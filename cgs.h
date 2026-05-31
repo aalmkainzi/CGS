@@ -572,17 +572,17 @@ cgs_fread_until(mutstr_dst, stdin, delim)
 #define cgs_append_read_until(mutstr_dst, delim) \
 cgs_append_fread_until(mutstr_dst, stdin, delim)
 
-#define cgs__writer_append_fn(writer_p) \
-_Generic((__typeof__(writer_p)*)0, \
-    CGS_DStr**: cgs__idstr_append, \
-    CGS_StrBuf**: cgs__istrbuf_append, \
-    CGS_MutStrRef*: cgs__mutstr_ref_append_func[cgs__coerce(writer_p, CGS_MutStrRef).ty], \
-    char**: cgs__cstr_append,  \
-    unsigned char**: cgs__cstr_append, \
-    char(*)         [sizeof(__typeof__(writer_p))]: cgs__ibuf_append, \
-    unsigned char(*)[sizeof(__typeof__(writer_p))]: cgs__ibuf_append, \
-    FILE**: cgs__file_append, \
-    unsigned int**: cgs__writer_counter_append \
+#define cgs__writer_append_fn(writer_p)                                        \
+_Generic((__typeof__(writer_p)*)0,                                             \
+    CGS_DStr**                                    : cgs__idstr_append,         \
+    CGS_StrBuf**                                  : cgs__istrbuf_append,       \
+    CGS_MutStrRef*                                : cgs__mutstr_ref_append_func[cgs__coerce(writer_p, CGS_MutStrRef).ty], \
+    char**                                        : cgs__cstr_append,          \
+    unsigned char**                               : cgs__cstr_append,          \
+    char(*)         [sizeof(__typeof__(writer_p))]: cgs__ibuf_append,          \
+    unsigned char(*)[sizeof(__typeof__(writer_p))]: cgs__ibuf_append,          \
+    FILE**                                        : cgs__file_append,          \
+    unsigned int**                                : cgs__writer_counter_append \
 )
 
 static inline void *cgs__mutstr_ref_ctx(CGS_MutStrRef ref, CGS_Buffer *buffer_opt)
@@ -600,10 +600,10 @@ static inline void *cgs__mutstr_ref_ctx(CGS_MutStrRef ref, CGS_Buffer *buffer_op
     }
 }
 
-// return mutstr, unless MutStrRef, in which case &buf
+// return the ctx needed for the writer
 #define cgs__writer_ctx(mutstr) \
 _Generic((__typeof__(mutstr)*){0}, \
-    CGS_MutStrRef*                               : cgs__mutstr_ref_ctx(cgs__coerce(mutstr, CGS_MutStrRef), &(CGS_Buffer){0}), \
+    CGS_MutStrRef*                               : cgs__mutstr_ref_ctx(cgs__coerce(mutstr, CGS_MutStrRef), &(CGS_Buffer){0}),                           \
     char(*)         [sizeof(__typeof__(mutstr))] : &(CGS_Buffer){.ptr = (char*) cgs__coerce_not_mutstr_ref(mutstr), .cap = sizeof(__typeof__(mutstr))}, \
     unsigned char(*)[sizeof(__typeof__(mutstr))] : &(CGS_Buffer){.ptr = (char*) cgs__coerce_not_mutstr_ref(mutstr), .cap = sizeof(__typeof__(mutstr))}, \
     default                                      : (mutstr) \

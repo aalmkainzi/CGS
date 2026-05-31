@@ -3380,7 +3380,7 @@ CGS_API CGS_Error cgs__append_fmt(CGS_Writer writer, const CGS__const_StrView fm
                 fmt_walk.chars += 1;
                 fmt_walk.len -= 1;
             }
-            else if(fmt_walk.len > 0 && isdigit(found[1]))
+            else if(fmt_walk.len > 0 && found[1] == '[')
             {
                 if(index_mode == AUTO_INDEX)
                 {
@@ -3391,10 +3391,22 @@ CGS_API CGS_Error cgs__append_fmt(CGS_Writer writer, const CGS__const_StrView fm
                 index_mode = SPECIFY_INDEX;
                 
                 char *end = NULL;
-                unsigned long arg_index = strtoul(found + 1, &end, 10); // we can assume fmt is null terminated
+                unsigned long arg_index = strtoul(found + 2, &end, 10); // we can assume fmt is null terminated
+                
                 unsigned int end_idx = (unsigned int) (end - fmt_walk.chars);
                 fmt_walk.chars += end_idx;
                 fmt_walk.len   -= end_idx;
+                
+                if(fmt_walk.len == 0 || fmt_walk.chars[0] != ']')
+                {
+                    CGS_debug_break();
+                    err.ec = CGS_BAD_FORMAT;
+                    break;
+                }
+                
+                // skip the ]
+                fmt_walk.len -= 1;
+                fmt_walk.chars += 1;
                 
                 if(arg_index >= nargs)
                 {

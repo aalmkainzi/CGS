@@ -2261,13 +2261,13 @@ void test_str_putc_edge_cases() {
     }
     
     /* =========================================================================
-     * cgs_fmt — explicit indexed substitution (%0, %1, ...)
+     * cgs_fmt — explicit indexed substitution (%[0], %[1], ...)
      * ========================================================================= */
     
-    TEST("cgs_fmt: explicit index %0 selects first arg");
+    TEST("cgs_fmt: explicit index %[0] selects first arg");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_fmt(&dst, "hello %0", cgs_strv("world"));
+        CGS_Error err = cgs_fmt(&dst, "hello %[0]", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
@@ -2276,7 +2276,7 @@ void test_str_putc_edge_cases() {
     TEST("cgs_fmt: explicit indices in order");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_fmt(&dst, "%0 %1 %2",
+        CGS_Error err = cgs_fmt(&dst, "%[0] %[1] %[2]",
                                    cgs_strv("one"), cgs_strv("two"), cgs_strv("three"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("one two three")));
@@ -2286,7 +2286,7 @@ void test_str_putc_edge_cases() {
     TEST("cgs_fmt: explicit indices out of order");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_fmt(&dst, "%2 %0 %1",
+        CGS_Error err = cgs_fmt(&dst, "%[2] %[0] %[1]",
                                    cgs_strv("one"), cgs_strv("two"), cgs_strv("three"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("three one two")));
@@ -2296,7 +2296,7 @@ void test_str_putc_edge_cases() {
     TEST("cgs_fmt: explicit index can repeat an arg");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_fmt(&dst, "%0 and %0", cgs_strv("hello"));
+        CGS_Error err = cgs_fmt(&dst, "%[0] and %[0]", cgs_strv("hello"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello and hello")));
         cgs_dstr_deinit(&dst);
@@ -2305,7 +2305,7 @@ void test_str_putc_edge_cases() {
     TEST("cgs_fmt: explicit index out of bounds returns CGS_INDEX_OUT_OF_BOUNDS");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_fmt(&dst, "%3", cgs_strv("only one arg"));
+        CGS_Error err = cgs_fmt(&dst, "%[3]", cgs_strv("only one arg"));
         ASSERT_TRUE(err.ec == CGS_INDEX_OUT_OF_BOUNDS);
         cgs_dstr_deinit(&dst);
     }
@@ -2313,7 +2313,7 @@ void test_str_putc_edge_cases() {
     TEST("cgs_fmt: mixed %% escape and explicit index substitution");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_fmt(&dst, "%% of %0 is %1",
+        CGS_Error err = cgs_fmt(&dst, "%% of %[0] is %[1]",
                                    cgs_strv("50"), cgs_strv("done"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("% of 50 is done")));
@@ -2327,7 +2327,7 @@ void test_str_putc_edge_cases() {
     TEST("cgs_fmt: mixing %? and explicit index returns CGS_BAD_FORMAT");
     {
         CGS_DStr dst = cgs_dstr_init();
-        CGS_Error err = cgs_fmt(&dst, "%? and %0",
+        CGS_Error err = cgs_fmt(&dst, "%? and %[0]",
                                    cgs_strv("hello"), cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_BAD_FORMAT);
         cgs_dstr_deinit(&dst);
