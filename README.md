@@ -85,8 +85,8 @@ CGS_Error               cgs_trim(mutstr_t str);
 CGS_Result(CGS_StrView) cgs_skip(anystr_t str, anystr_t delim); // returns view of after non-delim is reached
 CGS_Result(CGS_StrView) cgs_skip_any(anystr_t str, anystr_t delim_set);
 
-CGS_Result(CGS_StrView) cgs_spn(anystr_t src, anystr_t charset); // return view of first chunk that contains characters only found in charset
-CGS_Result(CGS_StrView) cgs_cspn(anystr_t src, anystr_t charset); // return view of first chunk that contains characters not found in charset
+CGS_Result(CGS_StrView) cgs_spn(anystr_t src, anystr_t charset); // returns view of first chunk that contains characters only found in charset
+CGS_Result(CGS_StrView) cgs_cspn(anystr_t src, anystr_t charset); // returns view of first chunk that contains characters not found in charset
 
 CGS_Result(CGS_StrView) cgs_next_tok(CGS_StrView *base, anystr_t delim); // skips leading delims, returns next token. modifies base such that it's after the returned token
 CGS_Result(CGS_StrView) cgs_next_tok_any(CGS_StrView *base, anystr_t delim_set);

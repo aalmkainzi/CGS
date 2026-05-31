@@ -4846,6 +4846,205 @@ void test_alignfmt(void)
     }
 }
 
+void test_writer_counter(void)
+{
+    /* unsigned int* as writer_t — counts chars written, discards content */
+    
+    /* ── cgs_append ───────────────────────────────────────────── */
+    
+    TEST("writer unsigned int*: cgs_append counts chars of a plain string");
+    {
+        unsigned int n = 0;
+        cgs_append(&n, "hello");
+        ASSERT_TRUE(n == 5);
+    }
+    
+    TEST("writer unsigned int*: cgs_append accumulates across multiple calls");
+    {
+        unsigned int n = 0;
+        cgs_append(&n, "hello");
+        cgs_append(&n, ", ");
+        cgs_append(&n, "world");
+        ASSERT_TRUE(n == 12);
+    }
+    
+    TEST("writer unsigned int*: cgs_append of empty string adds 0");
+    {
+        unsigned int n = 0;
+        cgs_append(&n, "hello");
+        cgs_append(&n, "");
+        ASSERT_TRUE(n == 5);
+    }
+    
+    TEST("writer unsigned int*: cgs_append of StrView counts only the view length");
+    {
+        /* StrView of "hello" [1,4) → "ell" (3 chars) */
+        unsigned int n = 0;
+        cgs_append(&n, cgs_strv("hello", 1, 4));
+        ASSERT_TRUE(n == 3);
+    }
+    
+    TEST("writer unsigned int*: cgs_append starts from existing count");
+    {
+        unsigned int n = 10;
+        cgs_append(&n, "hello");
+        ASSERT_TRUE(n == 15);
+    }
+    
+    /* ── cgs_putc ─────────────────────────────────────────────── */
+    
+    TEST("writer unsigned int*: cgs_putc counts 1");
+    {
+        unsigned int n = 0;
+        cgs_putc(&n, 'x');
+        ASSERT_TRUE(n == 1);
+    }
+    
+    TEST("writer unsigned int*: cgs_putc accumulates");
+    {
+        unsigned int n = 0;
+        cgs_putc(&n, 'a');
+        cgs_putc(&n, 'b');
+        cgs_putc(&n, 'c');
+        ASSERT_TRUE(n == 3);
+    }
+    
+    /* ── cgs_append_fmt ───────────────────────────────────────── */
+    
+    TEST("writer unsigned int*: cgs_append_fmt counts formatted output length");
+    {
+        unsigned int n = 0;
+        cgs_append_fmt(&n, "%? + %? = %?", 1, 2, 3);
+        /* "1 + 2 = 3" → 9 chars */
+        ASSERT_TRUE(n == 9);
+    }
+    
+    TEST("writer unsigned int*: cgs_append_fmt accumulates across calls");
+    {
+        unsigned int n = 0;
+        cgs_append_fmt(&n, "%?", "hello");
+        cgs_append_fmt(&n, "%?", "world");
+        ASSERT_TRUE(n == 10);
+    }
+    
+    TEST("writer unsigned int*: cgs_append_fmt with nfmt counts correctly");
+    {
+        /* cgs_nfmt(255, 'X') → "FF" (2 chars) */
+        unsigned int n = 0;
+        cgs_append_fmt(&n, "%?", cgs_nfmt(255, 'X'));
+        ASSERT_TRUE(n == 2);
+    }
+    
+    TEST("writer unsigned int*: cgs_append_fmt with arrfmt counts correctly");
+    {
+        /* "{1, 2, 3}" → 9 chars */
+        int arr[] = {1, 2, 3};
+        unsigned int n = 0;
+        cgs_append_fmt(&n, "%?", cgs_arrfmt(arr, 3));
+        ASSERT_TRUE(n == 9);
+    }
+    
+    TEST("writer unsigned int*: cgs_append_fmt with alignfmt counts padded length");
+    {
+        /* "hello" left-aligned in width 10 → "hello     " → 10 chars */
+        char *s = "hello";
+        unsigned int n = 0;
+        cgs_append_fmt(&n, "%?", cgs_alignfmt(&s, CGS_ALIGN_LEFT, 10, ' '));
+        ASSERT_TRUE(n == 10);
+    }
+    
+    /* ── cgs_append_tostr / cgs_append_tostr_many ─────────────── */
+    
+    TEST("writer unsigned int*: cgs_append_tostr counts int tostr length");
+    {
+        unsigned int n = 0;
+        cgs_append_tostr(&n, 12345);
+        /* "12345" → 5 chars */
+        ASSERT_TRUE(n == 5);
+    }
+    
+    TEST("writer unsigned int*: cgs_append_tostr counts negative int tostr length");
+    {
+        unsigned int n = 0;
+        cgs_append_tostr(&n, -99);
+        /* "-99" → 3 chars */
+        ASSERT_TRUE(n == 3);
+    }
+    
+    TEST("writer unsigned int*: cgs_append_tostr_many sums all args");
+    {
+        /* "hello" + ", " + "42" → 5+2+2 = 9 chars */
+        unsigned int n = 0;
+        cgs_append_tostr_many(&n, "hello", ", ", 42);
+        ASSERT_TRUE(n == 9);
+    }
+    
+    TEST("writer unsigned int*: cgs_append_tostr_many with nfmt");
+    {
+        /* "FF" + " " + "255" → 2+1+3 = 6 chars */
+        unsigned int n = 0;
+        cgs_append_tostr_many(&n, cgs_nfmt(255, 'X'), " ", 255);
+        ASSERT_TRUE(n == 6);
+    }
+    
+    /* ── use as a dry-run before allocating ───────────────────── */
+    
+    TEST("writer unsigned int*: dry-run matches actual written length");
+    {
+        /* count first, then write to a real buffer, check lengths match */
+        unsigned int n = 0;
+        cgs_append_fmt(&n, "%? = %?", "answer", 42);
+        
+        char buf[64];
+        cgs_fmt(buf, "%? = %?", "answer", 42);
+        
+        ASSERT_TRUE(n == cgs_len(buf));
+    }
+    
+    TEST("writer unsigned int*: dry-run of complex nested fmt");
+    {
+        int arr[] = {10, 200, 3000};
+        char *label = "vals";
+        
+        unsigned int n = 0;
+        cgs_append_fmt(&n, "%?: %?", cgs_alignfmt(&label, CGS_ALIGN_LEFT, 8, '.'), cgs_arrfmt(arr, 3));
+        
+        char buf[64];
+        cgs_fmt(buf, "%?: %?", cgs_alignfmt(&label, CGS_ALIGN_LEFT, 8 , '.'), cgs_arrfmt(arr, 3));
+        
+        ASSERT_TRUE(n == cgs_len(buf));
+    }
+    
+    /* ── cgs_writer wrapping unsigned int* ────────────────────── */
+    
+    TEST("writer unsigned int*: cgs_writer wraps counter and counts via append");
+    {
+        unsigned int n = 0;
+        CGS_Writer w = cgs_writer(&n);
+        cgs_append(w, "abc");
+        cgs_append(w, "de");
+        ASSERT_TRUE(n == 5);
+    }
+    
+    TEST("writer unsigned int*: cgs_writer counts putc calls");
+    {
+        unsigned int n = 0;
+        CGS_Writer w = cgs_writer(&n);
+        cgs_putc(w, 'x');
+        cgs_putc(w, 'y');
+        ASSERT_TRUE(n == 2);
+    }
+    
+    TEST("writer unsigned int*: cgs_writer counts append_fmt output");
+    {
+        /* "1 + 2 = 3" → 9 chars */
+        unsigned int n = 0;
+        CGS_Writer w = cgs_writer(&n);
+        cgs_append_fmt(w, "%? + %? = %?", 1, 2, 3);
+        ASSERT_TRUE(n == 9);
+    }
+}
+
 // ============================================================================
 // Main
 // ============================================================================
@@ -4883,6 +5082,7 @@ int main() {
     test_special_characters();
     test_replace_all();
     test_alignfmt();
+    test_writer_counter();
     
     printf("\n========================================\n");
     printf("Test Results: %d/%d passed\n", passed_count, test_count);
