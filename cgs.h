@@ -217,7 +217,6 @@ X(ALLOC_ERROR)              \
 X(INDEX_OUT_OF_BOUNDS)      \
 X(BAD_RANGE)                \
 X(NOT_FOUND)                \
-X(END_OF_STRING)            \
 X(ALIASING_NOT_SUPPORTED)   \
 X(WRONG_TYPE)               \
 X(ENCODING_ERROR)           \
@@ -1385,8 +1384,8 @@ CGS_API CGS_Error cgs__mutstr_ref_clear(CGS_MutStrRef str);
 CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, CGS_StrViewArray strs, CGS_StrView delim);
 CGS_API CGS_Result(CGS_StrView) cgs__next_tok(CGS_StrView *base, CGS_StrView delim);
 CGS_API CGS_Result(CGS_StrView) cgs__next_tok_any(CGS_StrView *base, CGS_StrView delim_set);
-CGS_API CGS_Result(CGS_StrView) cgs__skip(CGS_StrView src, CGS_StrView delim);
-CGS_API CGS_Result(CGS_StrView) cgs__skip_any(CGS_StrView src, CGS_StrView delim_set);
+CGS_API CGS_StrView cgs__skip(CGS_StrView src, CGS_StrView delim);
+CGS_API CGS_StrView cgs__skip_any(CGS_StrView src, CGS_StrView delim_set);
 
 CGS_API CGS_Error cgs__fmutstr_ref_putc(CGS__FixedMutStrRef dst, char c);
 CGS_API CGS_Error cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, const CGS_StrView src);
@@ -1412,13 +1411,13 @@ CGS_API CGS_Error cgs__strv_split_iter(const CGS_StrView str, const CGS_StrView 
 
 CGS_API CGS_StrViewArray cgs__strv_arr_from(const CGS_StrView *carr, unsigned int nb);
 
-CGS_API bool cgs__strv_equal(const CGS_StrView str1, const CGS_StrView str2);
-CGS_API CGS_StrView cgs__strv_find(const CGS_StrView hay, const CGS_StrView needle);
+CGS_API bool         cgs__strv_equal(const CGS_StrView str1, const CGS_StrView str2);
+CGS_API CGS_StrView  cgs__strv_find(const CGS_StrView hay, const CGS_StrView needle);
 CGS_API unsigned int cgs__strv_count(const CGS_StrView hay, const CGS_StrView needle);
-CGS_API CGS_StrView cgs__trim_view(const CGS_StrView str);
-CGS_API CGS_Error cgs__trim(CGS__FixedMutStrRef str);
-CGS_API CGS_Result(CGS_StrView) cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset);
-CGS_API CGS_Result(CGS_StrView) cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset);
+CGS_API CGS_StrView  cgs__trim_view(const CGS_StrView str);
+CGS_API CGS_Error    cgs__trim(CGS__FixedMutStrRef str);
+CGS_API CGS_StrView  cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset);
+CGS_API CGS_StrView  cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset);
 CGS_API bool cgs__strv_starts_with(const CGS_StrView hay, const CGS_StrView needle);
 CGS_API bool cgs__strv_ends_with(const CGS_StrView hay, const CGS_StrView needle);
 

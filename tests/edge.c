@@ -603,562 +603,353 @@ void test_str_find_edge_cases() {
         ASSERT_TRUE(e.ec == CGS_OK);
         ASSERT_TRUE(cgs_len(s) == 2 && cgs_chars(s) == p);
     }
-    
-    /* --- cgs_spn --- */
-    
-    TEST("cgs_spn: entire string in charset");;;
+}
+
+void test_spn_cspn_tok()
+{
+    /* ════════════════════════════════════════════════════════════
+     * cgs_spn — first chunk made up ONLY of chars in charset
+     * ════════════════════════════════════════════════════════════ */
+
+    TEST("cgs_spn: leading run of charset chars");
     {
-        char s[] = "aabbcc";
-        ASSERT_TRUE(cgs_spn(s, "abc").val.len == 6);
+        /* "aaabbb" with charset "a" → "aaa" */
+        CGS_StrView v = cgs_spn(cgs_strv("aaabbb"), cgs_strv("a"));
+        ASSERT_TRUE(cgs_equal(v, cgs_strv("aaa")));
     }
-    
-    TEST("cgs_spn: no chars in charset");;;
+
+    TEST("cgs_spn: charset with multiple chars");
     {
-        char s[] = "hello";
-        ASSERT_TRUE(cgs_spn(s, "xyz").val.len == 0);
+        /* "abc123" charset "abc" → "abc" */
+        CGS_StrView v = cgs_spn(cgs_strv("abc123"), cgs_strv("abc"));
+        ASSERT_TRUE(cgs_equal(v, cgs_strv("abc")));
     }
-    
-    TEST("cgs_spn: partial match at start");;;
+
+    TEST("cgs_spn: whole string matches charset");
     {
-        char s[] = "aaabcd";
-        ASSERT_TRUE(cgs_spn(s, "ab").val.len == 4);
+        CGS_StrView v = cgs_spn(cgs_strv("12345"), cgs_strv("0123456789"));
+        ASSERT_TRUE(cgs_equal(v, cgs_strv("12345")));
     }
-    
-    TEST("cgs_spn: match stops at first non-charset char");;;
+
+    TEST("cgs_spn: first char not in charset → empty view");
     {
-        char s[] = "aaa!aaa";
-        ASSERT_TRUE(cgs_spn(s, "a").val.len == 3);
+        CGS_StrView v = cgs_spn(cgs_strv("xabc"), cgs_strv("abc"));
+        ASSERT_TRUE(v.len == 0);
     }
-    
-    TEST("cgs_spn: empty string");;;
+
+    TEST("cgs_spn: empty source → empty view");
     {
-        char s[] = "";
-        ASSERT_TRUE(cgs_spn(s, "abc").val.len == 0);
+        CGS_StrView v = cgs_spn(cgs_strv(""), cgs_strv("abc"));
+        ASSERT_TRUE(v.len == 0);
     }
-    
-    TEST("cgs_spn: empty charset");;;
+
+    TEST("cgs_spn: empty charset → empty view");
     {
-        char s[] = "hello";
-        ASSERT_TRUE(cgs_spn(s, "").val.len == 0);
+        CGS_StrView v = cgs_spn(cgs_strv("abc"), cgs_strv(""));
+        ASSERT_TRUE(v.len == 0);
     }
-    
-    TEST("cgs_spn: both empty");;;
+
+    TEST("cgs_spn: view begins at start of source");
     {
-        char s[] = "";
-        ASSERT_TRUE(cgs_spn(s, "").val.len == 0);
+        CGS_StrView src = cgs_strv("aabxx");
+        CGS_StrView v = cgs_spn(src, cgs_strv("ab"));
+        ASSERT_TRUE(v.chars == src.chars);
+        ASSERT_TRUE(cgs_equal(v, cgs_strv("aab")));
     }
-    
-    TEST("cgs_spn: single char string, in charset");;;
+
+    TEST("cgs_spn: repeated charset chars are handled");
     {
-        char s[] = "a";
-        ASSERT_TRUE(cgs_spn(s, "a").val.len == 1);
+        /* charset "aА" duplicate-free behaviour: "aaa bbb", charset "a " */
+        CGS_StrView v = cgs_spn(cgs_strv("aaa bbb"), cgs_strv("a "));
+        ASSERT_TRUE(cgs_equal(v, cgs_strv("aaa ")));
     }
-    
-    TEST("cgs_spn: single char string, not in charset");;;
+
+    /* ════════════════════════════════════════════════════════════
+     * cgs_cspn — first chunk made up ONLY of chars NOT in charset
+     * ════════════════════════════════════════════════════════════ */
+
+    TEST("cgs_cspn: stop at first charset char");
     {
-        char s[] = "a";
-        ASSERT_TRUE(cgs_spn(s, "b").val.len == 0);
+        /* "abc123" charset "0123456789" → "abc" */
+        CGS_StrView v = cgs_cspn(cgs_strv("abc123"), cgs_strv("0123456789"));
+        ASSERT_TRUE(cgs_equal(v, cgs_strv("abc")));
     }
-    
-    TEST("cgs_spn: charset has duplicate chars");;;
+
+    TEST("cgs_cspn: stop at first delimiter");
     {
-        char s[] = "aaabbb";
-        ASSERT_TRUE(cgs_spn(s, "aaabbb").val.len == 6);
+        /* "hello world" charset " " → "hello" */
+        CGS_StrView v = cgs_cspn(cgs_strv("hello world"), cgs_strv(" "));
+        ASSERT_TRUE(cgs_equal(v, cgs_strv("hello")));
     }
-    
-    TEST("cgs_spn: charset larger than string");;;
+
+    TEST("cgs_cspn: no charset char present → whole string");
     {
-        char s[] = "ab";
-        ASSERT_TRUE(cgs_spn(s, "abcdefghijklmnop").val.len == 2);
+        CGS_StrView v = cgs_cspn(cgs_strv("hello"), cgs_strv("xyz"));
+        ASSERT_TRUE(cgs_equal(v, cgs_strv("hello")));
     }
-    
-    TEST("cgs_spn: whitespace charset");;;
+
+    TEST("cgs_cspn: first char in charset → empty view");
     {
-        char s[] = "   \t\nhello";
-        ASSERT_TRUE(cgs_spn(s, " \t\n\r").val.len == 5);
+        CGS_StrView v = cgs_cspn(cgs_strv(",abc"), cgs_strv(","));
+        ASSERT_TRUE(v.len == 0);
     }
-    
-    TEST("cgs_spn: first char not in charset");;;
+
+    TEST("cgs_cspn: empty source → empty view");
     {
-        char s[] = "xaaa";
-        ASSERT_TRUE(cgs_spn(s, "a").val.len == 0);
+        CGS_StrView v = cgs_cspn(cgs_strv(""), cgs_strv(","));
+        ASSERT_TRUE(v.len == 0);
     }
-    
-    TEST("cgs_spn: accepts CGS_StrView");;;
+
+    TEST("cgs_cspn: empty charset → whole string");
     {
-        CGS_StrView sv = cgs_strv("aaabcd");
-        ASSERT_TRUE(cgs_spn(sv, "a").val.len == 3);
+        /* nothing to stop at, so the whole string qualifies */
+        CGS_StrView v = cgs_cspn(cgs_strv("abc"), cgs_strv(""));
+        ASSERT_TRUE(cgs_equal(v, cgs_strv("abc")));
     }
-    
-    TEST("cgs_spn: accepts CGS_DStr");;;
+
+    TEST("cgs_cspn: multi-char charset, stop at earliest match");
     {
-        CGS_DStr d = cgs_dstr_init_from("aaabcd");
-        ASSERT_TRUE(cgs_spn(d, "a").val.len == 3);
-        cgs_dstr_deinit(&d);
+        /* "abc;def,ghi" charset ";," → "abc" (';' comes first) */
+        CGS_StrView v = cgs_cspn(cgs_strv("abc;def,ghi"), cgs_strv(";,"));
+        ASSERT_TRUE(cgs_equal(v, cgs_strv("abc")));
     }
-    
-    TEST("cgs_spn: charset as CGS_StrView");;;
+
+    /* ════════════════════════════════════════════════════════════
+     * cgs_next_tok — skips leading delims, returns next token,
+     * advances base past it. Empty token (all delim / empty base)
+     * returns CGS_NOT_FOUND.
+     * ════════════════════════════════════════════════════════════ */
+
+    TEST("cgs_next_tok: simple comma-separated tokens");
     {
-        char s[] = "aaabcd";
-        CGS_StrView charset = cgs_strv("a");
-        ASSERT_TRUE(cgs_spn(s, charset).val.len == 3);
+        CGS_StrView base = cgs_strv("one,two,three");
+
+        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r1.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r1.val, cgs_strv("one")));
+
+        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r2.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r2.val, cgs_strv("two")));
+
+        CGS_Result(CGS_StrView) r3 = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r3.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r3.val, cgs_strv("three")));
+
+        /* base now exhausted */
+        CGS_Result(CGS_StrView) r4 = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r4.err.ec == CGS_NOT_FOUND);
     }
-    
-    TEST("cgs_spn: result equals length means all chars matched");;;
+
+    TEST("cgs_next_tok: skips leading delimiters");
     {
-        char s[] = "abcabc";
-        unsigned int n = cgs_spn(s, "abc").val.len;
-        ASSERT_TRUE(n == cgs_len(s));
+        /* leading commas are skipped, first token is "a" */
+        CGS_StrView base = cgs_strv(",,,a,b");
+        CGS_Result(CGS_StrView) r = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r.val, cgs_strv("a")));
     }
-    
-    /* --- cgs_cspn --- */
-    
-    TEST("cgs_cspn: no chars in charset");;;
+
+    TEST("cgs_next_tok: collapses consecutive delimiters between tokens");
     {
-        char s[] = "hello";
-        ASSERT_TRUE(cgs_cspn(s, "xyz").val.len == 5);
+        /* "a,,,b" → "a" then "b" (no empty tokens) */
+        CGS_StrView base = cgs_strv("a,,,b");
+
+        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r1.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r1.val, cgs_strv("a")));
+
+        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r2.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r2.val, cgs_strv("b")));
+
+        CGS_Result(CGS_StrView) r3 = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r3.err.ec == CGS_NOT_FOUND);
     }
-    
-    TEST("cgs_cspn: first char in charset");;;
+
+    TEST("cgs_next_tok: trailing delimiters yield NOT_FOUND after last token");
     {
-        char s[] = "hello";
-        ASSERT_TRUE(cgs_cspn(s, "h").val.len == 0);
+        CGS_StrView base = cgs_strv("a,b,,,");
+
+        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(cgs_equal(r1.val, cgs_strv("a")));
+
+        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(cgs_equal(r2.val, cgs_strv("b")));
+
+        CGS_Result(CGS_StrView) r3 = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r3.err.ec == CGS_NOT_FOUND);
     }
-    
-    TEST("cgs_cspn: charset hit in middle");;;
-    {
-        char s[] = "abcXdef";
-        ASSERT_TRUE(cgs_cspn(s, "X").val.len == 3);
-    }
-    
-    TEST("cgs_cspn: charset hit at last char");;;
-    {
-        char s[] = "abcdX";
-        ASSERT_TRUE(cgs_cspn(s, "X").val.len == 4);
-    }
-    
-    TEST("cgs_cspn: entire string in charset");;;
-    {
-        char s[] = "aaa";
-        ASSERT_TRUE(cgs_cspn(s, "a").val.len == 0);
-    }
-    
-    TEST("cgs_cspn: empty string");;;
-    {
-        char s[] = "";
-        ASSERT_TRUE(cgs_cspn(s, "abc").val.len == 0);
-    }
-    
-    TEST("cgs_cspn: empty charset");;;
-    {
-        char s[] = "hello";
-        ASSERT_TRUE(cgs_cspn(s, "").val.len == 5);
-    }
-    
-    TEST("cgs_cspn: both empty");;;
-    {
-        char s[] = "";
-        ASSERT_TRUE(cgs_cspn(s, "").val.len == 0);
-    }
-    
-    TEST("cgs_cspn: single char string, in charset");;;
-    {
-        char s[] = "a";
-        ASSERT_TRUE(cgs_cspn(s, "a").val.len == 0);
-    }
-    
-    TEST("cgs_cspn: single char string, not in charset");;;
-    {
-        char s[] = "a";
-        ASSERT_TRUE(cgs_cspn(s, "b").val.len == 1);
-    }
-    
-    TEST("cgs_cspn: multiple chars in charset, first hit determines result");;;
-    {
-        char s[] = "abcdef";
-        ASSERT_TRUE(cgs_cspn(s, "ce").val.len == 2);
-    }
-    
-    TEST("cgs_cspn: charset has duplicate chars");;;
-    {
-        char s[] = "abcXdef";
-        ASSERT_TRUE(cgs_cspn(s, "XX").val.len == 3);
-    }
-    
-    TEST("cgs_cspn: whitespace as charset");;;
-    {
-        char s[] = "hello world";
-        ASSERT_TRUE(cgs_cspn(s, " \t\n\r").val.len == 5);
-    }
-    
-    TEST("cgs_cspn: accepts CGS_StrView");;;
-    {
-        CGS_StrView sv = cgs_strv("abcXdef");
-        ASSERT_TRUE(cgs_cspn(sv, "X").val.len == 3);
-    }
-    
-    TEST("cgs_cspn: accepts CGS_DStr");;;
-    {
-        CGS_DStr d = cgs_dstr_init_from("abcXdef");
-        ASSERT_TRUE(cgs_cspn(d, "X").val.len == 3);
-        cgs_dstr_deinit(&d);
-    }
-    
-    TEST("cgs_cspn: charset as CGS_StrView");;;
-    {
-        char s[] = "abcXdef";
-        CGS_StrView charset = cgs_strv("X");
-        ASSERT_TRUE(cgs_cspn(s, charset).val.len == 3);
-    }
-    
-    TEST("cgs_cspn: result equals length means no chars matched");;;
-    {
-        char s[] = "hello";
-        unsigned int n = cgs_cspn(s, "xyz").val.len;
-        ASSERT_TRUE(n == cgs_len(s));
-    }
-    
-    /* --- cgs_spn / cgs_cspn: complementary relationship --- */
-    
-    TEST("cgs_spn + cgs_cspn: partition the string");;;
-    {
-        /* for any string and charset, spn + cspn(from that offset) should
-         *           walk the entire string */
-        char s[] = "aaabbbccc";
-        unsigned int spn = cgs_spn(s, "a").val.len;
-        CGS_StrView rest = cgs_strv(s, spn);
-        unsigned int cspn = cgs_cspn(rest, "a").val.len;
-        ASSERT_TRUE(spn == 3 && cspn == 6);
-    }
-    
-    TEST("cgs_spn + cgs_cspn: on same string and charset sum to string length when non-overlapping");;;
-    {
-        /* all-a string: spn == len, cspn == 0 */
-        char s[] = "aaaa";
-        ASSERT_TRUE(cgs_spn(s, "a").val.len + cgs_cspn(s, "a").val.len == cgs_len(s));
-    }
-    
-    // =============================================================================
-    // Tests for cgs_next_tok and cgs_next_tok_any
-    //
-    // Shared contract:
-    //   1) Skip leading delimiter(s)
-    //   2) Read token char by char
-    //   3) Delimiter hit -> return token, CGS_OK,            base points at delimiter
-    //      End of string -> return token, CGS_END_OF_STRING, base is empty
-    //      No token found (empty/all delims) -> empty token, CGS_NOT_FOUND, base is empty
-    //
-    // Only difference:
-    //   cgs_next_tok:     delim is a literal substring
-    //   cgs_next_tok_any: delim is a character set
-    // =============================================================================
-    
-    
-    // =============================================================================
-    // cgs_next_tok_any
-    // =============================================================================
-    
-    // --- Basic functionality ---
-    
-    TEST("cgs_next_tok_any: token followed by delimiter");;;
-    {
-        CGS_StrView base = cgs_strv("token1 token2");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, " ");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_TRUE(cgs_equal(base, " token2"));
-    }
-    
-    TEST("cgs_next_tok_any: token followed by end of string");;;
-    {
-        CGS_StrView base = cgs_strv("token1");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, " ");
-        ASSERT_EQ(res.err.ec, CGS_END_OF_STRING);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_EQ(base.len, 0);
-    }
-    
-    TEST("cgs_next_tok_any: leading delimiters skipped before token");;;
-    {
-        CGS_StrView base = cgs_strv("   token1 token2");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, " ");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_TRUE(cgs_equal(base, " token2"));
-    }
-    
-    TEST("cgs_next_tok_any: leading delimiters skipped, token at end of string");;;
-    {
-        CGS_StrView base = cgs_strv("   token1");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, " ");
-        ASSERT_EQ(res.err.ec, CGS_END_OF_STRING);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_EQ(base.len, 0);
-    }
-    
-    TEST("cgs_next_tok_any: multiple delimiters between tokens, base at first delimiter");;;
-    {
-        CGS_StrView base = cgs_strv("token1   token2");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, " ");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_TRUE(cgs_equal(base, "   token2"));
-    }
-    
-    // --- End of string ---
-    
-    TEST("cgs_next_tok_any: empty string");;;
+
+    TEST("cgs_next_tok: empty base → NOT_FOUND");
     {
         CGS_StrView base = cgs_strv("");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, " ");
-        ASSERT_EQ(res.err.ec, CGS_NOT_FOUND);
-        ASSERT_EQ(res.val.len, 0);
-        ASSERT_EQ(base.len, 0);
+        CGS_Result(CGS_StrView) r = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r.err.ec == CGS_NOT_FOUND);
     }
-    
-    TEST("cgs_next_tok_any: only delimiters");;;
+
+    TEST("cgs_next_tok: base entirely delimiters → NOT_FOUND");
     {
-        CGS_StrView base = cgs_strv("   ");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, " ");
-        ASSERT_EQ(res.err.ec, CGS_NOT_FOUND);
-        ASSERT_EQ(res.val.len, 0);
-        ASSERT_EQ(base.len, 0);
+        CGS_StrView base = cgs_strv(",,,,");
+        CGS_Result(CGS_StrView) r = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r.err.ec == CGS_NOT_FOUND);
     }
-    
-    TEST("cgs_next_tok_any: exhausted base");;;
+
+    TEST("cgs_next_tok: no delimiter present → whole string is one token");
     {
-        CGS_StrView base = cgs_strv("only");
-        cgs_next_tok_any(&base, " ");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, " ");
-        ASSERT_EQ(res.err.ec, CGS_NOT_FOUND);
-        ASSERT_EQ(res.val.len, 0);
+        CGS_StrView base = cgs_strv("nodelim");
+        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r1.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r1.val, cgs_strv("nodelim")));
+
+        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, cgs_strv(","));
+        ASSERT_TRUE(r2.err.ec == CGS_NOT_FOUND);
     }
-    
-    // --- Multi-character delimiter set ---
-    
-    TEST("cgs_next_tok_any: stops at first matching char in set");;;
+
+    TEST("cgs_next_tok: multi-char delimiter");
     {
-        CGS_StrView base = cgs_strv("token1,token2;token3");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, ",;");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_TRUE(cgs_equal(base, ",token2;token3"));
+        /* delim "::" → "a", "b", "c" */
+        CGS_StrView base = cgs_strv("a::b::c");
+
+        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, cgs_strv("::"));
+        ASSERT_TRUE(cgs_equal(r1.val, cgs_strv("a")));
+
+        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, cgs_strv("::"));
+        ASSERT_TRUE(cgs_equal(r2.val, cgs_strv("b")));
+
+        CGS_Result(CGS_StrView) r3 = cgs_next_tok(&base, cgs_strv("::"));
+        ASSERT_TRUE(cgs_equal(r3.val, cgs_strv("c")));
+
+        CGS_Result(CGS_StrView) r4 = cgs_next_tok(&base, cgs_strv("::"));
+        ASSERT_TRUE(r4.err.ec == CGS_NOT_FOUND);
     }
-    
-    TEST("cgs_next_tok_any: leading delimiters from set are skipped");;;
+
+    TEST("cgs_next_tok: multi-char delimiter, partial prefix is not a match");
     {
-        CGS_StrView base = cgs_strv(",;token1,token2");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, ",;");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_TRUE(cgs_equal(base, ",token2"));
+        /* "key-value" contains '-' but not "->" so no split should occur */
+        CGS_StrView base = cgs_strv("key-value");
+        CGS_Result(CGS_StrView) r = cgs_next_tok(&base, cgs_strv("->"));
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r.val, cgs_strv("key-value")));
     }
-    
-    TEST("cgs_next_tok_any: each char in set independently triggers");;;
+
+    TEST("cgs_next_tok: drive a full loop to collect all tokens");
     {
-        CGS_StrView base = cgs_strv("a,b;c");
-        CGS_Result(CGS_StrView) res1 = cgs_next_tok_any(&base, ",;");
-        base.chars++; base.len--; // manually skip ','
-        CGS_Result(CGS_StrView) res2 = cgs_next_tok_any(&base, ",;");
-        base.chars++; base.len--; // manually skip ';'
-        CGS_Result(CGS_StrView) res3 = cgs_next_tok_any(&base, ",;");
-        ASSERT_EQ(res1.err.ec, CGS_OK);
-        ASSERT_EQ(res2.err.ec, CGS_OK);
-        ASSERT_EQ(res3.err.ec, CGS_END_OF_STRING);
-        ASSERT_TRUE(cgs_equal(res1.val, "a"));
-        ASSERT_TRUE(cgs_equal(res2.val, "b"));
-        ASSERT_TRUE(cgs_equal(res3.val, "c"));
+        CGS_StrView base = cgs_strv("  the quick   brown fox  ");
+        const char *expected[] = { "the", "quick", "brown", "fox" };
+        int i = 0;
+
+        for (;;)
+        {
+            CGS_Result(CGS_StrView) r = cgs_next_tok(&base, cgs_strv(" "));
+            if (r.err.ec == CGS_NOT_FOUND) break;
+            ASSERT_TRUE(cgs_equal(r.val, cgs_strv(expected[i])));
+            i++;
+        }
+        ASSERT_TRUE(i == 4);
     }
-    
-    // --- Edge cases ---
-    
-    TEST("cgs_next_tok_any: newline as delimiter");;;
+
+    /* ════════════════════════════════════════════════════════════
+     * cgs_next_tok_any — like cgs_next_tok but any char in the
+     * delim_set is treated as a delimiter.
+     * ════════════════════════════════════════════════════════════ */
+
+    TEST("cgs_next_tok_any: mixed single-char delimiters");
     {
-        CGS_StrView base = cgs_strv("line1\nline2");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, "\n");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "line1"));
-        ASSERT_TRUE(cgs_equal(base, "\nline2"));
+        CGS_StrView base = cgs_strv("a;b,c|d");
+        const char *expected[] = { "a", "b", "c", "d" };
+        int i = 0;
+
+        for (;;)
+        {
+            CGS_Result(CGS_StrView) r = cgs_next_tok_any(&base, cgs_strv(";,|"));
+            if (r.err.ec == CGS_NOT_FOUND) break;
+            ASSERT_TRUE(cgs_equal(r.val, cgs_strv(expected[i])));
+            i++;
+        }
+        ASSERT_TRUE(i == 4);
     }
-    
-    TEST("cgs_next_tok_any: tab and space set, stops at tab");;;
+
+    TEST("cgs_next_tok_any: skips leading delimiters from the set");
     {
-        CGS_StrView base = cgs_strv("tok1\ttok2");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, " \t");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "tok1"));
-        ASSERT_TRUE(cgs_equal(base, "\ttok2"));
+        /* leading mix of ' ' and '\t' skipped */
+        CGS_StrView base = cgs_strv(" \t a b");
+        CGS_Result(CGS_StrView) r = cgs_next_tok_any(&base, cgs_strv(" \t"));
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r.val, cgs_strv("a")));
     }
-    
-    TEST("cgs_next_tok_any: token is entire string no delimiter chars present");;;
+
+    TEST("cgs_next_tok_any: collapses consecutive delimiters of differing kinds");
     {
-        CGS_StrView base = cgs_strv("nodelimiters");
-        CGS_Result(CGS_StrView) res = cgs_next_tok_any(&base, " ,;");
-        ASSERT_EQ(res.err.ec, CGS_END_OF_STRING);
-        ASSERT_TRUE(cgs_equal(res.val, "nodelimiters"));
-        ASSERT_EQ(base.len, 0);
+        /* "a,;|b" with set ",;|" → "a" then "b" */
+        CGS_StrView base = cgs_strv("a,;|b");
+
+        CGS_Result(CGS_StrView) r1 = cgs_next_tok_any(&base, cgs_strv(",;|"));
+        ASSERT_TRUE(cgs_equal(r1.val, cgs_strv("a")));
+
+        CGS_Result(CGS_StrView) r2 = cgs_next_tok_any(&base, cgs_strv(",;|"));
+        ASSERT_TRUE(cgs_equal(r2.val, cgs_strv("b")));
+
+        CGS_Result(CGS_StrView) r3 = cgs_next_tok_any(&base, cgs_strv(",;|"));
+        ASSERT_TRUE(r3.err.ec == CGS_NOT_FOUND);
     }
-    
-    
-    // =============================================================================
-    // cgs_next_tok
-    // =============================================================================
-    
-    // --- Basic functionality ---
-    
-    TEST("cgs_next_tok: token followed by delimiter");;;
+
+    TEST("cgs_next_tok_any: whitespace tokenization");
     {
-        CGS_StrView base = cgs_strv("token1,token2");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, ",");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_TRUE(cgs_equal(base, ",token2"));
+        CGS_StrView base = cgs_strv("foo\tbar baz\nqux");
+        const char *expected[] = { "foo", "bar", "baz", "qux" };
+        int i = 0;
+
+        for (;;)
+        {
+            CGS_Result(CGS_StrView) r = cgs_next_tok_any(&base, cgs_strv(" \t\n"));
+            if (r.err.ec == CGS_NOT_FOUND) break;
+            ASSERT_TRUE(cgs_equal(r.val, cgs_strv(expected[i])));
+            i++;
+        }
+        ASSERT_TRUE(i == 4);
     }
-    
-    TEST("cgs_next_tok: token followed by end of string");;;
+
+    TEST("cgs_next_tok_any: empty base → NOT_FOUND");
     {
-        CGS_StrView base = cgs_strv("token1");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, ",");
-        ASSERT_EQ(res.err.ec, CGS_END_OF_STRING);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_EQ(base.len, 0);
+        CGS_StrView base = cgs_strv("");
+        CGS_Result(CGS_StrView) r = cgs_next_tok_any(&base, cgs_strv(",;"));
+        ASSERT_TRUE(r.err.ec == CGS_NOT_FOUND);
     }
-    
-    TEST("cgs_next_tok: leading delimiters skipped before token");;;
+
+    TEST("cgs_next_tok_any: base entirely delimiters → NOT_FOUND");
     {
-        CGS_StrView base = cgs_strv(",,,token1,token2");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, ",");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_TRUE(cgs_equal(base, ",token2"));
+        CGS_StrView base = cgs_strv(";,;,");
+        CGS_Result(CGS_StrView) r = cgs_next_tok_any(&base, cgs_strv(",;"));
+        ASSERT_TRUE(r.err.ec == CGS_NOT_FOUND);
     }
-    
-    TEST("cgs_next_tok: leading delimiters skipped, token at end of string");;;
+
+    TEST("cgs_next_tok_any: no delimiter present → whole string");
     {
-        CGS_StrView base = cgs_strv(",,,token1");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, ",");
-        ASSERT_EQ(res.err.ec, CGS_END_OF_STRING);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_EQ(base.len, 0);
+        CGS_StrView base = cgs_strv("single");
+        CGS_Result(CGS_StrView) r1 = cgs_next_tok_any(&base, cgs_strv(",;|"));
+        ASSERT_TRUE(r1.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r1.val, cgs_strv("single")));
+
+        CGS_Result(CGS_StrView) r2 = cgs_next_tok_any(&base, cgs_strv(",;|"));
+        ASSERT_TRUE(r2.err.ec == CGS_NOT_FOUND);
     }
-    
-    TEST("cgs_next_tok: base points to delimiter after token, not past it");;;
+
+    TEST("cgs_next_tok_any: single-element delim set behaves like next_tok");
     {
         CGS_StrView base = cgs_strv("a,b,c");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, ",");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "a"));
-        ASSERT_TRUE(cgs_equal(base, ",b,c"));
+        const char *expected[] = { "a", "b", "c" };
+        int i = 0;
+
+        for (;;)
+        {
+            CGS_Result(CGS_StrView) r = cgs_next_tok_any(&base, cgs_strv(","));
+            if (r.err.ec == CGS_NOT_FOUND) break;
+            ASSERT_TRUE(cgs_equal(r.val, cgs_strv(expected[i])));
+            i++;
+        }
+        ASSERT_TRUE(i == 3);
     }
-    
-    TEST("cgs_next_tok: manual skip and second call");;;
-    {
-        CGS_StrView base = cgs_strv("first,last");
-        cgs_next_tok(&base, ",");
-        base.chars++; base.len--; // manually skip ','
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, ",");
-        ASSERT_EQ(res.err.ec, CGS_END_OF_STRING);
-        ASSERT_TRUE(cgs_equal(res.val, "last"));
-        ASSERT_EQ(base.len, 0);
-    }
-    
-    // --- End of string ---
-    
-    TEST("cgs_next_tok: empty string");;;
-    {
-        CGS_StrView base = cgs_strv("");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, ",");
-        ASSERT_EQ(res.err.ec, CGS_NOT_FOUND);
-        ASSERT_EQ(res.val.len, 0);
-        ASSERT_EQ(base.len, 0);
-    }
-    
-    TEST("cgs_next_tok: only delimiters");;;
-    {
-        CGS_StrView base = cgs_strv(",,,");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, ",");
-        ASSERT_EQ(res.err.ec, CGS_NOT_FOUND);
-        ASSERT_EQ(res.val.len, 0);
-        ASSERT_EQ(base.len, 0);
-    }
-    
-    TEST("cgs_next_tok: exhausted base");;;
-    {
-        CGS_StrView base = cgs_strv("only");
-        cgs_next_tok(&base, ",");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, ",");
-        ASSERT_EQ(res.err.ec, CGS_NOT_FOUND);
-        ASSERT_EQ(res.val.len, 0);
-    }
-    
-    // --- Multi-character delimiter as substring ---
-    
-    TEST("cgs_next_tok: multi-char delimiter treated as substring");;;
-    {
-        CGS_StrView base = cgs_strv("token1::token2");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, "::");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_TRUE(cgs_equal(base, "::token2"));
-    }
-    
-    TEST("cgs_next_tok: partial match of multi-char delimiter not triggered");;;
-    {
-        // single ':' should NOT trigger when delim is "::"
-        CGS_StrView base = cgs_strv("tok:en1::token2");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, "::");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "tok:en1"));
-        ASSERT_TRUE(cgs_equal(base, "::token2"));
-    }
-    
-    TEST("cgs_next_tok: leading multi-char delimiters skipped");;;
-    {
-        CGS_StrView base = cgs_strv("::::token1::token2");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, "::");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "token1"));
-        ASSERT_TRUE(cgs_equal(base, "::token2"));
-    }
-    
-    TEST("cgs_next_tok: multi-char delimiter not found");;;
-    {
-        CGS_StrView base = cgs_strv("tok:en");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, "::");
-        ASSERT_EQ(res.err.ec, CGS_END_OF_STRING);
-        ASSERT_TRUE(cgs_equal(res.val, "tok:en"));
-        ASSERT_EQ(base.len, 0);
-    }
-    
-    TEST("cgs_next_tok: delimiter longer than base");;;
-    {
-        CGS_StrView base = cgs_strv("ab");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, "abcd");
-        ASSERT_EQ(res.err.ec, CGS_END_OF_STRING);
-        ASSERT_TRUE(cgs_equal(res.val, "ab"));
-        ASSERT_EQ(base.len, 0);
-    }
-    
-    // --- Edge cases ---
-    
-    TEST("cgs_next_tok: newline delimiter");;;
-    {
-        CGS_StrView base = cgs_strv("line1\nline2");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, "\n");
-        ASSERT_EQ(res.err.ec, CGS_OK);
-        ASSERT_TRUE(cgs_equal(res.val, "line1"));
-        ASSERT_TRUE(cgs_equal(base, "\nline2"));
-    }
-    
-    TEST("cgs_next_tok: token is entire string no delimiter present");;;
-    {
-        CGS_StrView base = cgs_strv("nodelimiter");
-        CGS_Result(CGS_StrView) res = cgs_next_tok(&base, "::");
-        ASSERT_EQ(res.err.ec, CGS_END_OF_STRING);
-        ASSERT_TRUE(cgs_equal(res.val, "nodelimiter"));
-        ASSERT_EQ(base.len, 0);
-    }
-    
 }
 
 // ============================================================================
@@ -5083,12 +4874,11 @@ int main() {
     test_replace_all();
     test_alignfmt();
     test_writer_counter();
+    test_spn_cspn_tok();
     
     printf("\n========================================\n");
     printf("Test Results: %d/%d passed\n", passed_count, test_count);
     printf("========================================\n");
-    
-    cgs_nfmt_t(int, 'd') f = cgs_nfmt(10, 'd');
-    
+        
     return (passed_count == test_count) ? 0 : 1;
 }
