@@ -137,7 +137,7 @@ bool                    cgs_has_tostr(T);
 unsigned int            cgs_tostr_len(T val);
 unsigned int            cgs_tostr_p_len(T *val);
 
-CGS_Error               cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%arg_index" for positional arguments, cannot mix and match
+CGS_Error               cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%[arg_index]" for positional arguments, cannot mix and match
 CGS_Error               cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr); // identical to cgs_fmt, but appends
 CGS_Error               cgs_appendln_fmt(writer_t dst, const char *fmt, ...args with tostr); // cgs_append_fmt + '\n'
 
