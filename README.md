@@ -292,7 +292,7 @@ int main()
     
     cgs_fmt(buf, "%? + %? = %?\n", 2, 3, 5);
     
-    cgs_append_fmt(buf, "%1 + %0 = %2", 2, 3, 5); // positional arguments
+    cgs_append_fmt(buf, "%[1] + %[0] = %[2]", 2, 3, 5); // positional arguments
     
     cgs_writeln(buf);
 }
