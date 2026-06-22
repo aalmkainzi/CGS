@@ -242,16 +242,58 @@ typedef struct CGS_Error
 
 typedef struct CGS_Writer
 {
-    void *ctx;
-    CGS_Error (*append)(void *ctx, const CGS_StrView str);
+    CGS_Error (* const append)(struct CGS_Writer *writer, const CGS_StrView str);
 } CGS_Writer;
 
-CGS_API CGS_Error    cgs__idstr_append  (void *ctx, const CGS_StrView str);
-CGS_API CGS_Error    cgs__istrbuf_append(void *ctx, const CGS_StrView str);
-CGS_API CGS_Error    cgs__ibuf_append   (void *ctx, const CGS_StrView str);
-CGS_API CGS_Error    cgs__file_append   (void *ctx, const CGS_StrView str);
+typedef struct CGS_FileWriter
+{
+    CGS_Writer base;
+    FILE *ctx;
+} CGS_FileWriter;
 
-static CGS_Error (* const cgs__mutstr_ref_append_func[])(void *ctx, const CGS_StrView str) =
+typedef struct CGS_LenWriter
+{
+    CGS_Writer base;
+    unsigned int len;
+} CGS_LenWriter;
+
+typedef struct CGS_DStrWriter
+{
+    CGS_Writer base;
+    CGS_DStr *dstr;
+} CGS_DStrWriter;
+
+typedef struct CGS_StrBufWriter
+{
+    CGS_Writer base;
+    CGS_StrBuf *strbuf;
+} CGS_StrBufWriter;
+
+typedef struct CGS_CStrWriter
+{
+    CGS_Writer base;
+    unsigned int cap;
+    unsigned char *chars;
+} CGS_CStrWriter;
+
+typedef struct CGS_ChainWriter
+{
+    CGS_Writer *a;
+    CGS_Writer *b;
+} CGS_ChainWriter;
+
+typedef struct CGS_CustomWriter
+{
+    CGS_Writer base;
+    void *ctx;
+} CGS_CustomWriter;
+
+CGS_API CGS_Error    cgs__idstr_append  (CGS_Writer *writer, const CGS_StrView str);
+CGS_API CGS_Error    cgs__istrbuf_append(CGS_Writer *writer, const CGS_StrView str);
+CGS_API CGS_Error    cgs__ibuf_append   (CGS_Writer *writer, const CGS_StrView str);
+CGS_API CGS_Error    cgs__file_append   (CGS_Writer *writer, const CGS_StrView str);
+
+static CGS_Error (* const cgs__mutstr_ref_append_func[])(CGS_Writer *writer, const CGS_StrView str) =
 {
     [CGS__DSTR_TY]   = cgs__idstr_append,
     [CGS__STRBUF_TY] = cgs__istrbuf_append,
@@ -581,7 +623,7 @@ _Generic((__typeof__(writer_p)*)0,                                             \
     char(*)         [sizeof(__typeof__(writer_p))]: cgs__ibuf_append,          \
     unsigned char(*)[sizeof(__typeof__(writer_p))]: cgs__ibuf_append,          \
     FILE**                                        : cgs__file_append,          \
-    unsigned int**                                : cgs__writer_counter_append \
+    unsigned int**                                : cgs__len_writer_append     \
 )
 
 static inline void *cgs__mutstr_ref_ctx(CGS_MutStrRef ref, CGS_Buffer *buffer_opt)
@@ -608,15 +650,28 @@ _Generic((__typeof__(mutstr)*){0}, \
     default                                      : (mutstr) \
 )
 
-#define cgs_writer(writer) \
-_Generic(writer, \
-    CGS_Writer: (writer), \
+#define cgs_writer(writer)        \
+_Generic((__typeof__(writer)*)0,  \
+    CGS_Writer*            : (writer),  \
+    CGS_FileWriter*        : (writer),  \
+    CGS_LenWriter*         : (writer),  \
+    CGS_DStrWriter*        : (writer),  \
+    CGS_CStrWriter*        : (writer),  \
+    CGS_ChainWriter*       : (writer),  \
+    CGS_CustomWriter*      : (writer),  \
+    CGS_DStr**             : (CGS_DStrWriter)  {.base = {.append = cgs__idstr_append},   .dstr = cgs__coerce(writer, CGS_DStr*)}, \
+    CGS_StrBuf**           : (CGS_StrBufWriter){.base = {.append = cgs__istrbuf_append}, .strbuf = cgs__coerce(writer, CGS_StrBuf*)}, \
+    char(*)[sizeof(writer)]: (CGS_CStrWriter)  {.base = {.append = cgs__ibuf_append},    .cap = sizeof(writer), .chars = (unsigned char*) cgs__coerce(writer, char*)}, \
+    unsigned char(*)[sizeof(writer)]: (CGS_CStrWriter){.base = {.append = cgs__ibuf_append}, .cap = sizeof(writer), .chars = (unsigned char*) cgs__coerce(writer, unsigned char*)}, \
     default: \
         (CGS_Writer){ \
             .ctx = cgs__writer_ctx(cgs__coerce_not(writer, CGS_Writer, CGS_StrBuf*)), \
             .append = cgs__writer_append_fn(cgs__coerce_not(writer, CGS_Writer, CGS_StrBuf*)), \
         } \
 )
+
+#define cgs_chain_writer(writer_1, writer_2) \
+(CGS_Writer){ .ctx = &(CGS__ChainWriterCtx{ cgs_writer(writer_1), cgs_writer(writer_2) }), .append = cgs__chain_writer_append_fn }
 
 #define cgs_strv_arr_from(strv_carr, ...) \
 cgs__strv_arr_from(strv_carr, CGS__VA_OR((cgs__static_assertx(cgs__is_array_of((strv_carr), CGS_StrView), "Must pass StrView[N] or StrView* with length argument"), CGS__CARR_LEN(strv_carr)), __VA_ARGS__))
@@ -1560,60 +1615,46 @@ static inline unsigned int cgs__strv_len(const CGS_StrView sv)
     return sv.len;
 }
 
-static inline CGS_Error cgs__invoke_writer(CGS_Writer writer, const CGS_StrView str)
+static inline CGS_Error cgs__invoke_writer(CGS_Writer *writer, const CGS_StrView str)
 {
-    return writer.append(writer.ctx, str);
+    return writer->append(writer, str);
 }
 
-static inline CGS_Error cgs__invoke_writer_ln(CGS_Writer writer, const CGS_StrView str)
+static inline CGS_Error cgs__invoke_writer_ln(CGS_Writer *writer, const CGS_StrView str)
 {
-    CGS_Error err = writer.append(writer.ctx, str);
+    CGS_Error err = writer->append(writer, str);
     if(err.ec == CGS_OK)
-        err = writer.append(writer.ctx, (CGS_StrView){.chars = (char*) "\n", .len = 1});
+        err = writer->append(writer, (CGS_StrView){.chars = (char*) "\n", .len = 1});
     return err;
 }
 
-static inline CGS_Error cgs__invoke_writer_c(CGS_Writer writer, const CGS__const_StrView str)
+static inline CGS_Error cgs__invoke_writer_c(CGS_Writer *writer, const CGS__const_StrView str)
 {
-    return writer.append(writer.ctx, (CGS_StrView){.chars = (char*)str.chars, .len = str.len});
+    return writer->append(writer, (CGS_StrView){.chars = (char*)str.chars, .len = str.len});
 }
 
-static inline CGS_Error cgs__writer_putc(CGS_Writer writer, char c)
+static inline CGS_Error cgs__writer_putc(CGS_Writer *writer, char c)
 {
-    return writer.append(writer.ctx, (CGS_StrView){.chars = &c, .len = 1});
+    return writer->append(writer, (CGS_StrView){.chars = &c, .len = 1});
 }
 
-static inline CGS_Error cgs__len_writer_append(void *ctx, const CGS_StrView str)
+static inline CGS_Error cgs__len_writer_append(CGS_Writer *writer, const CGS_StrView str)
 {
-    unsigned int *lenp = ctx;
-    *lenp += str.len;
+    CGS_LenWriter *len_writer = (CGS_LenWriter*)writer;
+    len_writer->len += str.len;
     return (CGS_Error){CGS_OK};
 }
 
 static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer, const void*), const void *obj)
 {
-    unsigned int len = 0;
-    CGS_Writer len_writer = {.ctx = &len, .append = cgs__len_writer_append};
-    tostr_p(len_writer, obj);
+    CGS_LenWriter len_writer = cgs_len_writer();
+    tostr_p(&len_writer, obj);
     return len;
 }
 
-static inline CGS_Error cgs__writer_counter_append(void *ctx, const CGS_StrView str)
+static inline CGS_Error cgs__cstr_append(CGS_Writer *writer, const CGS_StrView str)
 {
-    unsigned int *c = ctx;
-    *c += str.len;
-    
-    return (CGS_Error){CGS_OK};
-}
-
-static inline CGS_Writer cgs__writer_counter(unsigned int *countp)
-{
-    return (CGS_Writer){.ctx = countp, .append = cgs__writer_counter_append};
-}
-
-static inline CGS_Error cgs__cstr_append(void *ctx, const CGS_StrView str)
-{
-    (void)ctx;
+    (void)writer;
     if(str.len != 0)
         return (CGS_Error){CGS_DST_TOO_SMALL};
     else
