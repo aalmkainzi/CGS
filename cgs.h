@@ -678,22 +678,27 @@ _Generic((__typeof__(writer)*)0,        \
     unsigned char(*)[sizeof(writer)]: (CGS_CStrWriter){.base = {.append = cgs__ibuf_append}, .cap = sizeof(writer), .chars = (unsigned char*) cgs__coerce(writer, unsigned char*)} \
 )
 
-#define cgs__writer_type(writer)                         \
-__typeof__(                                              \
-    _Generic((__typeof__(writer)*)0,                     \
-    CGS_Writer*            : (writer),                   \
-    CGS_FileWriter*        : (writer),                   \
-    CGS_LenWriter*         : (writer),                   \
-    CGS_DStrWriter*        : (writer),                   \
-    CGS_CStrWriter*        : (writer),                   \
-    CGS_ChainWriter*       : (writer),                   \
-    CGS_CustomWriter*      : (writer),                   \
-    CGS_DStr**             : (CGS_DStrWriter){},         \
-    CGS_StrBuf**           : (CGS_StrBufWriter){},       \
-    CGS_MutStrRef*         : (CGS_MutStrRefWriter){},    \
-    char(*)[sizeof(writer)]: (CGS_CStrWriter){},         \
-    unsigned char(*)[sizeof(writer)]: (CGS_CStrWriter){} \
+#define cgs__writer_type(writer)                               \
+__typeof__(                                                    \
+    _Generic((__typeof__(writer)*)0,                           \
+    CGS_Writer*                     : (writer),                \
+    CGS_FileWriter*                 : (writer),                \
+    CGS_LenWriter*                  : (writer),                \
+    CGS_DStrWriter*                 : (writer),                \
+    CGS_CStrWriter*                 : (writer),                \
+    CGS_ChainWriter*                : (writer),                \
+    CGS_CustomWriter*               : (writer),                \
+    CGS_DStr**                      : (CGS_DStrWriter)     {}, \
+    CGS_StrBuf**                    : (CGS_StrBufWriter)   {}, \
+    CGS_MutStrRef*                  : (CGS_MutStrRefWriter){}, \
+    char(*)[sizeof(writer)]         : (CGS_CStrWriter)     {}, \
+    unsigned char(*)[sizeof(writer)]: (CGS_CStrWriter)     {}  \
     ) \
+)
+
+#define cgs__as_writer_p(writer) \
+_Generic((__typeof__(writer)*)0, \
+    \
 )
 
 #define cgs__writer_ptr(writer) \
