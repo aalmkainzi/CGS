@@ -53,7 +53,7 @@ CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *allocator
 CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n);
 CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t align, size_t old_size, size_t new_size);
 
-static const CGS_Allocator cgs__default_allocator = {
+static CGS_Allocator cgs__default_allocator = {
     .alloc   = cgs__default_allocator_alloc,
     .dealloc = cgs__default_allocator_dealloc,
     .realloc = cgs__default_allocator_realloc,
@@ -1283,7 +1283,7 @@ CGS_API CGS_Allocation cgs__allocator_invoke_realloc(CGS_Allocator *allocator, v
 
 CGS_API CGS_Allocator *cgs_get_default_allocator()
 {
-    return (CGS_Allocator*) &cgs__default_allocator;
+    return &cgs__default_allocator;
 }
 
 CGS_PRIVATE void cgs__make_dstr_append_allocator(CGS_DStr *dstr, CGS__DStrAppendAllocator *out)

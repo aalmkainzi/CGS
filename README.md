@@ -68,7 +68,7 @@ CGS_LenWriter           cgs_len_writer(); // returns a writer that only counts h
 Writer<writer>          cgs_writer(writer_t writer); // returns the writer object. e.g. if passed a `FILE*` it returns `CGS_FileWriter`, if passed `CGS_DStr*` it returns `CGS_DStrWriter`. If passed a writer value, it returns it as-is
 CGS_Writer*             cgs_writer_ptr(writer_t writer); // same as `cgs_writer`, but returns pointer (address of compound literal). If passed a writer pointer, it returns it as-is
 
-CGS_StrViewArray        cgs_strv_arr(...anystr_t);
+CGS_StrViewArray        cgs_strv_arr(...anystr_t); // lifetime ends at end of current scope
 CGS_StrViewArray        cgs_strv_arr_from(CGS_StrView strs[N]);
 CGS_StrViewArray        cgs_strv_arr_from(CGS_StrView *strs, unsigned int len);
 
