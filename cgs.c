@@ -3421,6 +3421,19 @@ CGS_API CGS_Error cgs__appendln_fmt_(CGS_Writer *writer, const CGS__const_StrVie
     return err;
 }
 
+CGS_API CGS_DStr cgs__asprintf(CGS_Writer *writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*))
+{
+    cgs__append_fmt(writer, fmt, nargs, args, tostr_p_funcs);
+    return *((CGS_DStrWriter*)writer)->dstr;
+}
+
+CGS_API CGS_DStr cgs__asprintf_with_allocator(CGS_Writer *writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*))
+{
+    // shifting the pointers by 1 to skip the fmt arg
+    cgs__append_fmt(writer, fmt, nargs - 1, args + 1, tostr_p_funcs + 1);
+    return *((CGS_DStrWriter*)writer)->dstr;
+}
+
 CGS_PRIVATE unsigned int cgs__numstr_len(unsigned long long num)
 {
     unsigned int len = 1;

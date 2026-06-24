@@ -154,6 +154,8 @@ CGS_Error               cgs_printfln(const char *fmt, ...args with tostr); // ca
 CGS_Error               cgs_sprintf(mutstr_t dst, const char *fmt, ...args with tostr); // alias for cgs_fmt
 CGS_Error               cgs_sprintfln(mutstr_t dst, const char *fmt, ...args with tostr); // cgs_sprintf + '\n'
 
+CGS_DStr                cgs_asprintf(const char *fmt, ...args with tostr); // allocates a CGS_DStr
+
                         cgs_tostr_many(mutstr_t dst, ...args with tostr); // clears dst, calls the tostr of each ... arg, and appends them to dst
                         cgs_append_tostr_many(writer_t dst, ...args with tostr); // calls the tostr of each ... arg, and appends them to dst
 
