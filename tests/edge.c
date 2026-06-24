@@ -4811,7 +4811,7 @@ void test_writer_counter(void)
     TEST("writer unsigned int*: cgs_writer wraps counter and counts via append");
     {
         unsigned int n = 0;
-        CGS_Writer w = cgs_writer(&n);
+        CGS_Writer *w = cgs_writer_ptr(&n);
         cgs_append(w, "abc");
         cgs_append(w, "de");
         ASSERT_TRUE(n == 5);
@@ -4820,7 +4820,7 @@ void test_writer_counter(void)
     TEST("writer unsigned int*: cgs_writer counts putc calls");
     {
         unsigned int n = 0;
-        CGS_Writer w = cgs_writer(&n);
+        CGS_Writer *w = cgs_writer_ptr(&n);
         cgs_putc(w, 'x');
         cgs_putc(w, 'y');
         ASSERT_TRUE(n == 2);
@@ -4830,7 +4830,7 @@ void test_writer_counter(void)
     {
         /* "1 + 2 = 3" → 9 chars */
         unsigned int n = 0;
-        CGS_Writer w = cgs_writer(&n);
+        CGS_Writer *w = cgs_writer_ptr(&n);
         cgs_append_fmt(w, "%? + %? = %?", 1, 2, 3);
         ASSERT_TRUE(n == 9);
     }
