@@ -42,7 +42,7 @@ All of which are null terminated, except for `StrView`.
 There are three categories of string types:
 - `anystr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `StrView`, `DStr`, `DStr*`, `StrBuf`, `StrBuf*`, `MutStrRef`)
 - `mutstr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `DStr*`, `StrBuf*`, `MutStrRef`)
-- `writer_t`: anything from `mutstr_t`, also `CGS_Writer`, `FILE*`, and `unsigned int*`
+- `writer_t`: anything from `mutstr_t`, also `CGS_Writer*`, `FILE*`, and `unsigned int*`
 
 This is a list of all the utility macros CGS provides:
 ```C++
@@ -62,7 +62,8 @@ CGS_Error               cgs_dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_leas
 CGS_MutStrRef           cgs_mutstr_ref(mutstr_t str);
 CGS_MutStrRef           cgs_mutstr_ref(cstr, cap);
 
-CGS_Writer              cgs_writer(writer_t);
+Writer<writer>          cgs_writer(writer_t writer); // returns the writer object. e.g. if passed a `FILE*` it returns `CGS_FileWriter`, if passed `CGS_DStr*` it returns `CGS_DStrWriter`. If passed a writer object, it returns it as-is
+CGS_Writer*             cgs_writer_ptr(writer_t writer); // same as `cgs_writer`, but as a pointer (address of compound literal). If passed a writer pointer, it returns it as-is
 
 CGS_StrViewArray        cgs_strv_arr(...anystr_t);
 CGS_StrViewArray        cgs_strv_arr_from(CGS_StrView strs[N]);
@@ -138,10 +139,10 @@ unsigned int            cgs_tostr_len(T val);
 unsigned int            cgs_tostr_p_len(T *val);
 
 CGS_Error               cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%[arg_index]" for positional arguments, cannot mix and match
-CGS_Error               cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr); // identical to cgs_fmt, but appends
-CGS_Error               cgs_appendln_fmt(writer_t dst, const char *fmt, ...args with tostr); // cgs_append_fmt + '\n'
+CGS_Error               cgs_appendf(writer_t dst, const char *fmt, ...args with tostr); // identical to cgs_fmt, but appends
+CGS_Error               cgs_appendfln(writer_t dst, const char *fmt, ...args with tostr); // cgs_appendf + '\n'
 
-CGS_Error               cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_append_fmt, but restricted to FILE*
+CGS_Error               cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_appendf, but restricted to FILE*
 CGS_Error               cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
 
 CGS_Error               cgs_printf(const char *fmt, ...args with tostr); // calls cgs_fprintf on stdout
@@ -269,8 +270,8 @@ Types that have a `tostr` defined can be used in `cgs_fmt` and its variants:
 
 ```C++
 CGS_Error cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr);
-CGS_Error cgs_append_fmt(writer_t dst, const char *fmt, ...args with tostr);
-CGS_Error cgs_appendln_fmt(writer_t dst, const char *fmt, ...args with tostr);
+CGS_Error cgs_appendf(writer_t dst, const char *fmt, ...args with tostr);
+CGS_Error cgs_appendfln(writer_t dst, const char *fmt, ...args with tostr);
 
 CGS_Error cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr);
 CGS_Error cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
@@ -292,7 +293,7 @@ int main()
     
     cgs_fmt(buf, "%? + %? = %?\n", 2, 3, 5);
     
-    cgs_append_fmt(buf, "%[1] + %[0] = %[2]", 2, 3, 5); // positional arguments
+    cgs_appendf(buf, "%[1] + %[0] = %[2]", 2, 3, 5); // positional arguments
     
     cgs_writeln(buf);
 }
@@ -311,8 +312,9 @@ Note that `nfmt` is type-safe, you cannot use chars other than:
 - For float/double: `'f'`, `'g'`, `'e'`, `'a'`, `'F'`, `'G'`, `'E'`, `'A'`
 
 ## Including
-If you want external linking, your options are:
+If you want external linking, your options are either:
 - Add cgs.c to your build, and only include cgs.h
+or
 - Include cgs.c in only one file, and cgs.h in other files
 
 You can also always include cgs.c, if you define `#define CGS_API static` before including:

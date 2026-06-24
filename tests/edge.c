@@ -1643,7 +1643,7 @@ void test_str_putc_edge_cases() {
     TEST("cgs_fmt: no specifiers copies string as-is into FILE*");
     {
         FILE *f = tmpfile();
-        CGS_Error err = cgs_append_fmt(f, "hello world");
+        CGS_Error err = cgs_appendf(f, "hello world");
         ASSERT_TRUE(err.ec == CGS_OK);
         rewind(f);
         char buf[32] = {0};
@@ -1822,7 +1822,7 @@ void test_str_putc_edge_cases() {
     TEST("cgs_fmt: writer as FILE*");
     {
         FILE *f = tmpfile();
-        CGS_Error err = cgs_append_fmt(f, "hello %?", cgs_strv("world"));
+        CGS_Error err = cgs_appendf(f, "hello %?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         rewind(f);
         char buf[32] = {0};
@@ -1832,62 +1832,62 @@ void test_str_putc_edge_cases() {
     }
     
     /* =========================================================================
-     * cgs_append_fmt — appending behaviour
+     * cgs_appendf — appending behaviour
      * ========================================================================= */
     
-    TEST("cgs_append_fmt: appends to existing CGS_DStr content");
+    TEST("cgs_appendf: appends to existing CGS_DStr content");
     {
         CGS_DStr dst = cgs_dstr_init_from(cgs_strv("hello "));
-        CGS_Error err = cgs_append_fmt(&dst, "world");
+        CGS_Error err = cgs_appendf(&dst, "world");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_append_fmt: appends with substitution to existing CGS_DStr content");
+    TEST("cgs_appendf: appends with substitution to existing CGS_DStr content");
     {
         CGS_DStr dst = cgs_dstr_init_from(cgs_strv("hello "));
-        CGS_Error err = cgs_append_fmt(&dst, "%?", cgs_strv("world"));
+        CGS_Error err = cgs_appendf(&dst, "%?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_append_fmt: multiple appends accumulate correctly");
+    TEST("cgs_appendf: multiple appends accumulate correctly");
     {
         CGS_DStr dst = cgs_dstr_init();
-        cgs_append_fmt(&dst, "one");
-        cgs_append_fmt(&dst, ", two");
-        CGS_Error err = cgs_append_fmt(&dst, ", three");
+        cgs_appendf(&dst, "one");
+        cgs_appendf(&dst, ", two");
+        CGS_Error err = cgs_appendf(&dst, ", three");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("one, two, three")));
         cgs_dstr_deinit(&dst);
     }
     
-    TEST("cgs_append_fmt: appends to existing CGS_StrBuf content");
+    TEST("cgs_appendf: appends to existing CGS_StrBuf content");
     {
         char buf[32] = {0};
         CGS_StrBuf dst = cgs_strbuf_init_from_cstr(buf);
-        cgs_append_fmt(&dst, "hello ");
-        CGS_Error err = cgs_append_fmt(&dst, "world");
+        cgs_appendf(&dst, "hello ");
+        CGS_Error err = cgs_appendf(&dst, "world");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
     }
     
-    TEST("cgs_append_fmt: appending to CGS_StrBuf that leaves no remaining capacity returns CGS_DST_TOO_SMALL");
+    TEST("cgs_appendf: appending to CGS_StrBuf that leaves no remaining capacity returns CGS_DST_TOO_SMALL");
     {
         char buf[8];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        cgs_append_fmt(&dst, "hello");   /* 5 chars, 2 remaining (+ null) */
-        CGS_Error err = cgs_append_fmt(&dst, " world");
+        cgs_appendf(&dst, "hello");   /* 5 chars, 2 remaining (+ null) */
+        CGS_Error err = cgs_appendf(&dst, " world");
         ASSERT_TRUE(err.ec == CGS_DST_TOO_SMALL);
     }
     
-    TEST("cgs_append_fmt: appends to FILE* after existing content");
+    TEST("cgs_appendf: appends to FILE* after existing content");
     {
         FILE *f = tmpfile();
         fwrite("hello ", 1, 6, f);
-        CGS_Error err = cgs_append_fmt(f, "world");
+        CGS_Error err = cgs_appendf(f, "world");
         ASSERT_TRUE(err.ec == CGS_OK);
         rewind(f);
         char buf[32] = {0};
@@ -1896,11 +1896,11 @@ void test_str_putc_edge_cases() {
         fclose(f);
     }
     
-    TEST("cgs_append_fmt: appends with substitution to FILE* after existing content");
+    TEST("cgs_appendf: appends with substitution to FILE* after existing content");
     {
         FILE *f = tmpfile();
         fwrite("hello ", 1, 6, f);
-        CGS_Error err = cgs_append_fmt(f, "%?", cgs_strv("world"));
+        CGS_Error err = cgs_appendf(f, "%?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         rewind(f);
         char buf[32] = {0};
@@ -1909,22 +1909,22 @@ void test_str_putc_edge_cases() {
         fclose(f);
     }
     
-    TEST("cgs_append_fmt: appends to CGS_StrBuf with sufficient remaining capacity");
+    TEST("cgs_appendf: appends to CGS_StrBuf with sufficient remaining capacity");
     {
         char buf[32];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        cgs_append_fmt(&dst, "hello ");
-        CGS_Error err = cgs_append_fmt(&dst, "world");
+        cgs_appendf(&dst, "hello ");
+        CGS_Error err = cgs_appendf(&dst, "world");
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
     }
     
-    TEST("cgs_append_fmt: appends with substitution to CGS_StrBuf");
+    TEST("cgs_appendf: appends with substitution to CGS_StrBuf");
     {
         char buf[32];
         CGS_StrBuf dst = cgs_strbuf_init_from_buf(buf);
-        cgs_append_fmt(&dst, "hello ");
-        CGS_Error err = cgs_append_fmt(&dst, "%?", cgs_strv("world"));
+        cgs_appendf(&dst, "hello ");
+        CGS_Error err = cgs_appendf(&dst, "%?", cgs_strv("world"));
         ASSERT_TRUE(err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(dst, cgs_strv("hello world")));
     }
@@ -4700,47 +4700,47 @@ void test_writer_counter(void)
         ASSERT_TRUE(n == 3);
     }
     
-    /* ── cgs_append_fmt ───────────────────────────────────────── */
+    /* ── cgs_appendf ───────────────────────────────────────── */
     
-    TEST("writer unsigned int*: cgs_append_fmt counts formatted output length");
+    TEST("writer unsigned int*: cgs_appendf counts formatted output length");
     {
         unsigned int n = 0;
-        cgs_append_fmt(&n, "%? + %? = %?", 1, 2, 3);
+        cgs_appendf(&n, "%? + %? = %?", 1, 2, 3);
         /* "1 + 2 = 3" → 9 chars */
         ASSERT_TRUE(n == 9);
     }
     
-    TEST("writer unsigned int*: cgs_append_fmt accumulates across calls");
+    TEST("writer unsigned int*: cgs_appendf accumulates across calls");
     {
         unsigned int n = 0;
-        cgs_append_fmt(&n, "%?", "hello");
-        cgs_append_fmt(&n, "%?", "world");
+        cgs_appendf(&n, "%?", "hello");
+        cgs_appendf(&n, "%?", "world");
         ASSERT_TRUE(n == 10);
     }
     
-    TEST("writer unsigned int*: cgs_append_fmt with nfmt counts correctly");
+    TEST("writer unsigned int*: cgs_appendf with nfmt counts correctly");
     {
         /* cgs_nfmt(255, 'X') → "FF" (2 chars) */
         unsigned int n = 0;
-        cgs_append_fmt(&n, "%?", cgs_nfmt(255, 'X'));
+        cgs_appendf(&n, "%?", cgs_nfmt(255, 'X'));
         ASSERT_TRUE(n == 2);
     }
     
-    TEST("writer unsigned int*: cgs_append_fmt with arrfmt counts correctly");
+    TEST("writer unsigned int*: cgs_appendf with arrfmt counts correctly");
     {
         /* "{1, 2, 3}" → 9 chars */
         int arr[] = {1, 2, 3};
         unsigned int n = 0;
-        cgs_append_fmt(&n, "%?", cgs_arrfmt(arr, 3));
+        cgs_appendf(&n, "%?", cgs_arrfmt(arr, 3));
         ASSERT_TRUE(n == 9);
     }
     
-    TEST("writer unsigned int*: cgs_append_fmt with alignfmt counts padded length");
+    TEST("writer unsigned int*: cgs_appendf with alignfmt counts padded length");
     {
         /* "hello" left-aligned in width 10 → "hello     " → 10 chars */
         char *s = "hello";
         unsigned int n = 0;
-        cgs_append_fmt(&n, "%?", cgs_alignfmt(s, CGS_ALIGN_LEFT, 10, ' '));
+        cgs_appendf(&n, "%?", cgs_alignfmt(s, CGS_ALIGN_LEFT, 10, ' '));
         ASSERT_TRUE(n == 10);
     }
     
@@ -4784,7 +4784,7 @@ void test_writer_counter(void)
     {
         /* count first, then write to a real buffer, check lengths match */
         unsigned int n = 0;
-        cgs_append_fmt(&n, "%? = %?", "answer", 42);
+        cgs_appendf(&n, "%? = %?", "answer", 42);
         
         char buf[64];
         cgs_fmt(buf, "%? = %?", "answer", 42);
@@ -4798,7 +4798,7 @@ void test_writer_counter(void)
         char *label = "vals";
         
         unsigned int n = 0;
-        cgs_append_fmt(&n, "%?: %?", cgs_alignfmt(label, CGS_ALIGN_LEFT, 8, '.'), cgs_arrfmt(arr, 3));
+        cgs_appendf(&n, "%?: %?", cgs_alignfmt(label, CGS_ALIGN_LEFT, 8, '.'), cgs_arrfmt(arr, 3));
         
         char buf[64];
         cgs_fmt(buf, "%?: %?", cgs_alignfmt(label, CGS_ALIGN_LEFT, 8 , '.'), cgs_arrfmt(arr, 3));
@@ -4831,7 +4831,7 @@ void test_writer_counter(void)
         /* "1 + 2 = 3" → 9 chars */
         unsigned int n = 0;
         CGS_Writer *w = cgs_writer_ptr(&n);
-        cgs_append_fmt(w, "%? + %? = %?", 1, 2, 3);
+        cgs_appendf(w, "%? + %? = %?", 1, 2, 3);
         ASSERT_TRUE(n == 9);
     }
 }
