@@ -62,8 +62,11 @@ CGS_Error               cgs_dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_leas
 CGS_MutStrRef           cgs_mutstr_ref(mutstr_t str);
 CGS_MutStrRef           cgs_mutstr_ref(cstr, cap);
 
-Writer<writer>          cgs_writer(writer_t writer); // returns the writer object. e.g. if passed a `FILE*` it returns `CGS_FileWriter`, if passed `CGS_DStr*` it returns `CGS_DStrWriter`. If passed a writer object, it returns it as-is
-CGS_Writer*             cgs_writer_ptr(writer_t writer); // same as `cgs_writer`, but as a pointer (address of compound literal). If passed a writer pointer, it returns it as-is
+CGS_ChainWriter         cgs_chain_writer(writer_t a, writer_t b); // returns a writer that writes to both `a` and `b`
+CGS_LenWriter           cgs_len_writer(); // returns a writer that only counts how many bytes were to be written in its `.len` field
+
+Writer<writer>          cgs_writer(writer_t writer); // returns the writer object. e.g. if passed a `FILE*` it returns `CGS_FileWriter`, if passed `CGS_DStr*` it returns `CGS_DStrWriter`. If passed a writer value, it returns it as-is
+CGS_Writer*             cgs_writer_ptr(writer_t writer); // same as `cgs_writer`, but returns pointer (address of compound literal). If passed a writer pointer, it returns it as-is
 
 CGS_StrViewArray        cgs_strv_arr(...anystr_t);
 CGS_StrViewArray        cgs_strv_arr_from(CGS_StrView strs[N]);
@@ -129,7 +132,7 @@ CGS_Error               cgs_read_line(mutstr_t dst); // calls cgs_fread_line on 
 CGS_Error               cgs_append_read_line(mutstr_t dst); // calls cgs_append_fread_line on stdin
 
 CGS_MutStrRef           cgs_appender(mutstr_t owner, CGS_AppenderState *state); // returns a string reference that appends to owner. must call cgs_commit_appender to update the length of owner. If owner is a CGS_DStr, the appender may make it grow
-CGS_Error               cgs_commit_appender(mutstr_t owner, CGS_MutStrRef appender); // commit the appender to the owning string. The owner must not have its capacity or length modified between cgs_appender and cgs_commit_appender
+CGS_Error               cgs_commit_appender(mutstr_t owner, CGS_MutStrRef appender); // commit the appender to the owning string. The owner must not have had its capacity or length modified between cgs_appender and cgs_commit_appender
 
 CGS_Error               cgs_tostr(mutstr_t dst, T val);
 CGS_Error               cgs_append_tostr(writer_t dst, T val);
@@ -143,10 +146,10 @@ CGS_Error               cgs_appendf(writer_t dst, const char *fmt, ...args with 
 CGS_Error               cgs_appendfln(writer_t dst, const char *fmt, ...args with tostr); // cgs_appendf + '\n'
 
 CGS_Error               cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_appendf, but restricted to FILE*
-CGS_Error               cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
+CGS_Error               cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_appendfln, but restricted to FILE*
 
 CGS_Error               cgs_printf(const char *fmt, ...args with tostr); // calls cgs_fprintf on stdout
-CGS_Error               cgs_printfln(const char *fmt, ...args with tostr);
+CGS_Error               cgs_printfln(const char *fmt, ...args with tostr); // calls cgs_fprintfln on stdout
 
 CGS_Error               cgs_sprintf(mutstr_t dst, const char *fmt, ...args with tostr); // alias for cgs_fmt
 CGS_Error               cgs_sprintfln(mutstr_t dst, const char *fmt, ...args with tostr); // cgs_sprintf + '\n'
