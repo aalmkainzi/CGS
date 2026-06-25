@@ -1372,7 +1372,7 @@ CGS_PRIVATE bool cgs__is_strv_within(CGS_StrView base, CGS_StrView sub)
     return sub_begin >= begin && sub_begin < end;
 }
 
-CGS__NODISCARD("discarding a new DString may cause memory leak")
+CGS__NODISCARD("discarding a new DStr may cause memory leak")
 CGS_API CGS_DStr cgs__dstr_init(unsigned int cap, CGS_Allocator *allocator)
 {
     CGS_DStr ret = { .allocator = allocator };
