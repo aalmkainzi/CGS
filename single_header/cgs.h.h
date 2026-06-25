@@ -964,22 +964,16 @@ cgs__fmt_helper(cgs__appendln_fmt_, cgs_writer_ptr(cgs__clear_and_return(cgs_mut
 #define cgs_asprintf(allocator_or_fmt, ...) \
 cgs__fmt_helper( _Generic(allocator_or_fmt, CGS_Allocator*: cgs__asprintf_with_allocator, default: cgs__asprintf), cgs_writer_ptr(cgs__local_ref( \
 cgs_dstr_init(0, _Generic(allocator_or_fmt, CGS_Allocator*: cgs__coerce(allocator_or_fmt, CGS_Allocator*), default: cgs_get_default_allocator())) \
-)), _Generic(allocator_or_fmt, CGS_Allocator*: (CGS__asprintf_GUARDED_ARG1(allocator_or_fmt, __VA_ARGS__)), default: cgs__coerce_cstr(allocator_or_fmt)), __VA_ARGS__)
-
-/*
-__VA_OPT__(fmt_func(writer, (CGS__const_StrView){.chars = (fmt), .len = strlen(fmt)}, 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer*,const void*)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
-CGS__IF_EMPTY((fmt_func(cgs_writer_ptr(writer), (CGS__const_StrView){.chars = (fmt), .len = strlen(fmt)}, 0, NULL, NULL)), __VA_ARGS__)
-*/
+)), _Generic(allocator_or_fmt, CGS_Allocator*: (CGS__asprintf_FMT_ARG(allocator_or_fmt, __VA_ARGS__)), default: cgs__coerce_cstr(allocator_or_fmt)), __VA_ARGS__)
 
 // if allocator:
-//  if empty: error
-//  if not empty: require char*
-//
-#define CGS__asprintf_GUARDED_ARG1(allocator_or_fmt, ...) \
+//  if __VA_ARGS__ empty: error
+//  if __VA_ARGS__ not empty: require ARG1 to be c-string
+#define CGS__asprintf_FMT_ARG(allocator, ...) \
 __VA_OPT__(CGS__ARG1(__VA_ARGS__)) \
 CGS__IF_EMPTY( \
-    (cgs__static_assertx(_Generic(allocator_or_fmt, CGS_Allocator*: 0, default: 1), "Missing `const char *fmt` argument"), \
-    cgs__coerce_cstr(allocator_or_fmt)), \
+    (cgs__static_assertx(_Generic(allocator, CGS_Allocator*: 0, default: 1), "Missing `const char *fmt` argument"), \
+    cgs__coerce_cstr(allocator)), \
     __VA_ARGS__ \
 )
 
