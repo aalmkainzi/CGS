@@ -42,7 +42,7 @@ All of which are null terminated, except for `StrView`.
 There are three categories of string types:
 - `anystr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `StrView`, `DStr`, `DStr*`, `StrBuf`, `StrBuf*`, `MutStrRef`)
 - `mutstr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `DStr*`, `StrBuf*`, `MutStrRef`)
-- `writer_t`: anything from `mutstr_t`, also `CGS_Writer*`, `FILE*`, and `unsigned int*`
+- `writer_t`: anything from `mutstr_t`, `FILE*`, `unsigned int*`, and any `CGS_<T>Writer*` type
 
 This is a list of all the utility macros CGS provides:
 ```C++
@@ -62,11 +62,14 @@ CGS_Error               cgs_dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_leas
 CGS_MutStrRef           cgs_mutstr_ref(mutstr_t str);
 CGS_MutStrRef           cgs_mutstr_ref(cstr, cap);
 
-CGS_ChainWriter         cgs_chain_writer(writer_t a, writer_t b); // returns a writer that writes to both `a` and `b`
-CGS_LenWriter           cgs_len_writer(); // returns a writer that only counts how many bytes were to be written in its `.len` field
 
-Writer<writer>          cgs_writer(writer_t writer); // returns the writer object. e.g. if passed a `FILE*` it returns `CGS_FileWriter`, if passed `CGS_DStr*` it returns `CGS_DStrWriter`. If passed a writer value, it returns it as-is
-CGS_Writer*             cgs_writer_ptr(writer_t writer); // same as `cgs_writer`, but returns pointer (address of compound literal). If passed a writer pointer, it returns it as-is
+CGS_<T>Writer           cgs_writer(writer_t writer); // returns the writer object. e.g. if passed a `FILE*` it returns `CGS_FileWriter`, if passed `CGS_DStr*` it returns `CGS_DStrWriter`, etc.. And if passed a writer object, it returns it as-is
+CGS_ChainWriter         cgs_writer(writer_t a, writer_t b); // returns a writer object that writes to both `a` and `b`
+
+CGS_Writer*             cgs_writer_ptr(writer_t writer); // same as `cgs_writer`, but returns pointer to writer object (address of compound literal). And if passed a writer pointer, it returns it as-is
+CGS_Writer*             cgs_writer_ptr(writer_t a, writer_t b); // return a CGS_Writer pointer to a CGS_ChainWriter stored in current scope
+
+CGS_LenWriter           cgs_len_writer(); // returns a writer that only counts how many bytes were to be written.
 
 CGS_StrViewArray        cgs_strv_arr(...anystr_t); // lifetime ends at end of current scope
 CGS_StrViewArray        cgs_strv_arr_from(CGS_StrView strs[N]);
@@ -86,7 +89,7 @@ bool                    cgs_ends_with(anystr_t hay, anystr_t needle);
 CGS_StrView             cgs_trim_view(anystr_t str);
 CGS_Error               cgs_trim(mutstr_t str);
 
-CGS_StrView cgs_skip(anystr_t str, anystr_t delim); // returns view of after non-delim is reached
+CGS_StrView cgs_skip(anystr_t str, anystr_t delim); // returns view of after leading delims
 CGS_StrView cgs_skip_any(anystr_t str, anystr_t delim_set);
 
 CGS_StrView             cgs_spn(anystr_t src, anystr_t charset); // returns view of first chunk that contains characters only found in charset
@@ -154,7 +157,7 @@ CGS_Error               cgs_printfln(const char *fmt, ...args with tostr); // ca
 CGS_Error               cgs_sprintf(mutstr_t dst, const char *fmt, ...args with tostr); // alias for cgs_fmt
 CGS_Error               cgs_sprintfln(mutstr_t dst, const char *fmt, ...args with tostr); // cgs_sprintf + '\n'
 
-CGS_DStr                cgs_asprintf(const char *fmt, ...args with tostr); // allocates a CGS_DStr
+CGS_DStr                cgs_asprintf(CGS_Allocator *allocator = cgs_get_default_allocator(), const char *fmt, ...args with tostr); // allocates a CGS_DStr and calls cgs_fmt on it
 
                         cgs_tostr_many(mutstr_t dst, ...args with tostr); // clears dst, calls the tostr of each ... arg, and appends them to dst
                         cgs_append_tostr_many(writer_t dst, ...args with tostr); // calls the tostr of each ... arg, and appends them to dst
