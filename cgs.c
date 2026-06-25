@@ -3246,7 +3246,8 @@ CGS_API CGS_Error cgs__mutstr_ref_append_fread_until(CGS_MutStrRef dst, FILE *st
 
 CGS_API unsigned int cgs__fprint_strv(FILE *stream, CGS_StrView str)
 {
-    assert(str.chars != NULL);
+    if(str.chars == NULL && str.len == 0)
+        return 0;
     return (unsigned int) fwrite(str.chars, sizeof(unsigned char), str.len, stream);
 }
 

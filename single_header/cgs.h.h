@@ -968,7 +968,7 @@ cgs_dstr_init(0, _Generic(allocator_or_fmt, CGS_Allocator*: cgs__coerce(allocato
 
 // if allocator:
 //  if __VA_ARGS__ empty: error
-//  if __VA_ARGS__ not empty: require ARG1 to be c-string
+//  if __VA_ARGS__ not empty: use ARG1 as fmt
 #define CGS__asprintf_FMT_ARG(allocator, ...) \
 __VA_OPT__(CGS__ARG1(__VA_ARGS__)) \
 CGS__IF_EMPTY( \
@@ -5094,7 +5094,8 @@ CGS_API CGS_Error cgs__mutstr_ref_append_fread_until(CGS_MutStrRef dst, FILE *st
 
 CGS_API unsigned int cgs__fprint_strv(FILE *stream, CGS_StrView str)
 {
-    assert(str.chars != NULL);
+    if(str.chars == NULL && str.len == 0)
+        return 0;
     return (unsigned int) fwrite(str.chars, sizeof(unsigned char), str.len, stream);
 }
 

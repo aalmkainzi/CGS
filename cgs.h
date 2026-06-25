@@ -967,7 +967,7 @@ cgs_dstr_init(0, _Generic(allocator_or_fmt, CGS_Allocator*: cgs__coerce(allocato
 
 // if allocator:
 //  if __VA_ARGS__ empty: error
-//  if __VA_ARGS__ not empty: require ARG1 to be c-string
+//  if __VA_ARGS__ not empty: use ARG1 as fmt
 #define CGS__asprintf_FMT_ARG(allocator, ...) \
 __VA_OPT__(CGS__ARG1(__VA_ARGS__)) \
 CGS__IF_EMPTY( \
