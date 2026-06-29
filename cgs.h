@@ -1182,7 +1182,7 @@ __VA_OPT__(cgs__arrfmt_2) \
 ((CGS__AlignFmt){ \
     .obj = &(__typeof__(((void)0,obj_))[]){obj_}, \
     .tostr_p = cgs__get_tostr_p_func(__typeof__(obj_)), \
-    .align_mode = align_mode_, \
+    .align_mode = CGS_ALIGN_##align_mode_, \
     .width = width_, \
     .fill_char = CGS__VA_OR(' ', __VA_ARGS__) \
 })

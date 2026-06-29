@@ -668,7 +668,7 @@ static inline CGS_MutStrRefWriter cgs__mutstr_ref_to_writer(CGS_MutStrRef ref)
     return ret;
 }
 
-#define cgs_writer(writer)        \
+#define cgs__writer_impl(writer)  \
 _Generic((__typeof__(writer)*)0,  \
     CGS_Writer*      : (writer),  \
     CGS_FileWriter*  : (writer),  \
@@ -680,7 +680,11 @@ _Generic((__typeof__(writer)*)0,  \
     cgs__convert_to_writer_generic_branches(writer, CGS__EXPAND1) \
 )
 
-#define cgs_writer_ptr(writer)     \
+#define cgs_writer(writer, ...) \
+__VA_OPT__( cgs__chain_writer(writer, __VA_ARGS__) ) \
+CGS__IF_EMPTY(cgs__writer_impl(writer), __VA_ARGS__)
+
+#define cgs__writer_ptr_impl(writer) \
 (CGS_Writer*)                      \
 _Generic((__typeof__(writer)*)0,   \
     CGS_Writer**      : (writer),  \
@@ -691,6 +695,17 @@ _Generic((__typeof__(writer)*)0,   \
     CGS_ChainWriter** : (writer),  \
     CGS_CustomWriter**: (writer),  \
     cgs__convert_to_writer_generic_branches(writer, cgs__local_ref) \
+)
+
+#define cgs_writer_ptr(writer, ...) \
+__VA_OPT__( \
+    (CGS_Writer*) cgs__local_ref( \
+        cgs__chain_writer(writer, __VA_ARGS__) \
+    ) \
+) \
+CGS__IF_EMPTY( \
+    cgs__writer_ptr_impl(writer), \
+    __VA_ARGS__ \
 )
 
 #define cgs__convert_to_writer_generic_branches(writer, macro) \
@@ -708,8 +723,8 @@ _Generic((__typeof__(writer)*)0,   \
 #define cgs_len_writer() \
 (CGS_LenWriter){.base = {.append = cgs__len_writer_append}}
 
-#define cgs_chain_writer(writer_1, writer_2) \
-(CGS_ChainWriter){.base = {.append = cgs__chain_writer_append}, .a = cgs_writer_ptr(writer_1), .b = cgs_writer_ptr(writer_2)}
+#define cgs__chain_writer(writer_1, writer_2) \
+(CGS_ChainWriter){.base = {.append = cgs__chain_writer_append}, .a = cgs__writer_ptr_impl(writer_1), .b = cgs__writer_ptr_impl(writer_2)}
 
 #define cgs_strv_arr_from(strv_carr, ...) \
 cgs__strv_arr_from(strv_carr, CGS__VA_OR((cgs__static_assertx(cgs__is_array_of((strv_carr), CGS_StrView), "Must pass StrView[N] or StrView* with length argument"), CGS__CARR_LEN(strv_carr)), __VA_ARGS__))
@@ -977,7 +992,6 @@ CGS__IF_EMPTY( \
     __VA_ARGS__ \
 )
 
-
 typedef char               cgs__c;
 typedef signed char        cgs__sc;
 typedef unsigned char      cgs__uc;
@@ -1169,7 +1183,7 @@ __VA_OPT__(cgs__arrfmt_2) \
 ((CGS__AlignFmt){ \
     .obj = &(__typeof__(((void)0,obj_))[]){obj_}, \
     .tostr_p = cgs__get_tostr_p_func(__typeof__(obj_)), \
-    .align_mode = align_mode_, \
+    .align_mode = CGS_ALIGN_##align_mode_, \
     .width = width_, \
     .fill_char = CGS__VA_OR(' ', __VA_ARGS__) \
 })
@@ -3220,7 +3234,7 @@ CGS_PRIVATE bool cgs__is_strv_within(CGS_StrView base, CGS_StrView sub)
     return sub_begin >= begin && sub_begin < end;
 }
 
-CGS__NODISCARD("discarding a new DString may cause memory leak")
+CGS__NODISCARD("discarding a new DStr may cause memory leak")
 CGS_API CGS_DStr cgs__dstr_init(unsigned int cap, CGS_Allocator *allocator)
 {
     CGS_DStr ret = { .allocator = allocator };
