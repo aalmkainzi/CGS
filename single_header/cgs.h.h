@@ -363,6 +363,14 @@ typedef struct CGS__AlignModeStruct
 #define CGS_ALIGN_LEFT   (CGS__AlignModeStruct){CGS__ALIGNMODE_ENUM_ALIGN_LEFT}
 #define CGS_ALIGN_RIGHT  (CGS__AlignModeStruct){CGS__ALIGNMODE_ENUM_ALIGN_RIGHT}
 
+#define CGS__ALIGN_CENTER           CGS_ALIGN_CENTER
+#define CGS__ALIGN_LEFT             CGS_ALIGN_LEFT
+#define CGS__ALIGN_RIGHT            CGS_ALIGN_RIGHT
+
+#define CGS__ALIGN_CGS_ALIGN_CENTER CGS_ALIGN_CENTER
+#define CGS__ALIGN_CGS_ALIGN_LEFT   CGS_ALIGN_LEFT
+#define CGS__ALIGN_CGS_ALIGN_RIGHT  CGS_ALIGN_RIGHT
+
 typedef struct CGS__AlignFmt
 {
     const void *obj;
@@ -1183,7 +1191,7 @@ __VA_OPT__(cgs__arrfmt_2) \
 ((CGS__AlignFmt){ \
     .obj = &(__typeof__(((void)0,obj_))[]){obj_}, \
     .tostr_p = cgs__get_tostr_p_func(__typeof__(obj_)), \
-    .align_mode = CGS_ALIGN_##align_mode_, \
+    .align_mode = CGS__ALIGN_##align_mode_, \
     .width = width_, \
     .fill_char = CGS__VA_OR(' ', __VA_ARGS__) \
 })
