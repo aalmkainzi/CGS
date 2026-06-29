@@ -1265,7 +1265,7 @@ const CGS_DStr*           : cgs__dstr_ptr_tostr,            \
 const CGS_StrBuf*         : cgs__strbuf_ptr_tostr,          \
 CGS_Error                 : cgs__error_tostr,               \
 CGS_ArrayFmt              : cgs__array_fmt_tostr,           \
-CGS__AlignFmt              : cgs__align_fmt_tostr,           \
+CGS__AlignFmt              : cgs__align_fmt_tostr,          \
 CGS__INTEGER_TYPES(CGS__INTEGER_TOSTR_GENERIC_CASE, ignore) \
 CGS__FLOATING_TYPES(CGS__FLOATING_TOSTR_GENERIC_CASE, ignore, CGS__FLOATING_TOSTR_LAST_GENERIC_CASE)
 
@@ -1298,7 +1298,7 @@ const CGS_DStr*           : cgs__dstr_ptr_tostr_p,            \
 const CGS_StrBuf*         : cgs__strbuf_ptr_tostr_p,          \
 CGS_Error                 : cgs__error_tostr_p,               \
 CGS_ArrayFmt              : cgs__array_fmt_tostr_p,           \
-CGS__AlignFmt              : cgs__align_fmt_tostr_p,           \
+CGS__AlignFmt              : cgs__align_fmt_tostr_p,          \
 CGS__INTEGER_TYPES(CGS__INTEGER_TOSTR_P_GENERIC_CASE, ignore) \
 CGS__FLOATING_TYPES(CGS__FLOATING_TOSTR_P_GENERIC_CASE, ignore, CGS__FLOATING_TOSTR_P_LAST_GENERIC_CASE)
 
