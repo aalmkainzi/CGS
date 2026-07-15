@@ -56,12 +56,6 @@ cgs__allocator_invoke_dealloc((allocator), (ptr), 1, (n))
 cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old_n), (new_n))
 
 #if __STDC_VERSION__ >= 202311L
-    #define CGS__CONSTEXPR constexpr
-#else
-    #define CGS__CONSTEXPR const
-#endif
-
-#if __STDC_VERSION__ >= 202311L
     #define CGS__NODISCARD(...) [[nodiscard (__VA_ARGS__)]]
 #elif defined(__GNUC__)
     #define CGS__NODISCARD(...) __attribute__((warn_unused_result))
@@ -107,9 +101,6 @@ _Generic(exp, \
     default: (exp) \
 )
 
-#define cgs__coerce_not_mutstr_ref(exp) \
-cgs__coerce_not(exp, CGS_MutStrRef, CGS_StrBuf*)
-
 #define CGS__CARR_LEN(carr) (sizeof(carr) / sizeof((carr)[0]))
 
 // IF_DEF and ARG_n stuff
@@ -149,16 +140,6 @@ CGS__CAT(CGS__IF_EMPTY_, __VA_OPT__(0))(then)
 
 #define CGS__IF_EMPTY_(then) then
 #define CGS__IF_EMPTY_0(then)
-
-#define CGS__IF_NEMPTY(then, ...) __VA_OPT__(then)
-
-#define CGS__TYPEOF_ARG(arg) \
-,__typeof__(arg)
-
-#define CGS__TYPEOF_ARGS(...) \
-__VA_OPT__( \
-CGS__ARG1(__VA_ARGS__) CGS__FOREACH(CGS__TYPEOF_ARG, __VA_ARGS__) \
-)
 
 // Dynamic string
 typedef struct CGS_DStr
@@ -225,7 +206,6 @@ X(INDEX_OUT_OF_BOUNDS)      \
 X(BAD_RANGE)                \
 X(NOT_FOUND)                \
 X(ALIASING_NOT_SUPPORTED)   \
-X(WRONG_TYPE)               \
 X(ENCODING_ERROR)           \
 X(IO_ERROR)                 \
 X(CALLBACK_EXIT)            \
