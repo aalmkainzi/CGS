@@ -621,19 +621,6 @@ cgs_fread_until(mutstr_dst, stdin, delim)
 #define cgs_append_read_until(mutstr_dst, delim) \
 cgs_append_fread_until(mutstr_dst, stdin, delim)
 
-#define cgs__writer_append_fn(writer_p)                                        \
-_Generic((__typeof__(writer_p)*)0,                                             \
-    CGS_DStr**                                    : cgs__idstr_append,         \
-    CGS_StrBuf**                                  : cgs__istrbuf_append,       \
-    CGS_MutStrRef*                                : cgs__mutstr_ref_append_func[cgs__coerce(writer_p, CGS_MutStrRef).ty], \
-    char**                                        : cgs__cstr_append,          \
-    unsigned char**                               : cgs__cstr_append,          \
-    char(*)         [sizeof(__typeof__(writer_p))]: cgs__ibuf_append,          \
-    unsigned char(*)[sizeof(__typeof__(writer_p))]: cgs__ibuf_append,          \
-    FILE**                                        : cgs__file_append,          \
-    unsigned int**                                : cgs__len_writer_append     \
-)
-
 static inline CGS_MutStrRefWriter cgs__mutstr_ref_to_writer(CGS_MutStrRef ref)
 {
     CGS_MutStrRefWriter ret = {.base = {.append = cgs__mutstr_ref_append_func[ref.ty] }};
