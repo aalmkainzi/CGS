@@ -40,8 +40,8 @@ The library exposes multiple string types for different use cases:
 All of which are null terminated, except for `StrView`.
 
 There are three categories of string types:
-- `anystr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `StrView`, `DStr`, `DStr*`, `StrBuf`, `StrBuf*`, `MutStrRef`)
-- `mutstr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `DStr*`, `StrBuf*`, `MutStrRef`)
+- `anystr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `CGS_StrView`, `CGS_DStr`, `CGS_DStr*`, `CGS_StrBuf`, `CGS_StrBuf*`, `CGS_MutStrRef`)
+- `mutstr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `CGS_DStr*`, `CGS_StrBuf*`, `CGS_MutStrRef`)
 - `writer_t`: anything from `mutstr_t`, `FILE*`, `unsigned int*`, and any `CGS_<T>Writer*` type
 
 This is a list of all the utility macros CGS provides:
