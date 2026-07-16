@@ -32,12 +32,12 @@ int main()
 ```
 ## Features
 The library exposes multiple string types for different use cases:
-- [DStr](#DStr)
-- [StrBuf](#StrBuf)
-- [StrView](#StrView)
-- [MutStrRef](#MutStrRef)
+- [CGS_DStr](#CGS_DStr)
+- [CGS_StrBuf](#CGS_StrBuf)
+- [CGS_StrView](#CGS_StrView)
+- [CGS_MutStrRef](#CGS_MutStrRef)
 
-All of which are null terminated, except for `StrView`.
+All of which are null terminated, except for `CGS_StrView`.
 
 There are three categories of string types:
 - `anystr_t`: any of (`char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `CGS_StrView`, `CGS_DStr`, `CGS_DStr*`, `CGS_StrBuf`, `CGS_StrBuf*`, `CGS_MutStrRef`)
