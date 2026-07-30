@@ -169,7 +169,7 @@ CGS_ArrayFmt                       cgs_arrfmt(T *array, size_t len, anystr_t ope
 CGS__AlignFmt                      cgs_alignfmt(T obj, align_mode, int width, char fill_char = ' '); // an align format object that has a tostr, align_mode must be one of CGS_ALIGN_CENTER, CGS_ALIGN_LEFT, CGS_ALIGN_RIGHT
 ```
 
-## DStr
+## CGS_DStr
 
 Dynamic String.
 
@@ -179,7 +179,7 @@ CGS_DStr cgs_dstr_init(unsigned int initial_cap = 0, CGS_Allocator *allocator = 
 CGS_DStr cgs_dstr_init_from(anystr_t src, CGS_Allocator *allocator = cgs_get_default_allocator());
 ```
 
-## StrBuf
+## CGS_StrBuf
 
 Used as a general purpose string buffer, it's defined like this:
 ```C
@@ -193,7 +193,7 @@ typedef struct CGS_StrBuf
 
 You can construct it by calling `cgs_strbuf_init_from_*` macros, or by constructing it yourself.
 
-## StrView
+## CGS_StrView
 
 Used to view into other strings.
 
@@ -202,7 +202,7 @@ To initialize:
 CGS_StrView cgs_strv(anystr_t str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
 ```
 
-## MutStrRef
+## CGS_MutStrRef
 
 This type can be used as a reference to any `mutstr_t` type.
 
