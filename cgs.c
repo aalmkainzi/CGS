@@ -2857,9 +2857,8 @@ CGS_API CGS_StrView cgs__strv_mutstr_ref1(const CGS_MutStrRef str)
 
 CGS_API CGS_StrView cgs__strv_cstr2(const char *str, unsigned int begin)
 {
-    unsigned int len = (unsigned int) strlen(str);
-    
 #if !defined(CGS_NDEBUG)
+    unsigned int len = (unsigned int) strlen(str);
     if(begin > len)
     {
         return (CGS_StrView){
@@ -2877,22 +2876,7 @@ CGS_API CGS_StrView cgs__strv_cstr2(const char *str, unsigned int begin)
 
 CGS_API CGS_StrView cgs__strv_ucstr2(const unsigned char *str, unsigned int begin)
 {
-    unsigned int len = (unsigned int) strlen((char*) str);
-    
-#if !defined(CGS_NDEBUG)
-    if(begin > len)
-    {
-        return (CGS_StrView){
-            .len = 0,
-            .chars = NULL
-        };
-    }
-#endif
-    
-    return (CGS_StrView){
-        .len   = len - begin,
-        .chars = (char*) str + begin
-    };
+    return cgs__strv_cstr2((char*) str, begin);
 }
 
 CGS_API CGS_StrView cgs__strv_dstr_ptr2(const CGS_DStr *str, unsigned int begin)
@@ -3010,10 +2994,9 @@ CGS_PRIVATE CGS_StrView cgs__strv_fmutstr_ref3(const CGS__FixedMutStrRef str, un
 
 CGS_API CGS_StrView cgs__strv_cstr3(const char *str, unsigned int begin, unsigned int end)
 {
-    unsigned int len = (unsigned int) strlen(str);
-    
 #if !defined(CGS_NDEBUG)
-    if(begin > len || end > len || begin > end)
+    char* found_nul = memchr(str + begin, 0, end - begin);
+    if(found_nul)
     {
         return (CGS_StrView){
             .len = 0,
@@ -3030,22 +3013,7 @@ CGS_API CGS_StrView cgs__strv_cstr3(const char *str, unsigned int begin, unsigne
 
 CGS_API CGS_StrView cgs__strv_ucstr3(const unsigned char *str, unsigned int begin, unsigned int end)
 {
-    unsigned int len = (unsigned int) strlen((char*) str);
-    
-#if !defined(CGS_NDEBUG)
-    if(begin > len || end > len || begin > end)
-    {
-        return (CGS_StrView){
-            .len = 0,
-            .chars = NULL
-        };
-    }
-#endif
-    
-    return (CGS_StrView){
-        .len   = end - begin,
-        .chars = (char*) str + begin
-    };
+    return cgs__strv_cstr3((char*) str, begin, end);
 }
 
 CGS_API CGS_StrView cgs__strv_dstr_ptr3(const CGS_DStr *str, unsigned int begin, unsigned int end)
