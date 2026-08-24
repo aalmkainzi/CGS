@@ -55,7 +55,7 @@ cgs__allocator_invoke_dealloc((allocator), (ptr), 1, (n))
 cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old_n), (new_n))
 
 #if __STDC_VERSION__ >= 202311L
-    #define CGS__NODISCARD(...) [[nodiscard (__VA_ARGS__)]]
+    #define CGS__NODISCARD(...) [[nodiscard(__VA_ARGS__)]]
 #elif defined(__GNUC__)
     #define CGS__NODISCARD(...) __attribute__((warn_unused_result))
 #else
@@ -63,21 +63,23 @@ cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old
 #endif
 
 #if !defined(__clang__)
-    #define cgs__static_assertx(exp, msg) \
-    ((void)_Generic((char(*)[!!(exp) + 1])0, char(*)[2]: (msg)))
+    #define cgs__static_assertx(exp, msg) ((void)_Generic((char (*)[!!(exp) + 1])0, char (*)[2]: (msg)))
 #else
     #define cgs__static_assertx(exp, msg) \
-    ((void)sizeof(struct { _Static_assert(exp, msg); int dummy; }))
+        ((void)sizeof(struct {            \
+            _Static_assert(exp, msg);     \
+            int dummy;                    \
+        }))
 #endif
+
+#define CGS__PRIMITIVE_CAT(a, ...) a##__VA_ARGS__
+#define CGS__CAT(a, ...) CGS__PRIMITIVE_CAT(a, __VA_ARGS__)
 
 #define cgs__has_type(exp, t) \
 _Generic((exp), t: true, default: false)
 
 #define cgs__is_array_of(exp, ty) \
 cgs__has_type((__typeof__(exp)*){0}, __typeof__(ty)(*)[sizeof(exp)/sizeof(ty)])
-
-#define CGS__CAT(a, ...) CGS__PRIMITIVE_CAT(a, __VA_ARGS__)
-#define CGS__PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
 
 #define cgs__coerce(exp, t) \
 cgs__coerce_fallback(exp, t, (t){0})
@@ -123,11 +125,8 @@ _Generic(exp, \
 #define CGS__EXPAND2(...) CGS__EXPAND1(CGS__EXPAND1(CGS__EXPAND1(CGS__EXPAND1(__VA_ARGS__))))
 #define CGS__EXPAND1(...) __VA_ARGS__
 
-#define CGS__FOREACH(macro, ...)                                    \
-__VA_OPT__(CGS__EXPAND(CGS__FOREACH_HELPER(macro, __VA_ARGS__)))
-#define CGS__FOREACH_HELPER(macro, a1, ...)                         \
-macro(a1)                                                     \
-__VA_OPT__(CGS__FOREACH_REPEAT CGS__PARENS (macro, __VA_ARGS__))
+#define CGS__FOREACH(macro, ...) __VA_OPT__(CGS__EXPAND(CGS__FOREACH_HELPER(macro, __VA_ARGS__)))
+#define CGS__FOREACH_HELPER(macro, a1, ...) macro(a1) __VA_OPT__(CGS__FOREACH_REPEAT CGS__PARENS(macro, __VA_ARGS__))
 #define CGS__FOREACH_REPEAT() CGS__FOREACH_HELPER
 // FOREACH stuff end
 
@@ -197,28 +196,28 @@ typedef struct CGS_MutStrRef
     } str;
 } CGS_MutStrRef;
 
-#define CGS__ERROR_NAMES(X) \
-X(OK)                       \
-X(DST_TOO_SMALL)            \
-X(ALLOC_ERROR)              \
-X(INDEX_OUT_OF_BOUNDS)      \
-X(BAD_RANGE)                \
-X(NOT_FOUND)                \
-X(ALIASING_NOT_SUPPORTED)   \
-X(ENCODING_ERROR)           \
-X(IO_ERROR)                 \
-X(CALLBACK_EXIT)            \
-X(TOO_MANY_ARGS)            \
-X(NOT_ENOUGH_ARGS)          \
-X(BAD_FORMAT)
+#define CGS__ERROR_NAMES(X)   \
+    X(OK)                     \
+    X(DST_TOO_SMALL)          \
+    X(ALLOC_ERROR)            \
+    X(INDEX_OUT_OF_BOUNDS)    \
+    X(BAD_RANGE)              \
+    X(NOT_FOUND)              \
+    X(ALIASING_NOT_SUPPORTED) \
+    X(ENCODING_ERROR)         \
+    X(IO_ERROR)               \
+    X(CALLBACK_EXIT)          \
+    X(TOO_MANY_ARGS)          \
+    X(NOT_ENOUGH_ARGS)        \
+    X(BAD_FORMAT)
 
 enum CGS__ErrorCode
 {
-    #define CGS__PREPEND(e) CGS_##e,
+#define CGS__PREPEND(e) CGS_##e,
 
     CGS__ERROR_NAMES(CGS__PREPEND)
 
-    #undef CGS__PREPEND
+#undef CGS__PREPEND
 };
 
 typedef struct CGS_Error
@@ -287,10 +286,10 @@ typedef struct CGS_CustomWriter
     void *ctx;
 } CGS_CustomWriter;
 
-CGS_API CGS_Error    cgs__idstr_append  (CGS_Writer *writer, const CGS_StrView str);
-CGS_API CGS_Error    cgs__istrbuf_append(CGS_Writer *writer, const CGS_StrView str);
-CGS_API CGS_Error    cgs__ibuf_append   (CGS_Writer *writer, const CGS_StrView str);
-CGS_API CGS_Error    cgs__file_append   (CGS_Writer *writer, const CGS_StrView str);
+CGS_API CGS_Error cgs__idstr_append  (CGS_Writer *writer, const CGS_StrView str);
+CGS_API CGS_Error cgs__istrbuf_append(CGS_Writer *writer, const CGS_StrView str);
+CGS_API CGS_Error cgs__ibuf_append   (CGS_Writer *writer, const CGS_StrView str);
+CGS_API CGS_Error cgs__file_append   (CGS_Writer *writer, const CGS_StrView str);
 
 static CGS_Error (* const cgs__mutstr_ref_append_func[])(CGS_Writer *writer, const CGS_StrView str) =
 {

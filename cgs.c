@@ -2995,20 +2995,16 @@ CGS_PRIVATE CGS_StrView cgs__strv_fmutstr_ref3(const CGS__FixedMutStrRef str, un
 CGS_API CGS_StrView cgs__strv_cstr3(const char *str, unsigned int begin, unsigned int end)
 {
 #if !defined(CGS_NDEBUG)
-    char* found_nul = memchr(str + begin, 0, end - begin);
-    if(found_nul)
+    CGS_debug_break();
+
+    char *found_nul = memchr(str + begin, 0, end - begin);
+    if (found_nul)
     {
-        return (CGS_StrView){
-            .len = 0,
-            .chars = NULL
-        };
+        return (CGS_StrView){ .len = 0, .chars = NULL };
     }
 #endif
-    
-    return (CGS_StrView){
-        .len   = end - begin,
-        .chars = (char*) str + begin
-    };
+
+    return (CGS_StrView){ .len = end - begin, .chars = (char *)str + begin };
 }
 
 CGS_API CGS_StrView cgs__strv_ucstr3(const unsigned char *str, unsigned int begin, unsigned int end)
