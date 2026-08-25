@@ -358,6 +358,13 @@ typedef struct CGS__AlignFmt
     char fill_char;
 } CGS__AlignFmt;
 
+typedef struct CGS__RepeatFmt
+{
+    const void *obj;
+    CGS_Error(*tostr_p)(CGS_Writer *writer, const void *obj);
+    unsigned int n;
+} CGS__RepeatFmt;
+
 typedef struct CGS__DStrAppendAllocator
 {
     CGS_Allocator base;
@@ -912,8 +919,11 @@ do \
 #define cgs__arg_count_each(a) \
 +1
 
+#define cgs__as_ptr(a) \
+(void*)&(__typeof__(((void)0,a))[]){(a),}[0]
+
 #define cgs__as_ptr_elm(a) \
-(void*)&(__typeof__(((void)0,a))[]){(a),}[0],
+cgs__as_ptr(a),
 
 #define cgs__tostr_p_func_elm(a) \
 (CGS_Error(*)(CGS_Writer*, const void*))cgs__get_tostr_p_func(__typeof__(a)),
@@ -1154,11 +1164,18 @@ __VA_OPT__(cgs__arrfmt_2) \
 
 #define cgs_alignfmt(obj_, align_mode_, width_, ...) \
 ((CGS__AlignFmt){ \
-    .obj = &(__typeof__(((void)0,obj_))[]){obj_}, \
+    .obj = cgs__as_ptr(obj_), \
     .tostr_p = cgs__get_tostr_p_func(__typeof__(obj_)), \
     .align_mode = CGS__ALIGN_##align_mode_, \
     .width = width_, \
     .fill_char = CGS__VA_OR(' ', __VA_ARGS__) \
+})
+
+#define cgs_repeatfmt(obj_, n_) \
+((CGS__RepeatFmt){ \
+    .obj = cgs__as_ptr(obj_), \
+    .tostr_p = cgs__get_tostr_p_func(__typeof__(obj_)), \
+    .n = n_, \
 })
 
 #define CGS__INTEGER_TOSTR_GENERIC_CASE(ty, extra)         \
@@ -1230,41 +1247,43 @@ const CGS_DStr*           : cgs__dstr_ptr_tostr,            \
 const CGS_StrBuf*         : cgs__strbuf_ptr_tostr,          \
 CGS_Error                 : cgs__error_tostr,               \
 CGS_ArrayFmt              : cgs__array_fmt_tostr,           \
-CGS__AlignFmt              : cgs__align_fmt_tostr,          \
+CGS__AlignFmt             : cgs__align_fmt_tostr,           \
+CGS__RepeatFmt            : cgs__repeat_fmt_tostr,          \
 CGS__INTEGER_TYPES(CGS__INTEGER_TOSTR_GENERIC_CASE, ignore) \
 CGS__FLOATING_TYPES(CGS__FLOATING_TOSTR_GENERIC_CASE, ignore, CGS__FLOATING_TOSTR_LAST_GENERIC_CASE)
 
 #define CGS__DEFAULT_TOSTR_P_GENERIC_BRANCHES                 \
-bool                      : cgs__bool_tostr_p,                \
-char*                     : cgs__cstr_tostr_p,                \
-unsigned char*            : cgs__ucstr_tostr_p,               \
-char                      : cgs__char_tostr_p,                \
-signed char               : cgs__schar_tostr_p,               \
-unsigned char             : cgs__uchar_tostr_p,               \
-short                     : cgs__short_tostr_p,               \
-unsigned short            : cgs__ushort_tostr_p,              \
-int                       : cgs__int_tostr_p,                 \
-unsigned int              : cgs__uint_tostr_p,                \
-long                      : cgs__long_tostr_p,                \
-unsigned long             : cgs__ulong_tostr_p,               \
-long long                 : cgs__llong_tostr_p,               \
-unsigned long long        : cgs__ullong_tostr_p,              \
-float                     : cgs__float_tostr_p,               \
-double                    : cgs__double_tostr_p,              \
-CGS_DStr                  : cgs__dstr_tostr_p,                \
-CGS_DStr*                 : cgs__dstr_ptr_tostr_p,            \
-CGS_StrView               : cgs__strv_tostr_p,                \
-CGS_StrBuf                : cgs__strbuf_tostr_p,              \
-CGS_StrBuf*               : cgs__strbuf_ptr_tostr_p,          \
-CGS_MutStrRef             : cgs__mutstr_ref_tostr_p,          \
-const char*               : cgs__cstr_tostr_p,                \
-const unsigned char*      : cgs__ucstr_tostr_p,               \
-const CGS_DStr*           : cgs__dstr_ptr_tostr_p,            \
-const CGS_StrBuf*         : cgs__strbuf_ptr_tostr_p,          \
-CGS_Error                 : cgs__error_tostr_p,               \
-CGS_ArrayFmt              : cgs__array_fmt_tostr_p,           \
-CGS__AlignFmt              : cgs__align_fmt_tostr_p,          \
-CGS__INTEGER_TYPES(CGS__INTEGER_TOSTR_P_GENERIC_CASE, ignore) \
+bool                       : cgs__bool_tostr_p,                \
+char*                      : cgs__cstr_tostr_p,                \
+unsigned char*             : cgs__ucstr_tostr_p,               \
+char                       : cgs__char_tostr_p,                \
+signed char                : cgs__schar_tostr_p,               \
+unsigned char              : cgs__uchar_tostr_p,               \
+short                      : cgs__short_tostr_p,               \
+unsigned short             : cgs__ushort_tostr_p,              \
+int                        : cgs__int_tostr_p,                 \
+unsigned int               : cgs__uint_tostr_p,                \
+long                       : cgs__long_tostr_p,                \
+unsigned long              : cgs__ulong_tostr_p,               \
+long long                  : cgs__llong_tostr_p,               \
+unsigned long long         : cgs__ullong_tostr_p,              \
+float                      : cgs__float_tostr_p,               \
+double                     : cgs__double_tostr_p,              \
+CGS_DStr                   : cgs__dstr_tostr_p,                \
+CGS_DStr*                  : cgs__dstr_ptr_tostr_p,            \
+CGS_StrView                : cgs__strv_tostr_p,                \
+CGS_StrBuf                 : cgs__strbuf_tostr_p,              \
+CGS_StrBuf*                : cgs__strbuf_ptr_tostr_p,          \
+CGS_MutStrRef              : cgs__mutstr_ref_tostr_p,          \
+const char*                : cgs__cstr_tostr_p,                \
+const unsigned char*       : cgs__ucstr_tostr_p,               \
+const CGS_DStr*            : cgs__dstr_ptr_tostr_p,            \
+const CGS_StrBuf*          : cgs__strbuf_ptr_tostr_p,          \
+CGS_Error                  : cgs__error_tostr_p,               \
+CGS_ArrayFmt               : cgs__array_fmt_tostr_p,           \
+CGS__AlignFmt              : cgs__align_fmt_tostr_p,           \
+CGS__RepeatFmt             : cgs__repeat_fmt_tostr_p,          \
+CGS__INTEGER_TYPES(CGS__INTEGER_TOSTR_P_GENERIC_CASE, ignore)  \
 CGS__FLOATING_TYPES(CGS__FLOATING_TOSTR_P_GENERIC_CASE, ignore, CGS__FLOATING_TOSTR_P_LAST_GENERIC_CASE)
 
 #define CGS__TOSTR_FUNCS_GENERIC_BRANCHES                          \
@@ -1563,6 +1582,7 @@ CGS_API CGS_Error cgs__mutstr_ref_tostr(CGS_Writer *writer, const CGS_MutStrRef 
 CGS_API CGS_Error cgs__error_tostr(CGS_Writer *writer, CGS_Error obj);
 CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer *writer, CGS_ArrayFmt obj);
 CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer *writer, CGS__AlignFmt obj);
+CGS_API CGS_Error cgs__repeat_fmt_tostr(CGS_Writer *writer, CGS__RepeatFmt obj);
 
 CGS_API CGS_Error cgs__bool_tostr_p(CGS_Writer *writer, const void *obj);
 CGS_API CGS_Error cgs__cstr_tostr_p(CGS_Writer *writer, const void *obj);
@@ -1591,6 +1611,7 @@ CGS_API CGS_Error cgs__mutstr_ref_tostr_p(CGS_Writer *writer, const void *obj);
 CGS_API CGS_Error cgs__error_tostr_p(CGS_Writer *writer, const void *obj);
 CGS_API CGS_Error cgs__array_fmt_tostr_p(CGS_Writer *writer, const void *obj);
 CGS_API CGS_Error cgs__align_fmt_tostr_p(CGS_Writer *writer, const void *obj);
+CGS_API CGS_Error cgs__repeat_fmt_tostr_p(CGS_Writer *writer, const void *obj);
 
 #define CGS__X(ty, extra) \
 CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_d_Fmt_##ty obj);    \
@@ -1598,12 +1619,12 @@ CGS_API CGS_Error cgs__Integer_x_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integ
 CGS_API CGS_Error cgs__Integer_o_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_o_Fmt_##ty obj);    \
 CGS_API CGS_Error cgs__Integer_b_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_b_Fmt_##ty obj);    \
 CGS_API CGS_Error cgs__Integer_X_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_X_Fmt_##ty obj);    \
-                                                                                                      \
-                                                                                                      \
-CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj); \
-CGS_API CGS_Error cgs__Integer_x_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj); \
-CGS_API CGS_Error cgs__Integer_o_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj); \
-CGS_API CGS_Error cgs__Integer_b_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj); \
+                                                                                                       \
+                                                                                                       \
+CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);              \
+CGS_API CGS_Error cgs__Integer_x_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);              \
+CGS_API CGS_Error cgs__Integer_o_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);              \
+CGS_API CGS_Error cgs__Integer_b_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);              \
 CGS_API CGS_Error cgs__Integer_X_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);
 
 CGS__INTEGER_TYPES(CGS__X, ignore)
@@ -1619,14 +1640,14 @@ CGS_API CGS_Error cgs__Floating_F_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Floa
 CGS_API CGS_Error cgs__Floating_G_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Floating_G_Fmt_##ty obj);    \
 CGS_API CGS_Error cgs__Floating_E_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Floating_E_Fmt_##ty obj);    \
 CGS_API CGS_Error cgs__Floating_A_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Floating_A_Fmt_##ty obj);    \
-                                                                                                        \
-CGS_API CGS_Error cgs__Floating_f_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj); \
-CGS_API CGS_Error cgs__Floating_g_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj); \
-CGS_API CGS_Error cgs__Floating_e_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj); \
-CGS_API CGS_Error cgs__Floating_a_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj); \
-CGS_API CGS_Error cgs__Floating_F_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj); \
-CGS_API CGS_Error cgs__Floating_G_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj); \
-CGS_API CGS_Error cgs__Floating_E_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj); \
+                                                                                                         \
+CGS_API CGS_Error cgs__Floating_f_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);               \
+CGS_API CGS_Error cgs__Floating_g_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);               \
+CGS_API CGS_Error cgs__Floating_e_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);               \
+CGS_API CGS_Error cgs__Floating_a_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);               \
+CGS_API CGS_Error cgs__Floating_F_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);               \
+CGS_API CGS_Error cgs__Floating_G_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);               \
+CGS_API CGS_Error cgs__Floating_E_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);               \
 CGS_API CGS_Error cgs__Floating_A_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj);
 
 CGS__FLOATING_TYPES(CGS__X, ignore, CGS__X)

@@ -2927,6 +2927,17 @@ CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer *writer, CGS__AlignFmt obj)
     }
 }
 
+CGS_API CGS_Error cgs__repeat_fmt_tostr(CGS_Writer *writer, CGS__RepeatFmt obj)
+{
+    for (unsigned int i = 0; i < obj.n; i++)
+    {
+        CGS_Error err;
+        if ((err = obj.tostr_p(writer, obj.obj), err.ec != CGS_OK))
+            return err;
+    }
+    return (CGS_Error) {CGS_OK};
+}
+
 CGS_API CGS_Error cgs__dstr_tostr(CGS_Writer *writer, const CGS_DStr obj)
 {
     return cgs__invoke_writer(writer, (CGS_StrView) {
@@ -3328,6 +3339,11 @@ CGS_API CGS_Error cgs__array_fmt_tostr_p(CGS_Writer *dst, const void *obj)
 CGS_API CGS_Error cgs__align_fmt_tostr_p(CGS_Writer *writer, const void *obj)
 {
     return cgs__align_fmt_tostr(writer, *(CGS__AlignFmt *)obj);
+}
+
+CGS_API CGS_Error cgs__repeat_fmt_tostr_p(CGS_Writer *writer, const void *obj)
+{
+    return cgs__repeat_fmt_tostr(writer, *(CGS__RepeatFmt*)obj);
 }
 
 #endif // CGS__STR_C_INCLUDED
