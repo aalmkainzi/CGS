@@ -1,10 +1,12 @@
-#include <ctype.h>
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef CGS__STR_C_INCLUDED
+#define CGS__STR_C_INCLUDED
+
 #include <assert.h>
+#include <ctype.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <stddef.h>
-#include <signal.h>
+#include <stdint.h>
 
 #ifndef CGS_API
     // for functions exposed in the header
@@ -17,9 +19,6 @@
 
 #include "cgs.h"
 
-#if !defined(CGS__STR_C_INCLUDED)
-#define CGS__STR_C_INCLUDED
-
 #ifndef CGS_debug_break
     #ifndef CGS_NDEBUG
         #if defined(_MSC_VER)
@@ -29,6 +28,7 @@
         #elif defined(__GNUC__)
             #define CGS_debug_break() __builtin_trap()
         #else
+            #include <signal.h>
             #define CGS_debug_break() raise(SIGTRAP)
         #endif
     #else
@@ -48,7 +48,6 @@
     #endif
 #endif
 
-
 CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n);
 CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n);
 CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t align, size_t old_size, size_t new_size);
@@ -60,12 +59,11 @@ static CGS_Allocator cgs__default_allocator = {
 };
 
 static const CGS__const_StrView cgs__error_to_string[] = {
-    #define CGS__ERROR_TO_STRV(e) \
-    [CGS_##e] = {.len = sizeof(#e) - 1, .chars = #e},
+#define CGS__ERROR_TO_STRV(e) [CGS_##e] = {.len = sizeof(#e) - 1, .chars = #e},
 
     CGS__ERROR_NAMES(CGS__ERROR_TO_STRV)
 
-    #undef CGS__ERROR_TO_STRV
+#undef CGS__ERROR_TO_STRV
 };
 
 static const unsigned long long cgs__ten_pows_ull[] = {
@@ -92,1177 +90,266 @@ static const unsigned long long cgs__ten_pows_ull[] = {
 };
 
 static const CGS__const_StrView cgs__uc_to_string[256] = {
-    {.chars = "0", .len = 1},
-    {.chars = "1", .len = 1},
-    {.chars = "2", .len = 1},
-    {.chars = "3", .len = 1},
-    {.chars = "4", .len = 1},
-    {.chars = "5", .len = 1},
-    {.chars = "6", .len = 1},
-    {.chars = "7", .len = 1},
-    {.chars = "8", .len = 1},
-    {.chars = "9", .len = 1},
-    {.chars = "10", .len = 2},
-    {.chars = "11", .len = 2},
-    {.chars = "12", .len = 2},
-    {.chars = "13", .len = 2},
-    {.chars = "14", .len = 2},
-    {.chars = "15", .len = 2},
-    {.chars = "16", .len = 2},
-    {.chars = "17", .len = 2},
-    {.chars = "18", .len = 2},
-    {.chars = "19", .len = 2},
-    {.chars = "20", .len = 2},
-    {.chars = "21", .len = 2},
-    {.chars = "22", .len = 2},
-    {.chars = "23", .len = 2},
-    {.chars = "24", .len = 2},
-    {.chars = "25", .len = 2},
-    {.chars = "26", .len = 2},
-    {.chars = "27", .len = 2},
-    {.chars = "28", .len = 2},
-    {.chars = "29", .len = 2},
-    {.chars = "30", .len = 2},
-    {.chars = "31", .len = 2},
-    {.chars = "32", .len = 2},
-    {.chars = "33", .len = 2},
-    {.chars = "34", .len = 2},
-    {.chars = "35", .len = 2},
-    {.chars = "36", .len = 2},
-    {.chars = "37", .len = 2},
-    {.chars = "38", .len = 2},
-    {.chars = "39", .len = 2},
-    {.chars = "40", .len = 2},
-    {.chars = "41", .len = 2},
-    {.chars = "42", .len = 2},
-    {.chars = "43", .len = 2},
-    {.chars = "44", .len = 2},
-    {.chars = "45", .len = 2},
-    {.chars = "46", .len = 2},
-    {.chars = "47", .len = 2},
-    {.chars = "48", .len = 2},
-    {.chars = "49", .len = 2},
-    {.chars = "50", .len = 2},
-    {.chars = "51", .len = 2},
-    {.chars = "52", .len = 2},
-    {.chars = "53", .len = 2},
-    {.chars = "54", .len = 2},
-    {.chars = "55", .len = 2},
-    {.chars = "56", .len = 2},
-    {.chars = "57", .len = 2},
-    {.chars = "58", .len = 2},
-    {.chars = "59", .len = 2},
-    {.chars = "60", .len = 2},
-    {.chars = "61", .len = 2},
-    {.chars = "62", .len = 2},
-    {.chars = "63", .len = 2},
-    {.chars = "64", .len = 2},
-    {.chars = "65", .len = 2},
-    {.chars = "66", .len = 2},
-    {.chars = "67", .len = 2},
-    {.chars = "68", .len = 2},
-    {.chars = "69", .len = 2},
-    {.chars = "70", .len = 2},
-    {.chars = "71", .len = 2},
-    {.chars = "72", .len = 2},
-    {.chars = "73", .len = 2},
-    {.chars = "74", .len = 2},
-    {.chars = "75", .len = 2},
-    {.chars = "76", .len = 2},
-    {.chars = "77", .len = 2},
-    {.chars = "78", .len = 2},
-    {.chars = "79", .len = 2},
-    {.chars = "80", .len = 2},
-    {.chars = "81", .len = 2},
-    {.chars = "82", .len = 2},
-    {.chars = "83", .len = 2},
-    {.chars = "84", .len = 2},
-    {.chars = "85", .len = 2},
-    {.chars = "86", .len = 2},
-    {.chars = "87", .len = 2},
-    {.chars = "88", .len = 2},
-    {.chars = "89", .len = 2},
-    {.chars = "90", .len = 2},
-    {.chars = "91", .len = 2},
-    {.chars = "92", .len = 2},
-    {.chars = "93", .len = 2},
-    {.chars = "94", .len = 2},
-    {.chars = "95", .len = 2},
-    {.chars = "96", .len = 2},
-    {.chars = "97", .len = 2},
-    {.chars = "98", .len = 2},
-    {.chars = "99", .len = 2},
-    {.chars = "100", .len = 3},
-    {.chars = "101", .len = 3},
-    {.chars = "102", .len = 3},
-    {.chars = "103", .len = 3},
-    {.chars = "104", .len = 3},
-    {.chars = "105", .len = 3},
-    {.chars = "106", .len = 3},
-    {.chars = "107", .len = 3},
-    {.chars = "108", .len = 3},
-    {.chars = "109", .len = 3},
-    {.chars = "110", .len = 3},
-    {.chars = "111", .len = 3},
-    {.chars = "112", .len = 3},
-    {.chars = "113", .len = 3},
-    {.chars = "114", .len = 3},
-    {.chars = "115", .len = 3},
-    {.chars = "116", .len = 3},
-    {.chars = "117", .len = 3},
-    {.chars = "118", .len = 3},
-    {.chars = "119", .len = 3},
-    {.chars = "120", .len = 3},
-    {.chars = "121", .len = 3},
-    {.chars = "122", .len = 3},
-    {.chars = "123", .len = 3},
-    {.chars = "124", .len = 3},
-    {.chars = "125", .len = 3},
-    {.chars = "126", .len = 3},
-    {.chars = "127", .len = 3},
-    {.chars = "128", .len = 3},
-    {.chars = "129", .len = 3},
-    {.chars = "130", .len = 3},
-    {.chars = "131", .len = 3},
-    {.chars = "132", .len = 3},
-    {.chars = "133", .len = 3},
-    {.chars = "134", .len = 3},
-    {.chars = "135", .len = 3},
-    {.chars = "136", .len = 3},
-    {.chars = "137", .len = 3},
-    {.chars = "138", .len = 3},
-    {.chars = "139", .len = 3},
-    {.chars = "140", .len = 3},
-    {.chars = "141", .len = 3},
-    {.chars = "142", .len = 3},
-    {.chars = "143", .len = 3},
-    {.chars = "144", .len = 3},
-    {.chars = "145", .len = 3},
-    {.chars = "146", .len = 3},
-    {.chars = "147", .len = 3},
-    {.chars = "148", .len = 3},
-    {.chars = "149", .len = 3},
-    {.chars = "150", .len = 3},
-    {.chars = "151", .len = 3},
-    {.chars = "152", .len = 3},
-    {.chars = "153", .len = 3},
-    {.chars = "154", .len = 3},
-    {.chars = "155", .len = 3},
-    {.chars = "156", .len = 3},
-    {.chars = "157", .len = 3},
-    {.chars = "158", .len = 3},
-    {.chars = "159", .len = 3},
-    {.chars = "160", .len = 3},
-    {.chars = "161", .len = 3},
-    {.chars = "162", .len = 3},
-    {.chars = "163", .len = 3},
-    {.chars = "164", .len = 3},
-    {.chars = "165", .len = 3},
-    {.chars = "166", .len = 3},
-    {.chars = "167", .len = 3},
-    {.chars = "168", .len = 3},
-    {.chars = "169", .len = 3},
-    {.chars = "170", .len = 3},
-    {.chars = "171", .len = 3},
-    {.chars = "172", .len = 3},
-    {.chars = "173", .len = 3},
-    {.chars = "174", .len = 3},
-    {.chars = "175", .len = 3},
-    {.chars = "176", .len = 3},
-    {.chars = "177", .len = 3},
-    {.chars = "178", .len = 3},
-    {.chars = "179", .len = 3},
-    {.chars = "180", .len = 3},
-    {.chars = "181", .len = 3},
-    {.chars = "182", .len = 3},
-    {.chars = "183", .len = 3},
-    {.chars = "184", .len = 3},
-    {.chars = "185", .len = 3},
-    {.chars = "186", .len = 3},
-    {.chars = "187", .len = 3},
-    {.chars = "188", .len = 3},
-    {.chars = "189", .len = 3},
-    {.chars = "190", .len = 3},
-    {.chars = "191", .len = 3},
-    {.chars = "192", .len = 3},
-    {.chars = "193", .len = 3},
-    {.chars = "194", .len = 3},
-    {.chars = "195", .len = 3},
-    {.chars = "196", .len = 3},
-    {.chars = "197", .len = 3},
-    {.chars = "198", .len = 3},
-    {.chars = "199", .len = 3},
-    {.chars = "200", .len = 3},
-    {.chars = "201", .len = 3},
-    {.chars = "202", .len = 3},
-    {.chars = "203", .len = 3},
-    {.chars = "204", .len = 3},
-    {.chars = "205", .len = 3},
-    {.chars = "206", .len = 3},
-    {.chars = "207", .len = 3},
-    {.chars = "208", .len = 3},
-    {.chars = "209", .len = 3},
-    {.chars = "210", .len = 3},
-    {.chars = "211", .len = 3},
-    {.chars = "212", .len = 3},
-    {.chars = "213", .len = 3},
-    {.chars = "214", .len = 3},
-    {.chars = "215", .len = 3},
-    {.chars = "216", .len = 3},
-    {.chars = "217", .len = 3},
-    {.chars = "218", .len = 3},
-    {.chars = "219", .len = 3},
-    {.chars = "220", .len = 3},
-    {.chars = "221", .len = 3},
-    {.chars = "222", .len = 3},
-    {.chars = "223", .len = 3},
-    {.chars = "224", .len = 3},
-    {.chars = "225", .len = 3},
-    {.chars = "226", .len = 3},
-    {.chars = "227", .len = 3},
-    {.chars = "228", .len = 3},
-    {.chars = "229", .len = 3},
-    {.chars = "230", .len = 3},
-    {.chars = "231", .len = 3},
-    {.chars = "232", .len = 3},
-    {.chars = "233", .len = 3},
-    {.chars = "234", .len = 3},
-    {.chars = "235", .len = 3},
-    {.chars = "236", .len = 3},
-    {.chars = "237", .len = 3},
-    {.chars = "238", .len = 3},
-    {.chars = "239", .len = 3},
-    {.chars = "240", .len = 3},
-    {.chars = "241", .len = 3},
-    {.chars = "242", .len = 3},
-    {.chars = "243", .len = 3},
-    {.chars = "244", .len = 3},
-    {.chars = "245", .len = 3},
-    {.chars = "246", .len = 3},
-    {.chars = "247", .len = 3},
-    {.chars = "248", .len = 3},
-    {.chars = "249", .len = 3},
-    {.chars = "250", .len = 3},
-    {.chars = "251", .len = 3},
-    {.chars = "252", .len = 3},
-    {.chars = "253", .len = 3},
-    {.chars = "254", .len = 3},
-    {.chars = "255", .len = 3},
+    {.chars = "0", .len = 1},   {.chars = "1", .len = 1},   {.chars = "2", .len = 1},   {.chars = "3", .len = 1},   {.chars = "4", .len = 1},   {.chars = "5", .len = 1},
+    {.chars = "6", .len = 1},   {.chars = "7", .len = 1},   {.chars = "8", .len = 1},   {.chars = "9", .len = 1},   {.chars = "10", .len = 2},  {.chars = "11", .len = 2},
+    {.chars = "12", .len = 2},  {.chars = "13", .len = 2},  {.chars = "14", .len = 2},  {.chars = "15", .len = 2},  {.chars = "16", .len = 2},  {.chars = "17", .len = 2},
+    {.chars = "18", .len = 2},  {.chars = "19", .len = 2},  {.chars = "20", .len = 2},  {.chars = "21", .len = 2},  {.chars = "22", .len = 2},  {.chars = "23", .len = 2},
+    {.chars = "24", .len = 2},  {.chars = "25", .len = 2},  {.chars = "26", .len = 2},  {.chars = "27", .len = 2},  {.chars = "28", .len = 2},  {.chars = "29", .len = 2},
+    {.chars = "30", .len = 2},  {.chars = "31", .len = 2},  {.chars = "32", .len = 2},  {.chars = "33", .len = 2},  {.chars = "34", .len = 2},  {.chars = "35", .len = 2},
+    {.chars = "36", .len = 2},  {.chars = "37", .len = 2},  {.chars = "38", .len = 2},  {.chars = "39", .len = 2},  {.chars = "40", .len = 2},  {.chars = "41", .len = 2},
+    {.chars = "42", .len = 2},  {.chars = "43", .len = 2},  {.chars = "44", .len = 2},  {.chars = "45", .len = 2},  {.chars = "46", .len = 2},  {.chars = "47", .len = 2},
+    {.chars = "48", .len = 2},  {.chars = "49", .len = 2},  {.chars = "50", .len = 2},  {.chars = "51", .len = 2},  {.chars = "52", .len = 2},  {.chars = "53", .len = 2},
+    {.chars = "54", .len = 2},  {.chars = "55", .len = 2},  {.chars = "56", .len = 2},  {.chars = "57", .len = 2},  {.chars = "58", .len = 2},  {.chars = "59", .len = 2},
+    {.chars = "60", .len = 2},  {.chars = "61", .len = 2},  {.chars = "62", .len = 2},  {.chars = "63", .len = 2},  {.chars = "64", .len = 2},  {.chars = "65", .len = 2},
+    {.chars = "66", .len = 2},  {.chars = "67", .len = 2},  {.chars = "68", .len = 2},  {.chars = "69", .len = 2},  {.chars = "70", .len = 2},  {.chars = "71", .len = 2},
+    {.chars = "72", .len = 2},  {.chars = "73", .len = 2},  {.chars = "74", .len = 2},  {.chars = "75", .len = 2},  {.chars = "76", .len = 2},  {.chars = "77", .len = 2},
+    {.chars = "78", .len = 2},  {.chars = "79", .len = 2},  {.chars = "80", .len = 2},  {.chars = "81", .len = 2},  {.chars = "82", .len = 2},  {.chars = "83", .len = 2},
+    {.chars = "84", .len = 2},  {.chars = "85", .len = 2},  {.chars = "86", .len = 2},  {.chars = "87", .len = 2},  {.chars = "88", .len = 2},  {.chars = "89", .len = 2},
+    {.chars = "90", .len = 2},  {.chars = "91", .len = 2},  {.chars = "92", .len = 2},  {.chars = "93", .len = 2},  {.chars = "94", .len = 2},  {.chars = "95", .len = 2},
+    {.chars = "96", .len = 2},  {.chars = "97", .len = 2},  {.chars = "98", .len = 2},  {.chars = "99", .len = 2},  {.chars = "100", .len = 3}, {.chars = "101", .len = 3},
+    {.chars = "102", .len = 3}, {.chars = "103", .len = 3}, {.chars = "104", .len = 3}, {.chars = "105", .len = 3}, {.chars = "106", .len = 3}, {.chars = "107", .len = 3},
+    {.chars = "108", .len = 3}, {.chars = "109", .len = 3}, {.chars = "110", .len = 3}, {.chars = "111", .len = 3}, {.chars = "112", .len = 3}, {.chars = "113", .len = 3},
+    {.chars = "114", .len = 3}, {.chars = "115", .len = 3}, {.chars = "116", .len = 3}, {.chars = "117", .len = 3}, {.chars = "118", .len = 3}, {.chars = "119", .len = 3},
+    {.chars = "120", .len = 3}, {.chars = "121", .len = 3}, {.chars = "122", .len = 3}, {.chars = "123", .len = 3}, {.chars = "124", .len = 3}, {.chars = "125", .len = 3},
+    {.chars = "126", .len = 3}, {.chars = "127", .len = 3}, {.chars = "128", .len = 3}, {.chars = "129", .len = 3}, {.chars = "130", .len = 3}, {.chars = "131", .len = 3},
+    {.chars = "132", .len = 3}, {.chars = "133", .len = 3}, {.chars = "134", .len = 3}, {.chars = "135", .len = 3}, {.chars = "136", .len = 3}, {.chars = "137", .len = 3},
+    {.chars = "138", .len = 3}, {.chars = "139", .len = 3}, {.chars = "140", .len = 3}, {.chars = "141", .len = 3}, {.chars = "142", .len = 3}, {.chars = "143", .len = 3},
+    {.chars = "144", .len = 3}, {.chars = "145", .len = 3}, {.chars = "146", .len = 3}, {.chars = "147", .len = 3}, {.chars = "148", .len = 3}, {.chars = "149", .len = 3},
+    {.chars = "150", .len = 3}, {.chars = "151", .len = 3}, {.chars = "152", .len = 3}, {.chars = "153", .len = 3}, {.chars = "154", .len = 3}, {.chars = "155", .len = 3},
+    {.chars = "156", .len = 3}, {.chars = "157", .len = 3}, {.chars = "158", .len = 3}, {.chars = "159", .len = 3}, {.chars = "160", .len = 3}, {.chars = "161", .len = 3},
+    {.chars = "162", .len = 3}, {.chars = "163", .len = 3}, {.chars = "164", .len = 3}, {.chars = "165", .len = 3}, {.chars = "166", .len = 3}, {.chars = "167", .len = 3},
+    {.chars = "168", .len = 3}, {.chars = "169", .len = 3}, {.chars = "170", .len = 3}, {.chars = "171", .len = 3}, {.chars = "172", .len = 3}, {.chars = "173", .len = 3},
+    {.chars = "174", .len = 3}, {.chars = "175", .len = 3}, {.chars = "176", .len = 3}, {.chars = "177", .len = 3}, {.chars = "178", .len = 3}, {.chars = "179", .len = 3},
+    {.chars = "180", .len = 3}, {.chars = "181", .len = 3}, {.chars = "182", .len = 3}, {.chars = "183", .len = 3}, {.chars = "184", .len = 3}, {.chars = "185", .len = 3},
+    {.chars = "186", .len = 3}, {.chars = "187", .len = 3}, {.chars = "188", .len = 3}, {.chars = "189", .len = 3}, {.chars = "190", .len = 3}, {.chars = "191", .len = 3},
+    {.chars = "192", .len = 3}, {.chars = "193", .len = 3}, {.chars = "194", .len = 3}, {.chars = "195", .len = 3}, {.chars = "196", .len = 3}, {.chars = "197", .len = 3},
+    {.chars = "198", .len = 3}, {.chars = "199", .len = 3}, {.chars = "200", .len = 3}, {.chars = "201", .len = 3}, {.chars = "202", .len = 3}, {.chars = "203", .len = 3},
+    {.chars = "204", .len = 3}, {.chars = "205", .len = 3}, {.chars = "206", .len = 3}, {.chars = "207", .len = 3}, {.chars = "208", .len = 3}, {.chars = "209", .len = 3},
+    {.chars = "210", .len = 3}, {.chars = "211", .len = 3}, {.chars = "212", .len = 3}, {.chars = "213", .len = 3}, {.chars = "214", .len = 3}, {.chars = "215", .len = 3},
+    {.chars = "216", .len = 3}, {.chars = "217", .len = 3}, {.chars = "218", .len = 3}, {.chars = "219", .len = 3}, {.chars = "220", .len = 3}, {.chars = "221", .len = 3},
+    {.chars = "222", .len = 3}, {.chars = "223", .len = 3}, {.chars = "224", .len = 3}, {.chars = "225", .len = 3}, {.chars = "226", .len = 3}, {.chars = "227", .len = 3},
+    {.chars = "228", .len = 3}, {.chars = "229", .len = 3}, {.chars = "230", .len = 3}, {.chars = "231", .len = 3}, {.chars = "232", .len = 3}, {.chars = "233", .len = 3},
+    {.chars = "234", .len = 3}, {.chars = "235", .len = 3}, {.chars = "236", .len = 3}, {.chars = "237", .len = 3}, {.chars = "238", .len = 3}, {.chars = "239", .len = 3},
+    {.chars = "240", .len = 3}, {.chars = "241", .len = 3}, {.chars = "242", .len = 3}, {.chars = "243", .len = 3}, {.chars = "244", .len = 3}, {.chars = "245", .len = 3},
+    {.chars = "246", .len = 3}, {.chars = "247", .len = 3}, {.chars = "248", .len = 3}, {.chars = "249", .len = 3}, {.chars = "250", .len = 3}, {.chars = "251", .len = 3},
+    {.chars = "252", .len = 3}, {.chars = "253", .len = 3}, {.chars = "254", .len = 3}, {.chars = "255", .len = 3},
 };
 
 static const CGS__const_StrView cgs__sc_to_string[] = {
-    {.chars = "0", .len = 1},
-    {.chars = "1", .len = 1},
-    {.chars = "2", .len = 1},
-    {.chars = "3", .len = 1},
-    {.chars = "4", .len = 1},
-    {.chars = "5", .len = 1},
-    {.chars = "6", .len = 1},
-    {.chars = "7", .len = 1},
-    {.chars = "8", .len = 1},
-    {.chars = "9", .len = 1},
-    {.chars = "10", .len = 2},
-    {.chars = "11", .len = 2},
-    {.chars = "12", .len = 2},
-    {.chars = "13", .len = 2},
-    {.chars = "14", .len = 2},
-    {.chars = "15", .len = 2},
-    {.chars = "16", .len = 2},
-    {.chars = "17", .len = 2},
-    {.chars = "18", .len = 2},
-    {.chars = "19", .len = 2},
-    {.chars = "20", .len = 2},
-    {.chars = "21", .len = 2},
-    {.chars = "22", .len = 2},
-    {.chars = "23", .len = 2},
-    {.chars = "24", .len = 2},
-    {.chars = "25", .len = 2},
-    {.chars = "26", .len = 2},
-    {.chars = "27", .len = 2},
-    {.chars = "28", .len = 2},
-    {.chars = "29", .len = 2},
-    {.chars = "30", .len = 2},
-    {.chars = "31", .len = 2},
-    {.chars = "32", .len = 2},
-    {.chars = "33", .len = 2},
-    {.chars = "34", .len = 2},
-    {.chars = "35", .len = 2},
-    {.chars = "36", .len = 2},
-    {.chars = "37", .len = 2},
-    {.chars = "38", .len = 2},
-    {.chars = "39", .len = 2},
-    {.chars = "40", .len = 2},
-    {.chars = "41", .len = 2},
-    {.chars = "42", .len = 2},
-    {.chars = "43", .len = 2},
-    {.chars = "44", .len = 2},
-    {.chars = "45", .len = 2},
-    {.chars = "46", .len = 2},
-    {.chars = "47", .len = 2},
-    {.chars = "48", .len = 2},
-    {.chars = "49", .len = 2},
-    {.chars = "50", .len = 2},
-    {.chars = "51", .len = 2},
-    {.chars = "52", .len = 2},
-    {.chars = "53", .len = 2},
-    {.chars = "54", .len = 2},
-    {.chars = "55", .len = 2},
-    {.chars = "56", .len = 2},
-    {.chars = "57", .len = 2},
-    {.chars = "58", .len = 2},
-    {.chars = "59", .len = 2},
-    {.chars = "60", .len = 2},
-    {.chars = "61", .len = 2},
-    {.chars = "62", .len = 2},
-    {.chars = "63", .len = 2},
-    {.chars = "64", .len = 2},
-    {.chars = "65", .len = 2},
-    {.chars = "66", .len = 2},
-    {.chars = "67", .len = 2},
-    {.chars = "68", .len = 2},
-    {.chars = "69", .len = 2},
-    {.chars = "70", .len = 2},
-    {.chars = "71", .len = 2},
-    {.chars = "72", .len = 2},
-    {.chars = "73", .len = 2},
-    {.chars = "74", .len = 2},
-    {.chars = "75", .len = 2},
-    {.chars = "76", .len = 2},
-    {.chars = "77", .len = 2},
-    {.chars = "78", .len = 2},
-    {.chars = "79", .len = 2},
-    {.chars = "80", .len = 2},
-    {.chars = "81", .len = 2},
-    {.chars = "82", .len = 2},
-    {.chars = "83", .len = 2},
-    {.chars = "84", .len = 2},
-    {.chars = "85", .len = 2},
-    {.chars = "86", .len = 2},
-    {.chars = "87", .len = 2},
-    {.chars = "88", .len = 2},
-    {.chars = "89", .len = 2},
-    {.chars = "90", .len = 2},
-    {.chars = "91", .len = 2},
-    {.chars = "92", .len = 2},
-    {.chars = "93", .len = 2},
-    {.chars = "94", .len = 2},
-    {.chars = "95", .len = 2},
-    {.chars = "96", .len = 2},
-    {.chars = "97", .len = 2},
-    {.chars = "98", .len = 2},
-    {.chars = "99", .len = 2},
-    {.chars = "100", .len = 3},
-    {.chars = "101", .len = 3},
-    {.chars = "102", .len = 3},
-    {.chars = "103", .len = 3},
-    {.chars = "104", .len = 3},
-    {.chars = "105", .len = 3},
-    {.chars = "106", .len = 3},
-    {.chars = "107", .len = 3},
-    {.chars = "108", .len = 3},
-    {.chars = "109", .len = 3},
-    {.chars = "110", .len = 3},
-    {.chars = "111", .len = 3},
-    {.chars = "112", .len = 3},
-    {.chars = "113", .len = 3},
-    {.chars = "114", .len = 3},
-    {.chars = "115", .len = 3},
-    {.chars = "116", .len = 3},
-    {.chars = "117", .len = 3},
-    {.chars = "118", .len = 3},
-    {.chars = "119", .len = 3},
-    {.chars = "120", .len = 3},
-    {.chars = "121", .len = 3},
-    {.chars = "122", .len = 3},
-    {.chars = "123", .len = 3},
-    {.chars = "124", .len = 3},
-    {.chars = "125", .len = 3},
-    {.chars = "126", .len = 3},
-    {.chars = "127", .len = 3},
-    {.chars = "-128", .len = 4},
-    {.chars = "-127", .len = 4},
-    {.chars = "-126", .len = 4},
-    {.chars = "-125", .len = 4},
-    {.chars = "-124", .len = 4},
-    {.chars = "-123", .len = 4},
-    {.chars = "-122", .len = 4},
-    {.chars = "-121", .len = 4},
-    {.chars = "-120", .len = 4},
-    {.chars = "-119", .len = 4},
-    {.chars = "-118", .len = 4},
-    {.chars = "-117", .len = 4},
-    {.chars = "-116", .len = 4},
-    {.chars = "-115", .len = 4},
-    {.chars = "-114", .len = 4},
-    {.chars = "-113", .len = 4},
-    {.chars = "-112", .len = 4},
-    {.chars = "-111", .len = 4},
-    {.chars = "-110", .len = 4},
-    {.chars = "-109", .len = 4},
-    {.chars = "-108", .len = 4},
-    {.chars = "-107", .len = 4},
-    {.chars = "-106", .len = 4},
-    {.chars = "-105", .len = 4},
-    {.chars = "-104", .len = 4},
-    {.chars = "-103", .len = 4},
-    {.chars = "-102", .len = 4},
-    {.chars = "-101", .len = 4},
-    {.chars = "-100", .len = 4},
-    {.chars = "-99", .len = 3},
-    {.chars = "-98", .len = 3},
-    {.chars = "-97", .len = 3},
-    {.chars = "-96", .len = 3},
-    {.chars = "-95", .len = 3},
-    {.chars = "-94", .len = 3},
-    {.chars = "-93", .len = 3},
-    {.chars = "-92", .len = 3},
-    {.chars = "-91", .len = 3},
-    {.chars = "-90", .len = 3},
-    {.chars = "-89", .len = 3},
-    {.chars = "-88", .len = 3},
-    {.chars = "-87", .len = 3},
-    {.chars = "-86", .len = 3},
-    {.chars = "-85", .len = 3},
-    {.chars = "-84", .len = 3},
-    {.chars = "-83", .len = 3},
-    {.chars = "-82", .len = 3},
-    {.chars = "-81", .len = 3},
-    {.chars = "-80", .len = 3},
-    {.chars = "-79", .len = 3},
-    {.chars = "-78", .len = 3},
-    {.chars = "-77", .len = 3},
-    {.chars = "-76", .len = 3},
-    {.chars = "-75", .len = 3},
-    {.chars = "-74", .len = 3},
-    {.chars = "-73", .len = 3},
-    {.chars = "-72", .len = 3},
-    {.chars = "-71", .len = 3},
-    {.chars = "-70", .len = 3},
-    {.chars = "-69", .len = 3},
-    {.chars = "-68", .len = 3},
-    {.chars = "-67", .len = 3},
-    {.chars = "-66", .len = 3},
-    {.chars = "-65", .len = 3},
-    {.chars = "-64", .len = 3},
-    {.chars = "-63", .len = 3},
-    {.chars = "-62", .len = 3},
-    {.chars = "-61", .len = 3},
-    {.chars = "-60", .len = 3},
-    {.chars = "-59", .len = 3},
-    {.chars = "-58", .len = 3},
-    {.chars = "-57", .len = 3},
-    {.chars = "-56", .len = 3},
-    {.chars = "-55", .len = 3},
-    {.chars = "-54", .len = 3},
-    {.chars = "-53", .len = 3},
-    {.chars = "-52", .len = 3},
-    {.chars = "-51", .len = 3},
-    {.chars = "-50", .len = 3},
-    {.chars = "-49", .len = 3},
-    {.chars = "-48", .len = 3},
-    {.chars = "-47", .len = 3},
-    {.chars = "-46", .len = 3},
-    {.chars = "-45", .len = 3},
-    {.chars = "-44", .len = 3},
-    {.chars = "-43", .len = 3},
-    {.chars = "-42", .len = 3},
-    {.chars = "-41", .len = 3},
-    {.chars = "-40", .len = 3},
-    {.chars = "-39", .len = 3},
-    {.chars = "-38", .len = 3},
-    {.chars = "-37", .len = 3},
-    {.chars = "-36", .len = 3},
-    {.chars = "-35", .len = 3},
-    {.chars = "-34", .len = 3},
-    {.chars = "-33", .len = 3},
-    {.chars = "-32", .len = 3},
-    {.chars = "-31", .len = 3},
-    {.chars = "-30", .len = 3},
-    {.chars = "-29", .len = 3},
-    {.chars = "-28", .len = 3},
-    {.chars = "-27", .len = 3},
-    {.chars = "-26", .len = 3},
-    {.chars = "-25", .len = 3},
-    {.chars = "-24", .len = 3},
-    {.chars = "-23", .len = 3},
-    {.chars = "-22", .len = 3},
-    {.chars = "-21", .len = 3},
-    {.chars = "-20", .len = 3},
-    {.chars = "-19", .len = 3},
-    {.chars = "-18", .len = 3},
-    {.chars = "-17", .len = 3},
-    {.chars = "-16", .len = 3},
-    {.chars = "-15", .len = 3},
-    {.chars = "-14", .len = 3},
-    {.chars = "-13", .len = 3},
-    {.chars = "-12", .len = 3},
-    {.chars = "-11", .len = 3},
-    {.chars = "-10", .len = 3},
-    {.chars = "-9", .len = 2},
-    {.chars = "-8", .len = 2},
-    {.chars = "-7", .len = 2},
-    {.chars = "-6", .len = 2},
-    {.chars = "-5", .len = 2},
-    {.chars = "-4", .len = 2},
-    {.chars = "-3", .len = 2},
-    {.chars = "-2", .len = 2},
-    {.chars = "-1", .len = 2}
-};
+    {.chars = "0", .len = 1},    {.chars = "1", .len = 1},    {.chars = "2", .len = 1},    {.chars = "3", .len = 1},    {.chars = "4", .len = 1},
+    {.chars = "5", .len = 1},    {.chars = "6", .len = 1},    {.chars = "7", .len = 1},    {.chars = "8", .len = 1},    {.chars = "9", .len = 1},
+    {.chars = "10", .len = 2},   {.chars = "11", .len = 2},   {.chars = "12", .len = 2},   {.chars = "13", .len = 2},   {.chars = "14", .len = 2},
+    {.chars = "15", .len = 2},   {.chars = "16", .len = 2},   {.chars = "17", .len = 2},   {.chars = "18", .len = 2},   {.chars = "19", .len = 2},
+    {.chars = "20", .len = 2},   {.chars = "21", .len = 2},   {.chars = "22", .len = 2},   {.chars = "23", .len = 2},   {.chars = "24", .len = 2},
+    {.chars = "25", .len = 2},   {.chars = "26", .len = 2},   {.chars = "27", .len = 2},   {.chars = "28", .len = 2},   {.chars = "29", .len = 2},
+    {.chars = "30", .len = 2},   {.chars = "31", .len = 2},   {.chars = "32", .len = 2},   {.chars = "33", .len = 2},   {.chars = "34", .len = 2},
+    {.chars = "35", .len = 2},   {.chars = "36", .len = 2},   {.chars = "37", .len = 2},   {.chars = "38", .len = 2},   {.chars = "39", .len = 2},
+    {.chars = "40", .len = 2},   {.chars = "41", .len = 2},   {.chars = "42", .len = 2},   {.chars = "43", .len = 2},   {.chars = "44", .len = 2},
+    {.chars = "45", .len = 2},   {.chars = "46", .len = 2},   {.chars = "47", .len = 2},   {.chars = "48", .len = 2},   {.chars = "49", .len = 2},
+    {.chars = "50", .len = 2},   {.chars = "51", .len = 2},   {.chars = "52", .len = 2},   {.chars = "53", .len = 2},   {.chars = "54", .len = 2},
+    {.chars = "55", .len = 2},   {.chars = "56", .len = 2},   {.chars = "57", .len = 2},   {.chars = "58", .len = 2},   {.chars = "59", .len = 2},
+    {.chars = "60", .len = 2},   {.chars = "61", .len = 2},   {.chars = "62", .len = 2},   {.chars = "63", .len = 2},   {.chars = "64", .len = 2},
+    {.chars = "65", .len = 2},   {.chars = "66", .len = 2},   {.chars = "67", .len = 2},   {.chars = "68", .len = 2},   {.chars = "69", .len = 2},
+    {.chars = "70", .len = 2},   {.chars = "71", .len = 2},   {.chars = "72", .len = 2},   {.chars = "73", .len = 2},   {.chars = "74", .len = 2},
+    {.chars = "75", .len = 2},   {.chars = "76", .len = 2},   {.chars = "77", .len = 2},   {.chars = "78", .len = 2},   {.chars = "79", .len = 2},
+    {.chars = "80", .len = 2},   {.chars = "81", .len = 2},   {.chars = "82", .len = 2},   {.chars = "83", .len = 2},   {.chars = "84", .len = 2},
+    {.chars = "85", .len = 2},   {.chars = "86", .len = 2},   {.chars = "87", .len = 2},   {.chars = "88", .len = 2},   {.chars = "89", .len = 2},
+    {.chars = "90", .len = 2},   {.chars = "91", .len = 2},   {.chars = "92", .len = 2},   {.chars = "93", .len = 2},   {.chars = "94", .len = 2},
+    {.chars = "95", .len = 2},   {.chars = "96", .len = 2},   {.chars = "97", .len = 2},   {.chars = "98", .len = 2},   {.chars = "99", .len = 2},
+    {.chars = "100", .len = 3},  {.chars = "101", .len = 3},  {.chars = "102", .len = 3},  {.chars = "103", .len = 3},  {.chars = "104", .len = 3},
+    {.chars = "105", .len = 3},  {.chars = "106", .len = 3},  {.chars = "107", .len = 3},  {.chars = "108", .len = 3},  {.chars = "109", .len = 3},
+    {.chars = "110", .len = 3},  {.chars = "111", .len = 3},  {.chars = "112", .len = 3},  {.chars = "113", .len = 3},  {.chars = "114", .len = 3},
+    {.chars = "115", .len = 3},  {.chars = "116", .len = 3},  {.chars = "117", .len = 3},  {.chars = "118", .len = 3},  {.chars = "119", .len = 3},
+    {.chars = "120", .len = 3},  {.chars = "121", .len = 3},  {.chars = "122", .len = 3},  {.chars = "123", .len = 3},  {.chars = "124", .len = 3},
+    {.chars = "125", .len = 3},  {.chars = "126", .len = 3},  {.chars = "127", .len = 3},  {.chars = "-128", .len = 4}, {.chars = "-127", .len = 4},
+    {.chars = "-126", .len = 4}, {.chars = "-125", .len = 4}, {.chars = "-124", .len = 4}, {.chars = "-123", .len = 4}, {.chars = "-122", .len = 4},
+    {.chars = "-121", .len = 4}, {.chars = "-120", .len = 4}, {.chars = "-119", .len = 4}, {.chars = "-118", .len = 4}, {.chars = "-117", .len = 4},
+    {.chars = "-116", .len = 4}, {.chars = "-115", .len = 4}, {.chars = "-114", .len = 4}, {.chars = "-113", .len = 4}, {.chars = "-112", .len = 4},
+    {.chars = "-111", .len = 4}, {.chars = "-110", .len = 4}, {.chars = "-109", .len = 4}, {.chars = "-108", .len = 4}, {.chars = "-107", .len = 4},
+    {.chars = "-106", .len = 4}, {.chars = "-105", .len = 4}, {.chars = "-104", .len = 4}, {.chars = "-103", .len = 4}, {.chars = "-102", .len = 4},
+    {.chars = "-101", .len = 4}, {.chars = "-100", .len = 4}, {.chars = "-99", .len = 3},  {.chars = "-98", .len = 3},  {.chars = "-97", .len = 3},
+    {.chars = "-96", .len = 3},  {.chars = "-95", .len = 3},  {.chars = "-94", .len = 3},  {.chars = "-93", .len = 3},  {.chars = "-92", .len = 3},
+    {.chars = "-91", .len = 3},  {.chars = "-90", .len = 3},  {.chars = "-89", .len = 3},  {.chars = "-88", .len = 3},  {.chars = "-87", .len = 3},
+    {.chars = "-86", .len = 3},  {.chars = "-85", .len = 3},  {.chars = "-84", .len = 3},  {.chars = "-83", .len = 3},  {.chars = "-82", .len = 3},
+    {.chars = "-81", .len = 3},  {.chars = "-80", .len = 3},  {.chars = "-79", .len = 3},  {.chars = "-78", .len = 3},  {.chars = "-77", .len = 3},
+    {.chars = "-76", .len = 3},  {.chars = "-75", .len = 3},  {.chars = "-74", .len = 3},  {.chars = "-73", .len = 3},  {.chars = "-72", .len = 3},
+    {.chars = "-71", .len = 3},  {.chars = "-70", .len = 3},  {.chars = "-69", .len = 3},  {.chars = "-68", .len = 3},  {.chars = "-67", .len = 3},
+    {.chars = "-66", .len = 3},  {.chars = "-65", .len = 3},  {.chars = "-64", .len = 3},  {.chars = "-63", .len = 3},  {.chars = "-62", .len = 3},
+    {.chars = "-61", .len = 3},  {.chars = "-60", .len = 3},  {.chars = "-59", .len = 3},  {.chars = "-58", .len = 3},  {.chars = "-57", .len = 3},
+    {.chars = "-56", .len = 3},  {.chars = "-55", .len = 3},  {.chars = "-54", .len = 3},  {.chars = "-53", .len = 3},  {.chars = "-52", .len = 3},
+    {.chars = "-51", .len = 3},  {.chars = "-50", .len = 3},  {.chars = "-49", .len = 3},  {.chars = "-48", .len = 3},  {.chars = "-47", .len = 3},
+    {.chars = "-46", .len = 3},  {.chars = "-45", .len = 3},  {.chars = "-44", .len = 3},  {.chars = "-43", .len = 3},  {.chars = "-42", .len = 3},
+    {.chars = "-41", .len = 3},  {.chars = "-40", .len = 3},  {.chars = "-39", .len = 3},  {.chars = "-38", .len = 3},  {.chars = "-37", .len = 3},
+    {.chars = "-36", .len = 3},  {.chars = "-35", .len = 3},  {.chars = "-34", .len = 3},  {.chars = "-33", .len = 3},  {.chars = "-32", .len = 3},
+    {.chars = "-31", .len = 3},  {.chars = "-30", .len = 3},  {.chars = "-29", .len = 3},  {.chars = "-28", .len = 3},  {.chars = "-27", .len = 3},
+    {.chars = "-26", .len = 3},  {.chars = "-25", .len = 3},  {.chars = "-24", .len = 3},  {.chars = "-23", .len = 3},  {.chars = "-22", .len = 3},
+    {.chars = "-21", .len = 3},  {.chars = "-20", .len = 3},  {.chars = "-19", .len = 3},  {.chars = "-18", .len = 3},  {.chars = "-17", .len = 3},
+    {.chars = "-16", .len = 3},  {.chars = "-15", .len = 3},  {.chars = "-14", .len = 3},  {.chars = "-13", .len = 3},  {.chars = "-12", .len = 3},
+    {.chars = "-11", .len = 3},  {.chars = "-10", .len = 3},  {.chars = "-9", .len = 2},   {.chars = "-8", .len = 2},   {.chars = "-7", .len = 2},
+    {.chars = "-6", .len = 2},   {.chars = "-5", .len = 2},   {.chars = "-4", .len = 2},   {.chars = "-3", .len = 2},   {.chars = "-2", .len = 2},
+    {.chars = "-1", .len = 2}};
 
-static const char cgs__byte_to_hex[][2] = 
-{
-    {'0', '0'},
-    {'0', '1'},
-    {'0', '2'},
-    {'0', '3'},
-    {'0', '4'},
-    {'0', '5'},
-    {'0', '6'},
-    {'0', '7'},
-    {'0', '8'},
-    {'0', '9'},
-    {'0', 'a'},
-    {'0', 'b'},
-    {'0', 'c'},
-    {'0', 'd'},
-    {'0', 'e'},
-    {'0', 'f'},
-    {'1', '0'},
-    {'1', '1'},
-    {'1', '2'},
-    {'1', '3'},
-    {'1', '4'},
-    {'1', '5'},
-    {'1', '6'},
-    {'1', '7'},
-    {'1', '8'},
-    {'1', '9'},
-    {'1', 'a'},
-    {'1', 'b'},
-    {'1', 'c'},
-    {'1', 'd'},
-    {'1', 'e'},
-    {'1', 'f'},
-    {'2', '0'},
-    {'2', '1'},
-    {'2', '2'},
-    {'2', '3'},
-    {'2', '4'},
-    {'2', '5'},
-    {'2', '6'},
-    {'2', '7'},
-    {'2', '8'},
-    {'2', '9'},
-    {'2', 'a'},
-    {'2', 'b'},
-    {'2', 'c'},
-    {'2', 'd'},
-    {'2', 'e'},
-    {'2', 'f'},
-    {'3', '0'},
-    {'3', '1'},
-    {'3', '2'},
-    {'3', '3'},
-    {'3', '4'},
-    {'3', '5'},
-    {'3', '6'},
-    {'3', '7'},
-    {'3', '8'},
-    {'3', '9'},
-    {'3', 'a'},
-    {'3', 'b'},
-    {'3', 'c'},
-    {'3', 'd'},
-    {'3', 'e'},
-    {'3', 'f'},
-    {'4', '0'},
-    {'4', '1'},
-    {'4', '2'},
-    {'4', '3'},
-    {'4', '4'},
-    {'4', '5'},
-    {'4', '6'},
-    {'4', '7'},
-    {'4', '8'},
-    {'4', '9'},
-    {'4', 'a'},
-    {'4', 'b'},
-    {'4', 'c'},
-    {'4', 'd'},
-    {'4', 'e'},
-    {'4', 'f'},
-    {'5', '0'},
-    {'5', '1'},
-    {'5', '2'},
-    {'5', '3'},
-    {'5', '4'},
-    {'5', '5'},
-    {'5', '6'},
-    {'5', '7'},
-    {'5', '8'},
-    {'5', '9'},
-    {'5', 'a'},
-    {'5', 'b'},
-    {'5', 'c'},
-    {'5', 'd'},
-    {'5', 'e'},
-    {'5', 'f'},
-    {'6', '0'},
-    {'6', '1'},
-    {'6', '2'},
-    {'6', '3'},
-    {'6', '4'},
-    {'6', '5'},
-    {'6', '6'},
-    {'6', '7'},
-    {'6', '8'},
-    {'6', '9'},
-    {'6', 'a'},
-    {'6', 'b'},
-    {'6', 'c'},
-    {'6', 'd'},
-    {'6', 'e'},
-    {'6', 'f'},
-    {'7', '0'},
-    {'7', '1'},
-    {'7', '2'},
-    {'7', '3'},
-    {'7', '4'},
-    {'7', '5'},
-    {'7', '6'},
-    {'7', '7'},
-    {'7', '8'},
-    {'7', '9'},
-    {'7', 'a'},
-    {'7', 'b'},
-    {'7', 'c'},
-    {'7', 'd'},
-    {'7', 'e'},
-    {'7', 'f'},
-    {'8', '0'},
-    {'8', '1'},
-    {'8', '2'},
-    {'8', '3'},
-    {'8', '4'},
-    {'8', '5'},
-    {'8', '6'},
-    {'8', '7'},
-    {'8', '8'},
-    {'8', '9'},
-    {'8', 'a'},
-    {'8', 'b'},
-    {'8', 'c'},
-    {'8', 'd'},
-    {'8', 'e'},
-    {'8', 'f'},
-    {'9', '0'},
-    {'9', '1'},
-    {'9', '2'},
-    {'9', '3'},
-    {'9', '4'},
-    {'9', '5'},
-    {'9', '6'},
-    {'9', '7'},
-    {'9', '8'},
-    {'9', '9'},
-    {'9', 'a'},
-    {'9', 'b'},
-    {'9', 'c'},
-    {'9', 'd'},
-    {'9', 'e'},
-    {'9', 'f'},
-    {'a', '0'},
-    {'a', '1'},
-    {'a', '2'},
-    {'a', '3'},
-    {'a', '4'},
-    {'a', '5'},
-    {'a', '6'},
-    {'a', '7'},
-    {'a', '8'},
-    {'a', '9'},
-    {'a', 'a'},
-    {'a', 'b'},
-    {'a', 'c'},
-    {'a', 'd'},
-    {'a', 'e'},
-    {'a', 'f'},
-    {'b', '0'},
-    {'b', '1'},
-    {'b', '2'},
-    {'b', '3'},
-    {'b', '4'},
-    {'b', '5'},
-    {'b', '6'},
-    {'b', '7'},
-    {'b', '8'},
-    {'b', '9'},
-    {'b', 'a'},
-    {'b', 'b'},
-    {'b', 'c'},
-    {'b', 'd'},
-    {'b', 'e'},
-    {'b', 'f'},
-    {'c', '0'},
-    {'c', '1'},
-    {'c', '2'},
-    {'c', '3'},
-    {'c', '4'},
-    {'c', '5'},
-    {'c', '6'},
-    {'c', '7'},
-    {'c', '8'},
-    {'c', '9'},
-    {'c', 'a'},
-    {'c', 'b'},
-    {'c', 'c'},
-    {'c', 'd'},
-    {'c', 'e'},
-    {'c', 'f'},
-    {'d', '0'},
-    {'d', '1'},
-    {'d', '2'},
-    {'d', '3'},
-    {'d', '4'},
-    {'d', '5'},
-    {'d', '6'},
-    {'d', '7'},
-    {'d', '8'},
-    {'d', '9'},
-    {'d', 'a'},
-    {'d', 'b'},
-    {'d', 'c'},
-    {'d', 'd'},
-    {'d', 'e'},
-    {'d', 'f'},
-    {'e', '0'},
-    {'e', '1'},
-    {'e', '2'},
-    {'e', '3'},
-    {'e', '4'},
-    {'e', '5'},
-    {'e', '6'},
-    {'e', '7'},
-    {'e', '8'},
-    {'e', '9'},
-    {'e', 'a'},
-    {'e', 'b'},
-    {'e', 'c'},
-    {'e', 'd'},
-    {'e', 'e'},
-    {'e', 'f'},
-    {'f', '0'},
-    {'f', '1'},
-    {'f', '2'},
-    {'f', '3'},
-    {'f', '4'},
-    {'f', '5'},
-    {'f', '6'},
-    {'f', '7'},
-    {'f', '8'},
-    {'f', '9'},
-    {'f', 'a'},
-    {'f', 'b'},
-    {'f', 'c'},
-    {'f', 'd'},
-    {'f', 'e'},
-    {'f', 'f'}
-};
+static const char cgs__byte_to_hex[][2] = {
+    {'0', '0'}, {'0', '1'}, {'0', '2'}, {'0', '3'}, {'0', '4'}, {'0', '5'}, {'0', '6'}, {'0', '7'}, {'0', '8'}, {'0', '9'}, {'0', 'a'}, {'0', 'b'}, {'0', 'c'}, {'0', 'd'},
+    {'0', 'e'}, {'0', 'f'}, {'1', '0'}, {'1', '1'}, {'1', '2'}, {'1', '3'}, {'1', '4'}, {'1', '5'}, {'1', '6'}, {'1', '7'}, {'1', '8'}, {'1', '9'}, {'1', 'a'}, {'1', 'b'},
+    {'1', 'c'}, {'1', 'd'}, {'1', 'e'}, {'1', 'f'}, {'2', '0'}, {'2', '1'}, {'2', '2'}, {'2', '3'}, {'2', '4'}, {'2', '5'}, {'2', '6'}, {'2', '7'}, {'2', '8'}, {'2', '9'},
+    {'2', 'a'}, {'2', 'b'}, {'2', 'c'}, {'2', 'd'}, {'2', 'e'}, {'2', 'f'}, {'3', '0'}, {'3', '1'}, {'3', '2'}, {'3', '3'}, {'3', '4'}, {'3', '5'}, {'3', '6'}, {'3', '7'},
+    {'3', '8'}, {'3', '9'}, {'3', 'a'}, {'3', 'b'}, {'3', 'c'}, {'3', 'd'}, {'3', 'e'}, {'3', 'f'}, {'4', '0'}, {'4', '1'}, {'4', '2'}, {'4', '3'}, {'4', '4'}, {'4', '5'},
+    {'4', '6'}, {'4', '7'}, {'4', '8'}, {'4', '9'}, {'4', 'a'}, {'4', 'b'}, {'4', 'c'}, {'4', 'd'}, {'4', 'e'}, {'4', 'f'}, {'5', '0'}, {'5', '1'}, {'5', '2'}, {'5', '3'},
+    {'5', '4'}, {'5', '5'}, {'5', '6'}, {'5', '7'}, {'5', '8'}, {'5', '9'}, {'5', 'a'}, {'5', 'b'}, {'5', 'c'}, {'5', 'd'}, {'5', 'e'}, {'5', 'f'}, {'6', '0'}, {'6', '1'},
+    {'6', '2'}, {'6', '3'}, {'6', '4'}, {'6', '5'}, {'6', '6'}, {'6', '7'}, {'6', '8'}, {'6', '9'}, {'6', 'a'}, {'6', 'b'}, {'6', 'c'}, {'6', 'd'}, {'6', 'e'}, {'6', 'f'},
+    {'7', '0'}, {'7', '1'}, {'7', '2'}, {'7', '3'}, {'7', '4'}, {'7', '5'}, {'7', '6'}, {'7', '7'}, {'7', '8'}, {'7', '9'}, {'7', 'a'}, {'7', 'b'}, {'7', 'c'}, {'7', 'd'},
+    {'7', 'e'}, {'7', 'f'}, {'8', '0'}, {'8', '1'}, {'8', '2'}, {'8', '3'}, {'8', '4'}, {'8', '5'}, {'8', '6'}, {'8', '7'}, {'8', '8'}, {'8', '9'}, {'8', 'a'}, {'8', 'b'},
+    {'8', 'c'}, {'8', 'd'}, {'8', 'e'}, {'8', 'f'}, {'9', '0'}, {'9', '1'}, {'9', '2'}, {'9', '3'}, {'9', '4'}, {'9', '5'}, {'9', '6'}, {'9', '7'}, {'9', '8'}, {'9', '9'},
+    {'9', 'a'}, {'9', 'b'}, {'9', 'c'}, {'9', 'd'}, {'9', 'e'}, {'9', 'f'}, {'a', '0'}, {'a', '1'}, {'a', '2'}, {'a', '3'}, {'a', '4'}, {'a', '5'}, {'a', '6'}, {'a', '7'},
+    {'a', '8'}, {'a', '9'}, {'a', 'a'}, {'a', 'b'}, {'a', 'c'}, {'a', 'd'}, {'a', 'e'}, {'a', 'f'}, {'b', '0'}, {'b', '1'}, {'b', '2'}, {'b', '3'}, {'b', '4'}, {'b', '5'},
+    {'b', '6'}, {'b', '7'}, {'b', '8'}, {'b', '9'}, {'b', 'a'}, {'b', 'b'}, {'b', 'c'}, {'b', 'd'}, {'b', 'e'}, {'b', 'f'}, {'c', '0'}, {'c', '1'}, {'c', '2'}, {'c', '3'},
+    {'c', '4'}, {'c', '5'}, {'c', '6'}, {'c', '7'}, {'c', '8'}, {'c', '9'}, {'c', 'a'}, {'c', 'b'}, {'c', 'c'}, {'c', 'd'}, {'c', 'e'}, {'c', 'f'}, {'d', '0'}, {'d', '1'},
+    {'d', '2'}, {'d', '3'}, {'d', '4'}, {'d', '5'}, {'d', '6'}, {'d', '7'}, {'d', '8'}, {'d', '9'}, {'d', 'a'}, {'d', 'b'}, {'d', 'c'}, {'d', 'd'}, {'d', 'e'}, {'d', 'f'},
+    {'e', '0'}, {'e', '1'}, {'e', '2'}, {'e', '3'}, {'e', '4'}, {'e', '5'}, {'e', '6'}, {'e', '7'}, {'e', '8'}, {'e', '9'}, {'e', 'a'}, {'e', 'b'}, {'e', 'c'}, {'e', 'd'},
+    {'e', 'e'}, {'e', 'f'}, {'f', '0'}, {'f', '1'}, {'f', '2'}, {'f', '3'}, {'f', '4'}, {'f', '5'}, {'f', '6'}, {'f', '7'}, {'f', '8'}, {'f', '9'}, {'f', 'a'}, {'f', 'b'},
+    {'f', 'c'}, {'f', 'd'}, {'f', 'e'}, {'f', 'f'}};
 
-static const char cgs__byte_to_heX[][2] = 
-{
-    {'0', '0'},
-    {'0', '1'},
-    {'0', '2'},
-    {'0', '3'},
-    {'0', '4'},
-    {'0', '5'},
-    {'0', '6'},
-    {'0', '7'},
-    {'0', '8'},
-    {'0', '9'},
-    {'0', 'A'},
-    {'0', 'B'},
-    {'0', 'C'},
-    {'0', 'D'},
-    {'0', 'E'},
-    {'0', 'F'},
-    {'1', '0'},
-    {'1', '1'},
-    {'1', '2'},
-    {'1', '3'},
-    {'1', '4'},
-    {'1', '5'},
-    {'1', '6'},
-    {'1', '7'},
-    {'1', '8'},
-    {'1', '9'},
-    {'1', 'A'},
-    {'1', 'B'},
-    {'1', 'C'},
-    {'1', 'D'},
-    {'1', 'E'},
-    {'1', 'F'},
-    {'2', '0'},
-    {'2', '1'},
-    {'2', '2'},
-    {'2', '3'},
-    {'2', '4'},
-    {'2', '5'},
-    {'2', '6'},
-    {'2', '7'},
-    {'2', '8'},
-    {'2', '9'},
-    {'2', 'A'},
-    {'2', 'B'},
-    {'2', 'C'},
-    {'2', 'D'},
-    {'2', 'E'},
-    {'2', 'F'},
-    {'3', '0'},
-    {'3', '1'},
-    {'3', '2'},
-    {'3', '3'},
-    {'3', '4'},
-    {'3', '5'},
-    {'3', '6'},
-    {'3', '7'},
-    {'3', '8'},
-    {'3', '9'},
-    {'3', 'A'},
-    {'3', 'B'},
-    {'3', 'C'},
-    {'3', 'D'},
-    {'3', 'E'},
-    {'3', 'F'},
-    {'4', '0'},
-    {'4', '1'},
-    {'4', '2'},
-    {'4', '3'},
-    {'4', '4'},
-    {'4', '5'},
-    {'4', '6'},
-    {'4', '7'},
-    {'4', '8'},
-    {'4', '9'},
-    {'4', 'A'},
-    {'4', 'B'},
-    {'4', 'C'},
-    {'4', 'D'},
-    {'4', 'E'},
-    {'4', 'F'},
-    {'5', '0'},
-    {'5', '1'},
-    {'5', '2'},
-    {'5', '3'},
-    {'5', '4'},
-    {'5', '5'},
-    {'5', '6'},
-    {'5', '7'},
-    {'5', '8'},
-    {'5', '9'},
-    {'5', 'A'},
-    {'5', 'B'},
-    {'5', 'C'},
-    {'5', 'D'},
-    {'5', 'E'},
-    {'5', 'F'},
-    {'6', '0'},
-    {'6', '1'},
-    {'6', '2'},
-    {'6', '3'},
-    {'6', '4'},
-    {'6', '5'},
-    {'6', '6'},
-    {'6', '7'},
-    {'6', '8'},
-    {'6', '9'},
-    {'6', 'A'},
-    {'6', 'B'},
-    {'6', 'C'},
-    {'6', 'D'},
-    {'6', 'E'},
-    {'6', 'F'},
-    {'7', '0'},
-    {'7', '1'},
-    {'7', '2'},
-    {'7', '3'},
-    {'7', '4'},
-    {'7', '5'},
-    {'7', '6'},
-    {'7', '7'},
-    {'7', '8'},
-    {'7', '9'},
-    {'7', 'A'},
-    {'7', 'B'},
-    {'7', 'C'},
-    {'7', 'D'},
-    {'7', 'E'},
-    {'7', 'F'},
-    {'8', '0'},
-    {'8', '1'},
-    {'8', '2'},
-    {'8', '3'},
-    {'8', '4'},
-    {'8', '5'},
-    {'8', '6'},
-    {'8', '7'},
-    {'8', '8'},
-    {'8', '9'},
-    {'8', 'A'},
-    {'8', 'B'},
-    {'8', 'C'},
-    {'8', 'D'},
-    {'8', 'E'},
-    {'8', 'F'},
-    {'9', '0'},
-    {'9', '1'},
-    {'9', '2'},
-    {'9', '3'},
-    {'9', '4'},
-    {'9', '5'},
-    {'9', '6'},
-    {'9', '7'},
-    {'9', '8'},
-    {'9', '9'},
-    {'9', 'A'},
-    {'9', 'B'},
-    {'9', 'C'},
-    {'9', 'D'},
-    {'9', 'E'},
-    {'9', 'F'},
-    {'A', '0'},
-    {'A', '1'},
-    {'A', '2'},
-    {'A', '3'},
-    {'A', '4'},
-    {'A', '5'},
-    {'A', '6'},
-    {'A', '7'},
-    {'A', '8'},
-    {'A', '9'},
-    {'A', 'A'},
-    {'A', 'B'},
-    {'A', 'C'},
-    {'A', 'D'},
-    {'A', 'E'},
-    {'A', 'F'},
-    {'B', '0'},
-    {'B', '1'},
-    {'B', '2'},
-    {'B', '3'},
-    {'B', '4'},
-    {'B', '5'},
-    {'B', '6'},
-    {'B', '7'},
-    {'B', '8'},
-    {'B', '9'},
-    {'B', 'A'},
-    {'B', 'B'},
-    {'B', 'C'},
-    {'B', 'D'},
-    {'B', 'E'},
-    {'B', 'F'},
-    {'C', '0'},
-    {'C', '1'},
-    {'C', '2'},
-    {'C', '3'},
-    {'C', '4'},
-    {'C', '5'},
-    {'C', '6'},
-    {'C', '7'},
-    {'C', '8'},
-    {'C', '9'},
-    {'C', 'A'},
-    {'C', 'B'},
-    {'C', 'C'},
-    {'C', 'D'},
-    {'C', 'E'},
-    {'C', 'F'},
-    {'D', '0'},
-    {'D', '1'},
-    {'D', '2'},
-    {'D', '3'},
-    {'D', '4'},
-    {'D', '5'},
-    {'D', '6'},
-    {'D', '7'},
-    {'D', '8'},
-    {'D', '9'},
-    {'D', 'A'},
-    {'D', 'B'},
-    {'D', 'C'},
-    {'D', 'D'},
-    {'D', 'E'},
-    {'D', 'F'},
-    {'E', '0'},
-    {'E', '1'},
-    {'E', '2'},
-    {'E', '3'},
-    {'E', '4'},
-    {'E', '5'},
-    {'E', '6'},
-    {'E', '7'},
-    {'E', '8'},
-    {'E', '9'},
-    {'E', 'A'},
-    {'E', 'B'},
-    {'E', 'C'},
-    {'E', 'D'},
-    {'E', 'E'},
-    {'E', 'F'},
-    {'F', '0'},
-    {'F', '1'},
-    {'F', '2'},
-    {'F', '3'},
-    {'F', '4'},
-    {'F', '5'},
-    {'F', '6'},
-    {'F', '7'},
-    {'F', '8'},
-    {'F', '9'},
-    {'F', 'A'},
-    {'F', 'B'},
-    {'F', 'C'},
-    {'F', 'D'},
-    {'F', 'E'},
-    {'F', 'F'},
+static const char cgs__byte_to_heX[][2] = {
+    {'0', '0'}, {'0', '1'}, {'0', '2'}, {'0', '3'}, {'0', '4'}, {'0', '5'}, {'0', '6'}, {'0', '7'}, {'0', '8'}, {'0', '9'}, {'0', 'A'}, {'0', 'B'}, {'0', 'C'}, {'0', 'D'},
+    {'0', 'E'}, {'0', 'F'}, {'1', '0'}, {'1', '1'}, {'1', '2'}, {'1', '3'}, {'1', '4'}, {'1', '5'}, {'1', '6'}, {'1', '7'}, {'1', '8'}, {'1', '9'}, {'1', 'A'}, {'1', 'B'},
+    {'1', 'C'}, {'1', 'D'}, {'1', 'E'}, {'1', 'F'}, {'2', '0'}, {'2', '1'}, {'2', '2'}, {'2', '3'}, {'2', '4'}, {'2', '5'}, {'2', '6'}, {'2', '7'}, {'2', '8'}, {'2', '9'},
+    {'2', 'A'}, {'2', 'B'}, {'2', 'C'}, {'2', 'D'}, {'2', 'E'}, {'2', 'F'}, {'3', '0'}, {'3', '1'}, {'3', '2'}, {'3', '3'}, {'3', '4'}, {'3', '5'}, {'3', '6'}, {'3', '7'},
+    {'3', '8'}, {'3', '9'}, {'3', 'A'}, {'3', 'B'}, {'3', 'C'}, {'3', 'D'}, {'3', 'E'}, {'3', 'F'}, {'4', '0'}, {'4', '1'}, {'4', '2'}, {'4', '3'}, {'4', '4'}, {'4', '5'},
+    {'4', '6'}, {'4', '7'}, {'4', '8'}, {'4', '9'}, {'4', 'A'}, {'4', 'B'}, {'4', 'C'}, {'4', 'D'}, {'4', 'E'}, {'4', 'F'}, {'5', '0'}, {'5', '1'}, {'5', '2'}, {'5', '3'},
+    {'5', '4'}, {'5', '5'}, {'5', '6'}, {'5', '7'}, {'5', '8'}, {'5', '9'}, {'5', 'A'}, {'5', 'B'}, {'5', 'C'}, {'5', 'D'}, {'5', 'E'}, {'5', 'F'}, {'6', '0'}, {'6', '1'},
+    {'6', '2'}, {'6', '3'}, {'6', '4'}, {'6', '5'}, {'6', '6'}, {'6', '7'}, {'6', '8'}, {'6', '9'}, {'6', 'A'}, {'6', 'B'}, {'6', 'C'}, {'6', 'D'}, {'6', 'E'}, {'6', 'F'},
+    {'7', '0'}, {'7', '1'}, {'7', '2'}, {'7', '3'}, {'7', '4'}, {'7', '5'}, {'7', '6'}, {'7', '7'}, {'7', '8'}, {'7', '9'}, {'7', 'A'}, {'7', 'B'}, {'7', 'C'}, {'7', 'D'},
+    {'7', 'E'}, {'7', 'F'}, {'8', '0'}, {'8', '1'}, {'8', '2'}, {'8', '3'}, {'8', '4'}, {'8', '5'}, {'8', '6'}, {'8', '7'}, {'8', '8'}, {'8', '9'}, {'8', 'A'}, {'8', 'B'},
+    {'8', 'C'}, {'8', 'D'}, {'8', 'E'}, {'8', 'F'}, {'9', '0'}, {'9', '1'}, {'9', '2'}, {'9', '3'}, {'9', '4'}, {'9', '5'}, {'9', '6'}, {'9', '7'}, {'9', '8'}, {'9', '9'},
+    {'9', 'A'}, {'9', 'B'}, {'9', 'C'}, {'9', 'D'}, {'9', 'E'}, {'9', 'F'}, {'A', '0'}, {'A', '1'}, {'A', '2'}, {'A', '3'}, {'A', '4'}, {'A', '5'}, {'A', '6'}, {'A', '7'},
+    {'A', '8'}, {'A', '9'}, {'A', 'A'}, {'A', 'B'}, {'A', 'C'}, {'A', 'D'}, {'A', 'E'}, {'A', 'F'}, {'B', '0'}, {'B', '1'}, {'B', '2'}, {'B', '3'}, {'B', '4'}, {'B', '5'},
+    {'B', '6'}, {'B', '7'}, {'B', '8'}, {'B', '9'}, {'B', 'A'}, {'B', 'B'}, {'B', 'C'}, {'B', 'D'}, {'B', 'E'}, {'B', 'F'}, {'C', '0'}, {'C', '1'}, {'C', '2'}, {'C', '3'},
+    {'C', '4'}, {'C', '5'}, {'C', '6'}, {'C', '7'}, {'C', '8'}, {'C', '9'}, {'C', 'A'}, {'C', 'B'}, {'C', 'C'}, {'C', 'D'}, {'C', 'E'}, {'C', 'F'}, {'D', '0'}, {'D', '1'},
+    {'D', '2'}, {'D', '3'}, {'D', '4'}, {'D', '5'}, {'D', '6'}, {'D', '7'}, {'D', '8'}, {'D', '9'}, {'D', 'A'}, {'D', 'B'}, {'D', 'C'}, {'D', 'D'}, {'D', 'E'}, {'D', 'F'},
+    {'E', '0'}, {'E', '1'}, {'E', '2'}, {'E', '3'}, {'E', '4'}, {'E', '5'}, {'E', '6'}, {'E', '7'}, {'E', '8'}, {'E', '9'}, {'E', 'A'}, {'E', 'B'}, {'E', 'C'}, {'E', 'D'},
+    {'E', 'E'}, {'E', 'F'}, {'F', '0'}, {'F', '1'}, {'F', '2'}, {'F', '3'}, {'F', '4'}, {'F', '5'}, {'F', '6'}, {'F', '7'}, {'F', '8'}, {'F', '9'}, {'F', 'A'}, {'F', 'B'},
+    {'F', 'C'}, {'F', 'D'}, {'F', 'E'}, {'F', 'F'},
 };
 
 CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref(CGS_Buffer buf, unsigned int *len_ptr)
 {
-    *len_ptr = (unsigned int)((char*)memchr(buf.ptr, '\0', buf.cap) - buf.ptr);
-    CGS__FixedMutStrRef ret = {
-        .chars = buf.ptr,
-        .cap = buf.cap,
-        .len = len_ptr
-    };
+    *len_ptr                = (unsigned int)((char *)memchr(buf.ptr, '\0', buf.cap) - buf.ptr);
+    CGS__FixedMutStrRef ret = {.chars = buf.ptr, .cap = buf.cap, .len = len_ptr};
     return ret;
 }
 
 CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref_zero_len(CGS_Buffer buf, unsigned int *len_ptr)
 {
-    *len_ptr = 0;
-    CGS__FixedMutStrRef ret = {
-        .chars = buf.ptr,
-        .cap = buf.cap,
-        .len = len_ptr
-    };
+    *len_ptr                = 0;
+    CGS__FixedMutStrRef ret = {.chars = buf.ptr, .cap = buf.cap, .len = len_ptr};
     return ret;
 }
 
 CGS_API CGS__FixedMutStrRef cgs__strbuf_ptr_as_fmutstr_ref(CGS_StrBuf *strbuf)
 {
-    CGS__FixedMutStrRef ret = {
-        .chars = strbuf->chars,
-        .cap = strbuf->cap,
-        .len = &strbuf->len
-    };
+    CGS__FixedMutStrRef ret = {.chars = strbuf->chars, .cap = strbuf->cap, .len = &strbuf->len};
     return ret;
 }
 
 CGS_API CGS__FixedMutStrRef cgs__mutstr_ref_as_fmutstr_ref(CGS_MutStrRef mutstr_ref, unsigned int *len_ptr)
 {
-    switch(mutstr_ref.ty)
+    switch (mutstr_ref.ty)
     {
-        case CGS__DSTR_TY:
-            return cgs__dstr_ptr_as_fmutstr_ref(mutstr_ref.str.dstr);
-        case CGS__STRBUF_TY:
-            return cgs__strbuf_ptr_as_fmutstr_ref(mutstr_ref.str.strbuf);
-        case CGS__BUF_TY:
-            return cgs__buf_as_fmutstr_ref(mutstr_ref.str.buf, len_ptr);
-        default:
-            CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__dstr_ptr_as_fmutstr_ref(mutstr_ref.str.dstr);
+    case CGS__STRBUF_TY:
+        return cgs__strbuf_ptr_as_fmutstr_ref(mutstr_ref.str.strbuf);
+    case CGS__BUF_TY:
+        return cgs__buf_as_fmutstr_ref(mutstr_ref.str.buf, len_ptr);
+    default:
+        CGS_unreachable();
     }
 }
 
 CGS_API CGS__FixedMutStrRef cgs__mutstr_ref_as_fmutstr_ref_zero_len(CGS_MutStrRef mutstr_ref, unsigned int *len_ptr)
 {
-    switch(mutstr_ref.ty)
+    switch (mutstr_ref.ty)
     {
-        case CGS__DSTR_TY:
-            return cgs__dstr_ptr_as_fmutstr_ref(mutstr_ref.str.dstr);
-        case CGS__STRBUF_TY:
-            return cgs__strbuf_ptr_as_fmutstr_ref(mutstr_ref.str.strbuf);
-        case CGS__BUF_TY:
-            return cgs__buf_as_fmutstr_ref_zero_len(mutstr_ref.str.buf, len_ptr);
-        default:
-            CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__dstr_ptr_as_fmutstr_ref(mutstr_ref.str.dstr);
+    case CGS__STRBUF_TY:
+        return cgs__strbuf_ptr_as_fmutstr_ref(mutstr_ref.str.strbuf);
+    case CGS__BUF_TY:
+        return cgs__buf_as_fmutstr_ref_zero_len(mutstr_ref.str.buf, len_ptr);
+    default:
+        CGS_unreachable();
     }
 }
 
 CGS_API CGS__FixedMutStrRef cgs__dstr_ptr_as_fmutstr_ref(CGS_DStr *dstr)
 {
-    CGS__FixedMutStrRef ret = {
-        .chars = dstr->chars,
-        .cap = dstr->cap,
-        .len = &dstr->len
-    };
+    CGS__FixedMutStrRef ret = {.chars = dstr->chars, .cap = dstr->cap, .len = &dstr->len};
     return ret;
 }
 
 CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n)
 {
-    (void) align;
-    (void) allocator;
+    (void)align;
+    (void)allocator;
     void *mem = malloc(n);
-    return (CGS_Allocation){
+    return (CGS_Allocation) {
         .ptr = mem,
-        .n = n
+        .n   = n,
     };
 }
 
 CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n)
 {
-    (void) allocator;
-    (void) n;
+    (void)allocator;
+    (void)n;
     free(ptr);
 }
 
 CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t align, size_t old_size, size_t new_size)
 {
-    (void) allocator;
-    (void) align;
-    (void) old_size;
+    (void)allocator;
+    (void)align;
+    (void)old_size;
     void *mem = realloc(ptr, new_size);
-    return (CGS_Allocation){
+    return (CGS_Allocation) {
         .ptr = mem,
-        .n = new_size
+        .n   = new_size,
     };
 }
 
 CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n)
 {
     CGS_unreachable();
-    (void) allocator;
-    (void) align;
-    (void) n;
-    return (CGS_Allocation){0};
+    (void)allocator;
+    (void)align;
+    (void)n;
+    return (CGS_Allocation) {0};
 }
 
 CGS_PRIVATE void cgs__dstr_append_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n)
 {
     CGS_unreachable();
-    (void) allocator;
-    (void) ptr;
-    (void) n;
+    (void)allocator;
+    (void)ptr;
+    (void)n;
 }
 
 CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t align, size_t old_size, size_t new_size)
 {
-    (void) align;
-    
-    CGS__DStrAppendAllocator *dstr_append_allocator = (__typeof__(dstr_append_allocator)) allocator;
-    
+    (void)align;
+
+    CGS__DStrAppendAllocator *dstr_append_allocator = (__typeof__(dstr_append_allocator))allocator;
+
     CGS_DStr *owner = dstr_append_allocator->owner;
-    
+
     assert(old_size == owner->cap - owner->len);
-    assert(((char*)ptr - owner->chars) == owner->len);
-    
+    assert(((char *)ptr - owner->chars) == owner->len);
+
     cgs_dstr_ensure_cap(owner, owner->cap + (unsigned int)(new_size - old_size));
-    return (CGS_Allocation){
+    return (CGS_Allocation) {
         .ptr = owner->chars + owner->len,
-        .n = owner->cap - owner->len
+        .n   = owner->cap - owner->len,
     };
 }
 
@@ -1288,52 +375,47 @@ CGS_API CGS_Allocator *cgs_get_default_allocator()
 
 CGS_PRIVATE void cgs__make_dstr_append_allocator(CGS_DStr *dstr, CGS__DStrAppendAllocator *out)
 {
-    *out = (CGS__DStrAppendAllocator){
-        .base = {
-            .alloc   = cgs__dstr_append_allocator_alloc,
-            .dealloc = cgs__dstr_append_allocator_dealloc,
-            .realloc = cgs__dstr_append_allocator_realloc,
-        },
-        .owner = dstr
-    };
+    *out = (CGS__DStrAppendAllocator) {.base =
+                                           {
+                                               .alloc   = cgs__dstr_append_allocator_alloc,
+                                               .dealloc = cgs__dstr_append_allocator_dealloc,
+                                               .realloc = cgs__dstr_append_allocator_realloc,
+                                           },
+                                       .owner = dstr};
 }
 
 CGS_PRIVATE CGS_DStr cgs__make_appender_dstr(CGS_DStr *owner, CGS__DStrAppendAllocator *allocator)
 {
     cgs__make_dstr_append_allocator(owner, allocator);
-    return (CGS_DStr){
-        .allocator = (void*) allocator,
-        .cap = owner->cap - owner->len,
-        .len = 0,
-        .chars = owner->chars + owner->len
+    return (CGS_DStr) {
+        .allocator = (void *)allocator,
+        .cap       = owner->cap - owner->len,
+        .len       = 0,
+        .chars     = owner->chars + owner->len,
     };
 }
 
 CGS_PRIVATE CGS_StrBuf cgs__make_appender_strbuf(CGS_MutStrRef owner)
 {
-    return (CGS_StrBuf){
-        .cap = cgs__mutstr_ref_cap(owner) - cgs__mutstr_ref_len(owner),
-        .len = 0,
-        .chars = (char*) cgs__mutstr_ref_as_cstr(owner) + cgs__mutstr_ref_len(owner)
-    };
+    return (CGS_StrBuf) {
+        .cap = cgs__mutstr_ref_cap(owner) - cgs__mutstr_ref_len(owner), .len = 0, .chars = (char *)cgs__mutstr_ref_as_cstr(owner) + cgs__mutstr_ref_len(owner)};
 }
 
 CGS_API CGS_MutStrRef cgs__make_appender_mutstr_ref(CGS_MutStrRef owner, CGS_AppenderState *state)
 {
-    switch(owner.ty)
+    switch (owner.ty)
     {
-        case CGS__DSTR_TY   :
-            state->appender_dstr = cgs__make_appender_dstr(owner.str.dstr, &state->dstr_append_allocator);
-            return cgs__dstr_ptr_as_mutstr_ref(&state->appender_dstr);
-        case CGS__STRBUF_TY :
-        case CGS__BUF_TY    :
-            ;
-            CGS_MutStrRef ret = {.ty = CGS__STRBUF_TY};
-            ret.str.strbuf = &state->appender_buf;
-            *ret.str.strbuf = cgs__make_appender_strbuf(owner);
-            return ret;
-        default             :
-            CGS_unreachable();
+    case CGS__DSTR_TY:
+        state->appender_dstr = cgs__make_appender_dstr(owner.str.dstr, &state->dstr_append_allocator);
+        return cgs__dstr_ptr_as_mutstr_ref(&state->appender_dstr);
+    case CGS__STRBUF_TY:
+    case CGS__BUF_TY:;
+        CGS_MutStrRef ret = {.ty = CGS__STRBUF_TY};
+        ret.str.strbuf    = &state->appender_buf;
+        *ret.str.strbuf   = cgs__make_appender_strbuf(owner);
+        return ret;
+    default:
+        CGS_unreachable();
     }
 }
 
@@ -1351,8 +433,8 @@ CGS_PRIVATE unsigned int cgs__chars_strlen(const char *chars, unsigned int cap)
 {
     const char *str_end = memchr(chars, '\0', cap);
     unsigned int len;
-    
-    if(str_end != NULL)
+
+    if (str_end != NULL)
     {
         len = (unsigned int)(str_end - chars);
     }
@@ -1360,29 +442,29 @@ CGS_PRIVATE unsigned int cgs__chars_strlen(const char *chars, unsigned int cap)
     {
         len = cap - 1;
     }
-    
+
     return len;
 }
 
 CGS_PRIVATE bool cgs__is_strv_within(CGS_StrView base, CGS_StrView sub)
 {
-    uintptr_t begin = (uintptr_t) base.chars;
-    uintptr_t end = (uintptr_t) (base.chars + base.len);
-    uintptr_t sub_begin = (uintptr_t) sub.chars;
+    uintptr_t begin     = (uintptr_t)base.chars;
+    uintptr_t end       = (uintptr_t)(base.chars + base.len);
+    uintptr_t sub_begin = (uintptr_t)sub.chars;
     return sub_begin >= begin && sub_begin < end;
 }
 
 CGS__NODISCARD("discarding a new DStr may cause memory leak")
 CGS_API CGS_DStr cgs__dstr_init(unsigned int cap, CGS_Allocator *allocator)
 {
-    CGS_DStr ret = { .allocator = allocator };
-    if(cap != 0)
+    CGS_DStr ret = {.allocator = allocator};
+    if (cap != 0)
     {
         CGS_Allocation allocation = cgs_alloc(allocator, unsigned char, cap);
-        ret.chars = allocation.ptr;
-        ret.cap = (unsigned int) allocation.n;
-        
-        if(ret.chars != NULL && ret.cap != 0)
+        ret.chars                 = allocation.ptr;
+        ret.cap                   = (unsigned int)allocation.n;
+
+        if (ret.chars != NULL && ret.cap != 0)
         {
             ret.chars[0] = '\0';
         }
@@ -1393,32 +475,32 @@ CGS_API CGS_DStr cgs__dstr_init(unsigned int cap, CGS_Allocator *allocator)
 CGS_API CGS_DStr cgs__dstr_init_from(const CGS_StrView str, CGS_Allocator *allocator)
 {
     CGS_DStr ret = cgs__dstr_init(str.len + 1, allocator);
-    
+
     cgs__dstr_copy(&ret, str);
-    
+
     return ret;
 }
 
 CGS_API void cgs__dstr_deinit(CGS_DStr *dstr)
 {
     cgs_dealloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap);
-    dstr->cap = 0;
-    dstr->len = 0;
+    dstr->cap   = 0;
+    dstr->len   = 0;
     dstr->chars = NULL;
 }
 
 CGS_API CGS_Error cgs__dstr_shrink_to_fit(CGS_DStr *dstr)
 {
     CGS_Allocation allocation = cgs_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, dstr->len + 1);
-    if(allocation.ptr == NULL)
+    if (allocation.ptr == NULL)
     {
-        return (CGS_Error){CGS_ALLOC_ERROR};
+        return (CGS_Error) {CGS_ALLOC_ERROR};
     }
     else
     {
         dstr->chars = allocation.ptr;
-        dstr->cap = (unsigned int) allocation.n;
-        return (CGS_Error){CGS_OK};
+        dstr->cap   = (unsigned int)allocation.n;
+        return (CGS_Error) {CGS_OK};
     }
 }
 
@@ -1430,132 +512,132 @@ CGS_PRIVATE CGS_Error cgs__dstr_maybe_grow(CGS_DStr *dstr, unsigned int len_to_a
 CGS_API CGS_Error cgs__dstr_append(CGS_DStr *dstr, const CGS_StrView src)
 {
     CGS_StrView to_append = src;
-    CGS_Error err = (CGS_Error){CGS_OK};
-    if(cgs__is_strv_within(cgs__strv_dstr_ptr2(dstr, 0), to_append))
+    CGS_Error err         = (CGS_Error) {CGS_OK};
+    if (cgs__is_strv_within(cgs__strv_dstr_ptr2(dstr, 0), to_append))
     {
         unsigned int begin_idx = (unsigned int)(to_append.chars - dstr->chars);
-        err = cgs__dstr_maybe_grow(dstr, to_append.len);
-        to_append = (CGS_StrView){
+        err                    = cgs__dstr_maybe_grow(dstr, to_append.len);
+        to_append              = (CGS_StrView) {
             .len   = to_append.len,
-            .chars = dstr->chars + begin_idx
+            .chars = dstr->chars + begin_idx,
         };
     }
     else
     {
         err = cgs__dstr_maybe_grow(dstr, to_append.len);
     }
-    
-    if(err.ec == CGS_OK)
+
+    if (err.ec == CGS_OK)
     {
         memmove(dstr->chars + dstr->len, to_append.chars, to_append.len * sizeof(unsigned char));
-        
+
         dstr->len += to_append.len;
         dstr->chars[dstr->len] = '\0';
     }
-    
+
     return err;
 }
 
 CGS_API CGS_Error cgs__dstr_prepend_strv(CGS_DStr *dstr, const CGS_StrView src)
 {
     CGS_StrView to_prepend = src;
-    CGS_Error err = (CGS_Error){CGS_OK};
-    
-    if(cgs__is_strv_within(cgs__strv_dstr_ptr2(dstr, 0), src))
+    CGS_Error err          = (CGS_Error) {CGS_OK};
+
+    if (cgs__is_strv_within(cgs__strv_dstr_ptr2(dstr, 0), src))
     {
         unsigned int begin_idx = (unsigned int)(src.chars - dstr->chars);
-        err = cgs__dstr_maybe_grow(dstr, src.len);
-        to_prepend = (CGS_StrView){
-            .len = src.len, 
-            .chars = dstr->chars + begin_idx
+        err                    = cgs__dstr_maybe_grow(dstr, src.len);
+        to_prepend             = (CGS_StrView) {
+            .len   = src.len,
+            .chars = dstr->chars + begin_idx,
         };
     }
     else
     {
         err = cgs__dstr_maybe_grow(dstr, to_prepend.len);
     }
-    
-    if(err.ec == CGS_OK)
+
+    if (err.ec == CGS_OK)
     {
         memmove(dstr->chars + to_prepend.len, dstr->chars, dstr->len);
         memmove(dstr->chars, to_prepend.chars, to_prepend.len);
-        
+
         dstr->len += to_prepend.len;
         dstr->chars[dstr->len] = '\0';
     }
-    
+
     return err;
 }
 
 CGS_API CGS_Error cgs__dstr_insert(CGS_DStr *dstr, const CGS_StrView src, unsigned int idx)
 {
-    if(idx > dstr->len)
+    if (idx > dstr->len)
     {
-        return (CGS_Error){CGS_INDEX_OUT_OF_BOUNDS};
+        return (CGS_Error) {CGS_INDEX_OUT_OF_BOUNDS};
     }
-    
+
     CGS_StrView to_insert = src;
-    
-    if(cgs__is_strv_within(cgs__strv_dstr_ptr2(dstr, 0), src))
+
+    if (cgs__is_strv_within(cgs__strv_dstr_ptr2(dstr, 0), src))
     {
         unsigned int begin_idx = (unsigned int)(src.chars - dstr->chars);
-        CGS_Error err = cgs__dstr_maybe_grow(dstr, src.len);
-        if(err.ec != CGS_OK)
+        CGS_Error err          = cgs__dstr_maybe_grow(dstr, src.len);
+        if (err.ec != CGS_OK)
             return err;
-        
-        to_insert = (CGS_StrView){
-            .len = src.len, 
-            .chars = dstr->chars + begin_idx
+
+        to_insert = (CGS_StrView) {
+            .len   = src.len,
+            .chars = dstr->chars + begin_idx,
         };
     }
     else
     {
         CGS_Error err = cgs__dstr_maybe_grow(dstr, to_insert.len);
-        if(err.ec != CGS_OK)
+        if (err.ec != CGS_OK)
             return err;
     }
-    
+
     memmove(dstr->chars + idx + to_insert.len, dstr->chars + idx, dstr->len - idx);
     memmove(dstr->chars + idx, to_insert.chars, to_insert.len);
-    
+
     dstr->len += to_insert.len;
     dstr->chars[dstr->len] = '\0';
-    
-    return (CGS_Error){CGS_OK};
+
+    return (CGS_Error) {CGS_OK};
 }
 
 CGS_API CGS_Error cgs__dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_least)
 {
-    if(dstr->cap < at_least)
+    if (dstr->cap < at_least)
     {
-        char *save = dstr->chars;
-        size_t new_cap = cgs__uint_max(at_least, dstr->cap * 2);
+        char *save                = dstr->chars;
+        size_t new_cap            = cgs__uint_max(at_least, dstr->cap * 2);
         CGS_Allocation allocation = cgs_realloc(dstr->allocator, dstr->chars, unsigned char, dstr->cap, new_cap);
-        dstr->chars = allocation.ptr;
-        dstr->cap = (unsigned int) allocation.n;
-        
-        if(dstr->chars == NULL)
+        dstr->chars               = allocation.ptr;
+        dstr->cap                 = (unsigned int)allocation.n;
+
+        if (dstr->chars == NULL)
         {
             dstr->chars = save;
-            return (CGS_Error){CGS_ALLOC_ERROR};
+            return (CGS_Error) {CGS_ALLOC_ERROR};
         }
-        if(dstr->cap < at_least)
+        if (dstr->cap < at_least)
         {
-            return (CGS_Error){CGS_ALLOC_ERROR};
+            return (CGS_Error) {CGS_ALLOC_ERROR};
         }
     }
-    
-    return (CGS_Error){CGS_OK};
+
+    return (CGS_Error) {CGS_OK};
 }
 
 CGS_API char *cgs__cstr_as_cstr(const char *str)
 {
-    return (char*) str;
+    return (char *)str;
 }
 
 CGS_API char *cgs__ucstr_as_cstr(const unsigned char *str)
 {
-    return (char*) str;
+    return (char *)str;
 }
 
 CGS_API char *cgs__dstr_as_cstr(const CGS_DStr str)
@@ -1585,27 +667,37 @@ CGS_API char *cgs__strbuf_ptr_as_cstr(const CGS_StrBuf *str)
 
 CGS_API char *cgs__mutstr_ref_as_cstr(const CGS_MutStrRef str)
 {
-    switch(str.ty)
+    switch (str.ty)
     {
-        case CGS__DSTR_TY   : return str.str.dstr->chars;
-        case CGS__STRBUF_TY : return str.str.strbuf->chars;
-        case CGS__BUF_TY    : return str.str.buf.ptr;
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return str.str.dstr->chars;
+    case CGS__STRBUF_TY:
+        return str.str.strbuf->chars;
+    case CGS__BUF_TY:
+        return str.str.buf.ptr;
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API CGS_Error cgs__mutstr_ref_commit_appender(CGS_MutStrRef owner, CGS_MutStrRef appender)
 {
     unsigned int appender_len = cgs__mutstr_ref_len(appender);
-    switch(owner.ty)
+    switch (owner.ty)
     {
-        case CGS__DSTR_TY   : owner.str.dstr->len += appender_len;   break;
-        case CGS__STRBUF_TY : owner.str.strbuf->len += appender_len; break;
-        case CGS__BUF_TY    :                                        break;
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        owner.str.dstr->len += appender_len;
+        break;
+    case CGS__STRBUF_TY:
+        owner.str.strbuf->len += appender_len;
+        break;
+    case CGS__BUF_TY:
+        break;
+    default:
+        CGS_unreachable();
     };
-    
-    return (CGS_Error){CGS_OK};
+
+    return (CGS_Error) {CGS_OK};
 }
 
 CGS_API unsigned int cgs__dstr_cap(const CGS_DStr str)
@@ -1630,282 +722,322 @@ CGS_API unsigned int cgs__strbuf_ptr_cap(const CGS_StrBuf *str)
 
 CGS_API unsigned int cgs__mutstr_ref_cap(const CGS_MutStrRef str)
 {
-    switch(str.ty)
+    switch (str.ty)
     {
-        case CGS__DSTR_TY   : return str.str.dstr->cap;
-        case CGS__STRBUF_TY : return str.str.strbuf->cap;
-        case CGS__BUF_TY    : return str.str.buf.cap;
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return str.str.dstr->cap;
+    case CGS__STRBUF_TY:
+        return str.str.strbuf->cap;
+    case CGS__BUF_TY:
+        return str.str.buf.cap;
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API unsigned int cgs__mutstr_ref_len(const CGS_MutStrRef str)
 {
-    switch(str.ty)
+    switch (str.ty)
     {
-        case CGS__DSTR_TY   : return str.str.dstr->len;
-        case CGS__STRBUF_TY : return str.str.strbuf->len;
-        case CGS__BUF_TY    : return (unsigned int) strlen(str.str.buf.ptr);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return str.str.dstr->len;
+    case CGS__STRBUF_TY:
+        return str.str.strbuf->len;
+    case CGS__BUF_TY:
+        return (unsigned int)strlen(str.str.buf.ptr);
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_insert(CGS__FixedMutStrRef dst, const CGS_StrView src, unsigned int idx)
 {
     unsigned int len = *dst.len;
-    if(idx > len)
+    if (idx > len)
     {
-        return (CGS_Error){CGS_INDEX_OUT_OF_BOUNDS};
+        return (CGS_Error) {CGS_INDEX_OUT_OF_BOUNDS};
     }
-    
+
     unsigned int nb_chars_to_insert = cgs__uint_min(dst.cap - len - 1, src.len);
-    
+
     // shift right
     memmove(dst.chars + idx + nb_chars_to_insert, dst.chars + idx, len - idx);
-    
+
     // insert the src
     memmove(dst.chars + idx, src.chars, nb_chars_to_insert);
-    
+
     len += nb_chars_to_insert;
-    
+
     *dst.len = len;
-    
-    return nb_chars_to_insert == src.len ? (CGS_Error){CGS_OK} : (CGS_Error){CGS_DST_TOO_SMALL};
+
+    return nb_chars_to_insert == src.len ? (CGS_Error) {CGS_OK} : (CGS_Error) {CGS_DST_TOO_SMALL};
 }
 
 CGS_API CGS_Error cgs__mutstr_ref_insert(CGS_MutStrRef dst, const CGS_StrView src, unsigned int idx)
 {
-    switch(dst.ty)
+    switch (dst.ty)
     {
-        case CGS__DSTR_TY   : return cgs__dstr_insert(dst.str.dstr, src, idx);
-        case CGS__STRBUF_TY : return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(dst.str.strbuf), src, idx);
-        case CGS__BUF_TY    : return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src, idx);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__dstr_insert(dst.str.dstr, src, idx);
+    case CGS__STRBUF_TY:
+        return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(dst.str.strbuf), src, idx);
+    case CGS__BUF_TY:
+        return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(dst.str.buf, &(unsigned int) {0}), src, idx);
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API bool cgs__strv_equal(const CGS_StrView str1, const CGS_StrView str2)
 {
-    if(str1.len == 0)
+    if (str1.len == 0)
         return str2.len == 0; // passing NULL to memcmp is UB, even if 0 bytes. But CGS allows strings to be NULL if len is 0
     return (str1.len == str2.len) && (memcmp(str1.chars, str2.chars, str1.len) == 0);
 }
 
 CGS_API CGS_StrView cgs__strv_find(const CGS_StrView hay, const CGS_StrView needle)
 {
-    if(hay.chars == NULL || needle.chars == NULL || needle.len > hay.len)
-        return (CGS_StrView){.chars = NULL, .len = 0};
-    if(needle.len == 0)
-        return (CGS_StrView){.chars = hay.chars, .len = 0};
-    
-    unsigned int scan_end = hay.len - needle.len;
+    if (hay.chars == NULL || needle.chars == NULL || needle.len > hay.len)
+        return (CGS_StrView) {
+            .chars = NULL,
+            .len   = 0,
+        };
+    if (needle.len == 0)
+        return (CGS_StrView) {
+            .chars = hay.chars,
+            .len   = 0,
+        };
+
+    unsigned int scan_end        = hay.len - needle.len;
     const char *max_possible_ptr = &hay.chars[scan_end];
-    const char *first_char = hay.chars;
+    const char *first_char       = hay.chars;
     unsigned int remaining_len;
-    
-    while(first_char && first_char <= max_possible_ptr)
+
+    while (first_char && first_char <= max_possible_ptr)
     {
-        if(memcmp(first_char, needle.chars, needle.len) == 0)
-            return (CGS_StrView){.chars = (char*) first_char, .len = needle.len};
+        if (memcmp(first_char, needle.chars, needle.len) == 0)
+            return (CGS_StrView) {
+                .chars = (char *)first_char,
+                .len   = needle.len,
+            };
         remaining_len = scan_end - (unsigned int)(first_char - hay.chars);
-        first_char = memchr(first_char + 1, needle.chars[0], remaining_len);
+        first_char    = memchr(first_char + 1, needle.chars[0], remaining_len);
     }
-    
-    return (CGS_StrView){.chars = NULL, .len = 0};
+
+    return (CGS_StrView) {
+        .chars = NULL,
+        .len   = 0,
+    };
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, const CGS_StrView src)
 {
-    if(dst.cap == 0)
+    if (dst.cap == 0)
     {
-        return src.len == 0 ? (CGS_Error){CGS_OK} : (CGS_Error){CGS_DST_TOO_SMALL};
+        return src.len == 0 ? (CGS_Error) {CGS_OK} : (CGS_Error) {CGS_DST_TOO_SMALL};
     }
     unsigned int chars_to_copy = cgs__uint_min(src.len, dst.cap - 1);
-    
+
     memmove(dst.chars, src.chars, chars_to_copy * sizeof(unsigned char));
     dst.chars[chars_to_copy] = '\0';
-    
+
     *dst.len = chars_to_copy;
-    
-    return chars_to_copy == src.len ? (CGS_Error){CGS_OK} : (CGS_Error){CGS_DST_TOO_SMALL};
+
+    return chars_to_copy == src.len ? (CGS_Error) {CGS_OK} : (CGS_Error) {CGS_DST_TOO_SMALL};
 }
 
 CGS_API CGS_Error cgs__dstr_copy(CGS_DStr *dstr, CGS_StrView src)
 {
     CGS_Error err = cgs__dstr_ensure_cap(dstr, src.len + 1);
-    
-    if(err.ec == CGS_OK)
+
+    if (err.ec == CGS_OK)
     {
         memmove(dstr->chars, src.chars, src.len * sizeof(unsigned char));
-        
-        dstr->len = src.len;
+
+        dstr->len              = src.len;
         dstr->chars[dstr->len] = '\0';
     }
-    
+
     return err;
 }
 
 CGS_API CGS_Error cgs__mutstr_ref_copy(CGS_MutStrRef dst, const CGS_StrView src)
 {
-    switch(dst.ty)
+    switch (dst.ty)
     {
-        case CGS__DSTR_TY   : return cgs__dstr_copy(dst.str.dstr, src);
-        case CGS__STRBUF_TY : return cgs__fmutstr_ref_copy(cgs__fmutstr_ref(dst.str.strbuf), src);
-        case CGS__BUF_TY    : return cgs__fmutstr_ref_copy(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__dstr_copy(dst.str.dstr, src);
+    case CGS__STRBUF_TY:
+        return cgs__fmutstr_ref_copy(cgs__fmutstr_ref(dst.str.strbuf), src);
+    case CGS__BUF_TY:
+        return cgs__fmutstr_ref_copy(cgs__fmutstr_ref(dst.str.buf, &(unsigned int) {0}), src);
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API CGS_Error cgs__dstr_putc(CGS_DStr *dst, char c)
 {
     CGS_Error err = cgs__dstr_ensure_cap(dst, dst->len + 2);
-    if(err.ec != CGS_OK)
+    if (err.ec != CGS_OK)
         return err;
-    
-    dst->chars[dst->len] = c;
+
+    dst->chars[dst->len]     = c;
     dst->chars[dst->len + 1] = '\0';
     dst->len += 1;
-    
+
     return err;
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_putc(CGS__FixedMutStrRef dst, char c)
 {
-    if(dst.cap - *dst.len <= 1)
+    if (dst.cap - *dst.len <= 1)
     {
-        return (CGS_Error){CGS_DST_TOO_SMALL};
+        return (CGS_Error) {CGS_DST_TOO_SMALL};
     }
-    
-    dst.chars[*dst.len] = c;
+
+    dst.chars[*dst.len]     = c;
     dst.chars[*dst.len + 1] = '\0';
     *dst.len += 1;
-    
-    return (CGS_Error){CGS_OK};
+
+    return (CGS_Error) {CGS_OK};
 }
 
 CGS_API CGS_Error cgs__mutstr_ref_putc(CGS_MutStrRef dst, char c)
 {
-    switch(dst.ty)
+    switch (dst.ty)
     {
-        case CGS__DSTR_TY   : return cgs__dstr_putc(dst.str.dstr, c);
-        case CGS__STRBUF_TY : return cgs__fmutstr_ref_putc(cgs__fmutstr_ref(dst.str.strbuf), c);
-        case CGS__BUF_TY    : return cgs__fmutstr_ref_putc(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), c);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__dstr_putc(dst.str.dstr, c);
+    case CGS__STRBUF_TY:
+        return cgs__fmutstr_ref_putc(cgs__fmutstr_ref(dst.str.strbuf), c);
+    case CGS__BUF_TY:
+        return cgs__fmutstr_ref_putc(cgs__fmutstr_ref(dst.str.buf, &(unsigned int) {0}), c);
+    default:
+        CGS_unreachable();
     }
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_append(CGS__FixedMutStrRef dst, const CGS_StrView src)
 {
-    if(dst.cap == 0)
+    if (dst.cap == 0)
     {
-        return (CGS_Error){CGS_DST_TOO_SMALL};
+        return (CGS_Error) {CGS_DST_TOO_SMALL};
     }
-    
+
     unsigned int dst_len = *dst.len;
-    
+
     unsigned int chars_to_copy = cgs__uint_min(src.len, dst.cap - dst_len - 1);
     memmove(dst.chars + dst_len, src.chars, chars_to_copy);
-    
+
     dst_len += chars_to_copy;
-    
-    if(dst.len != NULL)
+
+    if (dst.len != NULL)
         *dst.len = dst_len;
-    
+
     dst.chars[dst_len] = '\0';
-    
-    return chars_to_copy == src.len ? (CGS_Error){CGS_OK} : (CGS_Error){CGS_DST_TOO_SMALL};
+
+    return chars_to_copy == src.len ? (CGS_Error) {CGS_OK} : (CGS_Error) {CGS_DST_TOO_SMALL};
 }
 
 CGS_API CGS_Error cgs__mutstr_ref_append(CGS_MutStrRef dst, const CGS_StrView src)
 {
-    switch(dst.ty)
+    switch (dst.ty)
     {
-        case CGS__DSTR_TY   : return cgs__dstr_append(dst.str.dstr, src);
-        case CGS__STRBUF_TY : return cgs__fmutstr_ref_append(cgs__fmutstr_ref(dst.str.strbuf), src);
-        case CGS__BUF_TY    : return cgs__fmutstr_ref_append(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), src);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__dstr_append(dst.str.dstr, src);
+    case CGS__STRBUF_TY:
+        return cgs__fmutstr_ref_append(cgs__fmutstr_ref(dst.str.strbuf), src);
+    case CGS__BUF_TY:
+        return cgs__fmutstr_ref_append(cgs__fmutstr_ref(dst.str.buf, &(unsigned int) {0}), src);
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_delete_range(CGS__FixedMutStrRef str, unsigned int begin, unsigned int end)
 {
     unsigned int len = *str.len;
-    
-    if(end > len || begin > len)
+
+    if (end > len || begin > len)
     {
-        return (CGS_Error){CGS_INDEX_OUT_OF_BOUNDS};
+        return (CGS_Error) {CGS_INDEX_OUT_OF_BOUNDS};
     }
-    if(begin > end)
+    if (begin > end)
     {
-        return (CGS_Error){CGS_BAD_RANGE};
+        return (CGS_Error) {CGS_BAD_RANGE};
     }
-    
+
     unsigned int substr_len = end - begin;
-    
+
     memmove(str.chars + begin, str.chars + begin + substr_len, len - begin - substr_len);
-    
+
     len -= substr_len;
-    
+
     str.chars[len] = '\0';
-    
-    if(str.len != NULL)
+
+    if (str.len != NULL)
     {
         *str.len = len;
     }
-    
-    return (CGS_Error){CGS_OK};
+
+    return (CGS_Error) {CGS_OK};
 }
 
 CGS_API CGS_Error cgs__mutstr_ref_delete_range(CGS_MutStrRef str, unsigned int begin, unsigned int end)
 {
-    switch(str.ty)
+    switch (str.ty)
     {
-        case CGS__DSTR_TY   : return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.dstr), begin, end);
-        case CGS__STRBUF_TY : return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.strbuf), begin, end);
-        case CGS__BUF_TY    : return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.dstr), begin, end);
+    case CGS__STRBUF_TY:
+        return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.strbuf), begin, end);
+    case CGS__BUF_TY:
+        return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.buf, &(unsigned int) {0}), begin, end);
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API CGS_StrViewArray cgs__strv_arr_from(const CGS_StrView *carr, unsigned int nb)
 {
-    return (CGS_StrViewArray){
+    return (CGS_StrViewArray) {
         .cap  = nb,
         .len  = nb,
-        .strs = (CGS_StrView*) carr
+        .strs = (CGS_StrView *)carr,
     };
 }
 
-CGS_API CGS_Error cgs__strv_split_iter(const CGS_StrView str, const CGS_StrView delim, bool(*cb)(CGS_StrView found, void *ctx), void *ctx)
+CGS_API CGS_Error cgs__strv_split_iter(const CGS_StrView str, const CGS_StrView delim, bool (*cb)(CGS_StrView found, void *ctx), void *ctx)
 {
-    if(delim.len > str.len || str.len == 0)
+    if (delim.len > str.len || str.len == 0)
     {
-        return !cb(str, ctx) ? (CGS_Error){CGS_CALLBACK_EXIT} : (CGS_Error){CGS_OK};
+        return !cb(str, ctx) ? (CGS_Error) {CGS_CALLBACK_EXIT} : (CGS_Error) {CGS_OK};
     }
-    else if(delim.len == 0)
+    else if (delim.len == 0)
     {
-        for(unsigned int i = 0 ; i < str.len ; i++)
+        for (unsigned int i = 0; i < str.len; i++)
         {
-            if(!cb(cgs__strv_strv3(str, i, i + 1), ctx))
+            if (!cb(cgs__strv_strv3(str, i, i + 1), ctx))
             {
-                return (CGS_Error){CGS_CALLBACK_EXIT};
+                return (CGS_Error) {CGS_CALLBACK_EXIT};
             }
         }
-        
-        return (CGS_Error){CGS_OK};
+
+        return (CGS_Error) {CGS_OK};
     }
     else
     {
         unsigned int prev = 0;
-        for(unsigned int i = 0 ; i <= str.len - delim.len ; )
+        for (unsigned int i = 0; i <= str.len - delim.len;)
         {
             CGS_StrView rem = cgs__strv_strv2(str, i);
-            if(cgs__strv_starts_with(rem, delim))
+            if (cgs__strv_starts_with(rem, delim))
             {
                 CGS_StrView sub = cgs__strv_strv3(str, prev, i);
-                if(!cb(sub, ctx))
+                if (!cb(sub, ctx))
                 {
-                    return (CGS_Error){CGS_CALLBACK_EXIT};
+                    return (CGS_Error) {CGS_CALLBACK_EXIT};
                 }
                 i += delim.len;
                 prev = i;
@@ -1915,200 +1047,196 @@ CGS_API CGS_Error cgs__strv_split_iter(const CGS_StrView str, const CGS_StrView 
                 i += 1;
             }
         }
-        
-        if(!cb(cgs__strv_strv3(str, prev, str.len), ctx))
+
+        if (!cb(cgs__strv_strv3(str, prev, str.len), ctx))
         {
-            return (CGS_Error){CGS_CALLBACK_EXIT};
+            return (CGS_Error) {CGS_CALLBACK_EXIT};
         }
         else
         {
-            return (CGS_Error){CGS_OK};
+            return (CGS_Error) {CGS_OK};
         }
     }
 }
 
 CGS_PRIVATE bool cgs__combine_views_into_array(CGS_StrView str, void *ctx)
 {
-    struct {
+    struct
+    {
         CGS_Allocator *allocator;
         CGS_StrViewArray array;
     } *tctx = ctx;
-    
-    CGS_StrViewArray *array = &tctx->array;
+
+    CGS_StrViewArray *array  = &tctx->array;
     CGS_Allocator *allocator = tctx->allocator;
-    
-    if(array->cap <= array->len)
+
+    if (array->cap <= array->len)
     {
-        CGS_Allocation allocation = cgs_realloc(allocator, array->strs, CGS_StrView, array->cap, (size_t) 2 * (array->len + 1));
-        array->strs = allocation.ptr;
-        array->cap = (unsigned int) (allocation.n / sizeof(CGS_StrView));
+        CGS_Allocation allocation = cgs_realloc(allocator, array->strs, CGS_StrView, array->cap, (size_t)2 * (array->len + 1));
+        array->strs               = allocation.ptr;
+        array->cap                = (unsigned int)(allocation.n / sizeof(CGS_StrView));
     }
-    
+
     array->strs[array->len++] = str;
-    
+
     return true;
 }
 
 CGS__NODISCARD("str_split returns new String_View_Array")
 CGS_API CGS_StrViewArray cgs__strv_split(const CGS_StrView str, const CGS_StrView delim, CGS_Allocator *allocator)
 {
-    struct {
+    struct
+    {
         CGS_Allocator *allocator;
         CGS_StrViewArray array;
-    } ctx = {
-        .allocator = allocator
-    };
-    
+    } ctx = {.allocator = allocator};
+
     cgs__strv_split_iter(str, delim, cgs__combine_views_into_array, &ctx);
-    
+
     return ctx.array;
 }
 
 CGS_API CGS_Error cgs__strv_arr_join_into_dstr(CGS_DStr *dstr, const CGS_StrViewArray strs, const CGS_StrView delim)
 {
-    CGS_Error err = (CGS_Error){CGS_OK};
-    
-    if(strs.len > 0)
+    CGS_Error err = (CGS_Error) {CGS_OK};
+
+    if (strs.len > 0)
         err = cgs__dstr_copy(dstr, strs.strs[0]);
-    
-    for(unsigned int i = 1 ; i < strs.len && err.ec == CGS_OK ; i++)
+
+    for (unsigned int i = 1; i < strs.len && err.ec == CGS_OK; i++)
     {
         cgs__dstr_append(dstr, delim);
         err = cgs__dstr_append(dstr, strs.strs[i]);
     }
-    
+
     return err;
 }
 
 CGS_API CGS_Error cgs__strv_arr_join_into_fmutstr_ref(CGS__FixedMutStrRef dst, const CGS_StrViewArray strs, const CGS_StrView delim)
 {
-    CGS_Error err = (CGS_Error){CGS_OK};
-    
-    if(strs.len > 0)
+    CGS_Error err = (CGS_Error) {CGS_OK};
+
+    if (strs.len > 0)
         err = cgs__fmutstr_ref_copy(dst, strs.strs[0]);
-    
-    for(unsigned int i = 1 ; i < strs.len && err.ec == CGS_OK; i++)
+
+    for (unsigned int i = 1; i < strs.len && err.ec == CGS_OK; i++)
     {
         cgs__fmutstr_ref_append(dst, delim);
         err = cgs__fmutstr_ref_append(dst, strs.strs[i]);
     }
-    
+
     return err;
 }
 
 CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, const CGS_StrViewArray strs, const CGS_StrView delim)
 {
-    switch(dst.ty)
+    switch (dst.ty)
     {
-        case CGS__DSTR_TY   : return cgs__strv_arr_join_into_dstr(dst.str.dstr, strs, delim);
-        case CGS__STRBUF_TY : return cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref(dst.str.strbuf), strs, delim);
-        case CGS__BUF_TY    : return cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref(dst.str.buf, &(unsigned int){0}), strs, delim);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__strv_arr_join_into_dstr(dst.str.dstr, strs, delim);
+    case CGS__STRBUF_TY:
+        return cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref(dst.str.strbuf), strs, delim);
+    case CGS__BUF_TY:
+        return cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref(dst.str.buf, &(unsigned int) {0}), strs, delim);
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API CGS_Result(CGS_StrView) cgs__next_tok(CGS_StrView *base, CGS_StrView delim)
 {
     CGS_StrView rest = cgs__skip(*base, delim);
-    *base = rest;
-    
-    if(rest.len == 0)
+    *base            = rest;
+
+    if (rest.len == 0)
     {
         // string consists entirely of delims
-        return (CGS_Result(CGS_StrView)){.val = rest, .err = {CGS_NOT_FOUND}};
+        return (CGS_Result(CGS_StrView)) {.val = rest, .err = {CGS_NOT_FOUND}};
     }
-    
+
     CGS_StrView found = cgs__strv_find(*base, delim);
-    if(found.chars)
+    if (found.chars)
     {
         unsigned int index = (unsigned int)(found.chars - base->chars);
-        CGS_StrView ret = {
-            .chars = base->chars,
-            .len = index
-        };
-        
+        CGS_StrView ret    = {.chars = base->chars, .len = index};
+
         base->chars += index;
         base->len -= index;
-        
-        return (CGS_Result(CGS_StrView)){.val = ret, .err = {CGS_OK}};
+
+        return (CGS_Result(CGS_StrView)) {.val = ret, .err = {CGS_OK}};
     }
     else
     {
         CGS_StrView ret = *base;
         base->chars += base->len;
         base->len = 0;
-        
-        return (CGS_Result(CGS_StrView)){.val = ret, .err = {CGS_OK}};;
+
+        return (CGS_Result(CGS_StrView)) {.val = ret, .err = {CGS_OK}};
+        ;
     }
 }
 
 CGS_API CGS_Result(CGS_StrView) cgs__next_tok_any(CGS_StrView *base, CGS_StrView delim_set)
 {
     CGS_StrView rest = cgs__skip_any(*base, delim_set);
-    *base = rest;
-    
-    if(rest.len == 0)
+    *base            = rest;
+
+    if (rest.len == 0)
     {
-        return (CGS_Result(CGS_StrView)){
-            .val = rest,
-            .err = {CGS_NOT_FOUND}
-        };
+        return (CGS_Result(CGS_StrView)) {.val = rest, .err = {CGS_NOT_FOUND}};
     }
-    
+
     CGS_StrView tok = cgs__strv_cspn(*base, delim_set);
-    
+
     base->chars += tok.len;
-    base->len   -= tok.len;
-    
-    return (CGS_Result(CGS_StrView)){
-        .err = {CGS_OK},
-        .val = tok
-    };
+    base->len -= tok.len;
+
+    return (CGS_Result(CGS_StrView)) {.err = {CGS_OK}, .val = tok};
 }
 
 CGS_API CGS_StrView cgs__skip(CGS_StrView src, CGS_StrView delim)
 {
-    while(cgs_starts_with(src, delim))
+    while (cgs_starts_with(src, delim))
     {
         src.len -= delim.len;
         src.chars += delim.len;
     }
-    
+
     return src;
 }
 
 CGS_API CGS_StrView cgs__skip_any(CGS_StrView src, CGS_StrView delim_set)
 {
-    while(src.len > 0 && memchr(delim_set.chars, src.chars[0], delim_set.len))
+    while (src.len > 0 && memchr(delim_set.chars, src.chars[0], delim_set.len))
     {
         src.len -= 1;
         src.chars += 1;
     }
-    
+
     return src;
 }
 
 CGS_API CGS_Error cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int begin, unsigned int end, const CGS_StrView replacement)
 {
-    if(begin > dstr->len || end > dstr->len)
-        return (CGS_Error){CGS_INDEX_OUT_OF_BOUNDS};
-    if(begin > end)
-        return (CGS_Error){CGS_BAD_RANGE};
-    if(cgs__is_strv_within(cgs__strv_dstr_ptr2(dstr, 0), replacement))
-        return (CGS_Error){CGS_ALIASING_NOT_SUPPORTED};
-    
+    if (begin > dstr->len || end > dstr->len)
+        return (CGS_Error) {CGS_INDEX_OUT_OF_BOUNDS};
+    if (begin > end)
+        return (CGS_Error) {CGS_BAD_RANGE};
+    if (cgs__is_strv_within(cgs__strv_dstr_ptr2(dstr, 0), replacement))
+        return (CGS_Error) {CGS_ALIASING_NOT_SUPPORTED};
+
     unsigned int len_to_delete = end - begin;
-    if(len_to_delete > replacement.len)
+    if (len_to_delete > replacement.len)
     {
         // shift left
         memmove(dstr->chars + begin + replacement.len, dstr->chars + end, dstr->len - end + 1);
         // insert the replacement
         memmove(dstr->chars + begin, replacement.chars, replacement.len);
     }
-    else if(len_to_delete < replacement.len)
+    else if (len_to_delete < replacement.len)
     {
         cgs__dstr_ensure_cap(dstr, dstr->len + replacement.len - len_to_delete + 1);
-        
+
         // shift right
         memmove(dstr->chars + end + (replacement.len - len_to_delete), dstr->chars + end, dstr->len - end + 1);
         // insert the replacement
@@ -2118,34 +1246,34 @@ CGS_API CGS_Error cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int begin, un
     {
         memmove(dstr->chars + begin, replacement.chars, replacement.len);
     }
-    
+
     dstr->len = dstr->len - (len_to_delete) + replacement.len;
-    return (CGS_Error){CGS_OK};
+    return (CGS_Error) {CGS_OK};
 }
 
 CGS_PRIVATE void cgs__fmutstr_ref_replace_range_unsafe(CGS__FixedMutStrRef str, unsigned int begin, unsigned int end, const CGS_StrView replacement)
 {
     unsigned int len_to_delete = end - begin;
-    if(len_to_delete > replacement.len)
+    if (len_to_delete > replacement.len)
     {
         // shift left
         memmove(str.chars + begin + replacement.len, str.chars + end, *str.len - end + 1);
         // insert the replacement
         memmove(str.chars + begin, replacement.chars, replacement.len);
-        
+
         *str.len -= len_to_delete - replacement.len;
     }
-    else if(len_to_delete < replacement.len)
+    else if (len_to_delete < replacement.len)
     {
         unsigned int new_space = cgs__uint_min(replacement.len - len_to_delete, str.cap - *str.len - 1);
-        
+
         // shift right
         memmove(str.chars + begin + new_space, str.chars + begin, *str.len - begin);
         // insert the replacement
         memmove(str.chars + begin, replacement.chars, cgs__uint_min(replacement.len, len_to_delete + new_space));
-        
+
         *str.len += new_space;
-        
+
         str.chars[*str.len] = '\0';
     }
     else
@@ -2158,77 +1286,81 @@ CGS_PRIVATE CGS_StrView cgs__strv_fmutstr_ref2(CGS__FixedMutStrRef str, unsigned
 
 CGS_Error cgs__fmutstr_ref_replace_range(CGS__FixedMutStrRef str, unsigned int begin, unsigned int end, const CGS_StrView replacement)
 {
-    if(begin >= *str.len)
-        return (CGS_Error){CGS_INDEX_OUT_OF_BOUNDS};
-    if(begin >= end || end > *str.len)
-        return (CGS_Error){CGS_BAD_RANGE};
-    if(cgs__is_strv_within(cgs__strv_fmutstr_ref2(str, 0), replacement))
-        return (CGS_Error){CGS_ALIASING_NOT_SUPPORTED};
-    
-    CGS_Error err = (*str.len - (end - begin) + replacement.len) >= str.cap ? (CGS_Error){CGS_DST_TOO_SMALL} : (CGS_Error){CGS_OK};
+    if (begin >= *str.len)
+        return (CGS_Error) {CGS_INDEX_OUT_OF_BOUNDS};
+    if (begin >= end || end > *str.len)
+        return (CGS_Error) {CGS_BAD_RANGE};
+    if (cgs__is_strv_within(cgs__strv_fmutstr_ref2(str, 0), replacement))
+        return (CGS_Error) {CGS_ALIASING_NOT_SUPPORTED};
+
+    CGS_Error err = (*str.len - (end - begin) + replacement.len) >= str.cap ? (CGS_Error) {CGS_DST_TOO_SMALL} : (CGS_Error) {CGS_OK};
     cgs__fmutstr_ref_replace_range_unsafe(str, begin, end, replacement);
-    
+
     return err;
 }
 
 CGS_API CGS_Error cgs__mutstr_ref_replace_range(CGS_MutStrRef str, unsigned int begin, unsigned int end, const CGS_StrView replacement)
 {
-    switch(str.ty)
+    switch (str.ty)
     {
-        case CGS__DSTR_TY   : return cgs__dstr_replace_range(str.str.dstr, begin, end, replacement);
-        case CGS__STRBUF_TY : return cgs__fmutstr_ref_replace_range(cgs__fmutstr_ref(str.str.strbuf), begin, end, replacement);
-        case CGS__BUF_TY    : return cgs__fmutstr_ref_replace_range(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end, replacement);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__dstr_replace_range(str.str.dstr, begin, end, replacement);
+    case CGS__STRBUF_TY:
+        return cgs__fmutstr_ref_replace_range(cgs__fmutstr_ref(str.str.strbuf), begin, end, replacement);
+    case CGS__BUF_TY:
+        return cgs__fmutstr_ref_replace_range(cgs__fmutstr_ref(str.str.buf, &(unsigned int) {0}), begin, end, replacement);
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, const CGS_StrView target, const CGS_StrView replacement)
 {
     CGS_StrView as_strv = cgs__strv_fmutstr_ref2(str, 0);
-    if(cgs__is_strv_within(as_strv, target) || cgs__is_strv_within(as_strv, replacement))
+    if (cgs__is_strv_within(as_strv, target) || cgs__is_strv_within(as_strv, replacement))
     {
-        return (CGS_Result(int)){.val = 0, .err = {CGS_ALIASING_NOT_SUPPORTED}};
+        return (CGS_Result(int)) {.val = 0, .err = {CGS_ALIASING_NOT_SUPPORTED}};
     }
-    
-    CGS_Error err = {CGS_OK};
+
+    CGS_Error err              = {CGS_OK};
     unsigned int replace_count = 0;
-    
-    if(target.len == 0)
+
+    if (target.len == 0)
     {
-        for(unsigned int i = 0 ; i <= *str.len && (err.ec == CGS_OK) ; i += replacement.len + 1)
+        for (unsigned int i = 0; i <= *str.len && (err.ec == CGS_OK); i += replacement.len + 1)
         {
             err = cgs__fmutstr_ref_insert(str, replacement, i);
             replace_count += 1;
         }
         goto out;
     }
-    
-    if(target.len < replacement.len)
+
+    if (target.len < replacement.len)
     {
-        for(unsigned int i = 0 ; i <= *str.len - target.len ; )
+        for (unsigned int i = 0; i <= *str.len - target.len;)
         {
             CGS_StrView match = cgs__strv_find(cgs__strv_fmutstr_ref2(str, i), target);
-            if(match.chars != NULL)
+            if (match.chars != NULL)
             {
-                unsigned int idx = (unsigned int) (match.chars - str.chars);
-                
-                if(str.cap > *str.len + (replacement.len - target.len))
+                unsigned int idx = (unsigned int)(match.chars - str.chars);
+
+                if (str.cap > *str.len + (replacement.len - target.len))
                 {
                     // shift right
                     memmove(str.chars + idx + replacement.len, str.chars + idx + target.len, (*str.len - idx - target.len) * sizeof(unsigned char));
-                    
+
                     // put the replacement
                     memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
-                    
+
                     *str.len += (replacement.len - target.len);
-                    
+
                     i = idx + replacement.len;
-                    
+
                     replace_count += 1;
                 }
                 else
                 {
-                    err = (CGS_Error){CGS_DST_TOO_SMALL};
+                    err = (CGS_Error) {CGS_DST_TOO_SMALL};
                     break;
                 }
             }
@@ -2238,25 +1370,25 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, const 
             }
         }
     }
-    else if(target.len > replacement.len)
+    else if (target.len > replacement.len)
     {
-        for(unsigned int i = 0 ; i <= *str.len - target.len ; )
+        for (unsigned int i = 0; i <= *str.len - target.len;)
         {
             CGS_StrView match = cgs__strv_find(cgs__strv_fmutstr_ref2(str, i), target);
-            if(match.chars != NULL)
+            if (match.chars != NULL)
             {
-                unsigned int idx = (unsigned int) (match.chars - str.chars);
-                
+                unsigned int idx = (unsigned int)(match.chars - str.chars);
+
                 // shift left
                 memmove(str.chars + idx + replacement.len, str.chars + idx + target.len, (*str.len - idx - target.len) * sizeof(unsigned char));
-                
+
                 // put the replacement
                 memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
-                
+
                 *str.len -= (target.len - replacement.len);
-                
+
                 i = idx + replacement.len;
-                
+
                 replace_count += 1;
             }
             else
@@ -2267,19 +1399,19 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, const 
     }
     else
     {
-        for(unsigned int i = 0 ; i <= *str.len - target.len; )
+        for (unsigned int i = 0; i <= *str.len - target.len;)
         {
             CGS_StrView match = cgs__strv_find(cgs__strv_fmutstr_ref2(str, i), target);
-            if(match.chars != NULL)
+            if (match.chars != NULL)
             {
-                err.ec = CGS_OK;
-                unsigned int idx = (unsigned int) (match.chars - str.chars);
-                
+                err.ec           = CGS_OK;
+                unsigned int idx = (unsigned int)(match.chars - str.chars);
+
                 // put the replacement
                 memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
-                
+
                 i = idx + replacement.len;
-                
+
                 replace_count += 1;
             }
             else
@@ -2288,59 +1420,59 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, const 
             }
         }
     }
-    
-    if(str.cap > 0)
+
+    if (str.cap > 0)
         str.chars[*str.len] = '\0';
-    
-    out:
-    if(replace_count == 0 && err.ec == CGS_OK)
+
+out:
+    if (replace_count == 0 && err.ec == CGS_OK)
         err.ec = CGS_NOT_FOUND;
-    return (CGS_Result(int)){.val = replace_count, .err = err};
+    return (CGS_Result(int)) {.val = replace_count, .err = err};
 }
 
 CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, const CGS_StrView target, const CGS_StrView replacement)
 {
     CGS_StrView as_strv = cgs__strv_dstr_ptr2(dstr, 0);
-    if(cgs__is_strv_within(as_strv, target) || cgs__is_strv_within(as_strv, replacement))
+    if (cgs__is_strv_within(as_strv, target) || cgs__is_strv_within(as_strv, replacement))
     {
-        return (CGS_Result(int)){.val = 0, .err = {CGS_ALIASING_NOT_SUPPORTED}};
+        return (CGS_Result(int)) {.val = 0, .err = {CGS_ALIASING_NOT_SUPPORTED}};
     }
-    
-    CGS_Error err = {CGS_OK};
+
+    CGS_Error err              = {CGS_OK};
     unsigned int replace_count = 0;
-    
-    if(target.len == 0)
+
+    if (target.len == 0)
     {
         err.ec = CGS_OK;
-        for(unsigned int i = 0 ; i <= dstr->len && (err.ec == CGS_OK) ; i += replacement.len + 1)
+        for (unsigned int i = 0; i <= dstr->len && (err.ec == CGS_OK); i += replacement.len + 1)
         {
             err = cgs__dstr_insert(dstr, replacement, i);
             replace_count += 1;
         }
         goto out;
     }
-    
-    if(target.len < replacement.len)
+
+    if (target.len < replacement.len)
     {
-        for(unsigned int i = 0 ; i <= dstr->len - target.len; )
+        for (unsigned int i = 0; i <= dstr->len - target.len;)
         {
             CGS_StrView match = cgs__strv_find(cgs__strv_dstr_ptr2(dstr, i), target);
-            if(match.chars != NULL)
+            if (match.chars != NULL)
             {
-                unsigned int idx = (unsigned int) (match.chars - dstr->chars);
-                
+                unsigned int idx = (unsigned int)(match.chars - dstr->chars);
+
                 err = cgs__dstr_ensure_cap(dstr, dstr->len + (replacement.len - target.len) + 1);
-                
+
                 // shift right
                 memmove(dstr->chars + idx + replacement.len, dstr->chars + idx + target.len, (dstr->len - idx - target.len) * sizeof(unsigned char));
-                
+
                 // put the replacement
                 memmove(dstr->chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
-                
+
                 dstr->len += (replacement.len - target.len);
-                
+
                 i = idx + replacement.len;
-                
+
                 replace_count += 1;
             }
             else
@@ -2349,25 +1481,25 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, const CGS_StrView targ
             }
         }
     }
-    else if(target.len > replacement.len)
+    else if (target.len > replacement.len)
     {
-        for(unsigned int i = 0 ; i <= dstr->len - target.len ; )
+        for (unsigned int i = 0; i <= dstr->len - target.len;)
         {
             CGS_StrView match = cgs__strv_find(cgs__strv_dstr_ptr2(dstr, i), target);
-            if(match.chars != NULL)
+            if (match.chars != NULL)
             {
-                unsigned int idx = (unsigned int) (match.chars - dstr->chars);
-                
+                unsigned int idx = (unsigned int)(match.chars - dstr->chars);
+
                 // shift left
                 memmove(dstr->chars + idx + replacement.len, dstr->chars + idx + target.len, (dstr->len - idx - target.len) * sizeof(unsigned char));
-                
+
                 // put the replacement
                 memmove(dstr->chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
-                
+
                 dstr->len -= (target.len - replacement.len);
-                
+
                 i = idx + replacement.len;
-                
+
                 replace_count += 1;
             }
             else
@@ -2378,18 +1510,18 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, const CGS_StrView targ
     }
     else
     {
-        for(unsigned int i = 0 ; i <= dstr->len - target.len; )
+        for (unsigned int i = 0; i <= dstr->len - target.len;)
         {
             CGS_StrView match = cgs__strv_find(cgs__strv_dstr_ptr2(dstr, i), target);
-            if(match.chars != NULL)
+            if (match.chars != NULL)
             {
-                unsigned int idx = (unsigned int) (match.chars - dstr->chars);
-                
+                unsigned int idx = (unsigned int)(match.chars - dstr->chars);
+
                 // put the replacement
                 memmove(dstr->chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
-                
+
                 i = idx + replacement.len;
-                
+
                 replace_count += 1;
             }
             else
@@ -2398,61 +1530,65 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, const CGS_StrView targ
             }
         }
     }
-    
+
     dstr->chars[dstr->len] = '\0';
-    
-    out:
-    if(replace_count == 0 && err.ec == CGS_OK)
+
+out:
+    if (replace_count == 0 && err.ec == CGS_OK)
         err.ec = CGS_NOT_FOUND;
-    return (CGS_Result(int)){.val = replace_count, .err = err};
+    return (CGS_Result(int)) {.val = replace_count, .err = err};
 }
 
 CGS_API CGS_Result(int) cgs__mutstr_ref_replace(CGS_MutStrRef str, const CGS_StrView target, const CGS_StrView replacement)
 {
-    switch(str.ty)
+    switch (str.ty)
     {
-        case CGS__DSTR_TY   : return cgs__dstr_replace(str.str.dstr, target, replacement);
-        case CGS__STRBUF_TY : return cgs__fmutstr_ref_replace(cgs__fmutstr_ref(str.str.strbuf), target, replacement);
-        case CGS__BUF_TY    : return cgs__fmutstr_ref_replace(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__dstr_replace(str.str.dstr, target, replacement);
+    case CGS__STRBUF_TY:
+        return cgs__fmutstr_ref_replace(cgs__fmutstr_ref(str.str.strbuf), target, replacement);
+    case CGS__BUF_TY:
+        return cgs__fmutstr_ref_replace(cgs__fmutstr_ref(str.str.buf, &(unsigned int) {0}), target, replacement);
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API CGS_Error cgs__dstr_replace_first(CGS_DStr *dstr, const CGS_StrView target, const CGS_StrView replacement)
 {
     CGS_Error err = {CGS_NOT_FOUND};
-    
+
     CGS_StrView match = cgs__strv_find(cgs__strv_dstr_ptr2(dstr, 0), target);
-    if(match.chars != NULL)
+    if (match.chars != NULL)
     {
-        unsigned int begin = (unsigned int) (match.chars - dstr->chars);
-        unsigned int end   = (unsigned int) (begin + match.len);
-        err = cgs__dstr_replace_range(dstr, begin, end, replacement);
+        unsigned int begin = (unsigned int)(match.chars - dstr->chars);
+        unsigned int end   = (unsigned int)(begin + match.len);
+        err                = cgs__dstr_replace_range(dstr, begin, end, replacement);
     }
-    
+
     return err;
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_replace_first(CGS__FixedMutStrRef str, const CGS_StrView target, const CGS_StrView replacement)
 {
     CGS_Error err = {CGS_NOT_FOUND};
-    
+
     CGS_StrView match = cgs__strv_find(cgs__strv_fmutstr_ref2(str, 0), target);
-    if(match.chars != NULL)
+    if (match.chars != NULL)
     {
         // TODO make this fill as much as possible. just call replace_range
-        if(str.cap > 0 && str.cap - 1 > *str.len + (replacement.len - target.len))
+        if (str.cap > 0 && str.cap - 1 > *str.len + (replacement.len - target.len))
         {
-            unsigned int idx = (unsigned int) (match.chars - str.chars);
-            
+            unsigned int idx = (unsigned int)(match.chars - str.chars);
+
             // shift
             memmove(str.chars + idx + replacement.len, str.chars + idx + target.len, (*str.len - idx - target.len) * sizeof(unsigned char));
-            
+
             // put the replacement
             memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
-            
+
             *str.len += (replacement.len - target.len);
-            
+
             err.ec = CGS_OK;
         }
         else
@@ -2460,174 +1596,187 @@ CGS_API CGS_Error cgs__fmutstr_ref_replace_first(CGS__FixedMutStrRef str, const 
             err.ec = CGS_DST_TOO_SMALL;
         }
     }
-    
-    if(str.cap > 0)
+
+    if (str.cap > 0)
         str.chars[*str.len] = '\0';
-    
+
     return err;
 }
 
 CGS_API CGS_Error cgs__mutstr_ref_replace_first(CGS_MutStrRef str, const CGS_StrView target, const CGS_StrView replacement)
 {
-    switch(str.ty)
+    switch (str.ty)
     {
-        case CGS__DSTR_TY   : return cgs__dstr_replace_first(str.str.dstr, target, replacement);
-        case CGS__STRBUF_TY : return cgs__fmutstr_ref_replace_first(cgs__fmutstr_ref(str.str.strbuf), target, replacement);
-        case CGS__BUF_TY    : return cgs__fmutstr_ref_replace_first(cgs__fmutstr_ref(str.str.buf, &(unsigned int){0}), target, replacement);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__dstr_replace_first(str.str.dstr, target, replacement);
+    case CGS__STRBUF_TY:
+        return cgs__fmutstr_ref_replace_first(cgs__fmutstr_ref(str.str.strbuf), target, replacement);
+    case CGS__BUF_TY:
+        return cgs__fmutstr_ref_replace_first(cgs__fmutstr_ref(str.str.buf, &(unsigned int) {0}), target, replacement);
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API unsigned int cgs__strv_count(const CGS_StrView hay, const CGS_StrView needle)
 {
-    if(needle.len == 0)
+    if (needle.len == 0)
         return hay.len + 1;
-    
+
     unsigned int count = 0;
-    CGS_StrView found = cgs__strv_find(hay, needle);
-    
-    while(found.chars != NULL)
+    CGS_StrView found  = cgs__strv_find(hay, needle);
+
+    while (found.chars != NULL)
     {
         count += 1;
         found = cgs__strv_find(cgs__strv_strv2(hay, (unsigned int)(found.chars - hay.chars) + found.len), needle);
     }
-    
+
     return count;
 }
 
 CGS_API CGS_StrView cgs__strv_cspn(const CGS_StrView src, const CGS_StrView charset)
 {
-    if(charset.len == 1)
+    if (charset.len == 1)
     {
-        char *found = (char*) memchr(src.chars, charset.chars[0], src.len);
-        if(found)
+        char *found = (char *)memchr(src.chars, charset.chars[0], src.len);
+        if (found)
         {
-            return (CGS_StrView){.chars = src.chars, .len = (unsigned int)(found - src.chars)};
+            return (CGS_StrView) {
+                .chars = src.chars,
+                .len   = (unsigned int)(found - src.chars),
+            };
         }
         else
         {
             return src;
         }
     }
-    
-    for(unsigned int i = 0 ; i < src.len ; i++)
+
+    for (unsigned int i = 0; i < src.len; i++)
     {
-        if(memchr(charset.chars, src.chars[i], charset.len))
+        if (memchr(charset.chars, src.chars[i], charset.len))
         {
-            return (CGS_StrView){.chars = src.chars, .len = i};
+            return (CGS_StrView) {
+                .chars = src.chars,
+                .len   = i,
+            };
         }
     }
-    
+
     return src;
 }
 
 CGS_API CGS_StrView cgs__strv_spn(const CGS_StrView src, const CGS_StrView charset)
 {
-    for(unsigned int i = 0 ; i < src.len ; i++)
+    for (unsigned int i = 0; i < src.len; i++)
     {
-        if(memchr(charset.chars, src.chars[i], charset.len) == NULL)
+        if (memchr(charset.chars, src.chars[i], charset.len) == NULL)
         {
-            return (CGS_StrView){.chars = src.chars, .len = i};
+            return (CGS_StrView) {
+                .chars = src.chars,
+                .len   = i,
+            };
         }
     }
-    
+
     return src;
 }
 
 CGS_API CGS_StrView cgs__trim_view(const CGS_StrView str)
 {
-    if(str.len == 0)
+    if (str.len == 0)
     {
         return str;
     }
     unsigned int begin = 0;
-    for( ; begin < str.len ; begin++)
+    for (; begin < str.len; begin++)
     {
-        if(!isspace(str.chars[begin]))
+        if (!isspace(str.chars[begin]))
         {
             break;
         }
     }
     unsigned int end = str.len;
-    for( ; end > begin ; end--)
+    for (; end > begin; end--)
     {
-        if(!isspace(str.chars[end - 1]))
+        if (!isspace(str.chars[end - 1]))
         {
             break;
         }
     }
-    
+
     return cgs__strv_strv3(str, begin, end);
 }
 
 CGS_API CGS_Error cgs__trim(CGS__FixedMutStrRef str)
 {
     unsigned int begin = 0;
-    for( ; begin < *str.len ; begin++)
+    for (; begin < *str.len; begin++)
     {
-        if(!isspace(str.chars[begin]))
+        if (!isspace(str.chars[begin]))
         {
             break;
         }
     }
-    
+
     unsigned int end = *str.len;
-    for( ; end > begin ; end--)
+    for (; end > begin; end--)
     {
-        if(!isspace(str.chars[end - 1]))
+        if (!isspace(str.chars[end - 1]))
         {
             break;
         }
     }
-    
+
     unsigned int len = end - begin;
     memmove(str.chars, str.chars + begin, len);
-    
-    *str.len = len;
+
+    *str.len       = len;
     str.chars[len] = '\0';
-    
-    return (CGS_Error){CGS_OK};
+
+    return (CGS_Error) {CGS_OK};
 }
 
 CGS_API bool cgs__strv_starts_with(const CGS_StrView hay, const CGS_StrView needle)
 {
-    if(needle.len == 0)
+    if (needle.len == 0)
         return true;
-    if(hay.len == 0)
+    if (hay.len == 0)
         return false;
     return (needle.len <= hay.len) && (memcmp(hay.chars, needle.chars, needle.len) == 0);
 }
 
 CGS_API bool cgs__strv_ends_with(const CGS_StrView hay, const CGS_StrView needle)
 {
-    if(needle.len == 0)
+    if (needle.len == 0)
         return true;
-    if(hay.len == 0)
+    if (hay.len == 0)
         return false;
     return (needle.len <= hay.len) && (memcmp(hay.chars + hay.len - needle.len, needle.chars, needle.len) == 0);
 }
 
-CGS_API CGS_Error cgs__map_chars(CGS_StrView str, bool(*map)(char *c,void *arg), void *arg)
+CGS_API CGS_Error cgs__map_chars(CGS_StrView str, bool (*map)(char *c, void *arg), void *arg)
 {
-    for(unsigned int i = 0 ; i < str.len ; i++)
+    for (unsigned int i = 0; i < str.len; i++)
     {
-        if(!map(str.chars + i, arg))
-            return (CGS_Error){CGS_CALLBACK_EXIT};
+        if (!map(str.chars + i, arg))
+            return (CGS_Error) {CGS_CALLBACK_EXIT};
     }
-    return (CGS_Error){CGS_OK};
+    return (CGS_Error) {CGS_OK};
 }
 
 CGS_PRIVATE bool cgs__map_tolower(char *c, void *arg)
 {
     (void)arg;
-    *c = (char) tolower(*c);
+    *c = (char)tolower(*c);
     return true;
 }
 
 CGS_PRIVATE bool cgs__map_toupper(char *c, void *arg)
 {
     (void)arg;
-    *c = (char) toupper(*c);
+    *c = (char)toupper(*c);
     return true;
 }
 
@@ -2644,76 +1793,70 @@ CGS_API void cgs__chars_toupper(CGS_StrView str)
 CGS_API CGS_Error cgs__fmutstr_ref_clear(CGS__FixedMutStrRef fmutstr_ref)
 {
     *fmutstr_ref.len = 0;
-    if(fmutstr_ref.cap > 0)
+    if (fmutstr_ref.cap > 0)
     {
         fmutstr_ref.chars[0] = '\0';
     }
-    return (CGS_Error){CGS_OK};
+    return (CGS_Error) {CGS_OK};
 }
 
 CGS_API CGS_Error cgs__mutstr_ref_clear(CGS_MutStrRef str)
 {
-    switch(str.ty)
+    switch (str.ty)
     {
-        case CGS__DSTR_TY:
-            return cgs__fmutstr_ref_clear(cgs__dstr_ptr_as_fmutstr_ref(str.str.dstr));
-            break;
-        case CGS__STRBUF_TY:
-            return cgs__fmutstr_ref_clear(cgs__strbuf_ptr_as_fmutstr_ref(str.str.strbuf));
-            break;
-        case CGS__BUF_TY:
-            return cgs__fmutstr_ref_clear(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}));
-            break;
-        default:
-            CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__fmutstr_ref_clear(cgs__dstr_ptr_as_fmutstr_ref(str.str.dstr));
+        break;
+    case CGS__STRBUF_TY:
+        return cgs__fmutstr_ref_clear(cgs__strbuf_ptr_as_fmutstr_ref(str.str.strbuf));
+        break;
+    case CGS__BUF_TY:
+        return cgs__fmutstr_ref_clear(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int) {0}));
+        break;
+    default:
+        CGS_unreachable();
     }
 }
 
 CGS_API CGS_MutStrRef cgs__cstr_as_mutstr_ref(const char *str)
 {
-    unsigned int len = (unsigned int) strlen(str);
-    
-    CGS_Buffer asbuf = {
-        .ptr = (char*) str,
-        .cap = len + 1
-    };
-    
+    unsigned int len = (unsigned int)strlen(str);
+
+    CGS_Buffer asbuf = {.ptr = (char *)str, .cap = len + 1};
+
     return cgs__buf_as_mutstr_ref(asbuf);
 }
 
 CGS_API CGS_MutStrRef cgs__ucstr_as_mutstr_ref(const unsigned char *str)
 {
-    unsigned int len = (unsigned int) strlen((char*) str);
-    
-    CGS_Buffer asbuf = {
-        .ptr = (char*) str,
-        .cap = len + 1
-    };
-    
+    unsigned int len = (unsigned int)strlen((char *)str);
+
+    CGS_Buffer asbuf = {.ptr = (char *)str, .cap = len + 1};
+
     return cgs__buf_as_mutstr_ref(asbuf);
 }
 
 CGS_API CGS_MutStrRef cgs__buf_as_mutstr_ref(const CGS_Buffer str)
 {
-    return (CGS_MutStrRef){
-        .ty = CGS__BUF_TY,
-        .str.buf = *(CGS_Buffer*) &str
+    return (CGS_MutStrRef) {
+        .ty      = CGS__BUF_TY,
+        .str.buf = *(CGS_Buffer *)&str,
     };
 }
 
 CGS_API CGS_MutStrRef cgs__dstr_ptr_as_mutstr_ref(const CGS_DStr *str)
 {
-    return (CGS_MutStrRef){
-        .ty = CGS__DSTR_TY,
-        .str.dstr = (CGS_DStr*) str
+    return (CGS_MutStrRef) {
+        .ty       = CGS__DSTR_TY,
+        .str.dstr = (CGS_DStr *)str,
     };
 }
 
 CGS_API CGS_MutStrRef cgs__strbuf_ptr_as_mutstr_ref(const CGS_StrBuf *str)
 {
-    return (CGS_MutStrRef){
-        .ty = CGS__STRBUF_TY,
-        .str.strbuf = (CGS_StrBuf*) str
+    return (CGS_MutStrRef) {
+        .ty         = CGS__STRBUF_TY,
+        .str.strbuf = (CGS_StrBuf *)str,
     };
 }
 
@@ -2724,102 +1867,98 @@ CGS_API CGS_MutStrRef cgs__mutstr_ref_as_mutstr_ref(const CGS_MutStrRef str)
 
 CGS_API CGS_StrBuf cgs__strbuf_from_cstr(const char *ptr)
 {
-    unsigned int len = (unsigned int) strlen(ptr);
+    unsigned int len = (unsigned int)strlen(ptr);
     unsigned int cap = len + 1;
-    
-    return (CGS_StrBuf){
-        .cap = cap,
-        .len = len,
-        .chars = (char*) ptr
+
+    return (CGS_StrBuf) {
+        .cap   = cap,
+        .len   = len,
+        .chars = (char *)ptr,
     };
 }
 
 CGS_API CGS_StrBuf cgs__strbuf_from_cstr_cap(const char *ptr, unsigned int cap)
 {
     unsigned int len = cgs__chars_strlen(ptr, cap);
-    
-    return (CGS_StrBuf){
-        .cap = cap,
-        .len = len,
-        .chars = (char*) ptr
+
+    return (CGS_StrBuf) {
+        .cap   = cap,
+        .len   = len,
+        .chars = (char *)ptr,
     };
 }
 
 CGS_API CGS_StrBuf cgs__strbuf_from_buf(const CGS_Buffer buf)
 {
-    CGS_StrBuf ret = {
-        .cap = buf.cap,
-        .len = 0,
-        .chars = buf.ptr
-    };
-    
-    if(ret.cap > 0)
+    CGS_StrBuf ret = {.cap = buf.cap, .len = 0, .chars = buf.ptr};
+
+    if (ret.cap > 0)
         ret.chars[0] = '\0';
-    
+
     return ret;
 }
 
 CGS_API CGS_Buffer cgs__buf_from_cstr(const char *str)
 {
-    return (CGS_Buffer){
-        .ptr = (char*) str,
-        .cap = (unsigned int) strlen(str) + 1
+    return (CGS_Buffer) {
+        .ptr = (char *)str,
+        .cap = (unsigned int)strlen(str) + 1,
     };
 }
 
 CGS_API CGS_Buffer cgs__buf_from_ucstr(const unsigned char *str)
 {
-    return (CGS_Buffer){
-        .ptr = (char*) str,
-        .cap = (unsigned int) strlen((char*) str) + 1
+    return (CGS_Buffer) {
+        .ptr = (char *)str,
+        .cap = (unsigned int)strlen((char *)str) + 1,
     };
 }
 
 CGS_API CGS_Buffer cgs__buf_from_carr(const char *str, size_t cap)
 {
-    return (CGS_Buffer){
-        .ptr = (char*) str,
-        .cap = (unsigned int) cap
+    return (CGS_Buffer) {
+        .ptr = (char *)str,
+        .cap = (unsigned int)cap,
     };
 }
 
 CGS_API CGS_Buffer cgs__buf_from_ucarr(const unsigned char *str, size_t cap)
 {
-    return (CGS_Buffer){
-        .ptr = (char*) str,
-        .cap = (unsigned int) cap
+    return (CGS_Buffer) {
+        .ptr = (char *)str,
+        .cap = (unsigned int)cap,
     };
 }
 
 CGS_API CGS_StrView cgs__strv_cstr1(const char *str)
 {
-    return (CGS_StrView){
-        .chars = (char*) str,
-        .len = (unsigned int) strlen(str)
+    return (CGS_StrView) {
+        .chars = (char *)str,
+        .len   = (unsigned int)strlen(str),
     };
 }
 
 CGS_API CGS_StrView cgs__strv_ucstr1(const unsigned char *str)
 {
-    return (CGS_StrView){
-        .chars = (char*) str,
-        .len = (unsigned int) strlen((char*)str)
+    return (CGS_StrView) {
+        .chars = (char *)str,
+        .len   = (unsigned int)strlen((char *)str),
     };
 }
 
 CGS_API CGS_StrView cgs__strv_dstr1(const CGS_DStr str)
 {
-    return (CGS_StrView){
+    return (CGS_StrView) {
         .chars = str.chars,
-        .len = str.len
+        .len   = str.len,
     };
 }
 
 CGS_API CGS_StrView cgs__strv_dstr_ptr1(const CGS_DStr *str)
 {
-    return (CGS_StrView){
+    return (CGS_StrView) {
         .chars = str->chars,
-        .len = str->len
+        .len   = str->len,
     };
 }
 
@@ -2830,68 +1969,72 @@ CGS_API CGS_StrView cgs__strv_strv1(const CGS_StrView str)
 
 CGS_API CGS_StrView cgs__strv_strbuf1(const CGS_StrBuf str)
 {
-    return (CGS_StrView){
+    return (CGS_StrView) {
         .chars = str.chars,
-        .len = str.len
+        .len   = str.len,
     };
 }
 
 CGS_API CGS_StrView cgs__strv_strbuf_ptr1(const CGS_StrBuf *str)
 {
-    return (CGS_StrView){
+    return (CGS_StrView) {
         .chars = str->chars,
-        .len = str->len
+        .len   = str->len,
     };
 }
 
 CGS_API CGS_StrView cgs__strv_mutstr_ref1(const CGS_MutStrRef str)
 {
-    switch(str.ty)
+    switch (str.ty)
     {
-        case CGS__DSTR_TY   : return cgs__strv_dstr_ptr1(str.str.dstr);
-        case CGS__STRBUF_TY : return cgs__strv_strbuf_ptr1(str.str.strbuf);
-        case CGS__BUF_TY    : return cgs__strv_cstr1(str.str.buf.ptr);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__strv_dstr_ptr1(str.str.dstr);
+    case CGS__STRBUF_TY:
+        return cgs__strv_strbuf_ptr1(str.str.strbuf);
+    case CGS__BUF_TY:
+        return cgs__strv_cstr1(str.str.buf.ptr);
+    default:
+        CGS_unreachable();
     }
 }
 
 CGS_API CGS_StrView cgs__strv_cstr2(const char *str, unsigned int begin)
 {
 #if !defined(CGS_NDEBUG)
-    unsigned int len = (unsigned int) strlen(str);
-    if(begin > len)
+    unsigned int len = (unsigned int)strlen(str);
+    if (begin > len)
     {
-        return (CGS_StrView){
-            .len = 0,
-            .chars = NULL
+        return (CGS_StrView) {
+            .len   = 0,
+            .chars = NULL,
         };
     }
 #endif
-    
-    return (CGS_StrView){
+
+    return (CGS_StrView) {
         .len   = len - begin,
-        .chars = (char*) str + begin
+        .chars = (char *)str + begin,
     };
 }
 
 CGS_API CGS_StrView cgs__strv_ucstr2(const unsigned char *str, unsigned int begin)
 {
-    return cgs__strv_cstr2((char*) str, begin);
+    return cgs__strv_cstr2((char *)str, begin);
 }
 
 CGS_API CGS_StrView cgs__strv_dstr_ptr2(const CGS_DStr *str, unsigned int begin)
 {
-    if(begin > str->len)
+    if (begin > str->len)
     {
-        return (CGS_StrView){
-            .len = 0,
-            .chars = NULL
+        return (CGS_StrView) {
+            .len   = 0,
+            .chars = NULL,
         };
     }
-    
-    return (CGS_StrView){
-        .len   = str->len   - begin,
-        .chars = str->chars + begin
+
+    return (CGS_StrView) {
+        .len   = str->len - begin,
+        .chars = str->chars + begin,
     };
 }
 
@@ -2903,36 +2046,33 @@ CGS_API CGS_StrView cgs__strv_dstr2(const CGS_DStr str, unsigned int begin)
 CGS_API CGS_StrView cgs__strv_strv2(const CGS_StrView str, unsigned int begin)
 {
 #if !defined(CGS_NDEBUG)
-    if(begin > str.len)
+    if (begin > str.len)
     {
-        return (CGS_StrView){
-            .len = 0,
-            .chars = NULL
+        return (CGS_StrView) {
+            .len   = 0,
+            .chars = NULL,
         };
     }
 #endif
-    
-    return (CGS_StrView){
-        .len   = str.len   - begin,
-        .chars = str.chars + begin
+
+    return (CGS_StrView) {
+        .len   = str.len - begin,
+        .chars = str.chars + begin,
     };
 }
 
 CGS_API CGS_StrView cgs__strv_strbuf_ptr2(const CGS_StrBuf *str, unsigned int begin)
 {
 #if !defined(CGS_NDEBUG)
-    if(begin > str->len)
+    if (begin > str->len)
     {
-        return (CGS_StrView){
-            .len = 0,
-            .chars = NULL
-        };
+        return (CGS_StrView) {.len = 0, .chars = NULL};
     }
 #endif
-    
-    return (CGS_StrView){
-        .len   = str->len   - begin,
-        .chars = str->chars + begin
+
+    return (CGS_StrView) {
+        .len   = str->len - begin,
+        .chars = str->chars + begin,
     };
 }
 
@@ -2943,52 +2083,56 @@ CGS_API CGS_StrView cgs__strv_strbuf2(const CGS_StrBuf str, unsigned int begin)
 
 CGS_API CGS_StrView cgs__strv_mutstr_ref2(const CGS_MutStrRef str, unsigned int begin)
 {
-    switch(str.ty)
+    switch (str.ty)
     {
-        case CGS__DSTR_TY   : return cgs__strv_dstr_ptr2(str.str.dstr, begin);
-        case CGS__STRBUF_TY : return cgs__strv_strbuf_ptr2(str.str.strbuf, begin);
-        case CGS__BUF_TY    : return cgs__strv_fmutstr_ref2(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__strv_dstr_ptr2(str.str.dstr, begin);
+    case CGS__STRBUF_TY:
+        return cgs__strv_strbuf_ptr2(str.str.strbuf, begin);
+    case CGS__BUF_TY:
+        return cgs__strv_fmutstr_ref2(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int) {0}), begin);
+    default:
+        CGS_unreachable();
     }
 }
 
 CGS_PRIVATE CGS_StrView cgs__strv_fmutstr_ref2(const CGS__FixedMutStrRef str, unsigned int begin)
 {
     unsigned int len = *str.len;
-    
+
 #if !defined(CGS_NDEBUG)
-    if(begin > len)
+    if (begin > len)
     {
-        return (CGS_StrView){
-            .len = 0,
-            .chars = NULL
+        return (CGS_StrView) {
+            .len   = 0,
+            .chars = NULL,
         };
     }
 #endif
-    
-    return (CGS_StrView){
-        .len   = len       - begin,
-        .chars = str.chars + begin
+
+    return (CGS_StrView) {
+        .len   = len - begin,
+        .chars = str.chars + begin,
     };
 }
 
 CGS_PRIVATE CGS_StrView cgs__strv_fmutstr_ref3(const CGS__FixedMutStrRef str, unsigned int begin, unsigned int end)
 {
     unsigned int len = *str.len;
-    
+
 #if !defined(CGS_NDEBUG)
-    if(begin > len || end > len || begin > end)
+    if (begin > len || end > len || begin > end)
     {
-        return (CGS_StrView){
-            .len = 0,
-            .chars = NULL
+        return (CGS_StrView) {
+            .len   = 0,
+            .chars = NULL,
         };
     }
 #endif
-    
-    return (CGS_StrView){
+
+    return (CGS_StrView) {
         .len   = end - begin,
-        .chars = str.chars + begin
+        .chars = str.chars + begin,
     };
 }
 
@@ -3000,62 +2144,66 @@ CGS_API CGS_StrView cgs__strv_cstr3(const char *str, unsigned int begin, unsigne
     char *found_nul = memchr(str + begin, 0, end - begin);
     if (found_nul)
     {
-        return (CGS_StrView){ .len = 0, .chars = NULL };
+        return (CGS_StrView) {
+            .len   = 0,
+            .chars = NULL,
+        };
     }
 #endif
 
-    return (CGS_StrView){ .len = end - begin, .chars = (char *)str + begin };
+    return (CGS_StrView) {
+        .len   = end - begin,
+        .chars = (char *)str + begin,
+    };
 }
 
 CGS_API CGS_StrView cgs__strv_ucstr3(const unsigned char *str, unsigned int begin, unsigned int end)
 {
-    return cgs__strv_cstr3((char*) str, begin, end);
+    return cgs__strv_cstr3((char *)str, begin, end);
 }
 
 CGS_API CGS_StrView cgs__strv_dstr_ptr3(const CGS_DStr *str, unsigned int begin, unsigned int end)
 {
 #if !defined(CGS_NDEBUG)
-    if(begin > str->len || end > str->len || begin > end)
+    if (begin > str->len || end > str->len || begin > end)
     {
-        return (CGS_StrView){
-            .len = 0,
-            .chars = NULL
+        return (CGS_StrView) {
+            .len   = 0,
+            .chars = NULL,
         };
     }
 #endif
-    
-    return (CGS_StrView){
-        .len   = end - begin,
-        .chars = str->chars + begin
-    };
+
+    return (CGS_StrView) {.len = end - begin, .chars = str->chars + begin};
 }
 
 CGS_API CGS_StrView cgs__strv_strbuf_ptr3(const CGS_StrBuf *str, unsigned int begin, unsigned int end)
 {
 #if !defined(CGS_NDEBUG)
-    if(begin > str->len || end > str->len || begin > end)
+    if (begin > str->len || end > str->len || begin > end)
     {
-        return (CGS_StrView){
-            .len = 0,
-            .chars = NULL
+        return (CGS_StrView) {
+            .len   = 0,
+            .chars = NULL,
         };
     }
 #endif
-    
-    return (CGS_StrView){
-        .len   = end - begin,
-        .chars = str->chars + begin
-    };
+
+    return (CGS_StrView) {.len = end - begin, .chars = str->chars + begin};
 }
 
 CGS_API CGS_StrView cgs__strv_mutstr_ref3(CGS_MutStrRef str, unsigned int begin, unsigned int end)
 {
-    switch(str.ty)
+    switch (str.ty)
     {
-        case CGS__DSTR_TY   : return cgs__strv_dstr_ptr3(str.str.dstr, begin, end);
-        case CGS__STRBUF_TY : return cgs__strv_strbuf_ptr3(str.str.strbuf, begin, end);
-        case CGS__BUF_TY    : return cgs__strv_fmutstr_ref3(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int){0}), begin, end);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__strv_dstr_ptr3(str.str.dstr, begin, end);
+    case CGS__STRBUF_TY:
+        return cgs__strv_strbuf_ptr3(str.str.strbuf, begin, end);
+    case CGS__BUF_TY:
+        return cgs__strv_fmutstr_ref3(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int) {0}), begin, end);
+    default:
+        CGS_unreachable();
     }
 }
 
@@ -3066,18 +2214,15 @@ CGS_API CGS_StrView cgs__strv_dstr3(CGS_DStr str, unsigned int begin, unsigned i
 
 CGS_API CGS_StrView cgs__strv_strv3(CGS_StrView str, unsigned int begin, unsigned int end)
 {
-    if(begin > str.len || end > str.len || begin > end)
+    if (begin > str.len || end > str.len || begin > end)
     {
-        return (CGS_StrView){
-            .len = 0,
-            .chars = NULL
+        return (CGS_StrView) {
+            .len   = 0,
+            .chars = NULL,
         };
     }
-    
-    return (CGS_StrView){
-        .len   = end - begin,
-        .chars = str.chars + begin
-    };
+
+    return (CGS_StrView) {.len = end - begin, .chars = str.chars + begin};
 }
 
 CGS_API CGS_StrView cgs__strv_strbuf3(CGS_StrBuf str, unsigned int begin, unsigned int end)
@@ -3088,11 +2233,11 @@ CGS_API CGS_StrView cgs__strv_strbuf3(CGS_StrBuf str, unsigned int begin, unsign
 CGS_API CGS_Error cgs__dstr_fread_until(CGS_DStr *dstr, FILE *stream, int delim)
 {
     dstr->len = 0;
-    if(dstr->cap > 0)
+    if (dstr->cap > 0)
     {
         dstr->chars[0] = '\0';
     }
-    
+
     return cgs__dstr_append_fread_until(dstr, stream, delim);
 }
 
@@ -3100,31 +2245,31 @@ CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, int
 {
     assert(delim == EOF || (delim >= 0 && delim <= 255));
     CGS_Error err = {CGS_OK};
-    int c = 256;
-    while(c != EOF && c != delim)
+    int c         = 256;
+    while (c != EOF && c != delim)
     {
         err = cgs__dstr_maybe_grow(dstr, 64);
-        if(err.ec != CGS_OK)
+        if (err.ec != CGS_OK)
             return err;
-        
+
         unsigned int count = 0;
-        while(c != delim && count < 64 && (c=fgetc(stream)) != EOF)
+        while (c != delim && count < 64 && (c = fgetc(stream)) != EOF)
         {
-            char as_char = (char) c;
+            char as_char                   = (char)c;
             dstr->chars[dstr->len + count] = as_char;
             count += 1;
         }
         dstr->len += count;
     }
     dstr->chars[dstr->len] = '\0';
-    
-    bool io_err = ferror(stream);
+
+    bool io_err          = ferror(stream);
     bool delim_not_found = c != delim;
-    
-    if(io_err)
-        return (CGS_Error){CGS_IO_ERROR};
-    else if(delim_not_found)
-        return (CGS_Error){CGS_NOT_FOUND};
+
+    if (io_err)
+        return (CGS_Error) {CGS_IO_ERROR};
+    else if (delim_not_found)
+        return (CGS_Error) {CGS_NOT_FOUND};
     else
         return err;
 }
@@ -3132,125 +2277,130 @@ CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, int
 CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *stream, int delim)
 {
     assert(delim == EOF || (delim >= 0 && delim <= 255));
-    
+
     // TODO delim may be EOF, so dont ret here?
-    if(dst.cap == 0)
+    if (dst.cap == 0)
     {
-        return (CGS_Error){CGS_DST_TOO_SMALL};
+        return (CGS_Error) {CGS_DST_TOO_SMALL};
     }
-    
+
     unsigned int len = 0;
+
     int c = 256;
-    while(len < dst.cap - 1 && c != delim && (c=fgetc(stream)) != EOF)
+    while (len < dst.cap - 1 && c != delim && (c = fgetc(stream)) != EOF)
     {
-        dst.chars[len] = (char) c;
+        dst.chars[len] = (char)c;
         len += 1;
     }
-    
+
     dst.chars[len] = '\0';
-    *dst.len = len;
-    
-    bool io_err = ferror(stream);
-    bool dst_too_small = (len == dst.cap - 1) && (c != delim) && (c != EOF);
+    *dst.len       = len;
+
+    bool io_err          = ferror(stream);
+    bool dst_too_small   = (len == dst.cap - 1) && (c != delim) && (c != EOF);
     bool delim_not_found = c != delim;
-    
-    if(dst_too_small)
-        return (CGS_Error){CGS_DST_TOO_SMALL};
-    else if(io_err)
-        return (CGS_Error){CGS_IO_ERROR};
-    else if(delim_not_found)
-        return (CGS_Error){CGS_NOT_FOUND};
+
+    if (dst_too_small)
+        return (CGS_Error) {CGS_DST_TOO_SMALL};
+    else if (io_err)
+        return (CGS_Error) {CGS_IO_ERROR};
+    else if (delim_not_found)
+        return (CGS_Error) {CGS_NOT_FOUND};
     else
-        return (CGS_Error){CGS_OK};
+        return (CGS_Error) {CGS_OK};
 }
 
 CGS_API CGS_Error cgs__mutstr_ref_fread_until(CGS_MutStrRef dst, FILE *stream, int delim)
 {
-    switch(dst.ty)
+    switch (dst.ty)
     {
-        case CGS__DSTR_TY   : return cgs__dstr_fread_until(dst.str.dstr, stream, delim);
-        case CGS__STRBUF_TY : return cgs__fmutstr_ref_fread_until(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream, delim);
-        case CGS__BUF_TY    : return cgs__fmutstr_ref_fread_until(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream, delim);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__dstr_fread_until(dst.str.dstr, stream, delim);
+    case CGS__STRBUF_TY:
+        return cgs__fmutstr_ref_fread_until(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream, delim);
+    case CGS__BUF_TY:
+        return cgs__fmutstr_ref_fread_until(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int) {0}), stream, delim);
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_append_fread_until(CGS__FixedMutStrRef dst, FILE *stream, int delim)
 {
-    if(dst.cap == 0 || dst.cap - 1 <= *dst.len)
-        return (CGS_Error){CGS_DST_TOO_SMALL};
-    
+    if (dst.cap == 0 || dst.cap - 1 <= *dst.len)
+        return (CGS_Error) {CGS_DST_TOO_SMALL};
+
     unsigned int appended_len = 0;
-    
-    CGS__FixedMutStrRef right = {
-        .cap = dst.cap - *dst.len,
-        .len = &appended_len,
-        .chars = dst.chars + *dst.len
-    };
-    
+
+    CGS__FixedMutStrRef right = {.cap = dst.cap - *dst.len, .len = &appended_len, .chars = dst.chars + *dst.len};
+
     CGS_Error err = cgs__fmutstr_ref_fread_until(right, stream, delim);
-    
+
     *dst.len += *right.len;
-    
+
     dst.chars[*dst.len] = '\0';
-    
+
     return err;
 }
 
 CGS_API CGS_Error cgs__mutstr_ref_append_fread_until(CGS_MutStrRef dst, FILE *stream, int delim)
 {
-    switch(dst.ty)
+    switch (dst.ty)
     {
-        case CGS__DSTR_TY   : return cgs__dstr_append_fread_until(dst.str.dstr, stream, delim);
-        case CGS__STRBUF_TY : return cgs__fmutstr_ref_append_fread_until(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream, delim);
-        case CGS__BUF_TY    : return cgs__fmutstr_ref_append_fread_until(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int){0}), stream, delim);
-        default             : CGS_unreachable();
+    case CGS__DSTR_TY:
+        return cgs__dstr_append_fread_until(dst.str.dstr, stream, delim);
+    case CGS__STRBUF_TY:
+        return cgs__fmutstr_ref_append_fread_until(cgs__strbuf_ptr_as_fmutstr_ref(dst.str.strbuf), stream, delim);
+    case CGS__BUF_TY:
+        return cgs__fmutstr_ref_append_fread_until(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int) {0}), stream, delim);
+    default:
+        CGS_unreachable();
     };
 }
 
 CGS_API unsigned int cgs__fprint_strv(FILE *stream, CGS_StrView str)
 {
-    if(str.chars == NULL && str.len == 0)
+    if (str.chars == NULL && str.len == 0)
         return 0;
-    return (unsigned int) fwrite(str.chars, sizeof(unsigned char), str.len, stream);
+    return (unsigned int)fwrite(str.chars, sizeof(unsigned char), str.len, stream);
 }
 
 CGS_API unsigned int cgs__fprintln_strv(FILE *stream, CGS_StrView str)
 {
-    unsigned int written = (unsigned int) fwrite(str.chars, sizeof(unsigned char), str.len, stream);
-    int err = fputc('\n', stream);
-    
+    unsigned int written = (unsigned int)fwrite(str.chars, sizeof(unsigned char), str.len, stream);
+    int err              = fputc('\n', stream);
+
     return written + (err != EOF);
 }
 
 CGS_API CGS_Error cgs__idstr_append(CGS_Writer *writer, const CGS_StrView str)
 {
-    CGS_DStr *dstr = ((CGS_DStrWriter*)writer)->dstr;
+    CGS_DStr *dstr = ((CGS_DStrWriter *)writer)->dstr;
     return cgs__dstr_append(dstr, str);
 }
 
 CGS_API CGS_Error cgs__istrbuf_append(CGS_Writer *writer, const CGS_StrView str)
 {
-    CGS_StrBuf *strbuf = ((CGS_StrBufWriter*)writer)->strbuf;
+    CGS_StrBuf *strbuf = ((CGS_StrBufWriter *)writer)->strbuf;
     return cgs__fmutstr_ref_append(cgs__fmutstr_ref(strbuf), str);
 }
 
 CGS_API CGS_Error cgs__ibuf_append(CGS_Writer *writer, const CGS_StrView str)
 {
-    CGS_Buffer buf = ((CGS_CStrWriter*)writer)->buf;
+    CGS_Buffer buf = ((CGS_CStrWriter *)writer)->buf;
     return cgs__fmutstr_ref_append(cgs__fmutstr_ref(buf), str);
 }
 
 CGS_API CGS_Error cgs__file_append(CGS_Writer *writer, const CGS_StrView str)
 {
-    FILE *f = ((CGS_FileWriter*)writer)->file;
+    FILE *f          = ((CGS_FileWriter *)writer)->file;
     unsigned int ret = cgs__fprint_strv(f, str);
-    if(ret != str.len)
-        return (CGS_Error){CGS_IO_ERROR};
-    return (CGS_Error){CGS_OK};
+    if (ret != str.len)
+        return (CGS_Error) {CGS_IO_ERROR};
+    return (CGS_Error) {CGS_OK};
 }
 
-CGS_API CGS_Error cgs__append_fmt(CGS_Writer *writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*))
+CGS_API CGS_Error cgs__append_fmt(CGS_Writer *writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *))
 {
     // This should proably be:
     // do first format specififer, determine mode from it,
@@ -3262,42 +2412,41 @@ CGS_API CGS_Error cgs__append_fmt(CGS_Writer *writer, const CGS__const_StrView f
         SPECIFY_INDEX
     } index_mode = UNKNOWN_INDEXING; // SPECIFY_INDEX is "%index" (e.g. "%0" is the first arg). AUTO_INDEX requires "%?", cannot mix
 
-    
     CGS__const_StrView fmt_walk = fmt;
-    
+
     size_t how_many_formatted = 0;
-    CGS_Error err = {CGS_OK};
-    while(fmt_walk.len != 0 && err.ec == CGS_OK)
+    CGS_Error err             = {CGS_OK};
+    while (fmt_walk.len != 0 && err.ec == CGS_OK)
     {
         const char *found = memchr(fmt_walk.chars, '%', fmt_walk.len);
-        if(found)
+        if (found)
         {
-            unsigned int index = (unsigned int) (found - fmt_walk.chars);
-            CGS_StrView chunk = { .chars = (char*) fmt_walk.chars, .len = index };
+            unsigned int index = (unsigned int)(found - fmt_walk.chars);
+            CGS_StrView chunk  = {.chars = (char *)fmt_walk.chars, .len = index};
             fmt_walk.chars += (index + 1);
-            fmt_walk.len   -= (index + 1);
-            
+            fmt_walk.len -= (index + 1);
+
             // '%' without espace "%%" or without format "%?" is rejected
-            if(fmt_walk.len == 0)
+            if (fmt_walk.len == 0)
             {
                 CGS_debug_break();
                 err.ec = CGS_BAD_FORMAT;
                 break;
             }
-            
-            if(fmt_walk.len > 0 && found[1] == '?')
+
+            if (fmt_walk.len > 0 && found[1] == '?')
             {
-                if(index_mode == SPECIFY_INDEX)
+                if (index_mode == SPECIFY_INDEX)
                 {
                     CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
                     err.ec = CGS_BAD_FORMAT;
                     break;
                 }
                 index_mode = AUTO_INDEX;
-                
+
                 err = cgs__invoke_writer(writer, chunk);
-                
-                if(how_many_formatted >= nargs)
+
+                if (how_many_formatted >= nargs)
                 {
                     CGS_debug_break(); // not enough format args
                     err.ec = CGS_NOT_ENOUGH_ARGS;
@@ -3305,54 +2454,54 @@ CGS_API CGS_Error cgs__append_fmt(CGS_Writer *writer, const CGS__const_StrView f
                 }
                 err = tostr_p_funcs[how_many_formatted](writer, args[how_many_formatted]);
                 how_many_formatted += 1;
-                
+
                 // skip the '?'
                 fmt_walk.chars += 1;
                 fmt_walk.len -= 1;
             }
-            else if(fmt_walk.len > 0 && found[1] == '[')
+            else if (fmt_walk.len > 0 && found[1] == '[')
             {
-                if(index_mode == AUTO_INDEX)
+                if (index_mode == AUTO_INDEX)
                 {
                     CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
                     err.ec = CGS_BAD_FORMAT;
                     break;
                 }
                 index_mode = SPECIFY_INDEX;
-                
-                char *end = NULL;
+
+                char *end               = NULL;
                 unsigned long arg_index = strtoul(found + 2, &end, 10); // we can assume fmt is null terminated
-                
-                unsigned int end_idx = (unsigned int) (end - fmt_walk.chars);
+
+                unsigned int end_idx = (unsigned int)(end - fmt_walk.chars);
                 fmt_walk.chars += end_idx;
-                fmt_walk.len   -= end_idx;
-                
-                if(fmt_walk.len == 0 || fmt_walk.chars[0] != ']')
+                fmt_walk.len -= end_idx;
+
+                if (fmt_walk.len == 0 || fmt_walk.chars[0] != ']')
                 {
                     CGS_debug_break();
                     err.ec = CGS_BAD_FORMAT;
                     break;
                 }
-                
+
                 // skip the ]
                 fmt_walk.len -= 1;
                 fmt_walk.chars += 1;
-                
-                if(arg_index >= nargs)
+
+                if (arg_index >= nargs)
                 {
                     CGS_debug_break(); // not enough format args
                     err.ec = CGS_INDEX_OUT_OF_BOUNDS;
                     break;
                 }
-                
+
                 err = cgs__invoke_writer(writer, chunk);
                 err = tostr_p_funcs[arg_index](writer, args[arg_index]);
             }
-            else if(fmt_walk.len > 0 && found[1] == '%')
+            else if (fmt_walk.len > 0 && found[1] == '%')
             {
                 chunk.len += 1; // to include the first %
                 fmt_walk.chars += 1;
-                fmt_walk.len   -= 1;
+                fmt_walk.len -= 1;
                 err = cgs__invoke_writer(writer, chunk);
             }
             else
@@ -3369,202 +2518,210 @@ CGS_API CGS_Error cgs__append_fmt(CGS_Writer *writer, const CGS__const_StrView f
             fmt_walk.len = 0;
         }
     }
-    
-    if(err.ec == CGS_OK && how_many_formatted < nargs && index_mode != SPECIFY_INDEX)
+
+    if (err.ec == CGS_OK && how_many_formatted < nargs && index_mode != SPECIFY_INDEX)
     {
-        return (CGS_Error){CGS_TOO_MANY_ARGS};
+        return (CGS_Error) {CGS_TOO_MANY_ARGS};
     }
     return err;
 }
 
-CGS_API CGS_Error cgs__appendln_fmt_(CGS_Writer *writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*))
+CGS_API CGS_Error cgs__appendln_fmt_(CGS_Writer *writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *))
 {
     CGS_Error err = cgs__append_fmt(writer, fmt, nargs, args, tostr_p_funcs);
-    if(err.ec == CGS_OK)
+    if (err.ec == CGS_OK)
         err = cgs__invoke_writer(writer, cgs_strv("\n"));
-    
+
     return err;
 }
 
-CGS_API CGS_DStr cgs__asprintf(CGS_Writer *writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*))
+CGS_API CGS_DStr cgs__asprintf(CGS_Writer *writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *))
 {
     cgs__append_fmt(writer, fmt, nargs, args, tostr_p_funcs);
-    return *((CGS_DStrWriter*)writer)->dstr;
+    return *((CGS_DStrWriter *)writer)->dstr;
 }
 
-CGS_API CGS_DStr cgs__asprintf_with_allocator(CGS_Writer *writer, const CGS__const_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*))
+CGS_API CGS_DStr cgs__asprintf_with_allocator(CGS_Writer *writer, const CGS__const_StrView fmt, size_t nargs, void **args,
+                                              CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *))
 {
     // shifting the pointers by 1 to skip the fmt arg
     cgs__append_fmt(writer, fmt, nargs - 1, args + 1, tostr_p_funcs + 1);
-    return *((CGS_DStrWriter*)writer)->dstr;
+    return *((CGS_DStrWriter *)writer)->dstr;
 }
 
 CGS_PRIVATE unsigned int cgs__numstr_len(unsigned long long num)
 {
     unsigned int len = 1;
-    for(unsigned int i = 1 ; i < CGS__CARR_LEN(cgs__ten_pows_ull) && num >= cgs__ten_pows_ull[i] ; len++)
+    for (unsigned int i = 1; i < CGS__CARR_LEN(cgs__ten_pows_ull) && num >= cgs__ten_pows_ull[i]; len++)
         i++;
     return len;
 }
 
-#define cgs__sinteger_min(ty)  \
-_Generic((ty){0},              \
-signed char: SCHAR_MIN,        \
-short      : SHRT_MIN,         \
-int        : INT_MIN,          \
-long       : LONG_MIN,         \
-long long  : LLONG_MIN         \
-)
+#define cgs__sinteger_min(ty) _Generic((ty) {0}, signed char: SCHAR_MIN, short: SHRT_MIN, int: INT_MIN, long: LONG_MIN, long long: LLONG_MIN)
 
-#define cgs__min_tostr(ty)        \
-_Generic((ty){0},                 \
-signed char: cgs__schar_min_into, \
-short      : cgs__short_min_into, \
-int        : cgs__int_min_into,   \
-long       : cgs__long_min_into,  \
-long long  : cgs__llong_min_into  \
-)
+#define cgs__min_tostr(ty) \
+    _Generic((ty) {0}, signed char: cgs__schar_min_into, short: cgs__short_min_into, int: cgs__int_min_into, long: cgs__long_min_into, long long: cgs__llong_min_into)
 
 CGS_PRIVATE CGS_Error cgs__schar_min_into(CGS_Writer *writer)
 {
-    if(SCHAR_MIN == (-127 - 1))
+    if (SCHAR_MIN == (-127 - 1))
     {
         const char *numstr = "-128";
-        CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
+        CGS_StrView s      = {.chars = (char *)numstr, .len = (unsigned int)strlen(numstr)};
         return cgs__invoke_writer(writer, s);
     }
     else
     {
         char temp[16] = {0};
-        int len = snprintf(temp, sizeof(temp), "%hhd", SCHAR_MIN);
-        return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
+        int len       = snprintf(temp, sizeof(temp), "%hhd", SCHAR_MIN);
+        return cgs__invoke_writer(writer, (CGS_StrView) {
+                                              .chars = (char *)temp,
+                                              .len   = (unsigned int)len,
+                                          });
     }
 }
 
 CGS_PRIVATE CGS_Error cgs__short_min_into(CGS_Writer *writer)
 {
-    if(SHRT_MIN == (-32767 - 1))
+    if (SHRT_MIN == (-32767 - 1))
     {
         const char *numstr = "-32768";
-        CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
+        CGS_StrView s      = {.chars = (char *)numstr, .len = (unsigned int)strlen(numstr)};
         return cgs__invoke_writer(writer, s);
     }
     else
     {
         char temp[16] = {0};
-        int len = snprintf(temp, sizeof(temp), "%hd", SHRT_MIN);
-        return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
+        int len       = snprintf(temp, sizeof(temp), "%hd", SHRT_MIN);
+        return cgs__invoke_writer(writer, (CGS_StrView) {
+                                              .chars = (char *)temp,
+                                              .len   = (unsigned int)len,
+                                          });
     }
 }
 
 CGS_PRIVATE CGS_Error cgs__int_min_into(CGS_Writer *writer)
 {
-    if(INT_MIN == (-2147483647 - 1))
+    if (INT_MIN == (-2147483647 - 1))
     {
         const char *numstr = "-2147483648";
-        CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
+        CGS_StrView s      = {.chars = (char *)numstr, .len = (unsigned int)strlen(numstr)};
         return cgs__invoke_writer(writer, s);
     }
     else
     {
         char temp[32] = {0};
-        int len = snprintf(temp, sizeof(temp), "%d", INT_MIN);
-        return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
+        int len       = snprintf(temp, sizeof(temp), "%d", INT_MIN);
+        return cgs__invoke_writer(writer, (CGS_StrView) {
+                                              .chars = (char *)temp,
+                                              .len   = (unsigned int)len,
+                                          });
     }
 }
 
 CGS_PRIVATE CGS_Error cgs__long_min_into(CGS_Writer *writer)
 {
-    if(LONG_MIN == INT_MIN)
+    if (LONG_MIN == INT_MIN)
     {
         return cgs__int_min_into(writer);
     }
-    else if(LONG_MIN == -9223372036854775807 - 1)
+    else if (LONG_MIN == -9223372036854775807 - 1)
     {
         const char *numstr = "-9223372036854775808";
-        CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
+        CGS_StrView s      = {.chars = (char *)numstr, .len = (unsigned int)strlen(numstr)};
         return cgs__invoke_writer(writer, s);
     }
     else
     {
         char temp[32] = {0};
-        int len = snprintf(temp, sizeof(temp), "%ld", LONG_MIN);
-        return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
+        int len       = snprintf(temp, sizeof(temp), "%ld", LONG_MIN);
+        return cgs__invoke_writer(writer, (CGS_StrView) {
+                                              .chars = (char *)temp,
+                                              .len   = (unsigned int)len,
+                                          });
     }
 }
 
 CGS_PRIVATE CGS_Error cgs__llong_min_into(CGS_Writer *writer)
 {
-    if(LLONG_MIN == LONG_MIN)
+    if (LLONG_MIN == LONG_MIN)
     {
         return cgs__long_min_into(writer);
     }
-    else if(LLONG_MIN == -9223372036854775807 - 1)
+    else if (LLONG_MIN == -9223372036854775807 - 1)
     {
         const char *numstr = "-9223372036854775808";
-        CGS_StrView s = {.chars = (char*) numstr, .len = (unsigned int) strlen(numstr)};
+        CGS_StrView s      = {.chars = (char *)numstr, .len = (unsigned int)strlen(numstr)};
         return cgs__invoke_writer(writer, s);
     }
     else
     {
         char temp[32] = {0};
-        int len = snprintf(temp, sizeof(temp), "%lld", LLONG_MIN);
-        return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) temp, .len = (unsigned int) len});
+        int len       = snprintf(temp, sizeof(temp), "%lld", LLONG_MIN);
+        return cgs__invoke_writer(writer, (CGS_StrView) {
+                                              .chars = (char *)temp,
+                                              .len   = (unsigned int)len,
+                                          });
     }
 }
 
-#define cgs__buf_size_for_integer_type(ty) \
-_Generic((char(*)[sizeof(ty)])0,           \
-    char(*)[1]: 4,                         \
-    char(*)[2]: 8,                         \
-    char(*)[4]: 16,                        \
-    char(*)[8]: 32                         \
-)
+#define cgs__buf_size_for_integer_type(ty) _Generic((char (*)[sizeof(ty)])0, char (*)[1]: 4, char (*)[2]: 8, char (*)[4]: 16, char (*)[8]: 32)
 
-#define cgs__sinteger_tostr() \
-do { \
-    if(obj == cgs__sinteger_min(__typeof__(obj))) \
-    { \
-        return cgs__min_tostr(__typeof__(obj))(writer); \
-    } \
-    bool isneg = false; \
-    if(obj < 0) \
-    { \
-        isneg = true; \
-        obj *= -1; \
-    } \
-    unsigned int numlen = cgs__numstr_len((unsigned long long) obj); \
-    char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
-    if(numlen >= sizeof(cgs__tmp_buf)) CGS_unreachable(); \
-    \
-    if(isneg) \
-    { \
-        cgs__tmp_buf[0] = '-'; \
-    } \
-    \
-    for (unsigned int i = 0; i < numlen ; i++) \
-    { \
-        unsigned char rem = (unsigned char)(obj % 10); \
-        obj = obj / 10; \
-        cgs__tmp_buf[isneg + numlen - (i + 1)] = (char)(rem + '0'); \
-    } \
-    return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = numlen + isneg}); \
-} while(0)
+#define cgs__sinteger_tostr()                                                   \
+    do                                                                          \
+    {                                                                           \
+        if (obj == cgs__sinteger_min(__typeof__(obj)))                          \
+        {                                                                       \
+            return cgs__min_tostr(__typeof__(obj))(writer);                     \
+        }                                                                       \
+        bool isneg = false;                                                     \
+        if (obj < 0)                                                            \
+        {                                                                       \
+            isneg = true;                                                       \
+            obj *= -1;                                                          \
+        }                                                                       \
+        unsigned int numlen = cgs__numstr_len((unsigned long long)obj);         \
+        char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))];     \
+        if (numlen >= sizeof(cgs__tmp_buf))                                     \
+            CGS_unreachable();                                                  \
+                                                                                \
+        if (isneg)                                                              \
+        {                                                                       \
+            cgs__tmp_buf[0] = '-';                                              \
+        }                                                                       \
+                                                                                \
+        for (unsigned int i = 0; i < numlen; i++)                               \
+        {                                                                       \
+            unsigned char rem                      = (unsigned char)(obj % 10); \
+            obj                                    = obj / 10;                  \
+            cgs__tmp_buf[isneg + numlen - (i + 1)] = (char)(rem + '0');         \
+        }                                                                       \
+        return cgs__invoke_writer(writer, (CGS_StrView) {                       \
+                                              .chars = cgs__tmp_buf,            \
+                                              .len   = numlen + isneg,          \
+                                          });                                   \
+    } while (0)
 
-#define cgs__uinteger_tostr() \
-do { \
-    unsigned int numlen = cgs__numstr_len(obj); \
-    char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
-    if(numlen >= sizeof(cgs__tmp_buf)) CGS_unreachable(); \
-    \
-    for (unsigned int i = 0; i < numlen ; i++) \
-    { \
-        unsigned char rem = (unsigned char)(obj % 10); \
-        obj = obj / 10; \
-        cgs__tmp_buf[numlen - (i + 1)] = (char)(rem + '0'); \
-    } \
-    return cgs__invoke_writer(writer, (CGS_StrView){.chars = cgs__tmp_buf, .len = numlen}); \
-} while(0)
+#define cgs__uinteger_tostr()                                               \
+    do                                                                      \
+    {                                                                       \
+        unsigned int numlen = cgs__numstr_len(obj);                         \
+        char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
+        if (numlen >= sizeof(cgs__tmp_buf))                                 \
+            CGS_unreachable();                                              \
+                                                                            \
+        for (unsigned int i = 0; i < numlen; i++)                           \
+        {                                                                   \
+            unsigned char rem = (unsigned char)(obj % 10);                  \
+            obj               = obj / 10;                                   \
+                                                                            \
+            cgs__tmp_buf[numlen - (i + 1)] = (char)(rem + '0');             \
+        }                                                                   \
+        return cgs__invoke_writer(writer, (CGS_StrView) {                   \
+                                              .chars = cgs__tmp_buf,        \
+                                              .len   = numlen,              \
+                                          });                               \
+    } while (0)
 
 CGS_API CGS_Error cgs__bool_tostr(CGS_Writer *writer, bool obj)
 {
@@ -3574,29 +2731,26 @@ CGS_API CGS_Error cgs__bool_tostr(CGS_Writer *writer, bool obj)
 
 CGS_API CGS_Error cgs__cstr_tostr(CGS_Writer *writer, const char *obj)
 {
-    return cgs__invoke_writer(
-        writer,
-        (CGS_StrView){
-            .chars = (char*) obj,
-            .len = (unsigned int) strlen(obj)
-        }
-    );
+    return cgs__invoke_writer(writer, (CGS_StrView) {
+                                          .chars = (char *)obj,
+                                          .len   = (unsigned int)strlen(obj),
+                                      });
 }
 
 CGS_API CGS_Error cgs__ucstr_tostr(CGS_Writer *writer, const unsigned char *obj)
 {
-    return cgs__invoke_writer(
-        writer,
-        (CGS_StrView){
-            .chars = (char*) obj,
-            .len = (unsigned int) strlen((char*) obj)
-        }
-    );
+    return cgs__invoke_writer(writer, (CGS_StrView) {
+                                          .chars = (char *)obj,
+                                          .len   = (unsigned int)strlen((char *)obj),
+                                      });
 }
 
 CGS_API CGS_Error cgs__char_tostr(CGS_Writer *writer, char obj)
 {
-    return cgs__invoke_writer(writer, (CGS_StrView){.chars = &obj, .len = 1});
+    return cgs__invoke_writer(writer, (CGS_StrView) {
+                                          .chars = &obj,
+                                          .len   = 1,
+                                      });
 }
 
 CGS_API CGS_Error cgs__schar_tostr(CGS_Writer *writer, signed char obj)
@@ -3606,7 +2760,10 @@ CGS_API CGS_Error cgs__schar_tostr(CGS_Writer *writer, signed char obj)
 
 CGS_API CGS_Error cgs__uchar_tostr(CGS_Writer *writer, unsigned char obj)
 {
-    return cgs__invoke_writer(writer, (CGS_StrView){.chars = (char*) &obj, .len = 1});
+    return cgs__invoke_writer(writer, (CGS_StrView) {
+                                          .chars = (char *)&obj,
+                                          .len   = 1,
+                                      });
 }
 
 CGS_API CGS_Error cgs__short_tostr(CGS_Writer *writer, short obj)
@@ -3651,23 +2808,17 @@ CGS_API CGS_Error cgs__ullong_tostr(CGS_Writer *writer, unsigned long long obj)
 
 CGS_API CGS_Error cgs__float_tostr(CGS_Writer *writer, float obj)
 {
-    char tmp[32] = { 0 };
-    int len = snprintf(tmp, sizeof(tmp), "%g", obj);
-    CGS_StrView str = {
-        .chars = (char*) tmp,
-        .len = (unsigned int) len
-    };
+    char tmp[32]    = {0};
+    int len         = snprintf(tmp, sizeof(tmp), "%g", obj);
+    CGS_StrView str = {.chars = (char *)tmp, .len = (unsigned int)len};
     return cgs__invoke_writer(writer, str);
 }
 
 CGS_API CGS_Error cgs__double_tostr(CGS_Writer *writer, double obj)
 {
-    char tmp[32] = { 0 };
-    int len = snprintf(tmp, sizeof(tmp), "%g", obj);
-    CGS_StrView str = {
-        .chars = (char*) tmp,
-        .len = (unsigned int) len
-    };
+    char tmp[32]    = {0};
+    int len         = snprintf(tmp, sizeof(tmp), "%g", obj);
+    CGS_StrView str = {.chars = (char *)tmp, .len = (unsigned int)len};
     return cgs__invoke_writer(writer, str);
 }
 
@@ -3679,26 +2830,26 @@ CGS_API CGS_Error cgs__error_tostr(CGS_Writer *writer, CGS_Error obj)
 CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer *writer, CGS_ArrayFmt obj)
 {
     CGS_Error err;
-    
+
     cgs__invoke_writer(writer, obj.open);
-    
+
     const uint8_t *arr = obj.array;
-    
-    if(obj.nb > 0)
+
+    if (obj.nb > 0)
     {
-        for(size_t i = 0 ; i < obj.nb - 1 ; i++)
+        for (size_t i = 0; i < obj.nb - 1; i++)
         {
-            obj.elm_tostr(writer, arr + (obj.elm_size * i));            
+            obj.elm_tostr(writer, arr + (obj.elm_size * i));
             cgs__invoke_writer(writer, obj.separator);
         }
-        
+
         obj.elm_tostr(writer, arr + obj.elm_size * (obj.nb - 1));
-        
+
         cgs__invoke_writer(writer, obj.trailing_separator);
     }
-    
+
     err = cgs__invoke_writer(writer, obj.close);
-    
+
     return err;
 }
 
@@ -3706,67 +2857,68 @@ CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer *writer, CGS__AlignFmt obj)
 {
     // TODO for better perf, have a local 32 byte array so it can be filled fill char, to make as least writer invokes as possible.
     unsigned int len = cgs__invoke_tostr_len(obj.tostr_p, obj.obj);
-    
-    if(len < obj.width)
+
+    if (len < obj.width)
     {
-        const CGS__const_StrView fill_strv = { &obj.fill_char, .len = 1 };
-        unsigned int diff = obj.width - len;
-        CGS_Error err = {CGS_OK};
-        
-        switch(obj.align_mode.align_mode)
+        const CGS__const_StrView fill_strv = {&obj.fill_char, .len = 1};
+        unsigned int diff                  = obj.width - len;
+        CGS_Error err                      = {CGS_OK};
+
+        switch (obj.align_mode.align_mode)
         {
-            case CGS__ALIGNMODE_ENUM_ALIGN_CENTER:
+        case CGS__ALIGNMODE_ENUM_ALIGN_CENTER:
+        {
+            unsigned int half_diff = diff / 2;
+            for (unsigned int i = 0; i < half_diff && err.ec == CGS_OK; i++)
             {
-                unsigned int half_diff = diff / 2;
-                for(unsigned int i = 0 ; i < half_diff && err.ec == CGS_OK ; i++)
-                {
-                    err = cgs__invoke_writer_c(writer, fill_strv);
-                }
-                
-                if(err.ec != CGS_OK)
-                    return err;
-                
-                err = obj.tostr_p(writer, obj.obj);
-                if(err.ec != CGS_OK)
-                    return err;
-                
-                unsigned int remaining_diff = diff - half_diff;
-                for(unsigned int i = 0 ; i < remaining_diff && err.ec == CGS_OK ; i++)
-                {
-                    err = cgs__invoke_writer_c(writer, fill_strv);
-                }
-                
-                return err;
+                err = cgs__invoke_writer_c(writer, fill_strv);
             }
-            case CGS__ALIGNMODE_ENUM_ALIGN_LEFT  :
+
+            if (err.ec != CGS_OK)
+                return err;
+
+            err = obj.tostr_p(writer, obj.obj);
+            if (err.ec != CGS_OK)
+                return err;
+
+            unsigned int remaining_diff = diff - half_diff;
+            for (unsigned int i = 0; i < remaining_diff && err.ec == CGS_OK; i++)
             {
-                err = obj.tostr_p(writer, obj.obj);
-                if(err.ec != CGS_OK)
-                    return err;
-                
-                for(unsigned int i = 0 ; i < diff && err.ec == CGS_OK ; i++)
-                {
-                    err = cgs__invoke_writer_c(writer, fill_strv);
-                }
-                
-                return err;
+                err = cgs__invoke_writer_c(writer, fill_strv);
             }
-            case CGS__ALIGNMODE_ENUM_ALIGN_RIGHT :
+
+            return err;
+        }
+        case CGS__ALIGNMODE_ENUM_ALIGN_LEFT:
+        {
+            err = obj.tostr_p(writer, obj.obj);
+            if (err.ec != CGS_OK)
+                return err;
+
+            for (unsigned int i = 0; i < diff && err.ec == CGS_OK; i++)
             {
-                for(unsigned int i = 0 ; i < diff && err.ec == CGS_OK ; i++)
-                {
-                    err = cgs__invoke_writer_c(writer, fill_strv);
-                }
-                
-                if(err.ec != CGS_OK)
-                    return err;
-                
-                err = obj.tostr_p(writer, obj.obj);
-                
-                return err;
+                err = cgs__invoke_writer_c(writer, fill_strv);
             }
-            
-            default: CGS_unreachable();
+
+            return err;
+        }
+        case CGS__ALIGNMODE_ENUM_ALIGN_RIGHT:
+        {
+            for (unsigned int i = 0; i < diff && err.ec == CGS_OK; i++)
+            {
+                err = cgs__invoke_writer_c(writer, fill_strv);
+            }
+
+            if (err.ec != CGS_OK)
+                return err;
+
+            err = obj.tostr_p(writer, obj.obj);
+
+            return err;
+        }
+
+        default:
+            CGS_unreachable();
         }
     }
     else
@@ -3777,12 +2929,18 @@ CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer *writer, CGS__AlignFmt obj)
 
 CGS_API CGS_Error cgs__dstr_tostr(CGS_Writer *writer, const CGS_DStr obj)
 {
-    return cgs__invoke_writer(writer, (CGS_StrView){.chars = obj.chars, .len = obj.len});
+    return cgs__invoke_writer(writer, (CGS_StrView) {
+                                          .chars = obj.chars,
+                                          .len   = obj.len,
+                                      });
 }
 
 CGS_API CGS_Error cgs__dstr_ptr_tostr(CGS_Writer *writer, const CGS_DStr *obj)
 {
-    return cgs__invoke_writer(writer, (CGS_StrView){.chars = obj->chars, .len = obj->len});
+    return cgs__invoke_writer(writer, (CGS_StrView) {
+                                          .chars = obj->chars,
+                                          .len   = obj->len,
+                                      });
 }
 
 CGS_API CGS_Error cgs__strv_tostr(CGS_Writer *writer, const CGS_StrView obj)
@@ -3792,12 +2950,18 @@ CGS_API CGS_Error cgs__strv_tostr(CGS_Writer *writer, const CGS_StrView obj)
 
 CGS_API CGS_Error cgs__strbuf_tostr(CGS_Writer *writer, const CGS_StrBuf obj)
 {
-    return cgs__invoke_writer(writer, (CGS_StrView){.chars = obj.chars, .len = obj.len});
+    return cgs__invoke_writer(writer, (CGS_StrView) {
+                                          .chars = obj.chars,
+                                          .len   = obj.len,
+                                      });
 }
 
 CGS_API CGS_Error cgs__strbuf_ptr_tostr(CGS_Writer *writer, const CGS_StrBuf *obj)
 {
-    return cgs__invoke_writer(writer, (CGS_StrView){.chars = obj->chars, .len = obj->len});
+    return cgs__invoke_writer(writer, (CGS_StrView) {
+                                          .chars = obj->chars,
+                                          .len   = obj->len,
+                                      });
 }
 
 CGS_API CGS_Error cgs__mutstr_ref_tostr(CGS_Writer *writer, const CGS_MutStrRef obj)
@@ -3810,249 +2974,252 @@ CGS_PRIVATE CGS_Error cgs__uchar_d_tostr(CGS_Writer *writer, unsigned char obj)
     return cgs__invoke_writer_c(writer, cgs__uc_to_string[obj]);
 }
 
-#define cgs__if_else(cond, then, else) \
-_Generic((char(*)[(cond) + 1])0, char(*)[1]: else, char(*)[2]: (then))
+#define cgs__if_else(cond, then, else) _Generic((char (*)[(cond) + 1])0, char (*)[1]: else, char (*)[2]: (then))
 
-#define cgs__unsigned_of_size(sz)   \
-__typeof__(_Generic((char(*)[sz])0, \
-    char(*)[1]: (uint8_t) 0,        \
-    char(*)[2]: (uint16_t)0,        \
-    char(*)[4]: (uint32_t)0,        \
-    char(*)[8]: (uint64_t)0         \
-))
+#define cgs__unsigned_of_size(sz) __typeof__(_Generic((char (*)[sz])0, char (*)[1]: (uint8_t)0, char (*)[2]: (uint16_t)0, char (*)[4]: (uint32_t)0, char (*)[8]: (uint64_t)0))
 
-#define cgs__integer_d_Fmt_tostr(dst, num) \
-return _Generic(num, \
-    char: cgs__if_else(CHAR_MIN < 0, cgs__schar_tostr, cgs__uchar_d_tostr), \
-    signed char: cgs__schar_tostr, \
-    unsigned char: cgs__uchar_d_tostr, \
-    short: cgs__short_tostr, \
-    unsigned short: cgs__ushort_tostr, \
-    int: cgs__int_tostr, \
-    unsigned int: cgs__uint_tostr, \
-    long: cgs__long_tostr, \
-    unsigned long: cgs__ulong_tostr, \
-    long long: cgs__llong_tostr, \
-    unsigned long long: cgs__ullong_tostr \
-)(dst, num)
+#define cgs__integer_d_Fmt_tostr(dst, num)                                      \
+    return _Generic(num,                                                        \
+        char: cgs__if_else(CHAR_MIN < 0, cgs__schar_tostr, cgs__uchar_d_tostr), \
+        signed char: cgs__schar_tostr,                                          \
+        unsigned char: cgs__uchar_d_tostr,                                      \
+        short: cgs__short_tostr,                                                \
+        unsigned short: cgs__ushort_tostr,                                      \
+        int: cgs__int_tostr,                                                    \
+        unsigned int: cgs__uint_tostr,                                          \
+        long: cgs__long_tostr,                                                  \
+        unsigned long: cgs__ulong_tostr,                                        \
+        long long: cgs__llong_tostr,                                            \
+        unsigned long long: cgs__ullong_tostr)(dst, num)
 
-#define cgs__integer_x_Fmt_tostr(dst, num, byte2hex) \
-do \
-{ \
-    CGS_Error err = {CGS_OK}; \
-    size_t sz = sizeof(num); \
-    uint8_t *num_bytes = ((uint8_t*) &(num)) + sizeof(num) - 1; \
-    bool zero_pad = true; \
-    while(sz--) \
-    { \
-        if(!zero_pad || num_bytes == (uint8_t*)&(num) || *num_bytes != 0) \
-        { \
-            CGS_StrView hex_sv = {.chars = (char*) (byte2hex)[*num_bytes], .len = 2}; \
-            if(zero_pad && hex_sv.chars[0] == '0') \
-            { \
-                hex_sv.chars += 1; \
-                hex_sv.len -= 1; \
-            } \
-            zero_pad = false; \
-            err = cgs__invoke_writer(dst, hex_sv); \
-        } \
-        num_bytes -= 1; \
-    } \
-    return err; \
-} while(0)
+#define cgs__integer_x_Fmt_tostr(dst, num, byte2hex)                                      \
+    do                                                                                    \
+    {                                                                                     \
+        CGS_Error err      = {CGS_OK};                                                    \
+        size_t sz          = sizeof(num);                                                 \
+        uint8_t *num_bytes = ((uint8_t *)&(num)) + sizeof(num) - 1;                       \
+        bool zero_pad      = true;                                                        \
+        while (sz--)                                                                      \
+        {                                                                                 \
+            if (!zero_pad || num_bytes == (uint8_t *)&(num) || *num_bytes != 0)           \
+            {                                                                             \
+                CGS_StrView hex_sv = {.chars = (char *)(byte2hex)[*num_bytes], .len = 2}; \
+                if (zero_pad && hex_sv.chars[0] == '0')                                   \
+                {                                                                         \
+                    hex_sv.chars += 1;                                                    \
+                    hex_sv.len -= 1;                                                      \
+                }                                                                         \
+                zero_pad = false;                                                         \
+                err      = cgs__invoke_writer(dst, hex_sv);                               \
+            }                                                                             \
+            num_bytes -= 1;                                                               \
+        }                                                                                 \
+        return err;                                                                       \
+    } while (0)
 
-#define cgs__highest_3bits(n) \
-((__typeof__(n))((n) & (((__typeof__(n)) 0b111) << (sizeof(n) * 8 - 3))))
+#define cgs__highest_3bits(n) ((__typeof__(n))((n) & (((__typeof__(n))0b111) << (sizeof(n) * 8 - 3))))
 
-#define cgs__highest_3bits_as_u8(n) \
-(uint8_t)(cgs__highest_3bits(n) >> ((sizeof(n) - 1) * 8))
+#define cgs__highest_3bits_as_u8(n) (uint8_t)(cgs__highest_3bits(n) >> ((sizeof(n) - 1) * 8))
 
-#define cgs__integer_o_Fmt_tostr(dst, num) \
-do \
-{ \
-    cgs__unsigned_of_size(sizeof(num)) unum = (__typeof__(unum)) (num); \
-    CGS_Error err = {CGS_OK}; \
-    const int bits = (int)(sizeof(unum) * 8); \
-    int iters = bits / 3; \
-    uint8_t extra_bits = 3 - ((sizeof(unum) * 8) % 3); \
-    uint8_t high3 = cgs__highest_3bits_as_u8(unum); \
-    uint8_t first_3bits = high3 >> extra_bits; \
-    first_3bits = first_3bits >> 5; \
-    bool zero_pad = true; \
-    if(first_3bits != 0) \
-    { \
-        zero_pad = false; \
-        CGS_StrView octal_sv = {.chars = &(char){(char)('0' + first_3bits)}, .len = 1}; \
-        err = cgs__invoke_writer(dst, octal_sv); \
-    } \
-    unum = (__typeof__(unum))(unum << (3 - extra_bits)); \
-    \
-    for(int i = 0 ; i < iters ; i++) \
-    { \
-        high3 = cgs__highest_3bits_as_u8(unum); \
-        first_3bits = high3 >> (8 - 3); \
-        if(i == (iters - 1) || !zero_pad || (first_3bits != 0)) \
-        { \
-            zero_pad =  false; \
-            CGS_StrView octal_sv = {.chars = &(char){(char)('0' + first_3bits)}, .len = 1}; \
-            err = cgs__invoke_writer(dst, octal_sv); \
-        } \
-        unum = (__typeof__(unum))(unum << 3); \
-    } \
-    return err; \
-} while(0)
+#define cgs__integer_o_Fmt_tostr(dst, num)                                                       \
+    do                                                                                           \
+    {                                                                                            \
+        cgs__unsigned_of_size(sizeof(num)) unum = (__typeof__(unum))(num);                       \
+        CGS_Error err                           = {CGS_OK};                                      \
+        const int bits                          = (int)(sizeof(unum) * 8);                       \
+        int iters                               = bits / 3;                                      \
+        uint8_t extra_bits                      = 3 - ((sizeof(unum) * 8) % 3);                  \
+        uint8_t high3                           = cgs__highest_3bits_as_u8(unum);                \
+        uint8_t first_3bits                     = high3 >> extra_bits;                           \
+        first_3bits                             = first_3bits >> 5;                              \
+        bool zero_pad                           = true;                                          \
+        if (first_3bits != 0)                                                                    \
+        {                                                                                        \
+            zero_pad             = false;                                                        \
+            CGS_StrView octal_sv = {                                                             \
+                .chars = &(char) {(char)('0' + first_3bits)},                                    \
+                .len   = 1,                                                                      \
+            };                                                                                   \
+            err = cgs__invoke_writer(dst, octal_sv);                                             \
+        }                                                                                        \
+        unum = (__typeof__(unum))(unum << (3 - extra_bits));                                     \
+                                                                                                 \
+        for (int i = 0; i < iters; i++)                                                          \
+        {                                                                                        \
+            high3       = cgs__highest_3bits_as_u8(unum);                                        \
+            first_3bits = high3 >> (8 - 3);                                                      \
+            if (i == (iters - 1) || !zero_pad || (first_3bits != 0))                             \
+            {                                                                                    \
+                zero_pad             = false;                                                    \
+                CGS_StrView octal_sv = {.chars = &(char) {(char)('0' + first_3bits)}, .len = 1}; \
+                err                  = cgs__invoke_writer(dst, octal_sv);                        \
+            }                                                                                    \
+            unum = (__typeof__(unum))(unum << 3);                                                \
+        }                                                                                        \
+        return err;                                                                              \
+    } while (0)
 
-#define cgs__integer_b_Fmt_tostr(dst, num) \
-do \
-{ \
-    CGS_Error err = {CGS_OK}; \
-    cgs__unsigned_of_size(sizeof(num)) unum = (__typeof__(unum)) (num); \
-    size_t sz = sizeof(unum) * 8; \
-    unsigned int written = 0; \
-    unsigned int counter = (unsigned int) (sizeof(unum) * 8); \
-    bool zero_pad = true; \
-    while(written < sz && counter != 0) \
-    { \
-        bool bit = unum & (((__typeof__(unum)) 1) << (sizeof(unum) * 8 - 1)) ; \
-        if(bit) \
-        { \
-            zero_pad = false; \
-            CGS_StrView bit_str = {.chars = &(char){'1'}, .len = 1}; \
-            err = cgs__invoke_writer(dst, bit_str); \
-        } \
-        else if(!zero_pad || counter == 1) \
-        { \
-            CGS_StrView bit_str = {.chars = &(char){'0'}, .len = 1}; \
-            err = cgs__invoke_writer(dst, bit_str); \
-        } \
-        unum = (__typeof__(unum))(unum << 1); \
-        counter -= 1; \
-    } \
-    return err; \
-} while(0)
+#define cgs__integer_b_Fmt_tostr(dst, num)                                          \
+    do                                                                              \
+    {                                                                               \
+        CGS_Error err                           = {CGS_OK};                         \
+        cgs__unsigned_of_size(sizeof(num)) unum = (__typeof__(unum))(num);          \
+        size_t sz                               = sizeof(unum) * 8;                 \
+        unsigned int written                    = 0;                                \
+        unsigned int counter                    = (unsigned int)(sizeof(unum) * 8); \
+        bool zero_pad                           = true;                             \
+        while (written < sz && counter != 0)                                        \
+        {                                                                           \
+            bool bit = unum & (((__typeof__(unum))1) << (sizeof(unum) * 8 - 1));    \
+            if (bit)                                                                \
+            {                                                                       \
+                zero_pad            = false;                                        \
+                CGS_StrView bit_str = {.chars = &(char) {'1'}, .len = 1};           \
+                err                 = cgs__invoke_writer(dst, bit_str);             \
+            }                                                                       \
+            else if (!zero_pad || counter == 1)                                     \
+            {                                                                       \
+                CGS_StrView bit_str = {.chars = &(char) {'0'}, .len = 1};           \
+                err                 = cgs__invoke_writer(dst, bit_str);             \
+            }                                                                       \
+            unum = (__typeof__(unum))(unum << 1);                                   \
+            counter -= 1;                                                           \
+        }                                                                           \
+        return err;                                                                 \
+    } while (0)
 
-#define CGS__X(ty, extra) \
-CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_d_Fmt_##ty obj) \
-{ \
-    cgs__integer_d_Fmt_tostr(writer, obj.obj); \
-} \
-CGS_API CGS_Error cgs__Integer_x_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_x_Fmt_##ty obj) \
-{ \
-    cgs__integer_x_Fmt_tostr(writer, obj.obj, cgs__byte_to_hex); \
-} \
-CGS_API CGS_Error cgs__Integer_o_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_o_Fmt_##ty obj) \
-{ \
-    cgs__integer_o_Fmt_tostr(writer, obj.obj); \
-} \
-CGS_API CGS_Error cgs__Integer_b_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_b_Fmt_##ty obj) \
-{ \
-    cgs__integer_b_Fmt_tostr(writer, obj.obj); \
-} \
-CGS_API CGS_Error cgs__Integer_X_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_X_Fmt_##ty obj) \
-{ \
-    cgs__integer_x_Fmt_tostr(writer, obj.obj, cgs__byte_to_heX); \
-} \
-\
-\
-CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Integer_d_Fmt_##ty##_tostr(writer, *(CGS__Integer_d_Fmt_##ty*) obj); \
-} \
-CGS_API CGS_Error cgs__Integer_x_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Integer_x_Fmt_##ty##_tostr(writer, *(CGS__Integer_x_Fmt_##ty*) obj); \
-} \
-CGS_API CGS_Error cgs__Integer_o_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Integer_o_Fmt_##ty##_tostr(writer, *(CGS__Integer_o_Fmt_##ty*) obj); \
-} \
-CGS_API CGS_Error cgs__Integer_b_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Integer_b_Fmt_##ty##_tostr(writer, *(CGS__Integer_b_Fmt_##ty*) obj); \
-} \
-CGS_API CGS_Error cgs__Integer_X_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Integer_X_Fmt_##ty##_tostr(writer, *(CGS__Integer_X_Fmt_##ty*) obj); \
-} \
+#define CGS__X(ty, extra)                                                                              \
+    CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_d_Fmt_##ty obj) \
+    {                                                                                                  \
+        cgs__integer_d_Fmt_tostr(writer, obj.obj);                                                     \
+    }                                                                                                  \
+    CGS_API CGS_Error cgs__Integer_x_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_x_Fmt_##ty obj) \
+    {                                                                                                  \
+        cgs__integer_x_Fmt_tostr(writer, obj.obj, cgs__byte_to_hex);                                   \
+    }                                                                                                  \
+    CGS_API CGS_Error cgs__Integer_o_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_o_Fmt_##ty obj) \
+    {                                                                                                  \
+        cgs__integer_o_Fmt_tostr(writer, obj.obj);                                                     \
+    }                                                                                                  \
+    CGS_API CGS_Error cgs__Integer_b_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_b_Fmt_##ty obj) \
+    {                                                                                                  \
+        cgs__integer_b_Fmt_tostr(writer, obj.obj);                                                     \
+    }                                                                                                  \
+    CGS_API CGS_Error cgs__Integer_X_Fmt_##ty##_tostr(CGS_Writer *writer, CGS__Integer_X_Fmt_##ty obj) \
+    {                                                                                                  \
+        cgs__integer_x_Fmt_tostr(writer, obj.obj, cgs__byte_to_heX);                                   \
+    }                                                                                                  \
+                                                                                                       \
+    CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj)           \
+    {                                                                                                  \
+        return cgs__Integer_d_Fmt_##ty##_tostr(writer, *(CGS__Integer_d_Fmt_##ty *)obj);               \
+    }                                                                                                  \
+    CGS_API CGS_Error cgs__Integer_x_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj)           \
+    {                                                                                                  \
+        return cgs__Integer_x_Fmt_##ty##_tostr(writer, *(CGS__Integer_x_Fmt_##ty *)obj);               \
+    }                                                                                                  \
+    CGS_API CGS_Error cgs__Integer_o_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj)           \
+    {                                                                                                  \
+        return cgs__Integer_o_Fmt_##ty##_tostr(writer, *(CGS__Integer_o_Fmt_##ty *)obj);               \
+    }                                                                                                  \
+    CGS_API CGS_Error cgs__Integer_b_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj)           \
+    {                                                                                                  \
+        return cgs__Integer_b_Fmt_##ty##_tostr(writer, *(CGS__Integer_b_Fmt_##ty *)obj);               \
+    }                                                                                                  \
+    CGS_API CGS_Error cgs__Integer_X_Fmt_##ty##_tostr_p(CGS_Writer *writer, const void *obj)           \
+    {                                                                                                  \
+        return cgs__Integer_X_Fmt_##ty##_tostr(writer, *(CGS__Integer_X_Fmt_##ty *)obj);               \
+    }
 
 CGS__INTEGER_TYPES(CGS__X, ignore)
 
 #undef CGS__X
 
-#define cgs__floating_fmt(fmt_strlit) \
-    char buf[64]; \
-    int len = snprintf(buf, 64, fmt_strlit, obj.precision, obj.obj); \
-    if(len < 0) \
-        return (CGS_Error){CGS_ENCODING_ERROR}; \
-    return cgs__invoke_writer(writer, (CGS_StrView){.chars = buf, .len = (unsigned int) len});
+#define cgs__floating_fmt(fmt_strlit)                                 \
+    char buf[64];                                                     \
+    int len = snprintf(buf, 64, fmt_strlit, obj.precision, obj.obj);  \
+    if (len < 0)                                                      \
+        return (CGS_Error) {CGS_ENCODING_ERROR};                      \
+    return cgs__invoke_writer(writer, (CGS_StrView) {                 \
+                                          .chars = buf,               \
+                                          .len   = (unsigned int)len, \
+                                      });
 
-#define CGS__X(type, extra) \
-CGS_API CGS_Error cgs__Floating_f_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_f_Fmt_##type obj) \
-{ \
-    cgs__floating_fmt("%.*f") \
-} \
-CGS_API CGS_Error cgs__Floating_g_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_g_Fmt_##type obj) \
-{ \
-    cgs__floating_fmt("%.*g") \
-} \
-CGS_API CGS_Error cgs__Floating_e_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_e_Fmt_##type obj) \
-{ \
-    cgs__floating_fmt("%.*e") \
-} \
-CGS_API CGS_Error cgs__Floating_a_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_a_Fmt_##type obj) \
-{ \
-    cgs__floating_fmt("%.*a") \
-} \
-CGS_API CGS_Error cgs__Floating_F_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_F_Fmt_##type obj) \
-{ \
-    cgs__floating_fmt("%.*F") \
-} \
-CGS_API CGS_Error cgs__Floating_G_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_G_Fmt_##type obj) \
-{ \
-    cgs__floating_fmt("%.*G") \
-} \
-CGS_API CGS_Error cgs__Floating_E_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_E_Fmt_##type obj) \
-{ \
-    cgs__floating_fmt("%.*E") \
-} \
-CGS_API CGS_Error cgs__Floating_A_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_A_Fmt_##type obj) \
-{ \
-    cgs__floating_fmt("%.*A") \
-} \
-\
-\
-CGS_API CGS_Error cgs__Floating_f_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Floating_f_Fmt_##type##_tostr(writer, *(CGS__Floating_f_Fmt_##type*) obj); \
-} \
-CGS_API CGS_Error cgs__Floating_g_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Floating_g_Fmt_##type##_tostr(writer, *(CGS__Floating_g_Fmt_##type*) obj); \
-} \
-CGS_API CGS_Error cgs__Floating_e_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Floating_e_Fmt_##type##_tostr(writer, *(CGS__Floating_e_Fmt_##type*) obj); \
-} \
-CGS_API CGS_Error cgs__Floating_a_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Floating_a_Fmt_##type##_tostr(writer, *(CGS__Floating_a_Fmt_##type*) obj); \
-} \
-CGS_API CGS_Error cgs__Floating_F_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Floating_F_Fmt_##type##_tostr(writer, *(CGS__Floating_F_Fmt_##type*) obj); \
-} \
-CGS_API CGS_Error cgs__Floating_G_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Floating_G_Fmt_##type##_tostr(writer, *(CGS__Floating_G_Fmt_##type*) obj); \
-} \
-CGS_API CGS_Error cgs__Floating_E_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Floating_E_Fmt_##type##_tostr(writer, *(CGS__Floating_E_Fmt_##type*) obj); \
-} \
-CGS_API CGS_Error cgs__Floating_A_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj) \
-{ \
-    return cgs__Floating_A_Fmt_##type##_tostr(writer, *(CGS__Floating_A_Fmt_##type*) obj); \
-}
+// clang-format off
+#define CGS__X(type, extra)                                                                                  \
+    CGS_API CGS_Error cgs__Floating_f_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_f_Fmt_##type obj) \
+    {                                                                                                        \
+        cgs__floating_fmt("%.*f")                                                                            \
+    }                                                                                                        \
+                                                                                                             \
+    CGS_API CGS_Error cgs__Floating_g_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_g_Fmt_##type obj) \
+    {                                                                                                        \
+        cgs__floating_fmt("%.*g")                                                                            \
+    }                                                                                                        \
+                                                                                                             \
+    CGS_API CGS_Error cgs__Floating_e_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_e_Fmt_##type obj) \
+    {                                                                                                        \
+        cgs__floating_fmt("%.*e")                                                                            \
+    }                                                                                                        \
+                                                                                                             \
+    CGS_API CGS_Error cgs__Floating_a_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_a_Fmt_##type obj) \
+    {                                                                                                        \
+        cgs__floating_fmt("%.*a")                                                                            \
+    }                                                                                                        \
+                                                                                                             \
+    CGS_API CGS_Error cgs__Floating_F_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_F_Fmt_##type obj) \
+    {                                                                                                        \
+        cgs__floating_fmt("%.*F")                                                                            \
+    }                                                                                                        \
+                                                                                                             \
+    CGS_API CGS_Error cgs__Floating_G_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_G_Fmt_##type obj) \
+    {                                                                                                        \
+        cgs__floating_fmt("%.*G")                                                                            \
+    }                                                                                                        \
+                                                                                                             \
+    CGS_API CGS_Error cgs__Floating_E_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_E_Fmt_##type obj) \
+    {                                                                                                        \
+        cgs__floating_fmt("%.*E")                                                                            \
+    }                                                                                                        \
+                                                                                                             \
+    CGS_API CGS_Error cgs__Floating_A_Fmt_##type##_tostr(CGS_Writer *writer, CGS__Floating_A_Fmt_##type obj) \
+    {                                                                                                        \
+        cgs__floating_fmt("%.*A")                                                                            \
+    }                                                                                                        \
+                                                                                                             \
+    CGS_API CGS_Error cgs__Floating_f_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj)              \
+    {                                                                                                        \
+        return cgs__Floating_f_Fmt_##type##_tostr(writer, *(CGS__Floating_f_Fmt_##type *)obj);               \
+    }                                                                                                        \
+    CGS_API CGS_Error cgs__Floating_g_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj)              \
+    {                                                                                                        \
+        return cgs__Floating_g_Fmt_##type##_tostr(writer, *(CGS__Floating_g_Fmt_##type *)obj);               \
+    }                                                                                                        \
+    CGS_API CGS_Error cgs__Floating_e_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj)              \
+    {                                                                                                        \
+        return cgs__Floating_e_Fmt_##type##_tostr(writer, *(CGS__Floating_e_Fmt_##type *)obj);               \
+    }                                                                                                        \
+    CGS_API CGS_Error cgs__Floating_a_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj)              \
+    {                                                                                                        \
+        return cgs__Floating_a_Fmt_##type##_tostr(writer, *(CGS__Floating_a_Fmt_##type *)obj);               \
+    }                                                                                                        \
+    CGS_API CGS_Error cgs__Floating_F_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj)              \
+    {                                                                                                        \
+        return cgs__Floating_F_Fmt_##type##_tostr(writer, *(CGS__Floating_F_Fmt_##type *)obj);               \
+    }                                                                                                        \
+    CGS_API CGS_Error cgs__Floating_G_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj)              \
+    {                                                                                                        \
+        return cgs__Floating_G_Fmt_##type##_tostr(writer, *(CGS__Floating_G_Fmt_##type *)obj);               \
+    }                                                                                                        \
+    CGS_API CGS_Error cgs__Floating_E_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj)              \
+    {                                                                                                        \
+        return cgs__Floating_E_Fmt_##type##_tostr(writer, *(CGS__Floating_E_Fmt_##type *)obj);               \
+    }                                                                                                        \
+    CGS_API CGS_Error cgs__Floating_A_Fmt_##type##_tostr_p(CGS_Writer *writer, const void *obj)              \
+    {                                                                                                        \
+        return cgs__Floating_A_Fmt_##type##_tostr(writer, *(CGS__Floating_A_Fmt_##type *)obj);               \
+    }
+// clang-format on
 
 CGS__FLOATING_TYPES(CGS__X, ignore, CGS__X)
 
@@ -4060,107 +3227,107 @@ CGS__FLOATING_TYPES(CGS__X, ignore, CGS__X)
 
 CGS_API CGS_Error cgs__bool_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__bool_tostr(dst, *(bool*) obj);
+    return cgs__bool_tostr(dst, *(bool *)obj);
 }
 CGS_API CGS_Error cgs__cstr_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__cstr_tostr(dst, *(char**) obj);
+    return cgs__cstr_tostr(dst, *(char **)obj);
 }
 CGS_API CGS_Error cgs__ucstr_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__ucstr_tostr(dst, *(unsigned char**) obj);
+    return cgs__ucstr_tostr(dst, *(unsigned char **)obj);
 }
 CGS_API CGS_Error cgs__char_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__char_tostr(dst, *(char*) obj);
+    return cgs__char_tostr(dst, *(char *)obj);
 }
 CGS_API CGS_Error cgs__schar_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__schar_tostr(dst, *(signed char*) obj);
+    return cgs__schar_tostr(dst, *(signed char *)obj);
 }
 CGS_API CGS_Error cgs__uchar_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__uchar_tostr(dst, *(unsigned char*) obj);
+    return cgs__uchar_tostr(dst, *(unsigned char *)obj);
 }
 CGS_API CGS_Error cgs__short_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__short_tostr(dst, *(short*) obj);
+    return cgs__short_tostr(dst, *(short *)obj);
 }
 CGS_API CGS_Error cgs__ushort_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__ushort_tostr(dst, *(unsigned short*) obj);
+    return cgs__ushort_tostr(dst, *(unsigned short *)obj);
 }
 CGS_API CGS_Error cgs__int_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__int_tostr(dst, *(int*) obj);
+    return cgs__int_tostr(dst, *(int *)obj);
 }
 CGS_API CGS_Error cgs__uint_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__uint_tostr(dst, *(unsigned int*) obj);
+    return cgs__uint_tostr(dst, *(unsigned int *)obj);
 }
 CGS_API CGS_Error cgs__long_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__long_tostr(dst, *(long*) obj);
+    return cgs__long_tostr(dst, *(long *)obj);
 }
 CGS_API CGS_Error cgs__ulong_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__ulong_tostr(dst, *(unsigned long*) obj);
+    return cgs__ulong_tostr(dst, *(unsigned long *)obj);
 }
 CGS_API CGS_Error cgs__llong_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__llong_tostr(dst, *(long long*) obj);
+    return cgs__llong_tostr(dst, *(long long *)obj);
 }
 CGS_API CGS_Error cgs__ullong_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__ullong_tostr(dst, *(unsigned long long*) obj);
+    return cgs__ullong_tostr(dst, *(unsigned long long *)obj);
 }
 CGS_API CGS_Error cgs__float_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__float_tostr(dst, *(float*) obj);
+    return cgs__float_tostr(dst, *(float *)obj);
 }
 CGS_API CGS_Error cgs__double_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__double_tostr(dst, *(double*) obj);
+    return cgs__double_tostr(dst, *(double *)obj);
 }
 
 CGS_API CGS_Error cgs__dstr_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__dstr_tostr(dst, *(CGS_DStr*) obj);
+    return cgs__dstr_tostr(dst, *(CGS_DStr *)obj);
 }
 CGS_API CGS_Error cgs__dstr_ptr_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__dstr_ptr_tostr(dst, *(CGS_DStr**) obj);
+    return cgs__dstr_ptr_tostr(dst, *(CGS_DStr **)obj);
 }
 CGS_API CGS_Error cgs__strv_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__strv_tostr(dst, *(CGS_StrView*) obj);
+    return cgs__strv_tostr(dst, *(CGS_StrView *)obj);
 }
 CGS_API CGS_Error cgs__strbuf_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__strbuf_tostr(dst, *(CGS_StrBuf*) obj);
+    return cgs__strbuf_tostr(dst, *(CGS_StrBuf *)obj);
 }
 CGS_API CGS_Error cgs__strbuf_ptr_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__strbuf_ptr_tostr(dst, *(CGS_StrBuf**) obj);
+    return cgs__strbuf_ptr_tostr(dst, *(CGS_StrBuf **)obj);
 }
 CGS_API CGS_Error cgs__mutstr_ref_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__mutstr_ref_tostr(dst, *(CGS_MutStrRef*) obj);
+    return cgs__mutstr_ref_tostr(dst, *(CGS_MutStrRef *)obj);
 }
 
 CGS_API CGS_Error cgs__error_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__error_tostr(dst, *(CGS_Error*) obj);
+    return cgs__error_tostr(dst, *(CGS_Error *)obj);
 }
 
 CGS_API CGS_Error cgs__array_fmt_tostr_p(CGS_Writer *dst, const void *obj)
 {
-    return cgs__array_fmt_tostr(dst, *(CGS_ArrayFmt*) obj);
+    return cgs__array_fmt_tostr(dst, *(CGS_ArrayFmt *)obj);
 }
 
 CGS_API CGS_Error cgs__align_fmt_tostr_p(CGS_Writer *writer, const void *obj)
 {
-    return cgs__align_fmt_tostr(writer, *(CGS__AlignFmt*)obj);
+    return cgs__align_fmt_tostr(writer, *(CGS__AlignFmt *)obj);
 }
 
 #endif // CGS__STR_C_INCLUDED
