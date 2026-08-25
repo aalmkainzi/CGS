@@ -30,11 +30,30 @@ typedef struct CGS_Allocator
     cgs_realloc_func realloc;
 } CGS_Allocator;
 
+typedef struct CGS_Buffer
+{
+    char *ptr;
+    unsigned int cap;
+} CGS_Buffer;
+
+typedef struct CGS_OneUseAllocator
+{
+    CGS_Allocator base;
+    CGS_Buffer buf;
+} CGS_OneUseAllocator;
+
+
 CGS_API CGS_Allocation cgs__allocator_invoke_alloc(CGS_Allocator *allocator, size_t alignment, size_t obj_size, size_t nb);
 CGS_API void cgs__allocator_invoke_dealloc(CGS_Allocator *allocator, void *ptr, size_t obj_size, size_t nb);
 CGS_API CGS_Allocation cgs__allocator_invoke_realloc(CGS_Allocator *allocator, void *ptr, size_t alignment, size_t obj_size, size_t old_nb, size_t new_nb);
 
 CGS_API CGS_Allocator *cgs_get_default_allocator();
+
+CGS_API CGS_Allocation cgs__one_use_allocator_alloc(CGS_Allocator *allocator, size_t alignment, size_t n);
+CGS_API void cgs__one_use_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n);
+CGS_API CGS_Allocation cgs__one_use_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t alignment, size_t old_n, size_t new_n);
+
+static const CGS_Allocator cgs__one_use_allocator_base = {cgs__one_use_allocator_alloc, cgs__one_use_allocator_dealloc, cgs__one_use_allocator_realloc};
 
 #define cgs_alloc(allocator, T, n) \
 cgs__allocator_invoke_alloc(allocator, _Alignof(T), sizeof((T){0}), (n))
@@ -53,6 +72,10 @@ cgs__allocator_invoke_dealloc((allocator), (ptr), 1, (n))
 
 #define cgs_realloc_bytes(allocator, ptr, old_n, new_n, actual) \
 cgs__allocator_invoke_realloc((allocator), (ptr), _Alignof(max_align_t), 1, (old_n), (new_n))
+
+#define cgs_one_use_allocator(buf_, ...) \
+__VA_OPT__(((CGS_OneUseAllocator){.base = cgs__one_use_allocator_base, .buf = {.ptr = buf_, .cap = __VA_ARGS__} })) \
+CGS__IF_EMPTY(((CGS_OneUseAllocator){.base = cgs__one_use_allocator_base, .buf = cgs__carr_to_buf(buf_)}) __VA_OPT__(,) __VA_ARGS__)
 
 #if __STDC_VERSION__ >= 202311L
     #define CGS__NODISCARD(...) [[nodiscard(__VA_ARGS__)]]
@@ -170,13 +193,6 @@ typedef struct CGS_StrViewArray
     unsigned int cap;
     unsigned int len;
 } CGS_StrViewArray;
-
-// Used for passing `char[]` and `unsigned char[]`, such that it doesn't lose cap information
-typedef struct CGS_Buffer
-{
-    char *ptr;
-    unsigned int cap;
-} CGS_Buffer;
 
 enum CGS__MutStrType
 {
@@ -746,13 +762,15 @@ cgs__strbuf_from_cstr_cap(_Generic((cstr), char*:(char*)(cstr), unsigned char*:(
 __VA_OPT__( cgs__strbuf_init_from_buf_2(buf, __VA_ARGS__) ) \
 CGS__IF_EMPTY(cgs__strbuf_init_from_buf_(buf), __VA_ARGS__)
 
+#define cgs__carr_to_buf(carr) \
+_Generic(&(__typeof__(carr)){0}, \
+char(*)[sizeof(__typeof__(carr))]: (CGS_Buffer){.ptr = (char*) (carr), .cap = sizeof(carr)}, \
+unsigned char(*)[sizeof(__typeof__(carr))]: (CGS_Buffer){.ptr = (char*) (carr), .cap = sizeof(carr)}, \
+CGS_Buffer*: (carr) \
+)
+
 #define cgs__strbuf_init_from_buf_(buf) \
-cgs__strbuf_from_buf( \
-_Generic(&(__typeof__(buf)){0}, \
-    char(*)[sizeof(__typeof__(buf))]: (CGS_Buffer){.ptr = (char*) (buf), .cap = sizeof(buf)}, \
-    unsigned char(*)[sizeof(__typeof__(buf))]: (CGS_Buffer){.ptr = (char*) (buf), .cap = sizeof(buf)}, \
-    CGS_Buffer*: (buf) \
-))
+cgs__strbuf_from_buf(cgs__carr_to_buf(buf))
 
 #define cgs__strbuf_init_from_buf_2(buf, cap_) \
 cgs__strbuf_from_buf((CGS_Buffer){.ptr = (char*) _Generic(buf,char*:(buf),unsigned char*:(buf),void*:(buf)), .cap = (cap_)})

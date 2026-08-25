@@ -1628,6 +1628,230 @@ void test_repeatfmt(void)
     }
 }
 
+/* Assumes cgs_one_use_allocator(...) yields a CGS_Allocator value passed by
+ * address, matching how cgs_get_default_allocator() is used. If the real API
+ * returns a pointer or a wrapper type, adjust the '&a' expressions accordingly. */
+
+#define IN_BUF(p, buf, n) \
+    ((char*)(p) >= (char*)(buf) && (char*)(p) < (char*)(buf) + (n))
+
+void test_one_use_allocator(void)
+{
+    /* ── Basic allocation into a char[] buffer ────────────────── */
+
+    TEST("cgs_one_use_allocator: dstr_init_from produces correct content");
+    {
+        char mem[256];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+        CGS_DStr d = cgs_dstr_init_from("hello world", &a.base);
+        ASSERT_TRUE(cgs_equal(d, "hello world"));
+        cgs_dstr_deinit(&d);
+    }
+
+    TEST("cgs_one_use_allocator: allocation lands inside the provided buffer");
+    {
+        char mem[256];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+        CGS_DStr d = cgs_dstr_init_from("data", &a.base);
+        ASSERT_TRUE(IN_BUF(d.chars, mem, sizeof(mem)));
+        cgs_dstr_deinit(&d);
+    }
+
+    /* ── unsigned char[] buffer form ──────────────────────────── */
+
+    TEST("cgs_one_use_allocator: works with unsigned char[] buffer");
+    {
+        unsigned char mem[128];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+        CGS_DStr d = cgs_dstr_init_from("unsigned", &a.base);
+        ASSERT_TRUE(cgs_equal(d, "unsigned"));
+        ASSERT_TRUE(IN_BUF(d.chars, mem, sizeof(mem)));
+        cgs_dstr_deinit(&d);
+    }
+
+    /* ── pointer + explicit length form ───────────────────────── */
+
+    TEST("cgs_one_use_allocator: pointer + length form");
+    {
+        char mem[128];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem, sizeof(mem));
+        CGS_DStr d = cgs_dstr_init_from("via pointer", &a.base);
+        ASSERT_TRUE(cgs_equal(d, "via pointer"));
+        ASSERT_TRUE(IN_BUF(d.chars, mem, sizeof(mem)));
+        cgs_dstr_deinit(&d);
+    }
+
+    /* ── "one use": subsequent allocation overwrites the first ── */
+
+    TEST("cgs_one_use_allocator: second allocation reuses the same slot");
+    {
+        /* Both allocations come from the same one-use allocator, so the
+         * second reuses (overwrites) the first's storage → same base ptr. */
+        char mem[256];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+
+        CGS_DStr d1 = cgs_dstr_init_from("first", &a.base);
+        char *p1 = d1.chars;
+
+        CGS_DStr d2 = cgs_dstr_init_from("second", &a.base);
+        char *p2 = d2.chars;
+
+        ASSERT_TRUE(p1 == p2);              /* same slot reused */
+        ASSERT_TRUE(cgs_equal(d2, "second"));
+    }
+
+    TEST("cgs_one_use_allocator: overwriting aliases the earlier allocation");
+    {
+        /* After the second alloc, the first's memory now holds the second's
+         * content, since they share the buffer. */
+        char mem[256];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+
+        CGS_DStr d1 = cgs_dstr_init_from("aaaa", &a.base);
+        CGS_DStr d2 = cgs_dstr_init_from("bbbb", &a.base);
+
+        ASSERT_TRUE(d1.chars == d2.chars);
+        /* reading through the (now-overwritten) first handle sees "bbbb" */
+        ASSERT_TRUE(cgs_equal(cgs_strv(d1.chars, 0, 4), "bbbb"));
+    }
+
+    /* ── reuse after finishing with the previous allocation ───── */
+
+    TEST("cgs_one_use_allocator: reuse for a fresh object after deinit");
+    {
+        char mem[256];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+
+        CGS_DStr d1 = cgs_dstr_init_from("one", &a.base);
+        ASSERT_TRUE(cgs_equal(d1, "one"));
+        cgs_dstr_deinit(&d1);           /* no-op free for one-use */
+
+        CGS_DStr d2 = cgs_dstr_init_from("two", &a.base);
+        ASSERT_TRUE(cgs_equal(d2, "two"));
+        ASSERT_TRUE(IN_BUF(d2.chars, mem, sizeof(mem)));
+        cgs_dstr_deinit(&d2);
+    }
+
+    /* ── growth within the buffer (realloc of the single slot) ── */
+
+    TEST("cgs_one_use_allocator: dstr grows in place while it fits");
+    {
+        char mem[256];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+
+        CGS_DStr d = cgs_dstr_init_from("start", &a.base);
+        char *base = d.chars;
+
+        cgs_append(&d, "-more");
+        cgs_append(&d, "-and-more");
+
+        /* only one live allocation, so realloc keeps the same base */
+        ASSERT_TRUE(d.chars == base);
+        ASSERT_TRUE(cgs_equal(d, "start-more-and-more"));
+        cgs_dstr_deinit(&d);
+    }
+
+    TEST("cgs_one_use_allocator: many small appends accumulate correctly");
+    {
+        char mem[512];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+
+        CGS_DStr d = cgs_dstr_init(0, &a.base);
+        for (int i = 0; i < 10; i++)
+            cgs_append(&d, "ab");
+
+        ASSERT_TRUE(cgs_len(d) == 20);
+        ASSERT_TRUE(cgs_equal(d, "abababababababababab"));
+        cgs_dstr_deinit(&d);
+    }
+
+    /* ── used by cgs_dup ──────────────────────────────────────── */
+
+    TEST("cgs_one_use_allocator: cgs_dup allocates into the buffer");
+    {
+        char mem[128];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+
+        CGS_DStr d = cgs_dup("duplicate me", &a.base);
+        ASSERT_TRUE(cgs_equal(d, "duplicate me"));
+        ASSERT_TRUE(IN_BUF(d.chars, mem, sizeof(mem)));
+        cgs_dstr_deinit(&d);
+    }
+
+    /* ── used by cgs_split (array allocated in buffer) ────────── */
+
+    TEST("cgs_one_use_allocator: cgs_split allocates the array in the buffer");
+    {
+        char mem[512];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+
+        CGS_StrViewArray arr = cgs_split("a,b,c,d", ",", &a.base);
+        ASSERT_TRUE(arr.len == 4);
+        ASSERT_TRUE(cgs_equal(arr.strs[0], "a"));
+        ASSERT_TRUE(cgs_equal(arr.strs[3], "d"));
+        ASSERT_TRUE(IN_BUF(arr.strs, mem, sizeof(mem)));
+        /* no free needed: one-use dealloc is a no-op */
+    }
+
+    /* ── ensure_cap within capacity succeeds ──────────────────── */
+
+    TEST("cgs_one_use_allocator: ensure_cap within buffer succeeds");
+    {
+        char mem[256];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+
+        CGS_DStr d = cgs_dstr_init(0, &a.base);
+        CGS_Error e = cgs_dstr_ensure_cap(&d, 100);
+        ASSERT_TRUE(e.ec == CGS_OK);
+        ASSERT_TRUE(cgs_cap(d) >= 100);
+        cgs_dstr_deinit(&d);
+    }
+
+    /* ── overflow: request larger than the buffer → ALLOC_ERR ── */
+
+    TEST("cgs_one_use_allocator: ensure_cap beyond buffer → CGS_ALLOC_ERROR");
+    {
+        char mem[32];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+
+        CGS_DStr d = cgs_dstr_init(0, &a.base);
+        CGS_Error e = cgs_dstr_ensure_cap(&d, 10000);
+        ASSERT_TRUE(e.ec == CGS_ALLOC_ERROR);
+        cgs_dstr_deinit(&d);
+    }
+
+    /* ── exact-fit allocation ─────────────────────────────────── */
+
+    TEST("cgs_one_use_allocator: content that exactly fits the buffer");
+    {
+        /* buffer of 8 holds "abcdefg" + nul = 8 bytes exactly */
+        char mem[8];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+
+        CGS_DStr d = cgs_dstr_init_from("abcdefg", &a.base);
+        ASSERT_TRUE(cgs_equal(d, "abcdefg"));
+        cgs_dstr_deinit(&d);
+    }
+
+    /* ── deinit is safe and does not free real heap memory ────── */
+
+    TEST("cgs_one_use_allocator: deinit is safe and buffer stays usable");
+    {
+        char mem[128];
+        CGS_OneUseAllocator a = cgs_one_use_allocator(mem);
+
+        CGS_DStr d = cgs_dstr_init_from("temp", &a.base);
+        cgs_dstr_deinit(&d);            /* must not crash / not free heap */
+
+        /* allocator + buffer still usable for another allocation */
+        CGS_DStr d2 = cgs_dstr_init_from("again", &a.base);
+        ASSERT_TRUE(cgs_equal(d2, "again"));
+        ASSERT_TRUE(IN_BUF(d2.chars, mem, sizeof(mem)));
+        cgs_dstr_deinit(&d2);
+    }
+}
+
+#undef IN_BUF
 
 // ============================================================================
 // Main
@@ -1694,6 +1918,7 @@ int main() {
     test_writer_counter();
     test_spn_cspn_tok();
     test_repeatfmt();
+    test_one_use_allocator();
     
     printf("\n========================================\n");
     printf("Test Results: %d/%d passed\n", passed_count, test_count);

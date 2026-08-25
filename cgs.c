@@ -288,7 +288,7 @@ CGS_API CGS__FixedMutStrRef cgs__dstr_ptr_as_fmutstr_ref(CGS_DStr *dstr)
     return ret;
 }
 
-CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n)
+CGS_API CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n)
 {
     (void)align;
     (void)allocator;
@@ -299,14 +299,14 @@ CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *allocator
     };
 }
 
-CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n)
+CGS_API void cgs__default_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n)
 {
     (void)allocator;
     (void)n;
     free(ptr);
 }
 
-CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t align, size_t old_size, size_t new_size)
+CGS_API CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t align, size_t old_size, size_t new_size)
 {
     (void)allocator;
     (void)align;
@@ -316,6 +316,33 @@ CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *allocat
         .ptr = mem,
         .n   = new_size,
     };
+}
+
+CGS_API CGS_Allocation cgs__one_use_allocator_alloc(CGS_Allocator *allocator, size_t alignment, size_t n)
+{
+    CGS_OneUseAllocator *oa = (CGS_OneUseAllocator*) allocator;
+
+    if (oa->buf.cap < n)
+        return (CGS_Allocation){.ptr = NULL, .n = 0};
+
+    return (CGS_Allocation){.ptr = oa->buf.ptr, .n = oa->buf.cap};
+}
+
+CGS_API void cgs__one_use_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n)
+{
+    (void) allocator;
+    (void) ptr;
+    (void) n;
+}
+
+CGS_API CGS_Allocation cgs__one_use_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t alignment, size_t old_n, size_t new_n)
+{
+    CGS_OneUseAllocator *oa = (CGS_OneUseAllocator*) allocator;
+
+    if (new_n > oa->buf.cap)
+        return (CGS_Allocation){.ptr = NULL, .n = 0};
+
+    return (CGS_Allocation){.ptr = oa->buf.ptr, .n = oa->buf.cap};
 }
 
 CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n)
