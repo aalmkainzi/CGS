@@ -44,7 +44,7 @@
     #elif defined(unreachable)
         #define CGS_unreachable() unreachable()
     #else
-        #define CGS_unreachable() abort()
+        #define CGS_unreachable() (*(volatile int *)0 = 0)
     #endif
 #endif
 
@@ -55,6 +55,8 @@
         #define CGS_assume(...) [[clang::assume(__VA_ARGS__)]]
     #elif defined(__GNUC__)
         #define CGS_assume(...) [[gnu::assume(__VA_ARGS__)]]
+    #else
+        #define CGS_assume(...) do { if(!(__VA_ARGS__)) CGS_unreachable() } while(0)
     #endif
 #endif
 
