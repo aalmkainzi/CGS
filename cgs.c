@@ -48,6 +48,16 @@
     #endif
 #endif
 
+#ifndef CGS_assume
+    #if defined(_MSC_VER)
+        #define CGS_assume(...) __assume(__VA_ARGS__)
+    #elif defined(__clang__)
+        #define CGS_assume(...) [[clang::assume(__VA_ARGS__)]]
+    #elif defined(__GNUC__)
+        #define CGS_assume(...) [[gnu::assume(__VA_ARGS__)]]
+    #endif
+#endif
+
 CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n);
 CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n);
 CGS_PRIVATE CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t align, size_t old_size, size_t new_size);
@@ -320,12 +330,24 @@ CGS_API CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *allocator, 
 
 CGS_API CGS_Allocation cgs__one_use_allocator_alloc(CGS_Allocator *allocator, size_t alignment, size_t n)
 {
+    CGS_assume(alignment != 0);
+    CGS_assume((alignment & (alignment - 1)) == 0);
+    
     CGS_OneUseAllocator *oa = (CGS_OneUseAllocator*) allocator;
 
-    if (oa->buf.cap < n)
+    char *cptr = (char*)oa->buf.ptr;
+    uintptr_t rem = ((uintptr_t)cptr) % alignment;
+    char *aligned = NULL;
+    if (rem)
+        aligned = cptr + (alignment - rem);
+    else
+        aligned = cptr;
+
+    size_t size = oa->buf.cap - (aligned - (char*)oa->buf.ptr);
+    if (size < n)
         return (CGS_Allocation){.ptr = NULL, .n = 0};
 
-    return (CGS_Allocation){.ptr = oa->buf.ptr, .n = oa->buf.cap};
+    return (CGS_Allocation){.ptr = aligned, .n = size};
 }
 
 CGS_API void cgs__one_use_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n)
@@ -337,12 +359,8 @@ CGS_API void cgs__one_use_allocator_dealloc(CGS_Allocator *allocator, void *ptr,
 
 CGS_API CGS_Allocation cgs__one_use_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t alignment, size_t old_n, size_t new_n)
 {
-    CGS_OneUseAllocator *oa = (CGS_OneUseAllocator*) allocator;
-
-    if (new_n > oa->buf.cap)
-        return (CGS_Allocation){.ptr = NULL, .n = 0};
-
-    return (CGS_Allocation){.ptr = oa->buf.ptr, .n = oa->buf.cap};
+    CGS_debug_break(); // dont realloc one_use allocator
+    return cgs__one_use_allocator_alloc(allocator, alignment, new_n);
 }
 
 CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n)
