@@ -2152,7 +2152,7 @@ CGS_API CGS_StrView cgs__strv_cstr3(const char *str, unsigned int begin, unsigne
 {
 #if !defined(CGS_NDEBUG)
 
-    char *found_nul = memchr(str + begin, 0, end - begin);
+    const char *found_nul = memchr(str + begin, 0, end - begin);
     if (found_nul)
     {
         CGS_debug_break();
