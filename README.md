@@ -331,4 +331,5 @@ You can also always include cgs.c, if you define `#define CGS_API static` before
 #include "cgs.c"
 ```
 
+## Try it
 [godbolt link to try it out](https://godbolt.org/z/ozYT3TGWs)
