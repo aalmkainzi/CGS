@@ -1416,7 +1416,7 @@ void test_writer_counter(void)
 
 typedef struct Point { int x, y; } Point;
 
-CGS_Error point_tostr(CGS_Writer *dst, Point p)
+CGS_Error point_tostr(CGS_Writer *dst, Point p, CGS_StrView opt)
 {
     cgs_appendf(dst, "(%?, %?)", p.x, p.y);
     return (CGS_Error){CGS_OK};
@@ -1628,6 +1628,310 @@ void test_repeatfmt(void)
     }
 }
 
+/* ── spec-aware tostr types ───────────────────────────────────────
+ * New tostr signature: CGS_Error (CGS_Writer *dst, T val, CGS_StrView spec)
+ * The spec is the StrView between the parens in "%(...)" / "%[N(...)]".
+ * ---------------------------------------------------------------- */
+
+/* Tagged: echoes the spec it received, so tests can verify exactly
+ * what StrView the parser captured (great for balanced brackets). */
+typedef struct Tagged { int id; } Tagged;
+
+CGS_Error tagged_tostr(CGS_Writer *dst, Tagged t, CGS_StrView spec)
+{
+    cgs_appendf(dst, "id=%?", t.id);
+    if (spec.len > 0)
+        cgs_appendf(dst, "[%?]", spec);
+    return (CGS_Error){CGS_OK};
+}
+
+#define ADD_TOSTR (Tagged, tagged_tostr)
+#include "../cgs.h"
+
+/* Temp: the spec selects the unit, so output changes with the spec. */
+typedef struct Temp { double celsius; } Temp;
+
+CGS_Error temp_tostr(CGS_Writer *dst, Temp t, CGS_StrView spec)
+{
+    if (cgs_equal(spec, "F"))
+        cgs_appendf(dst, "%?F", cgs_nfmt(t.celsius * 9.0 / 5.0 + 32.0, 'f', 1));
+    else /* empty spec or "C" → celsius */
+        cgs_appendf(dst, "%?C", cgs_nfmt(t.celsius, 'f', 1));
+    return (CGS_Error){CGS_OK};
+}
+
+#define ADD_TOSTR (Temp, temp_tostr)
+#include "../cgs.h"
+
+
+void test_fmt_spec(void)
+{
+    char buf[128];
+    
+    /* ════════════════════════════════════════════════════════════
+     * Basic "%(...)" spec passing
+     * ════════════════════════════════════════════════════════════ */
+    
+    TEST("fmt spec: simple spec is passed to tostr");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%(hello)", t);
+        ASSERT_STR_EQ(buf, "id=7[hello]");
+    }
+    
+    TEST("fmt spec: empty spec '%()' → spec has length 0");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%()", t);
+        ASSERT_STR_EQ(buf, "id=7");
+    }
+    
+    TEST("fmt spec: '%?' passes an empty spec (same as '%()')");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%?", t);
+        ASSERT_STR_EQ(buf, "id=7");
+    }
+    
+    TEST("fmt spec: spec with spaces and punctuation preserved verbatim");
+    {
+        Tagged t = {3};
+        cgs_fmt(buf, "%(a b, c!)", t);
+        ASSERT_STR_EQ(buf, "id=3[a b, c!]");
+    }
+    
+    /* ════════════════════════════════════════════════════════════
+     * Spec that changes behavior (Temp)
+     * ════════════════════════════════════════════════════════════ */
+    
+    TEST("fmt spec: Temp defaults to celsius with empty spec");
+    {
+        Temp t = {25.0};
+        cgs_fmt(buf, "%?", t);
+        ASSERT_STR_EQ(buf, "25.0C");
+    }
+    
+    TEST("fmt spec: Temp '%(C)' → celsius");
+    {
+        Temp t = {25.0};
+        cgs_fmt(buf, "%(C)", t);
+        ASSERT_STR_EQ(buf, "25.0C");
+    }
+    
+    TEST("fmt spec: Temp '%(F)' → fahrenheit conversion");
+    {
+        Temp t = {25.0};
+        cgs_fmt(buf, "%(F)", t);
+        ASSERT_STR_EQ(buf, "77.0F");
+    }
+    
+    TEST("fmt spec: Temp 0C in fahrenheit → 32.0F");
+    {
+        Temp t = {0.0};
+        cgs_fmt(buf, "%(F)", t);
+        ASSERT_STR_EQ(buf, "32.0F");
+    }
+    
+    TEST("fmt spec: Temp 100C in fahrenheit → 212.0F");
+    {
+        Temp t = {100.0};
+        cgs_fmt(buf, "%(F)", t);
+        ASSERT_STR_EQ(buf, "212.0F");
+    }
+    
+    /* ════════════════════════════════════════════════════════════
+     * Balanced brackets inside the spec  ( () and [] )
+     * ════════════════════════════════════════════════════════════ */
+    
+    TEST("fmt spec balanced: nested parens '%(a(b)c)'");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%(a(b)c)", t);
+        ASSERT_STR_EQ(buf, "id=7[a(b)c]");
+    }
+    
+    TEST("fmt spec balanced: single bracket pair '%([x])'");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%([x])", t);
+        ASSERT_STR_EQ(buf, "id=7[[x]]");
+    }
+    
+    TEST("fmt spec balanced: empty parens inside '%(())'");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%(())", t);
+        ASSERT_STR_EQ(buf, "id=7[()]");
+    }
+    
+    TEST("fmt spec balanced: empty brackets inside '%([])'");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%([])", t);
+        ASSERT_STR_EQ(buf, "id=7[[]]");
+    }
+    
+    TEST("fmt spec balanced: brackets containing parens '%([a(b)c]d)'");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%([a(b)c]d)", t);
+        ASSERT_STR_EQ(buf, "id=7[[a(b)c]d]");
+    }
+    
+    TEST("fmt spec balanced: deeply nested parens '%(((x)))'");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%(((x)))", t);
+        ASSERT_STR_EQ(buf, "id=7[((x))]");
+    }
+    
+    TEST("fmt spec balanced: deeply nested brackets '%([[y]])'");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%([[y]])", t);
+        ASSERT_STR_EQ(buf, "id=7[[[y]]]");
+    }
+    
+    TEST("fmt spec balanced: mixed call-like content '%(f(1, 2)+g[3])'");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%(f(1, 2)+g[3])", t);
+        ASSERT_STR_EQ(buf, "id=7[f(1, 2)+g[3]]");
+    }
+    
+    TEST("fmt spec balanced: parens wrapping brackets wrapping parens '%(([()]))'");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%(([()]))", t);
+        ASSERT_STR_EQ(buf, "id=7[([()])]");
+    }
+    
+    /* ════════════════════════════════════════════════════════════
+     * Positional argument syntax "%[N]"
+     * ════════════════════════════════════════════════════════════ */
+    
+    TEST("fmt positional: '%[0]' selects the first argument");
+    {
+        Tagged t = {5};
+        cgs_fmt(buf, "%[0]", t);
+        ASSERT_STR_EQ(buf, "id=5");
+    }
+    
+    TEST("fmt positional: reorder with '%[1]' and '%[0]'");
+    {
+        Tagged a = {1}, b = {2};
+        cgs_fmt(buf, "%[1] then %[0]", a, b);
+        ASSERT_STR_EQ(buf, "id=2 then id=1");
+    }
+    
+    TEST("fmt positional: repeat the same argument '%[0]%[0]%[0]'");
+    {
+        Tagged t = {9};
+        cgs_fmt(buf, "%[0]%[0]%[0]", t);
+        ASSERT_STR_EQ(buf, "id=9id=9id=9");
+    }
+    
+    /* ════════════════════════════════════════════════════════════
+     * Positional + spec "%[N(...)]"
+     * ════════════════════════════════════════════════════════════ */
+    
+    TEST("fmt positional+spec: '%[0(hi)]' passes spec to indexed arg");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%[0(hi)]", t);
+        ASSERT_STR_EQ(buf, "id=7[hi]");
+    }
+    
+    TEST("fmt positional+spec: reorder temps with units");
+    {
+        Temp t1 = {25.0}, t2 = {0.0};
+        /* arg0=t1, arg1=t2 → %[1(F)]→t2 in F, %[0(C)]→t1 in C */
+        cgs_fmt(buf, "%[1(F)] %[0(C)]", t1, t2);
+        ASSERT_STR_EQ(buf, "32.0F 25.0C");
+    }
+    
+    TEST("fmt positional+spec: same arg with two different specs");
+    {
+        Temp t = {100.0};
+        cgs_fmt(buf, "%[0(C)] = %[0(F)]", t);
+        ASSERT_STR_EQ(buf, "100.0C = 212.0F");
+    }
+    
+    /* ════════════════════════════════════════════════════════════
+     * Balanced brackets inside a positional spec
+     * ════════════════════════════════════════════════════════════ */
+    
+    TEST("fmt positional+spec balanced: '%[0(a(b)c)]'");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%[0(a(b)c)]", t);
+        ASSERT_STR_EQ(buf, "id=7[a(b)c]");
+    }
+    
+    TEST("fmt positional+spec balanced: '%[0([nested])]'");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%[0([nested])]", t);
+        ASSERT_STR_EQ(buf, "id=7[[nested]]");
+    }
+    
+    TEST("fmt positional+spec balanced: brackets and parens '%[0([p(q)]r)]'");
+    {
+        Tagged t = {7};
+        cgs_fmt(buf, "%[0([p(q)]r)]", t);
+        ASSERT_STR_EQ(buf, "id=7[[p(q)]r]");
+    }
+    
+    /* ════════════════════════════════════════════════════════════
+     * Mixing sequential '%?' and sequential '%(...)'
+     * (both auto-indexed; only positional '%[N]' may not be mixed in)
+     * ════════════════════════════════════════════════════════════ */
+    
+    TEST("fmt spec: mix '%?' and '%(...)' sequentially");
+    {
+        Tagged tag = {7};
+        Temp   tmp = {25.0};
+        cgs_fmt(buf, "%? %(F)", tag, tmp);
+        ASSERT_STR_EQ(buf, "id=7 77.0F");
+    }
+    
+    TEST("fmt spec: two spec args in one call");
+    {
+        Temp a = {0.0}, b = {100.0};
+        cgs_fmt(buf, "%(C)|%(F)", a, b);
+        ASSERT_STR_EQ(buf, "0.0C|212.0F");
+    }
+    
+    TEST("fmt spec: spec args surrounded by literal text");
+    {
+        Tagged t = {42};
+        cgs_fmt(buf, "<<%(tag)>>", t);
+        ASSERT_STR_EQ(buf, "<<id=42[tag]>>");
+    }
+    
+    /* ════════════════════════════════════════════════════════════
+     * Works through printf-family / other sinks
+     * ════════════════════════════════════════════════════════════ */
+    
+    TEST("fmt spec: append_fmt into DStr with spec");
+    {
+        Temp t = {37.0};
+        CGS_DStr d = cgs_dstr_init();
+        cgs_appendf(&d, "body temp: %(F)", t);
+        ASSERT_STR_EQ(cgs_chars(&d), "body temp: 98.6F");
+        cgs_dstr_deinit(&d);
+    }
+    
+    TEST("fmt spec: length via unsigned int* counting writer");
+    {
+        /* "id=7[hello]" → 11 chars */
+        Tagged t = {7};
+        unsigned int n = 0;
+        cgs_appendf(&n, "%(hello)", t);
+        ASSERT_TRUE(n == 11);
+    }
+}
+
 // ============================================================================
 // Main
 // ============================================================================
@@ -1693,6 +1997,7 @@ int main() {
     test_writer_counter();
     test_spn_cspn_tok();
     test_repeatfmt();
+    test_fmt_spec();
     
     printf("\n========================================\n");
     printf("Test Results: %d/%d passed\n", passed_count, test_count);
