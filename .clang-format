@@ -1,0 +1,16 @@
+---
+BasedOnStyle: LLVM
+Language: C
+BreakBeforeBraces: Allman
+IndentWidth: 4
+UseTab: Never
+ColumnLimit: 145
+AlignEscapedNewlines: Left
+AlignConsecutiveAssignments: Consecutive
+SpaceAroundPointerQualifiers: Before
+IndentPPDirectives: BeforeHash
+AllowShortFunctionsOnASingleLine: None
+SpaceBeforeCpp11BracedList: true
+AlignAfterOpenBracket: BlockIndent
+BinPackArguments: false
+IndentCaseLabels: true
