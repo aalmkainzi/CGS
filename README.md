@@ -254,7 +254,7 @@ struct FOO {
     char n;
 };
 
-CGS_Error foo_to_str(CGS_Writer dst, struct FOO f )
+CGS_Error foo_to_str(CGS_Writer *dst, struct FOO f, CGS_StrView fmt_arg)
 {
     CGS_Error err = cgs_putc(dst, f.n);
     return err;
@@ -307,7 +307,7 @@ int main()
 }
 ```
 
-## nfmt, arrfmt, alignfmt
+## cgs_nfmt, cgs_arrfmt, cgs_alignfmt, cgs_repeatfmt
 
 These macros return a format object that has a `tostr`. For example:
 
