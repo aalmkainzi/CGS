@@ -1379,8 +1379,8 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, CGS_St
         return (CGS_Result(int)) {.val = 0, .err = {CGS_ALIASING_NOT_SUPPORTED}};
     }
 
-    CGS_Error err              = {CGS_OK};
-    unsigned int replace_count = 0;
+    CGS_Error err     = {CGS_OK};
+    int replace_count = 0;
 
     if (target.len == 0)
     {
@@ -1497,8 +1497,8 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, CGS_StrView target, CG
         return (CGS_Result(int)) {.val = 0, .err = {CGS_ALIASING_NOT_SUPPORTED}};
     }
 
-    CGS_Error err              = {CGS_OK};
-    unsigned int replace_count = 0;
+    CGS_Error err     = {CGS_OK};
+    int replace_count = 0;
 
     if (target.len == 0)
     {
@@ -2559,7 +2559,7 @@ CGS_PRIVATE CGS_Error cgs__parse_optional_format_string(CGS__const_StrView *fmt_
     CGS_Error err  = cgs__parse_optional_paren_grouping(fmt_walk);
     if (err.ec != CGS_OK)
         return err;
-    fmt_arg->len = (fmt_walk->chars - 1) - fmt_arg->chars;
+    fmt_arg->len = (unsigned int)((fmt_walk->chars - 1) - fmt_arg->chars);
     return (CGS_Error) {CGS_OK};
 }
 
