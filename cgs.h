@@ -1400,11 +1400,11 @@ typedef __typeof__(CGS__MCALL(CGS__ARG1, ADD_TOSTR)) cgs__tostr_type_##n; \
 static inline CGS_Error cgs__tostr_func_##n (CGS_Writer *dst, cgs__tostr_type_##n obj, CGS_StrView fmt_arg) \
 { \
     _Static_assert(cgs__has_type(CGS__MCALL(CGS__ARG2, ADD_TOSTR), __typeof__(CGS_Error(*)(CGS_Writer*, cgs__tostr_type_##n, CGS_StrView))), "tostr functions must have signature `CGS_Error(CGS_Writer *dst, T src, CGS_StrView fmt_arg)`"); \
-    return CGS__MCALL(CGS__ARG2, ADD_TOSTR) (writer, obj, fmt_arg); \
+    return CGS__MCALL(CGS__ARG2, ADD_TOSTR) (dst, obj, fmt_arg); \
 } \
 static inline CGS_Error cgs__tostr_p_func_##n (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg) \
 { \
-    return cgs__tostr_func_##n(writer, * (cgs__tostr_type_##n*) obj, fmt_arg); \
+    return cgs__tostr_func_##n(dst, * (cgs__tostr_type_##n*) obj, fmt_arg); \
 }
 
 CGS_API CGS_StrView cgs__strv_cstr1(const char *str);
