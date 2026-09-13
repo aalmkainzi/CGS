@@ -81,6 +81,13 @@ static const CGS_StrView cgs__error_to_string[] = {
 #undef CGS__ERROR_TO_STRV
 };
 
+static CGS_Error (* const cgs__mutstr_ref_write_func_mapping[])(CGS_Writer *dst, CGS_StrView str) =
+{
+    [CGS__DSTR_TY]   = cgs__DStrWriter_write,
+    [CGS__STRBUF_TY] = cgs__StrBufWriter_write,
+    [CGS__BUF_TY]    = cgs__CStrWriter_write,
+};
+
 static const unsigned long long cgs__ten_pows_ull[] = {
     1ull,
     10ull,
@@ -2527,31 +2534,77 @@ CGS_API unsigned int cgs__fprintln_strv(FILE *stream, CGS_StrView str)
     return written + (err != EOF);
 }
 
-CGS_API CGS_Error cgs__idstr_append(CGS_Writer *dst, CGS_StrView str)
+CGS_API CGS_MutStrRefWriter cgs__mutstr_ref_to_writer(CGS_MutStrRef ref)
+{
+    CGS_MutStrRefWriter ret = {.base = {.write = cgs__mutstr_ref_write_func_mapping[ref.ty]}};
+    ret.cap_opt             = (unsigned int)-1;
+    
+    switch (ref.ty)
+    {
+        case CGS__DSTR_TY:
+        case CGS__STRBUF_TY:
+            ret.any = ref.str.dstr; // both share the same pointer, so its fine
+            break;
+        case CGS__BUF_TY:
+            ret.any     = ref.str.buf.ptr;
+            ret.cap_opt = ref.str.buf.cap;
+            break;
+        default:
+            ret.any = NULL;
+    }
+    
+    return ret;
+}
+
+CGS_API CGS_Error cgs__DStrWriter_write(CGS_Writer *dst, CGS_StrView str)
 {
     CGS_DStr *dstr = ((CGS_DStrWriter *)dst)->dstr;
     return cgs__dstr_append(dstr, str);
 }
 
-CGS_API CGS_Error cgs__istrbuf_append(CGS_Writer *dst, CGS_StrView str)
+CGS_API CGS_Error cgs__StrBufWriter_write(CGS_Writer *dst, CGS_StrView str)
 {
     CGS_StrBuf *strbuf = ((CGS_StrBufWriter *)dst)->strbuf;
     return cgs__fmutstr_ref_append(cgs__fmutstr_ref(strbuf), str);
 }
 
-CGS_API CGS_Error cgs__ibuf_append(CGS_Writer *dst, CGS_StrView str)
+CGS_API CGS_Error cgs__CStrWriter_write(CGS_Writer *dst, CGS_StrView str)
 {
     CGS_Buffer buf = ((CGS_CStrWriter *)dst)->buf;
     return cgs__fmutstr_ref_append(cgs__fmutstr_ref(buf), str);
 }
 
-CGS_API CGS_Error cgs__file_append(CGS_Writer *dst, CGS_StrView str)
+CGS_API CGS_Error cgs__FileWriter_write(CGS_Writer *dst, CGS_StrView str)
 {
     FILE *f          = ((CGS_FileWriter *)dst)->file;
     unsigned int ret = cgs__fprint_strv(f, str);
     if (ret != str.len)
         return (CGS_Error) {CGS_IO_ERROR};
     return (CGS_Error) {CGS_OK};
+}
+
+CGS_API CGS_Error cgs__LenWriter_write(CGS_Writer *dst, CGS_StrView str)
+{
+    CGS_LenWriter *len_writer = (CGS_LenWriter *)dst;
+    len_writer->len += str.len;
+    return (CGS_Error) {CGS_OK};
+}
+
+CGS_API CGS_Error cgs__LenPtrWriter_write(CGS_Writer *dst, CGS_StrView str)
+{
+    CGS_LenPtrWriter *len_writer = (CGS_LenPtrWriter *)dst;
+    *len_writer->len += str.len;
+    return (CGS_Error) {CGS_OK};
+}
+
+CGS_API CGS_Error cgs__ChainWriter_write(CGS_Writer *dst, CGS_StrView str)
+{
+    CGS_ChainWriter *chain_writer = (CGS_ChainWriter *)dst;
+    
+    CGS_Error err1 = cgs__invoke_writer(chain_writer->a, str);
+    CGS_Error err2 = cgs__invoke_writer(chain_writer->b, str);
+    
+    return err1.ec == CGS_OK ? err2 : err1;
 }
 
 CGS_PRIVATE CGS_Error cgs__parse_optional_paren_grouping(CGS_StrView *fmt_walk);

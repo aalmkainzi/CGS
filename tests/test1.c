@@ -2218,7 +2218,7 @@ void test_custom_writer(void)
     TEST("CGS_CustomWriter: cgs_append routes through the callback");
     {
         CountCtx ctx = {0};
-        CGS_CustomWriter cw = { .base = { .append = count_write }, .ctx = &ctx };
+        CGS_CustomWriter cw = { .base = { .write = count_write }, .ctx = &ctx };
 
         cgs_append(&cw, "hello");
 
@@ -2230,7 +2230,7 @@ void test_custom_writer(void)
     TEST("CGS_CustomWriter: multiple appends accumulate in ctx");
     {
         CountCtx ctx = {0};
-        CGS_CustomWriter cw = { .base = { .append = count_write }, .ctx = &ctx };
+        CGS_CustomWriter cw = { .base = { .write = count_write }, .ctx = &ctx };
 
         cgs_append(&cw, "abc");
         cgs_append(&cw, "de");
@@ -2242,7 +2242,7 @@ void test_custom_writer(void)
     TEST("CGS_CustomWriter: cgs_putc reaches the callback");
     {
         CountCtx ctx = {0};
-        CGS_CustomWriter cw = { .base = { .append = count_write }, .ctx = &ctx };
+        CGS_CustomWriter cw = { .base = { .write = count_write }, .ctx = &ctx };
 
         cgs_putc(&cw, 'x');
 
@@ -2253,7 +2253,7 @@ void test_custom_writer(void)
     TEST("CGS_CustomWriter: cgs_appendf routes formatted output");
     {
         CountCtx ctx = {0};
-        CGS_CustomWriter cw = { .base = { .append = count_write }, .ctx = &ctx };
+        CGS_CustomWriter cw = { .base = { .write = count_write }, .ctx = &ctx };
 
         cgs_appendf(&cw, "%? + %? = %?", 1, 2, 3);
 
@@ -2264,7 +2264,7 @@ void test_custom_writer(void)
     TEST("CGS_CustomWriter: cgs_append_tostr_many routes all args");
     {
         CountCtx ctx = {0};
-        CGS_CustomWriter cw = { .base = { .append = count_write }, .ctx = &ctx };
+        CGS_CustomWriter cw = { .base = { .write = count_write }, .ctx = &ctx };
 
         cgs_append_tostr_many(&cw, "ab", 42, "!");
 
@@ -2275,7 +2275,7 @@ void test_custom_writer(void)
     TEST("CGS_CustomWriter: transforming writer uppercases appended text");
     {
         UpperCtx ctx = {0};
-        CGS_CustomWriter cw = { .base = { .append = upper_write }, .ctx = &ctx };
+        CGS_CustomWriter cw = { .base = { .write = upper_write }, .ctx = &ctx };
 
         cgs_append(&cw, "hello, world");
 
@@ -2286,7 +2286,7 @@ void test_custom_writer(void)
     TEST("CGS_CustomWriter: transforming writer works with cgs_appendf");
     {
         UpperCtx ctx = {0};
-        CGS_CustomWriter cw = { .base = { .append = upper_write }, .ctx = &ctx };
+        CGS_CustomWriter cw = { .base = { .write = upper_write }, .ctx = &ctx };
 
         cgs_appendf(&cw, "value is %?", "forty two");
 
@@ -2296,7 +2296,7 @@ void test_custom_writer(void)
     TEST("CGS_CustomWriter: empty append does not corrupt ctx");
     {
         UpperCtx ctx = {0};
-        CGS_CustomWriter cw = { .base = { .append = upper_write }, .ctx = &ctx };
+        CGS_CustomWriter cw = { .base = { .write = upper_write }, .ctx = &ctx };
 
         cgs_append(&cw, "");
 
@@ -2307,8 +2307,8 @@ void test_custom_writer(void)
     TEST("CGS_CustomWriter: two writers with separate ctx stay independent");
     {
         CountCtx c1 = {0}, c2 = {0};
-        CGS_CustomWriter w1 = { .base = { .append = count_write }, .ctx = &c1 };
-        CGS_CustomWriter w2 = { .base = { .append = count_write }, .ctx = &c2 };
+        CGS_CustomWriter w1 = { .base = { .write = count_write }, .ctx = &c1 };
+        CGS_CustomWriter w2 = { .base = { .write = count_write }, .ctx = &c2 };
 
         cgs_append(&w1, "aaa");
         cgs_append(&w2, "bb");
@@ -2319,7 +2319,7 @@ void test_custom_writer(void)
 
     TEST("CGS_CustomWriter: error from the callback propagates to the caller");
     {
-        CGS_CustomWriter cw = { .base = { .append = failing_write }, .ctx = NULL };
+        CGS_CustomWriter cw = { .base = { .write = failing_write }, .ctx = NULL };
 
         CGS_Error e = cgs_append(&cw, "anything");
         ASSERT_TRUE(e.ec == CGS_IO_ERROR);
@@ -2327,7 +2327,7 @@ void test_custom_writer(void)
 
     TEST("CGS_CustomWriter: NULL ctx is fine when the callback ignores it");
     {
-        CGS_CustomWriter cw = { .base = { .append = failing_write }, .ctx = NULL };
+        CGS_CustomWriter cw = { .base = { .write = failing_write }, .ctx = NULL };
 
         CGS_Error e = cgs_putc(&cw, 'z');
         ASSERT_TRUE(e.ec == CGS_IO_ERROR);
@@ -2436,7 +2436,7 @@ void test_chain_writer(void)
     TEST("CGS_ChainWriter: chained with a CustomWriter destination");
     {
         CountCtx ctx = {0};
-        CGS_CustomWriter cw = { .base = { .append = count_write }, .ctx = &ctx };
+        CGS_CustomWriter cw = { .base = { .write = count_write }, .ctx = &ctx };
         CGS_DStr d = cgs_dstr_init();
 
         CGS_ChainWriter chain = cgs_writer(&d, &cw);
@@ -2451,8 +2451,8 @@ void test_chain_writer(void)
     {
         UpperCtx u = {0};
         CountCtx c = {0};
-        CGS_CustomWriter wu = { .base = { .append = upper_write }, .ctx = &u };
-        CGS_CustomWriter wc = { .base = { .append = count_write }, .ctx = &c };
+        CGS_CustomWriter wu = { .base = { .write = upper_write }, .ctx = &u };
+        CGS_CustomWriter wc = { .base = { .write = count_write }, .ctx = &c };
 
         CGS_ChainWriter chain = cgs_writer(&wu, &wc);
         cgs_append(&chain, "abc");
@@ -2509,7 +2509,7 @@ void test_chain_writer(void)
     {
         /* second sink always fails → the chain call reports the error */
         CGS_DStr d = cgs_dstr_init();
-        CGS_CustomWriter bad = { .base = { .append = failing_write }, .ctx = NULL };
+        CGS_CustomWriter bad = { .base = { .write = failing_write }, .ctx = NULL };
 
         CGS_ChainWriter chain = cgs_writer(&d, &bad);
         CGS_Error e = cgs_append(&chain, "data");

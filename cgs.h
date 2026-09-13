@@ -1,5 +1,7 @@
 #if !defined(CGS__H_INCLUDED) && !defined(ONLY_TOSTR)
-#define CGS__H_INCLUDED
+    #define CGS__H_INCLUDED
+
+// clang-format off
 
 #include <stddef.h>
 #include <string.h>
@@ -128,9 +130,9 @@ CGS__T_APPENDABLE_STRINGS(macro, arg)      \
 macro(char*         , cstr , arg)          \
 macro(unsigned char*, ucstr, arg)          \
 
-#define CGS__T_ALL_STRINGS(macro, arg)       \
+#define CGS__T_ALL_STRINGS(macro, arg)      \
 CGS__T_NULL_TERMINATED_STRINGS(macro, arg)  \
-macro(CGS_StrView, strv, arg)             \
+macro(CGS_StrView, strv, arg)               \
 
 #define cgs__strv_type_erasure_generic_assoc(T, name, arg) \
 T: *(CGS_StrView*)cgs__local_ref(cgs__coerce2(arg, CGS_StrView, CGS_ZStrView)),
@@ -279,7 +281,7 @@ typedef struct CGS_Error
 
 typedef struct CGS_Writer
 {
-    CGS_Error (* const append)(struct CGS_Writer *dst, CGS_StrView str);
+    CGS_Error (* const write)(struct CGS_Writer *dst, CGS_StrView str);
 } CGS_Writer;
 
 typedef struct CGS_FileWriter
@@ -337,18 +339,6 @@ typedef struct CGS_CustomWriter
     CGS_Writer base;
     void *ctx;
 } CGS_CustomWriter;
-
-CGS_API CGS_Error cgs__idstr_append  (CGS_Writer *dst, CGS_StrView str);
-CGS_API CGS_Error cgs__istrbuf_append(CGS_Writer *dst, CGS_StrView str);
-CGS_API CGS_Error cgs__ibuf_append   (CGS_Writer *dst, CGS_StrView str);
-CGS_API CGS_Error cgs__file_append   (CGS_Writer *dst, CGS_StrView str);
-
-static CGS_Error (* const cgs__mutstr_ref_append_func[])(CGS_Writer *dst, CGS_StrView str) =
-{
-    [CGS__DSTR_TY]   = cgs__idstr_append,
-    [CGS__STRBUF_TY] = cgs__istrbuf_append,
-    [CGS__BUF_TY]    = cgs__ibuf_append,
-};
 
 typedef struct CGS__FixedMutStrRef
 {
@@ -513,7 +503,7 @@ __typeof__(T)*: cgs__##name##_cap,
 
 #define cgs_cap(anystr)                                                       \
 _Generic((__typeof__(anystr)*)0,                                              \
-    CGS__T_ALL_STRINGS(cgs__cap_generic_assoc, anystr)                         \
+    CGS__T_ALL_STRINGS(cgs__cap_generic_assoc, anystr)                        \
     char(*)[sizeof(anystr)]: cgs__return_as_u32,                              \
     unsigned char(*)[sizeof(anystr)]: cgs__return_as_u32                      \
 )(_Generic((__typeof__(anystr)*){0},                                          \
@@ -692,28 +682,6 @@ cgs_fread_until(mutstr_dst, stdin, delim)
 #define cgs_append_read_until(mutstr_dst, delim) \
 cgs_append_fread_until(mutstr_dst, stdin, delim)
 
-static inline CGS_MutStrRefWriter cgs__mutstr_ref_to_writer(CGS_MutStrRef ref)
-{
-    CGS_MutStrRefWriter ret = {.base = {.append = cgs__mutstr_ref_append_func[ref.ty] }};
-    ret.cap_opt = (unsigned int) -1;
-    
-    switch(ref.ty)
-    {
-        case CGS__DSTR_TY:
-        case CGS__STRBUF_TY:
-            ret.any = ref.str.dstr; // both share the same pointer, so its fine
-            break;
-        case CGS__BUF_TY:
-            ret.any = ref.str.buf.ptr;
-            ret.cap_opt = ref.str.buf.cap;
-            break;
-        default:
-            ret.any = NULL;
-    }
-    
-    return ret;
-}
-
 #define cgs__writer_impl(writer)  \
 _Generic((__typeof__(writer)*)0,  \
     CGS_Writer*      : (writer),  \
@@ -755,22 +723,22 @@ CGS__IF_EMPTY( \
 )
 
 #define cgs__convert_to_writer_generic_associations(writer, macro) \
-    CGS_DStr**             : macro((CGS_DStrWriter){.base = {.append = cgs__idstr_append}, .dstr = cgs__coerce(writer, CGS_DStr*)}), \
-    CGS_StrBuf**           : macro((CGS_StrBufWriter){.base = {.append = cgs__istrbuf_append}, .strbuf = cgs__coerce(writer, CGS_StrBuf*)}), \
-    CGS_MutStrRef*         : macro(cgs__mutstr_ref_to_writer(cgs__coerce(writer, CGS_MutStrRef))), \
-    char(*)[sizeof(__typeof__(writer))]: macro((CGS_CStrWriter){.base = {.append = cgs__ibuf_append}, .buf = {.cap = sizeof(__typeof__(writer)), .ptr = (char*) cgs__coerce(writer, char*)}}), \
-    unsigned char(*)[sizeof(__typeof__(writer))]: macro((CGS_CStrWriter){.base = {.append = cgs__ibuf_append}, .buf = {.cap = sizeof(__typeof__(writer)), .ptr = (char*) cgs__coerce(writer, unsigned char*)}}), \
-    FILE**                 : macro((CGS_FileWriter){.base = {.append = cgs__file_append}, .file = cgs__coerce(writer, FILE*)}), \
-    unsigned int**         : macro((CGS_LenPtrWriter){.base = {.append = cgs__len_ptr_writer_append}, .len = cgs__coerce(writer, unsigned int*)}) \
+    CGS_DStr**                                  : macro((CGS_DStrWriter){.base = {.write = cgs__DStrWriter_write}, .dstr = cgs__coerce(writer, CGS_DStr*)}), \
+    CGS_StrBuf**                                : macro((CGS_StrBufWriter){.base = {.write = cgs__StrBufWriter_write}, .strbuf = cgs__coerce(writer, CGS_StrBuf*)}), \
+    CGS_MutStrRef*                              : macro(cgs__mutstr_ref_to_writer(cgs__coerce(writer, CGS_MutStrRef))), \
+    char(*)[sizeof(__typeof__(writer))]         : macro((CGS_CStrWriter){.base = {.write = cgs__CStrWriter_write}, .buf = {.cap = sizeof(__typeof__(writer)), .ptr = (char*) cgs__coerce(writer, char*)}}), \
+    unsigned char(*)[sizeof(__typeof__(writer))]: macro((CGS_CStrWriter){.base = {.write = cgs__CStrWriter_write}, .buf = {.cap = sizeof(__typeof__(writer)), .ptr = (char*) cgs__coerce(writer, unsigned char*)}}), \
+    FILE**                                      : macro((CGS_FileWriter){.base = {.write = cgs__FileWriter_write}, .file = cgs__coerce(writer, FILE*)}), \
+    unsigned int**                              : macro((CGS_LenPtrWriter){.base = {.write = cgs__LenPtrWriter_write}, .len = cgs__coerce(writer, unsigned int*)}) \
 
 #define cgs__local_ref(...) \
 (&(__typeof__(__VA_ARGS__)[]){__VA_ARGS__}[0])
 
 #define cgs_len_writer() \
-(CGS_LenWriter){.base = {.append = cgs__len_writer_append}}
+(CGS_LenWriter){.base = {.write = cgs__LenWriter_write}}
 
 #define cgs__chain_writer(writer_1, writer_2) \
-(CGS_ChainWriter){.base = {.append = cgs__chain_writer_append}, .a = cgs__writer_ptr_impl(writer_1), .b = cgs__writer_ptr_impl(writer_2)}
+(CGS_ChainWriter){.base = {.write = cgs__ChainWriter_write}, .a = cgs__writer_ptr_impl(writer_1), .b = cgs__writer_ptr_impl(writer_2)}
 
 #define cgs_strv_arr_from(strv_carr, ...) \
 cgs__strv_arr_from(strv_carr, CGS__VA_OR((cgs__static_assertx(cgs__is_array_of((strv_carr), CGS_StrView), "Must pass StrView[N] or StrView* with length argument"), CGS__CARR_LEN(strv_carr)), __VA_ARGS__))
@@ -1429,6 +1397,9 @@ cgs__get_tostr_func(__typeof__(src))(cgs_writer_ptr(cgs__clear_and_return(cgs_mu
 #define cgs_append_tostr(dst, src) \
 cgs__get_tostr_func(__typeof__(src))(cgs_writer_ptr(dst), (src), (CGS_StrView){})
 
+#define cgs_appendln_tostr(dst, src) \
+cgs__invoke_appendln_tostr(cgs_writer_ptr(dst), cgs__as_ptr(src), cgs__get_tostr_p_func(__typeof__(src)))
+
 #define cgs_has_tostr(ty) \
 (!cgs__has_type(cgs__get_tostr_func_with_default(__typeof__(ty)), cgs__tostr_fail))
 
@@ -1624,73 +1595,86 @@ CGS_API CGS_Error cgs__appendln_fmt_(CGS_Writer *dst, CGS_StrView fmt, size_t na
 CGS_API CGS_DStr cgs__asprintf(CGS_Writer *dst, CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*, CGS_StrView));
 CGS_API CGS_DStr cgs__asprintf_with_allocator(CGS_Writer *dst, CGS_StrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*, CGS_StrView));
 
-CGS_API CGS_Error cgs__bool_tostr(CGS_Writer *dst, bool obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__cstr_tostr(CGS_Writer *dst, const char *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__ucstr_tostr(CGS_Writer *dst, const unsigned char *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__char_tostr(CGS_Writer *dst, char obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__schar_tostr(CGS_Writer *dst, signed char obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__uchar_tostr(CGS_Writer *dst, unsigned char obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__short_tostr(CGS_Writer *dst, short obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__ushort_tostr(CGS_Writer *dst, unsigned short obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__int_tostr(CGS_Writer *dst, int obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__uint_tostr(CGS_Writer *dst, unsigned int obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__long_tostr(CGS_Writer *dst, long obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__ulong_tostr(CGS_Writer *dst, unsigned long obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__llong_tostr(CGS_Writer *dst, long long obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__ullong_tostr(CGS_Writer *dst, unsigned long long obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__float_tostr(CGS_Writer *dst, float obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__double_tostr(CGS_Writer *dst, double obj, CGS_StrView fmt_arg);
+CGS_API CGS_MutStrRefWriter cgs__mutstr_ref_to_writer(CGS_MutStrRef ref);
 
-CGS_API CGS_Error cgs__dstr_tostr(CGS_Writer *dst, CGS_DStr obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__dstr_ptr_tostr(CGS_Writer *dst, const CGS_DStr *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__strv_tostr(CGS_Writer *dst, CGS_StrView obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__zstrv_tostr(CGS_Writer *dst, CGS_ZStrView obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__strbuf_tostr(CGS_Writer *dst, CGS_StrBuf obj, CGS_StrView fmt_arg);
+// tostr callbacks
+CGS_API CGS_Error cgs__bool_tostr  (CGS_Writer *dst, bool                 obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__cstr_tostr  (CGS_Writer *dst, const char          *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__ucstr_tostr (CGS_Writer *dst, const unsigned char *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__char_tostr  (CGS_Writer *dst, char                 obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__schar_tostr (CGS_Writer *dst, signed char          obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__uchar_tostr (CGS_Writer *dst, unsigned char        obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__short_tostr (CGS_Writer *dst, short                obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__ushort_tostr(CGS_Writer *dst, unsigned short       obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__int_tostr   (CGS_Writer *dst, int                  obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__uint_tostr  (CGS_Writer *dst, unsigned int         obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__long_tostr  (CGS_Writer *dst, long                 obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__ulong_tostr (CGS_Writer *dst, unsigned long        obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__llong_tostr (CGS_Writer *dst, long long            obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__ullong_tostr(CGS_Writer *dst, unsigned long long   obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__float_tostr (CGS_Writer *dst, float                obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__double_tostr(CGS_Writer *dst, double               obj, CGS_StrView fmt_arg);
+
+CGS_API CGS_Error cgs__dstr_tostr      (CGS_Writer *dst, CGS_DStr          obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__dstr_ptr_tostr  (CGS_Writer *dst, const CGS_DStr   *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__strv_tostr      (CGS_Writer *dst, CGS_StrView       obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__zstrv_tostr     (CGS_Writer *dst, CGS_ZStrView      obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__strbuf_tostr    (CGS_Writer *dst, CGS_StrBuf        obj, CGS_StrView fmt_arg);
 CGS_API CGS_Error cgs__strbuf_ptr_tostr(CGS_Writer *dst, const CGS_StrBuf *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__mutstr_ref_tostr(CGS_Writer *dst, CGS_MutStrRef obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__mutstr_ref_tostr(CGS_Writer *dst, CGS_MutStrRef     obj, CGS_StrView fmt_arg);
 
-CGS_API CGS_Error cgs__error_tostr(CGS_Writer *dst, CGS_Error obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer *dst, CGS_ArrayFmt obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__error_tostr     (CGS_Writer *dst, CGS_Error      obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__array_fmt_tostr (CGS_Writer *dst, CGS_ArrayFmt   obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__align_fmt_tostr (CGS_Writer *dst, CGS__AlignFmt  obj, CGS_StrView fmt_arg);
 CGS_API CGS_Error cgs__repeat_fmt_tostr(CGS_Writer *dst, CGS__RepeatFmt obj, CGS_StrView fmt_arg);
 
-CGS_API CGS_Error cgs__bool_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__cstr_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__ucstr_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__char_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__schar_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__uchar_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__short_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__ushort_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__int_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__uint_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__long_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__ulong_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__llong_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__ullong_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__float_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__double_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+// tostr_p callbacks
+CGS_API CGS_Error cgs__bool_tostr_p      (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__cstr_tostr_p      (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__ucstr_tostr_p     (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__char_tostr_p      (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__schar_tostr_p     (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__uchar_tostr_p     (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__short_tostr_p     (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__ushort_tostr_p    (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__int_tostr_p       (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__uint_tostr_p      (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__long_tostr_p      (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__ulong_tostr_p     (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__llong_tostr_p     (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__ullong_tostr_p    (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__float_tostr_p     (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__double_tostr_p    (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
 
-CGS_API CGS_Error cgs__dstr_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__dstr_ptr_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__strv_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__zstrv_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__strbuf_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__dstr_tostr_p      (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__dstr_ptr_tostr_p  (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__strv_tostr_p      (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__zstrv_tostr_p     (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__strbuf_tostr_p    (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
 CGS_API CGS_Error cgs__strbuf_ptr_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
 CGS_API CGS_Error cgs__mutstr_ref_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
 
-CGS_API CGS_Error cgs__error_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__array_fmt_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
-CGS_API CGS_Error cgs__align_fmt_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__error_tostr_p     (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__array_fmt_tostr_p (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
+CGS_API CGS_Error cgs__align_fmt_tostr_p (CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
 CGS_API CGS_Error cgs__repeat_fmt_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);
 
-#define CGS__X(ty, extra)                                                                                                \
+// writer callbacks
+CGS_API CGS_Error cgs__DStrWriter_write  (CGS_Writer *dst, CGS_StrView str);
+CGS_API CGS_Error cgs__StrBufWriter_write(CGS_Writer *dst, CGS_StrView str);
+CGS_API CGS_Error cgs__CStrWriter_write  (CGS_Writer *dst, CGS_StrView str);
+CGS_API CGS_Error cgs__FileWriter_write  (CGS_Writer *dst, CGS_StrView str);
+CGS_API CGS_Error cgs__LenWriter_write   (CGS_Writer *dst, CGS_StrView str);
+CGS_API CGS_Error cgs__LenPtrWriter_write(CGS_Writer *dst, CGS_StrView str);
+CGS_API CGS_Error cgs__ChainWriter_write (CGS_Writer *dst, CGS_StrView str);
+
+#define CGS__X(ty, extra)                                                                                                 \
     CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr(CGS_Writer *dst, CGS__Integer_d_Fmt_##ty obj, CGS_StrView fmt_arg); \
     CGS_API CGS_Error cgs__Integer_x_Fmt_##ty##_tostr(CGS_Writer *dst, CGS__Integer_x_Fmt_##ty obj, CGS_StrView fmt_arg); \
     CGS_API CGS_Error cgs__Integer_o_Fmt_##ty##_tostr(CGS_Writer *dst, CGS__Integer_o_Fmt_##ty obj, CGS_StrView fmt_arg); \
     CGS_API CGS_Error cgs__Integer_b_Fmt_##ty##_tostr(CGS_Writer *dst, CGS__Integer_b_Fmt_##ty obj, CGS_StrView fmt_arg); \
     CGS_API CGS_Error cgs__Integer_X_Fmt_##ty##_tostr(CGS_Writer *dst, CGS__Integer_X_Fmt_##ty obj, CGS_StrView fmt_arg); \
-                                                                                                                         \
+                                                                                                                          \
     CGS_API CGS_Error cgs__Integer_d_Fmt_##ty##_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);           \
     CGS_API CGS_Error cgs__Integer_x_Fmt_##ty##_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);           \
     CGS_API CGS_Error cgs__Integer_o_Fmt_##ty##_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);           \
@@ -1724,6 +1708,8 @@ CGS__FLOATING_TYPES(CGS__X, ignore, CGS__X)
 
 #undef CGS__X
 
+// clang-format on
+
 static inline CGS_MutStrRef cgs__clear_and_return(CGS_MutStrRef dst)
 {
     cgs_clear(dst);
@@ -1732,17 +1718,17 @@ static inline CGS_MutStrRef cgs__clear_and_return(CGS_MutStrRef dst)
 
 static inline unsigned int cgs__return_as_u32(size_t a)
 {
-    return (unsigned int) a;
+    return (unsigned int)a;
 }
 
 static inline unsigned int cgs__cstr_cap(const char *s)
 {
-    return (unsigned int) strlen(s);
+    return (unsigned int)strlen(s);
 }
 
 static inline unsigned int cgs__ucstr_cap(const unsigned char *s)
 {
-    return (unsigned int) strlen((const char*) s);
+    return (unsigned int)strlen((const char *)s);
 }
 
 static inline unsigned int cgs__strv_len(CGS_StrView sv)
@@ -1752,168 +1738,142 @@ static inline unsigned int cgs__strv_len(CGS_StrView sv)
 
 static inline CGS_Error cgs__invoke_writer(CGS_Writer *dst, CGS_StrView str)
 {
-    return dst->append(dst, str);
+    return dst->write(dst, str);
 }
 
 static inline CGS_Error cgs__invoke_writer_ln(CGS_Writer *dst, CGS_StrView str)
 {
-    CGS_Error err = dst->append(dst, str);
-    if(err.ec == CGS_OK)
-        err = dst->append(dst, (CGS_StrView){.chars = (char*) "\n", .len = 1});
+    CGS_Error err = dst->write(dst, str);
+    if (err.ec == CGS_OK)
+        err = dst->write(dst, (CGS_StrView) {.chars = (char *)"\n", .len = 1});
     return err;
 }
 
 static inline CGS_Error cgs__writer_putc(CGS_Writer *dst, char c)
 {
-    return dst->append(dst, (CGS_StrView){.chars = &c, .len = 1});
+    return dst->write(dst, (CGS_StrView) {.chars = &c, .len = 1});
 }
 
-static inline CGS_Error cgs__len_writer_append(CGS_Writer *dst, CGS_StrView str)
-{
-    CGS_LenWriter *len_writer = (CGS_LenWriter*)dst;
-    len_writer->len += str.len;
-    return (CGS_Error){CGS_OK};
-}
-
-static inline CGS_Error cgs__len_ptr_writer_append(CGS_Writer *dst, CGS_StrView str)
-{
-    CGS_LenPtrWriter *len_writer = (CGS_LenPtrWriter*)dst;
-    *len_writer->len += str.len;
-    return (CGS_Error){CGS_OK};
-}
-
-static inline CGS_Error cgs__chain_writer_append(CGS_Writer *dst, CGS_StrView str)
-{
-    CGS_ChainWriter *chain_writer = (CGS_ChainWriter*)dst;
-    
-    CGS_Error err1 = cgs__invoke_writer(chain_writer->a, str);
-    CGS_Error err2 = cgs__invoke_writer(chain_writer->b, str);
-    
-    return err1.ec == CGS_OK ? err2 : err1;
-}
-
-static inline unsigned int cgs__invoke_tostr_len(CGS_Error(*tostr_p)(CGS_Writer*, const void*, CGS_StrView fmt_arg), const void *obj)
+static inline unsigned int cgs__invoke_tostr_len(CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView fmt_arg), const void *obj)
 {
     CGS_LenWriter len_writer = cgs_len_writer();
-    tostr_p((CGS_Writer*) &len_writer, obj, (CGS_StrView){});
+    tostr_p((CGS_Writer *)&len_writer, obj, (CGS_StrView) {});
     return len_writer.len;
 }
 
-static inline CGS_Error cgs__cstr_append(CGS_Writer *dst, CGS_StrView str)
+static inline CGS_Error cgs__invoke_appendln_tostr(CGS_Writer *writer, const void *obj, CGS_Error(*tostr_p)(CGS_Writer *, const void*, CGS_StrView))
 {
-    (void)dst;
-    if(str.len != 0)
-        return (CGS_Error){CGS_DST_TOO_SMALL};
-    else
-        return (CGS_Error){CGS_OK};
+    CGS_Error err1 = tostr_p(writer, obj, (CGS_StrView){});
+    CGS_Error err2 = cgs_putc(writer, '\n');
+    return err1.ec == CGS_OK ? err2 : err1;
 }
 
 #endif // CGS__H_INCLUDED
 
 #ifdef ADD_TOSTR
 
-_Static_assert( cgs__has_type(cgs__get_tostr_func_with_default(CGS__ARG1 ADD_TOSTR), cgs__tostr_fail), "Type already has a tostr" );
+_Static_assert(cgs__has_type(cgs__get_tostr_func_with_default(CGS__ARG1 ADD_TOSTR), cgs__tostr_fail), "Type already has a tostr");
 
-#if !defined(CGS__TOSTR1)
-#define CGS__TOSTR1
+    #if !defined(CGS__TOSTR1)
+        #define CGS__TOSTR1
 CGS__DECL_TOSTR_FUNC(1)
-#elif !defined(CGS__TOSTR2)
-#define CGS__TOSTR2
+    #elif !defined(CGS__TOSTR2)
+        #define CGS__TOSTR2
 CGS__DECL_TOSTR_FUNC(2)
-#elif !defined(CGS__TOSTR3)
-#define CGS__TOSTR3
+    #elif !defined(CGS__TOSTR3)
+        #define CGS__TOSTR3
 CGS__DECL_TOSTR_FUNC(3)
-#elif !defined(CGS__TOSTR4)
-#define CGS__TOSTR4
+    #elif !defined(CGS__TOSTR4)
+        #define CGS__TOSTR4
 CGS__DECL_TOSTR_FUNC(4)
-#elif !defined(CGS__TOSTR5)
-#define CGS__TOSTR5
+    #elif !defined(CGS__TOSTR5)
+        #define CGS__TOSTR5
 CGS__DECL_TOSTR_FUNC(5)
-#elif !defined(CGS__TOSTR6)
-#define CGS__TOSTR6
+    #elif !defined(CGS__TOSTR6)
+        #define CGS__TOSTR6
 CGS__DECL_TOSTR_FUNC(6)
-#elif !defined(CGS__TOSTR7)
-#define CGS__TOSTR7
+    #elif !defined(CGS__TOSTR7)
+        #define CGS__TOSTR7
 CGS__DECL_TOSTR_FUNC(7)
-#elif !defined(CGS__TOSTR8)
-#define CGS__TOSTR8
+    #elif !defined(CGS__TOSTR8)
+        #define CGS__TOSTR8
 CGS__DECL_TOSTR_FUNC(8)
-#elif !defined(CGS__TOSTR9)
-#define CGS__TOSTR9
+    #elif !defined(CGS__TOSTR9)
+        #define CGS__TOSTR9
 CGS__DECL_TOSTR_FUNC(9)
-#elif !defined(CGS__TOSTR10)
-#define CGS__TOSTR10
+    #elif !defined(CGS__TOSTR10)
+        #define CGS__TOSTR10
 CGS__DECL_TOSTR_FUNC(10)
-#elif !defined(CGS__TOSTR11)
-#define CGS__TOSTR11
+    #elif !defined(CGS__TOSTR11)
+        #define CGS__TOSTR11
 CGS__DECL_TOSTR_FUNC(11)
-#elif !defined(CGS__TOSTR12)
-#define CGS__TOSTR12
+    #elif !defined(CGS__TOSTR12)
+        #define CGS__TOSTR12
 CGS__DECL_TOSTR_FUNC(12)
-#elif !defined(CGS__TOSTR13)
-#define CGS__TOSTR13
+    #elif !defined(CGS__TOSTR13)
+        #define CGS__TOSTR13
 CGS__DECL_TOSTR_FUNC(13)
-#elif !defined(CGS__TOSTR14)
-#define CGS__TOSTR14
+    #elif !defined(CGS__TOSTR14)
+        #define CGS__TOSTR14
 CGS__DECL_TOSTR_FUNC(14)
-#elif !defined(CGS__TOSTR15)
-#define CGS__TOSTR15
+    #elif !defined(CGS__TOSTR15)
+        #define CGS__TOSTR15
 CGS__DECL_TOSTR_FUNC(15)
-#elif !defined(CGS__TOSTR16)
-#define CGS__TOSTR16
+    #elif !defined(CGS__TOSTR16)
+        #define CGS__TOSTR16
 CGS__DECL_TOSTR_FUNC(16)
-#elif !defined(CGS__TOSTR17)
-#define CGS__TOSTR17
+    #elif !defined(CGS__TOSTR17)
+        #define CGS__TOSTR17
 CGS__DECL_TOSTR_FUNC(17)
-#elif !defined(CGS__TOSTR18)
-#define CGS__TOSTR18
+    #elif !defined(CGS__TOSTR18)
+        #define CGS__TOSTR18
 CGS__DECL_TOSTR_FUNC(18)
-#elif !defined(CGS__TOSTR19)
-#define CGS__TOSTR19
+    #elif !defined(CGS__TOSTR19)
+        #define CGS__TOSTR19
 CGS__DECL_TOSTR_FUNC(19)
-#elif !defined(CGS__TOSTR20)
-#define CGS__TOSTR20
+    #elif !defined(CGS__TOSTR20)
+        #define CGS__TOSTR20
 CGS__DECL_TOSTR_FUNC(20)
-#elif !defined(CGS__TOSTR21)
-#define CGS__TOSTR21
+    #elif !defined(CGS__TOSTR21)
+        #define CGS__TOSTR21
 CGS__DECL_TOSTR_FUNC(21)
-#elif !defined(CGS__TOSTR22)
-#define CGS__TOSTR22
+    #elif !defined(CGS__TOSTR22)
+        #define CGS__TOSTR22
 CGS__DECL_TOSTR_FUNC(22)
-#elif !defined(CGS__TOSTR23)
-#define CGS__TOSTR23
+    #elif !defined(CGS__TOSTR23)
+        #define CGS__TOSTR23
 CGS__DECL_TOSTR_FUNC(23)
-#elif !defined(CGS__TOSTR24)
-#define CGS__TOSTR24
+    #elif !defined(CGS__TOSTR24)
+        #define CGS__TOSTR24
 CGS__DECL_TOSTR_FUNC(24)
-#elif !defined(CGS__TOSTR25)
-#define CGS__TOSTR25
+    #elif !defined(CGS__TOSTR25)
+        #define CGS__TOSTR25
 CGS__DECL_TOSTR_FUNC(25)
-#elif !defined(CGS__TOSTR26)
-#define CGS__TOSTR26
+    #elif !defined(CGS__TOSTR26)
+        #define CGS__TOSTR26
 CGS__DECL_TOSTR_FUNC(26)
-#elif !defined(CGS__TOSTR27)
-#define CGS__TOSTR27
+    #elif !defined(CGS__TOSTR27)
+        #define CGS__TOSTR27
 CGS__DECL_TOSTR_FUNC(27)
-#elif !defined(CGS__TOSTR28)
-#define CGS__TOSTR28
+    #elif !defined(CGS__TOSTR28)
+        #define CGS__TOSTR28
 CGS__DECL_TOSTR_FUNC(28)
-#elif !defined(CGS__TOSTR29)
-#define CGS__TOSTR29
+    #elif !defined(CGS__TOSTR29)
+        #define CGS__TOSTR29
 CGS__DECL_TOSTR_FUNC(29)
-#elif !defined(CGS__TOSTR30)
-#define CGS__TOSTR30
+    #elif !defined(CGS__TOSTR30)
+        #define CGS__TOSTR30
 CGS__DECL_TOSTR_FUNC(30)
-#elif !defined(CGS__TOSTR31)
-#define CGS__TOSTR31
+    #elif !defined(CGS__TOSTR31)
+        #define CGS__TOSTR31
 CGS__DECL_TOSTR_FUNC(31)
-#elif !defined(CGS__TOSTR32)
-#define CGS__TOSTR32
+    #elif !defined(CGS__TOSTR32)
+        #define CGS__TOSTR32
 CGS__DECL_TOSTR_FUNC(32)
-#else
-#error "Maximum number of tostr functions is 32"
-#endif
+    #else
+        #error "Maximum number of tostr functions is 32"
+    #endif
 
-#undef ADD_TOSTR
+    #undef ADD_TOSTR
 
 #endif
