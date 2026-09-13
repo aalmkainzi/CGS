@@ -555,6 +555,18 @@ cgs_fwrite(stdout, anystr_src)
 #define cgs_writeln(anystr_src) \
 cgs_fwriteln(stdout, anystr_src)
 
+#define cgs_fwrite_tostr(stream, obj) \
+cgs_append_tostr(_Generic(stream,FILE*:stream), obj)
+
+#define cgs_fwriteln_tostr(stream, obj) \
+cgs_appendln_tostr(_Generic(stream,FILE*:stream), obj)
+
+#define cgs_write_tostr(obj) \
+cgs_fwrite_tostr(stdout, obj)
+
+#define cgs_writeln_tostr(obj) \
+cgs_fwriteln_tostr(stdout, obj)
+
 #define cgs_insert(mutstr_dst, anystr_src, idx) \
 _Generic(mutstr_dst, \
     CGS_MutStrRef : cgs__mutstr_ref_insert(cgs__coerce(mutstr_dst, CGS_MutStrRef), cgs__strv_1(anystr_src), idx), \
