@@ -81,8 +81,7 @@ static const CGS_StrView cgs__error_to_string[] = {
 #undef CGS__ERROR_TO_STRV
 };
 
-static CGS_Error (* const cgs__mutstr_ref_write_func_mapping[])(CGS_Writer *dst, CGS_StrView str) =
-{
+static CGS_Error (* const cgs__mutstr_ref_write_func_mapping[])(CGS_Writer *dst, CGS_StrView str) = {
     [CGS__DSTR_TY]   = cgs__DStrWriter_write,
     [CGS__STRBUF_TY] = cgs__StrBufWriter_write,
     [CGS__BUF_TY]    = cgs__CStrWriter_write,
@@ -287,7 +286,7 @@ static const char cgs__byte_to_heX[][2] = {
     {'F', 'D'}, {'F', 'E'}, {'F', 'F'}
 };
 
-CGS_PRIVATE void  *cgs__memmove(char *dst, const char *src, size_t n)
+CGS_PRIVATE void *cgs__memmove(char *dst, const char *src, size_t n)
 {
     if (n)
         return memmove(dst, src, n);
@@ -1456,7 +1455,9 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, CGS_St
                 unsigned int idx = (unsigned int)(match.chars - str.chars);
 
                 // shift left
-                cgs__memmove(str.chars + idx + replacement.len, str.chars + idx + target.len, (*str.len - idx - target.len) * sizeof(unsigned char));
+                cgs__memmove(
+                    str.chars + idx + replacement.len, str.chars + idx + target.len, (*str.len - idx - target.len) * sizeof(unsigned char)
+                );
 
                 // put the replacement
                 cgs__memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
@@ -2545,7 +2546,7 @@ CGS_API CGS_MutStrRefWriter cgs__mutstr_ref_to_writer(CGS_MutStrRef ref)
 {
     CGS_MutStrRefWriter ret = {.base = {.write = cgs__mutstr_ref_write_func_mapping[ref.ty]}};
     ret.cap_opt             = (unsigned int)-1;
-    
+
     switch (ref.ty)
     {
         case CGS__DSTR_TY:
@@ -2559,7 +2560,7 @@ CGS_API CGS_MutStrRefWriter cgs__mutstr_ref_to_writer(CGS_MutStrRef ref)
         default:
             ret.any = NULL;
     }
-    
+
     return ret;
 }
 
@@ -2607,10 +2608,10 @@ CGS_API CGS_Error cgs__LenPtrWriter_write(CGS_Writer *dst, CGS_StrView str)
 CGS_API CGS_Error cgs__ChainWriter_write(CGS_Writer *dst, CGS_StrView str)
 {
     CGS_ChainWriter *chain_writer = (CGS_ChainWriter *)dst;
-    
+
     CGS_Error err1 = cgs__invoke_writer(chain_writer->a, str);
     CGS_Error err2 = cgs__invoke_writer(chain_writer->b, str);
-    
+
     return err1.ec == CGS_OK ? err2 : err1;
 }
 
@@ -2897,23 +2898,25 @@ CGS_API CGS_DStr cgs__asprintf_with_allocator(
 
 CGS_PRIVATE unsigned int cgs__numstr_len(unsigned long long num)
 {
-    unsigned int len = 1;
-    for (unsigned int i = 1; i < CGS__CARR_LEN(cgs__ten_pows_ull) && num >= cgs__ten_pows_ull[i]; len++)
+    unsigned int i = 1;
+    while(i < CGS__CARR_LEN(cgs__ten_pows_ull) && num >= cgs__ten_pows_ull[i])
         i++;
-    return len;
+    return i;
 }
 
 #define cgs__sinteger_min(ty) _Generic((ty) {0}, signed char: SCHAR_MIN, short: SHRT_MIN, int: INT_MIN, long: LONG_MIN, long long: LLONG_MIN)
 
+// clang-format off
 #define cgs__min_tostr(ty)                \
     _Generic(                             \
         (ty) {0},                         \
         signed char: cgs__schar_min_into, \
-        short: cgs__short_min_into,       \
-        int: cgs__int_min_into,           \
-        long: cgs__long_min_into,         \
-        long long: cgs__llong_min_into    \
+        short      : cgs__short_min_into, \
+        int        : cgs__int_min_into,   \
+        long       : cgs__long_min_into,  \
+        long long  : cgs__llong_min_into  \
     )
+// clang-format on
 
 CGS_PRIVATE CGS_Error cgs__schar_min_into(CGS_Writer *dst)
 {
@@ -3033,68 +3036,124 @@ CGS_PRIVATE CGS_Error cgs__llong_min_into(CGS_Writer *dst)
     }
 }
 
-#define cgs__buf_size_for_integer_type(ty) _Generic((char (*)[sizeof(ty)])0, char (*)[1]: 4, char (*)[2]: 8, char (*)[4]: 16, char (*)[8]: 32)
+// clang-format off
+#define cgs__buf_size_for_integer_type(ty) \
+_Generic((char (*)[sizeof(ty)])0,          \
+ char (*)[1]: 4,                           \
+ char (*)[2]: 8,                           \
+ char (*)[4]: 16,                          \
+ char (*)[8]: 32                           \
+)
+// clang-format on
 
-#define cgs__sinteger_tostr()                                                   \
-    do                                                                          \
-    {                                                                           \
-        if (obj == cgs__sinteger_min(__typeof__(obj)))                          \
-        {                                                                       \
-            return cgs__min_tostr(__typeof__(obj))(dst);                        \
-        }                                                                       \
-        bool isneg = false;                                                     \
-        if (obj < 0)                                                            \
-        {                                                                       \
-            isneg = true;                                                       \
-            obj *= -1;                                                          \
-        }                                                                       \
-        unsigned int numlen = cgs__numstr_len((unsigned long long)obj);         \
-        char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))];     \
-        if (numlen >= sizeof(cgs__tmp_buf))                                     \
-            CGS_unreachable();                                                  \
-                                                                                \
-        if (isneg)                                                              \
-        {                                                                       \
-            cgs__tmp_buf[0] = '-';                                              \
-        }                                                                       \
-                                                                                \
-        for (unsigned int i = 0; i < numlen; i++)                               \
-        {                                                                       \
-            unsigned char rem                      = (unsigned char)(obj % 10); \
-            obj                                    = obj / 10;                  \
-            cgs__tmp_buf[isneg + numlen - (i + 1)] = (char)(rem + '0');         \
-        }                                                                       \
-        return cgs__invoke_writer(                                              \
-            dst,                                                                \
-            (CGS_StrView) {                                                     \
-                .chars = cgs__tmp_buf,                                          \
-                .len   = numlen + isneg,                                        \
-            }                                                                   \
-        );                                                                      \
+static const char *cgs__2digits_decimal_representation = {
+    "00010203040506070809"
+    "10111213141516171819"
+    "20212223242526272829"
+    "30313233343536373839"
+    "40414243444546474849"
+    "50515253545556575859"
+    "60616263646566676869"
+    "70717273747576777879"
+    "80818283848586878889"
+    "90919293949596979899"
+};
+
+#define cgs__sinteger_tostr()                                                               \
+    do                                                                                      \
+    {                                                                                       \
+        if (obj == cgs__sinteger_min(__typeof__(obj)))                                      \
+        {                                                                                   \
+            return cgs__min_tostr(__typeof__(obj))(dst);                                    \
+        }                                                                                   \
+        bool isneg = false;                                                                 \
+        if (obj < 0)                                                                        \
+        {                                                                                   \
+            isneg = true;                                                                   \
+            obj *= -1;                                                                      \
+        }                                                                                   \
+        unsigned int numlen = cgs__numstr_len((unsigned long long)obj);                     \
+        char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))];                 \
+        if (numlen >= sizeof(cgs__tmp_buf))                                                 \
+            CGS_unreachable();                                                              \
+                                                                                            \
+        if (isneg)                                                                          \
+        {                                                                                   \
+            cgs__tmp_buf[0] = '-';                                                          \
+        }                                                                                   \
+                                                                                            \
+        {                                                                                   \
+            unsigned int cgs__pos = isneg + numlen;                                         \
+                                                                                            \
+            while (obj >= 100)                                                              \
+            {                                                                               \
+                unsigned int const cgs__d = (unsigned int)(obj % 100) * 2;                  \
+                obj /= 100;                                                                 \
+                                                                                            \
+                cgs__tmp_buf[--cgs__pos] = cgs__2digits_decimal_representation[cgs__d + 1]; \
+                cgs__tmp_buf[--cgs__pos] = cgs__2digits_decimal_representation[cgs__d];     \
+            }                                                                               \
+                                                                                            \
+            if (obj < 10)                                                                   \
+            {                                                                               \
+                cgs__tmp_buf[--cgs__pos] = (char)(obj + '0');                               \
+            }                                                                               \
+            else                                                                            \
+            {                                                                               \
+                unsigned int const cgs__d = (unsigned int)obj * 2;                          \
+                                                                                            \
+                cgs__tmp_buf[--cgs__pos] = cgs__2digits_decimal_representation[cgs__d + 1]; \
+                cgs__tmp_buf[--cgs__pos] = cgs__2digits_decimal_representation[cgs__d];     \
+            }                                                                               \
+        }                                                                                   \
+        return cgs__invoke_writer(                                                          \
+            dst,                                                                            \
+            (CGS_StrView) {                                                                 \
+                .chars = cgs__tmp_buf,                                                      \
+                .len   = numlen + isneg,                                                    \
+            }                                                                               \
+        );                                                                                  \
     } while (0)
 
-#define cgs__uinteger_tostr()                                               \
-    do                                                                      \
-    {                                                                       \
-        unsigned int numlen = cgs__numstr_len(obj);                         \
-        char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))]; \
-        if (numlen >= sizeof(cgs__tmp_buf))                                 \
-            CGS_unreachable();                                              \
-                                                                            \
-        for (unsigned int i = 0; i < numlen; i++)                           \
-        {                                                                   \
-            unsigned char rem = (unsigned char)(obj % 10);                  \
-            obj               = obj / 10;                                   \
-                                                                            \
-            cgs__tmp_buf[numlen - (i + 1)] = (char)(rem + '0');             \
-        }                                                                   \
-        return cgs__invoke_writer(                                          \
-            dst,                                                            \
-            (CGS_StrView) {                                                 \
-                .chars = cgs__tmp_buf,                                      \
-                .len   = numlen,                                            \
-            }                                                               \
-        );                                                                  \
+#define cgs__uinteger_tostr()                                                               \
+    do                                                                                      \
+    {                                                                                       \
+        unsigned int numlen = cgs__numstr_len(obj);                                         \
+        char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))];                 \
+        if (numlen >= sizeof(cgs__tmp_buf))                                                 \
+            CGS_unreachable();                                                              \
+                                                                                            \
+        {                                                                                   \
+            unsigned int cgs__pos = numlen;                                                 \
+                                                                                            \
+            while (obj >= 100)                                                              \
+            {                                                                               \
+                unsigned int const cgs__d = (unsigned int)(obj % 100) * 2;                  \
+                obj /= 100;                                                                 \
+                                                                                            \
+                cgs__tmp_buf[--cgs__pos] = cgs__2digits_decimal_representation[cgs__d + 1]; \
+                cgs__tmp_buf[--cgs__pos] = cgs__2digits_decimal_representation[cgs__d];     \
+            }                                                                               \
+                                                                                            \
+            if (obj < 10)                                                                   \
+            {                                                                               \
+                cgs__tmp_buf[--cgs__pos] = (char)(obj + '0');                               \
+            }                                                                               \
+            else                                                                            \
+            {                                                                               \
+                unsigned int const cgs__d = (unsigned int)obj * 2;                          \
+                                                                                            \
+                cgs__tmp_buf[--cgs__pos] = cgs__2digits_decimal_representation[cgs__d + 1]; \
+                cgs__tmp_buf[--cgs__pos] = cgs__2digits_decimal_representation[cgs__d];     \
+            }                                                                               \
+        }                                                                                   \
+        return cgs__invoke_writer(                                                          \
+            dst,                                                                            \
+            (CGS_StrView) {                                                                 \
+                .chars = cgs__tmp_buf,                                                      \
+                .len   = numlen,                                                            \
+            }                                                                               \
+        );                                                                                  \
     } while (0)
 
 CGS_API CGS_Error cgs__bool_tostr(CGS_Writer *dst, bool obj, CGS_StrView fmt_arg)
@@ -3257,6 +3316,20 @@ CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer *dst, CGS_ArrayFmt obj, CGS_St
     return err;
 }
 
+#define cgs__fill_pad(n)                                           \
+    if ((n) <= sizeof(fill_buf))                                   \
+    {                                                              \
+        err = cgs__invoke_writer(dst, cgs_strv(fill_view2, 0, n)); \
+    }                                                              \
+    else                                                           \
+    {                                                              \
+        for (unsigned int i = 0; i < fills; i++)                   \
+        {                                                          \
+            err = cgs__invoke_writer(dst, fill_view2);             \
+        }                                                          \
+        cgs__invoke_writer(dst, cgs_strv(fill_view2, 0, rem));     \
+    }
+
 CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_StrView fmt_arg)
 {
     (void)fmt_arg;
@@ -3265,72 +3338,73 @@ CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_S
 
     if (len < obj.width)
     {
-        const CGS_StrView fill_strv = {&obj.fill_char, .len = 1};
-        unsigned int diff           = obj.width - len;
-        CGS_Error err               = {CGS_OK};
+        unsigned int diff = obj.width - len;
+        CGS_Error err     = {CGS_OK};
+        char fill_buf[32];
+        memset(fill_buf, obj.fill_char, diff);
+        CGS_StrView fill_view2 = cgs_strv(fill_buf);
 
         switch (obj.align_mode.align_mode)
         {
             case CGS__ALIGNMODE_CENTER:
             {
                 unsigned int half_diff = diff / 2;
-                for (unsigned int i = 0; i < half_diff && err.ec == CGS_OK; i++)
-                {
-                    err = cgs__invoke_writer(dst, fill_strv);
-                }
+                unsigned int fills     = half_diff / sizeof(fill_buf);
+                unsigned int rem       = half_diff % sizeof(fill_buf);
+
+                cgs__fill_pad(half_diff);
 
                 if (err.ec != CGS_OK)
-                    return err;
+                    break;
 
                 err = obj.tostr_p(dst, obj.obj, fmt_arg);
                 if (err.ec != CGS_OK)
-                    return err;
+                    break;
 
                 unsigned int remaining_diff = diff - half_diff;
-                for (unsigned int i = 0; i < remaining_diff && err.ec == CGS_OK; i++)
-                {
-                    err = cgs__invoke_writer(dst, fill_strv);
-                }
-
-                return err;
+                cgs__fill_pad(remaining_diff);
+                break;
             }
             case CGS__ALIGNMODE_LEFT:
             {
                 err = obj.tostr_p(dst, obj.obj, fmt_arg);
                 if (err.ec != CGS_OK)
-                    return err;
+                    break;
 
-                for (unsigned int i = 0; i < diff && err.ec == CGS_OK; i++)
-                {
-                    err = cgs__invoke_writer(dst, fill_strv);
-                }
+                unsigned int fills = diff / sizeof(fill_buf);
+                unsigned int rem   = diff % sizeof(fill_buf);
 
-                return err;
+                cgs__fill_pad(diff);
+
+                break;
             }
             case CGS__ALIGNMODE_RIGHT:
             {
-                for (unsigned int i = 0; i < diff && err.ec == CGS_OK; i++)
-                {
-                    err = cgs__invoke_writer(dst, fill_strv);
-                }
+                unsigned int fills = diff / sizeof(fill_buf);
+                unsigned int rem   = diff % sizeof(fill_buf);
+
+                cgs__fill_pad(diff);
 
                 if (err.ec != CGS_OK)
-                    return err;
+                    break;
 
                 err = obj.tostr_p(dst, obj.obj, fmt_arg);
-
-                return err;
+                break;
             }
 
             default:
                 CGS_unreachable();
         }
+
+        return err;
     }
     else
     {
         return obj.tostr_p(dst, obj.obj, fmt_arg);
     }
 }
+
+#undef cgs__fill_pad
 
 CGS_API CGS_Error cgs__repeat_fmt_tostr(CGS_Writer *dst, CGS__RepeatFmt obj, CGS_StrView fmt_arg)
 {
@@ -3421,10 +3495,22 @@ CGS_PRIVATE CGS_Error cgs__uchar_d_tostr(CGS_Writer *dst, unsigned char obj, CGS
 #define cgs__unsigned_of_size(sz) \
     __typeof__(_Generic((char (*)[sz])0, char (*)[1]: (uint8_t)0, char (*)[2]: (uint16_t)0, char (*)[4]: (uint32_t)0, char (*)[8]: (uint64_t)0))
 
-#define cgs__integer_d_Fmt_tostr(dst, num, fmt_arg)                                                                                                                                                                                                                                                                                                                                                             \
-    return _Generic(num, char: cgs__if_else(CHAR_MIN < 0, cgs__schar_tostr, cgs__uchar_d_tostr), signed char: cgs__schar_tostr, unsigned char: cgs__uchar_d_tostr, short: cgs__short_tostr, unsigned short: cgs__ushort_tostr, int: cgs__int_tostr, unsigned int: cgs__uint_tostr, long: cgs__long_tostr, unsigned long: cgs__ulong_tostr, long long: cgs__llong_tostr, unsigned long long: cgs__ullong_tostr)( \
-        dst, num, fmt_arg                                                                                                                                                                                                                                                                                                                                                                                       \
-    )
+// clang-format off
+#define cgs__integer_d_Fmt_tostr(dst, num, fmt_arg)                                       \
+return _Generic(num,                                                                      \
+    char              : cgs__if_else(CHAR_MIN < 0, cgs__schar_tostr, cgs__uchar_d_tostr), \
+    signed char       : cgs__schar_tostr,                                                 \
+    unsigned char     : cgs__uchar_d_tostr,                                               \
+    short             : cgs__short_tostr,                                                 \
+    unsigned short    : cgs__ushort_tostr,                                                \
+    int               : cgs__int_tostr,                                                   \
+    unsigned int      : cgs__uint_tostr,                                                  \
+    long              : cgs__long_tostr,                                                  \
+    unsigned long     : cgs__ulong_tostr,                                                 \
+    long long         : cgs__llong_tostr,                                                 \
+    unsigned long long: cgs__ullong_tostr)                                                \
+(dst, num, fmt_arg)
+// clang-format on
 
 #define cgs__integer_x_Fmt_tostr(dst, num, byte2hex)                                      \
     do                                                                                    \

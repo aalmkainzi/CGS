@@ -11,7 +11,7 @@ extern int passed_count;
 
 #define TEST(name) \
 do { \
-    printf("Running test: %s\n", name); \
+    printf("Running test %d: %s\n", test_count + 1, name); \
 } while(0)
 
 #define ASSERT_EQ(a, b) \
