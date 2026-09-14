@@ -287,6 +287,13 @@ static const char cgs__byte_to_heX[][2] = {
     {'F', 'D'}, {'F', 'E'}, {'F', 'F'}
 };
 
+CGS_PRIVATE void  *cgs__memmove(char *dst, const char *src, size_t n)
+{
+    if (n)
+        return memmove(dst, src, n);
+    return dst;
+}
+
 CGS_API CGS__FixedMutStrRef cgs__buf_as_fmutstr_ref(CGS_Buffer buf, unsigned int *len_ptr)
 {
     *len_ptr                = (unsigned int)((char *)memchr(buf.ptr, '\0', buf.cap) - buf.ptr);
@@ -591,7 +598,7 @@ CGS_API CGS_Error cgs__dstr_append(CGS_DStr *dstr, CGS_StrView src)
 
     if (err.ec == CGS_OK)
     {
-        memmove(dstr->chars + dstr->len, to_append.chars, to_append.len * sizeof(unsigned char));
+        cgs__memmove(dstr->chars + dstr->len, to_append.chars, to_append.len * sizeof(unsigned char));
 
         dstr->len += to_append.len;
         dstr->chars[dstr->len] = '\0';
@@ -621,8 +628,8 @@ CGS_API CGS_Error cgs__dstr_prepend_strv(CGS_DStr *dstr, CGS_StrView src)
 
     if (err.ec == CGS_OK)
     {
-        memmove(dstr->chars + to_prepend.len, dstr->chars, dstr->len);
-        memmove(dstr->chars, to_prepend.chars, to_prepend.len);
+        cgs__memmove(dstr->chars + to_prepend.len, dstr->chars, dstr->len);
+        cgs__memmove(dstr->chars, to_prepend.chars, to_prepend.len);
 
         dstr->len += to_prepend.len;
         dstr->chars[dstr->len] = '\0';
@@ -659,8 +666,8 @@ CGS_API CGS_Error cgs__dstr_insert(CGS_DStr *dstr, CGS_StrView src, unsigned int
             return err;
     }
 
-    memmove(dstr->chars + idx + to_insert.len, dstr->chars + idx, dstr->len - idx);
-    memmove(dstr->chars + idx, to_insert.chars, to_insert.len);
+    cgs__memmove(dstr->chars + idx + to_insert.len, dstr->chars + idx, dstr->len - idx);
+    cgs__memmove(dstr->chars + idx, to_insert.chars, to_insert.len);
 
     dstr->len += to_insert.len;
     dstr->chars[dstr->len] = '\0';
@@ -828,10 +835,10 @@ CGS_API CGS_Error cgs__fmutstr_ref_insert(CGS__FixedMutStrRef dst, CGS_StrView s
     unsigned int nb_chars_to_insert = cgs__uint_min(dst.cap - len - 1, src.len);
 
     // shift right
-    memmove(dst.chars + idx + nb_chars_to_insert, dst.chars + idx, len - idx);
+    cgs__memmove(dst.chars + idx + nb_chars_to_insert, dst.chars + idx, len - idx);
 
     // insert the src
-    memmove(dst.chars + idx, src.chars, nb_chars_to_insert);
+    cgs__memmove(dst.chars + idx, src.chars, nb_chars_to_insert);
 
     len += nb_chars_to_insert;
 
@@ -905,7 +912,7 @@ CGS_API CGS_Error cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, CGS_StrView src
     }
     unsigned int chars_to_copy = cgs__uint_min(src.len, dst.cap - 1);
 
-    memmove(dst.chars, src.chars, chars_to_copy * sizeof(unsigned char));
+    cgs__memmove(dst.chars, src.chars, chars_to_copy * sizeof(unsigned char));
     dst.chars[chars_to_copy] = '\0';
 
     *dst.len = chars_to_copy;
@@ -919,7 +926,7 @@ CGS_API CGS_Error cgs__dstr_copy(CGS_DStr *dstr, CGS_StrView src)
 
     if (err.ec == CGS_OK)
     {
-        memmove(dstr->chars, src.chars, src.len * sizeof(unsigned char));
+        cgs__memmove(dstr->chars, src.chars, src.len * sizeof(unsigned char));
 
         dstr->len              = src.len;
         dstr->chars[dstr->len] = '\0';
@@ -995,7 +1002,7 @@ CGS_API CGS_Error cgs__fmutstr_ref_append(CGS__FixedMutStrRef dst, CGS_StrView s
     unsigned int dst_len = *dst.len;
 
     unsigned int chars_to_copy = cgs__uint_min(src.len, dst.cap - dst_len - 1);
-    memmove(dst.chars + dst_len, src.chars, chars_to_copy);
+    cgs__memmove(dst.chars + dst_len, src.chars, chars_to_copy);
 
     dst_len += chars_to_copy;
 
@@ -1037,7 +1044,7 @@ CGS_API CGS_Error cgs__fmutstr_ref_delete_range(CGS__FixedMutStrRef str, unsigne
 
     unsigned int substr_len = end - begin;
 
-    memmove(str.chars + begin, str.chars + begin + substr_len, len - begin - substr_len);
+    cgs__memmove(str.chars + begin, str.chars + begin + substr_len, len - begin - substr_len);
 
     len -= substr_len;
 
@@ -1296,22 +1303,22 @@ CGS_API CGS_Error cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int begin, un
     if (len_to_delete > replacement.len)
     {
         // shift left
-        memmove(dstr->chars + begin + replacement.len, dstr->chars + end, dstr->len - end + 1);
+        cgs__memmove(dstr->chars + begin + replacement.len, dstr->chars + end, dstr->len - end + 1);
         // insert the replacement
-        memmove(dstr->chars + begin, replacement.chars, replacement.len);
+        cgs__memmove(dstr->chars + begin, replacement.chars, replacement.len);
     }
     else if (len_to_delete < replacement.len)
     {
         cgs__dstr_ensure_cap(dstr, dstr->len + replacement.len - len_to_delete + 1);
 
         // shift right
-        memmove(dstr->chars + end + (replacement.len - len_to_delete), dstr->chars + end, dstr->len - end + 1);
+        cgs__memmove(dstr->chars + end + (replacement.len - len_to_delete), dstr->chars + end, dstr->len - end + 1);
         // insert the replacement
-        memmove(dstr->chars + begin, replacement.chars, replacement.len);
+        cgs__memmove(dstr->chars + begin, replacement.chars, replacement.len);
     }
     else
     {
-        memmove(dstr->chars + begin, replacement.chars, replacement.len);
+        cgs__memmove(dstr->chars + begin, replacement.chars, replacement.len);
     }
 
     dstr->len = dstr->len - len_to_delete + replacement.len;
@@ -1324,9 +1331,9 @@ CGS_PRIVATE void cgs__fmutstr_ref_replace_range_unsafe(CGS__FixedMutStrRef str, 
     if (len_to_delete > replacement.len)
     {
         // shift left
-        memmove(str.chars + begin + replacement.len, str.chars + end, *str.len - end + 1);
+        cgs__memmove(str.chars + begin + replacement.len, str.chars + end, *str.len - end + 1);
         // insert the replacement
-        memmove(str.chars + begin, replacement.chars, replacement.len);
+        cgs__memmove(str.chars + begin, replacement.chars, replacement.len);
 
         *str.len -= len_to_delete - replacement.len;
     }
@@ -1335,9 +1342,9 @@ CGS_PRIVATE void cgs__fmutstr_ref_replace_range_unsafe(CGS__FixedMutStrRef str, 
         unsigned int new_space = cgs__uint_min(replacement.len - len_to_delete, str.cap - *str.len - 1);
 
         // shift right
-        memmove(str.chars + begin + new_space, str.chars + begin, *str.len - begin);
+        cgs__memmove(str.chars + begin + new_space, str.chars + begin, *str.len - begin);
         // insert the replacement
-        memmove(str.chars + begin, replacement.chars, cgs__uint_min(replacement.len, len_to_delete + new_space));
+        cgs__memmove(str.chars + begin, replacement.chars, cgs__uint_min(replacement.len, len_to_delete + new_space));
 
         *str.len += new_space;
 
@@ -1345,7 +1352,7 @@ CGS_PRIVATE void cgs__fmutstr_ref_replace_range_unsafe(CGS__FixedMutStrRef str, 
     }
     else
     {
-        memmove(str.chars + begin, replacement.chars, replacement.len);
+        cgs__memmove(str.chars + begin, replacement.chars, replacement.len);
     }
 }
 
@@ -1414,12 +1421,12 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, CGS_St
                 if (str.cap > *str.len + (replacement.len - target.len))
                 {
                     // shift right
-                    memmove(
+                    cgs__memmove(
                         str.chars + idx + replacement.len, str.chars + idx + target.len, (*str.len - idx - target.len) * sizeof(unsigned char)
                     );
 
                     // put the replacement
-                    memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
+                    cgs__memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
 
                     *str.len += (replacement.len - target.len);
 
@@ -1449,10 +1456,10 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, CGS_St
                 unsigned int idx = (unsigned int)(match.chars - str.chars);
 
                 // shift left
-                memmove(str.chars + idx + replacement.len, str.chars + idx + target.len, (*str.len - idx - target.len) * sizeof(unsigned char));
+                cgs__memmove(str.chars + idx + replacement.len, str.chars + idx + target.len, (*str.len - idx - target.len) * sizeof(unsigned char));
 
                 // put the replacement
-                memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
+                cgs__memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
 
                 *str.len -= (target.len - replacement.len);
 
@@ -1477,7 +1484,7 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, CGS_St
                 unsigned int idx = (unsigned int)(match.chars - str.chars);
 
                 // put the replacement
-                memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
+                cgs__memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
 
                 i = idx + replacement.len;
 
@@ -1533,12 +1540,12 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, CGS_StrView target, CG
                 err = cgs__dstr_ensure_cap(dstr, dstr->len + (replacement.len - target.len) + 1);
 
                 // shift right
-                memmove(
+                cgs__memmove(
                     dstr->chars + idx + replacement.len, dstr->chars + idx + target.len, (dstr->len - idx - target.len) * sizeof(unsigned char)
                 );
 
                 // put the replacement
-                memmove(dstr->chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
+                cgs__memmove(dstr->chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
 
                 dstr->len += (replacement.len - target.len);
 
@@ -1562,12 +1569,12 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, CGS_StrView target, CG
                 unsigned int idx = (unsigned int)(match.chars - dstr->chars);
 
                 // shift left
-                memmove(
+                cgs__memmove(
                     dstr->chars + idx + replacement.len, dstr->chars + idx + target.len, (dstr->len - idx - target.len) * sizeof(unsigned char)
                 );
 
                 // put the replacement
-                memmove(dstr->chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
+                cgs__memmove(dstr->chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
 
                 dstr->len -= (target.len - replacement.len);
 
@@ -1591,7 +1598,7 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, CGS_StrView target, CG
                 unsigned int idx = (unsigned int)(match.chars - dstr->chars);
 
                 // put the replacement
-                memmove(dstr->chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
+                cgs__memmove(dstr->chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
 
                 i = idx + replacement.len;
 
@@ -1655,10 +1662,10 @@ CGS_API CGS_Error cgs__fmutstr_ref_replace_first(CGS__FixedMutStrRef str, CGS_St
             unsigned int idx = (unsigned int)(match.chars - str.chars);
 
             // shift
-            memmove(str.chars + idx + replacement.len, str.chars + idx + target.len, (*str.len - idx - target.len) * sizeof(unsigned char));
+            cgs__memmove(str.chars + idx + replacement.len, str.chars + idx + target.len, (*str.len - idx - target.len) * sizeof(unsigned char));
 
             // put the replacement
-            memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
+            cgs__memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
 
             *str.len += (replacement.len - target.len);
 
@@ -1803,7 +1810,7 @@ CGS_API CGS_Error cgs__trim(CGS__FixedMutStrRef str)
     }
 
     unsigned int len = end - begin;
-    memmove(str.chars, str.chars + begin, len);
+    cgs__memmove(str.chars, str.chars + begin, len);
 
     *str.len       = len;
     str.chars[len] = '\0';
