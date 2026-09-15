@@ -2727,7 +2727,7 @@ CGS_API CGS_Error cgs__append_fmt(
         UNKNOWN_INDEXING,
         AUTO_INDEX,
         SPECIFY_INDEX
-    } index_mode = UNKNOWN_INDEXING; // SPECIFY_INDEX is "%index" (e.g. "%0" is the first arg). AUTO_INDEX requires "%?", cannot mix
+    } index_mode = UNKNOWN_INDEXING; // SPECIFY_INDEX is "%[index]" (e.g. "%[0]" is the first arg). AUTO_INDEX requires "%?", cannot mix
 
     CGS_StrView fmt_walk = fmt;
 
@@ -2908,8 +2908,7 @@ CGS_PRIVATE unsigned int cgs__numstr_len(unsigned long long num)
 
 // clang-format off
 #define cgs__min_tostr(ty)                \
-    _Generic(                             \
-        (ty) {0},                         \
+    _Generic((ty){0},                     \
         signed char: cgs__schar_min_into, \
         short      : cgs__short_min_into, \
         int        : cgs__int_min_into,   \
@@ -3038,12 +3037,12 @@ CGS_PRIVATE CGS_Error cgs__llong_min_into(CGS_Writer *dst)
 
 // clang-format off
 #define cgs__buf_size_for_integer_type(ty) \
-_Generic((char (*)[sizeof(ty)])0,          \
- char (*)[1]: 4,                           \
- char (*)[2]: 8,                           \
- char (*)[4]: 16,                          \
- char (*)[8]: 32                           \
-)
+    _Generic((char (*)[sizeof(ty)])0,      \
+        char (*)[1]: 4,                    \
+        char (*)[2]: 8,                    \
+        char (*)[4]: 16,                   \
+        char (*)[8]: 32                    \
+    )
 // clang-format on
 
 static const char *cgs__2digits_decimal_representation = {
