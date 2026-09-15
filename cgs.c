@@ -2715,73 +2715,6 @@ CGS_PRIVATE CGS_Error cgs__parse_optional_format_string(CGS_StrView *fmt_walk, C
     return (CGS_Error) {CGS_OK};
 }
 
-typedef enum
-{
-    UNKNOWN_INDEXING,
-    AUTO_INDEX,
-    SPECIFY_INDEX
-} CGS__FmtArgIndexMode;
-
-CGS_PRIVATE CGS_Error cgs__determine_fmt_mode_and_append_first_chunk(CGS_Writer *dst, CGS_StrView *fmt_walk, CGS__FmtArgIndexMode *out)
-{
-    while (fmt_walk->len)
-    {
-        const char *found = memchr(fmt_walk->chars, '%', fmt_walk->len);
-        if (found)
-        {
-            if (found[1] != '%')
-            {
-                if (found[1] == '\0')
-                {
-                    CGS_debug_break();
-                    return (CGS_Error) {CGS_BAD_FORMAT};
-                }
-
-                switch (found[1])
-                {
-                    case '[':
-                        *out = SPECIFY_INDEX;
-                        break;
-                    case '?':
-                    case '(':
-                        *out = AUTO_INDEX;
-                        break;
-
-                    default:
-                        CGS_debug_break();
-                        return (CGS_Error) {CGS_BAD_FORMAT};
-                }
-
-                unsigned int len = found - fmt_walk->chars;
-                CGS_Error err    = cgs__invoke_writer(dst, cgs_strv(*fmt_walk, 0, len));
-                *fmt_walk        = cgs_strv(*fmt_walk, len);
-
-                assert(fmt_walk->chars[0] == '%');
-
-                return err;
-            }
-            else
-            {
-                unsigned int len = found - fmt_walk->chars;
-                CGS_Error err    = cgs__invoke_writer(dst, cgs_strv(*fmt_walk, 0, len + 1));
-                *fmt_walk        = cgs_strv(*fmt_walk, len + 2);
-
-                if (err.ec != CGS_OK)
-                    return err;
-            }
-        }
-        else
-        {
-            CGS_Error err = cgs__invoke_writer(dst, cgs_strv(*fmt_walk, 0, fmt_walk->len));
-            *fmt_walk     = cgs_strv(*fmt_walk, fmt_walk->len);
-            return err;
-        }
-    }
-    CGS_Error err = cgs__invoke_writer(dst, cgs_strv(*fmt_walk));
-    *fmt_walk     = cgs_strv(*fmt_walk, fmt_walk->len);
-    return err;
-}
-
 #define cgs__fmt_walker(...)                                                          \
     do                                                                                \
     {                                                                                 \
@@ -2833,30 +2766,86 @@ CGS_API CGS_Error cgs__append_fmt(
     CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
-    CGS__FmtArgIndexMode index_mode = UNKNOWN_INDEXING;
-
     CGS_StrView fmt_walk = cgs_strv(fmt);
 
     size_t how_many_formatted = 0;
 
-    CGS_Error err = cgs__determine_fmt_mode_and_append_first_chunk(dst, &fmt_walk, &index_mode);
-    if (err.ec != CGS_OK)
+    // dbegin
+    while (fmt_walk.len)
     {
-        return err;
+        const char *found = memchr(fmt_walk.chars, '%', fmt_walk.len);
+        if (found)
+        {
+            if (found[1] != '%')
+            {
+                if (found[1] == '\0')
+                {
+                    CGS_debug_break();
+                    return (CGS_Error) {CGS_BAD_FORMAT};
+                }
+                // TODO map from case to goto the correct formatting
+                
+                if (found[1] != '[' && found[1] != '?' && found[1] != '(')
+                {
+                    CGS_debug_break();
+                    return (CGS_Error) {CGS_BAD_FORMAT};
+                }
+                
+                unsigned int len = found - fmt_walk.chars;
+                CGS_Error err    = cgs__invoke_writer(dst, cgs_strv(fmt_walk, 0, len));
+                fmt_walk.chars += len + 1;
+                fmt_walk.len -= len + 1;
+                
+                switch (found[1])
+                {
+                    case '[':
+                        goto open_brack;
+                    case '?':
+                        goto question_mark;
+                    case '(':
+                        goto open_paren;
+                }
+            }
+            else
+            {
+                unsigned int len = found - fmt_walk.chars;
+                CGS_Error err    = cgs__invoke_writer(dst, cgs_strv(fmt_walk, 0, len + 1));
+                fmt_walk        = cgs_strv(fmt_walk, len + 2);
+                
+                if (err.ec != CGS_OK)
+                    return err;
+            }
+        }
+        else
+        {
+            CGS_Error err = cgs__invoke_writer(dst, cgs_strv(fmt_walk, 0, fmt_walk.len));
+            if (nargs)
+                return (CGS_Error) {CGS_TOO_MANY_ARGS};
+            return err;
+        }
     }
 
+    CGS_Error err = cgs__invoke_writer(dst, fmt_walk);
+    if (nargs)
+        return (CGS_Error) {CGS_TOO_MANY_ARGS};
+    return err;
+    // dend
+
     // clang-format off
-    if (index_mode == AUTO_INDEX)
+    if (0)
     {
         cgs__fmt_walker(
             if (found[1] == '?')
             {
+                question_mark:
+                
                 // skip the '?'
                 fmt_walk.chars += 1;
                 fmt_walk.len -= 1;
 
-            auto_arg:
-                err = cgs__invoke_writer(dst, chunk);
+                auto_arg:
+                
+                err = cgs__invoke_writer(dst, chunk); // TODO chunk is not initialized... UB
 
                 if (how_many_formatted >= nargs)
                 {
@@ -2869,6 +2858,8 @@ CGS_API CGS_Error cgs__append_fmt(
             }
             else if (found[1] == '(')
             {
+                open_paren:
+                
                 err = cgs__parse_optional_format_string(&fmt_walk, &fmt_arg);
                 if (err.ec != CGS_OK)
                     break;
@@ -2876,14 +2867,22 @@ CGS_API CGS_Error cgs__append_fmt(
                 goto auto_arg;
             }
         );
+        
+        if (err.ec == CGS_OK && how_many_formatted < nargs)
+        {
+            return (CGS_Error) {CGS_TOO_MANY_ARGS};
+        }
     }
-    else if (index_mode == SPECIFY_INDEX)
+    else if (0)
     {
         cgs__fmt_walker(
             if (found[1] == '[')
             {
+                open_brack:
+                
                 char *end               = NULL;
-                unsigned long arg_index = strtoul(found + 2, &end, 10); // we can assume fmt is null terminated
+
+                unsigned long arg_index = strtoul(fmt_walk.chars + 1, &end, 10); // we can assume fmt is null terminated
 
                 if (end >= fmt.chars + fmt.len)
                 {
@@ -2928,11 +2927,6 @@ CGS_API CGS_Error cgs__append_fmt(
         );
     }
     // clang-format on
-
-    if (err.ec == CGS_OK && how_many_formatted < nargs && index_mode != SPECIFY_INDEX)
-    {
-        return (CGS_Error) {CGS_TOO_MANY_ARGS};
-    }
 
     return err;
 }

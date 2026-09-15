@@ -38,6 +38,7 @@
 #endif
 
 #define CGS_NDEBUG
+#define NDEBUG
 #define CGS_API static inline
 #include "../cgs.c"
 
