@@ -2,12 +2,6 @@
 
 int main()
 {
-    CGS_StrBuf buf = cgs_strbuf_init_from_buf((char[64]){});
-    cgs_copy(&buf, "hello_");
-    
-    CGS_MutStrRef app = cgs_appender(&buf, &(CGS_AppenderState){});
-    cgs_append(app, "world");
-    cgs_commit_appender(&buf, app);
-    
-    cgs_printfln("%?", buf);
+    cgs_printfln("%? %? %? %? %? %?", 1, 2, 3, 4, cgs_alignfmt(125, CENTER, 10, '_'), cgs_nfmt(10.5, 'e', 3));
+    // cgs_printf("%?", cgs_alignfmt(125, CENTER, 10, '_'));
 }
