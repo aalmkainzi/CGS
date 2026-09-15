@@ -2086,8 +2086,8 @@ CGS_API CGS_StrView cgs__strv_mutstr_ref1(const CGS_MutStrRef str)
 
 CGS_API CGS_StrView cgs__strv_cstr2(const char *str, unsigned int begin)
 {
-#ifndef CGS_NDEBUG
     unsigned int len = (unsigned int)strlen(str);
+#ifndef CGS_NDEBUG
     if (begin > len)
     {
         return (CGS_StrView) {
@@ -3316,20 +3316,6 @@ CGS_API CGS_Error cgs__array_fmt_tostr(CGS_Writer *dst, CGS_ArrayFmt obj, CGS_St
     return err;
 }
 
-#define cgs__fill_pad(n)                                           \
-    if ((n) <= sizeof(fill_buf))                                   \
-    {                                                              \
-        err = cgs__invoke_writer(dst, cgs_strv(fill_view2, 0, n)); \
-    }                                                              \
-    else                                                           \
-    {                                                              \
-        for (unsigned int i = 0; i < fills; i++)                   \
-        {                                                          \
-            err = cgs__invoke_writer(dst, fill_view2);             \
-        }                                                          \
-        cgs__invoke_writer(dst, cgs_strv(fill_view2, 0, rem));     \
-    }
-
 CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_StrView fmt_arg)
 {
     (void)fmt_arg;
@@ -3340,19 +3326,17 @@ CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_S
     {
         unsigned int diff = obj.width - len;
         CGS_Error err     = {CGS_OK};
-        char fill_buf[32];
+        char fill_buf[diff];
         memset(fill_buf, obj.fill_char, diff);
-        CGS_StrView fill_view2 = cgs_strv(fill_buf);
+        CGS_StrView fill_view = (CGS_StrView){fill_buf, diff};
 
         switch (obj.align_mode.align_mode)
         {
             case CGS__ALIGNMODE_CENTER:
             {
                 unsigned int half_diff = diff / 2;
-                unsigned int fills     = half_diff / sizeof(fill_buf);
-                unsigned int rem       = half_diff % sizeof(fill_buf);
 
-                cgs__fill_pad(half_diff);
+                cgs__invoke_writer(dst, cgs_strv(fill_view, 0, half_diff));
 
                 if (err.ec != CGS_OK)
                     break;
@@ -3362,7 +3346,7 @@ CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_S
                     break;
 
                 unsigned int remaining_diff = diff - half_diff;
-                cgs__fill_pad(remaining_diff);
+                cgs__invoke_writer(dst, cgs_strv(fill_view, 0, remaining_diff));
                 break;
             }
             case CGS__ALIGNMODE_LEFT:
@@ -3374,7 +3358,7 @@ CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_S
                 unsigned int fills = diff / sizeof(fill_buf);
                 unsigned int rem   = diff % sizeof(fill_buf);
 
-                cgs__fill_pad(diff);
+                cgs__invoke_writer(dst, fill_view);
 
                 break;
             }
@@ -3383,7 +3367,7 @@ CGS_API CGS_Error cgs__align_fmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_S
                 unsigned int fills = diff / sizeof(fill_buf);
                 unsigned int rem   = diff % sizeof(fill_buf);
 
-                cgs__fill_pad(diff);
+                cgs__invoke_writer(dst, fill_view);
 
                 if (err.ec != CGS_OK)
                     break;
