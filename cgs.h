@@ -1773,9 +1773,10 @@ static inline unsigned int cgs__invoke_tostr_len(CGS_Error (*tostr_p)(CGS_Writer
     return len_writer.len;
 }
 
-static inline CGS_Error cgs__invoke_appendln_tostr(CGS_Writer *writer, const void *obj, CGS_Error(*tostr_p)(CGS_Writer *, const void*, CGS_StrView))
+static inline CGS_Error
+cgs__invoke_appendln_tostr(CGS_Writer *writer, const void *obj, CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView))
 {
-    CGS_Error err1 = tostr_p(writer, obj, (CGS_StrView){});
+    CGS_Error err1 = tostr_p(writer, obj, (CGS_StrView) {});
     CGS_Error err2 = cgs_putc(writer, '\n');
     return err1.ec == CGS_OK ? err2 : err1;
 }

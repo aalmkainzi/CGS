@@ -3319,14 +3319,13 @@ CGS_API CGS_Error cgs__arrayfmt_tostr(CGS_Writer *dst, CGS_ArrayFmt obj, CGS_Str
 CGS_API CGS_Error cgs__alignfmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_StrView fmt_arg)
 {
     (void)fmt_arg;
-    // TODO for better perf, have a local 32 byte array so it can be filled fill char, to make as least dst invokes as possible.
     unsigned int len = cgs__invoke_tostr_len(obj.tostr_p, obj.obj);
 
     if (len < obj.width)
     {
         unsigned int diff = obj.width - len;
         CGS_Error err     = {CGS_OK};
-        char fill_buf[diff];
+        char fill_buf[diff]; // vla
         memset(fill_buf, obj.fill_char, diff);
         CGS_StrView fill_view = (CGS_StrView){fill_buf, diff};
 
