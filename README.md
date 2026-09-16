@@ -35,19 +35,26 @@ The library exposes multiple string types for different use cases:
 - [CGS_DStr](#CGS_DStr)
 - [CGS_StrBuf](#CGS_StrBuf)
 - [CGS_StrView](#CGS_StrView)
+- [CGS_ZStrView](#CGS_ZStrView)
 - [CGS_MutStrRef](#CGS_MutStrRef)
 
 All of which are null terminated, except for `CGS_StrView`.
 
 There are three categories of string types:
-- `anystr_t`: any of `char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `CGS_StrView`, `CGS_DStr`, `CGS_DStr*`, `CGS_StrBuf`, `CGS_StrBuf*`, `CGS_MutStrRef`
-- `mutstr_t`: any of `char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `CGS_DStr*`, `CGS_StrBuf*`, `CGS_MutStrRef`
-- `writer_t`: any of `char[]`, `unsigned char[]`, `CGS_DStr*`, `CGS_StrBuf*`, `CGS_MutStrRef`, `FILE*`, `unsigned int*`, and any `CGS_<T>Writer*` type
+- `anystr_t`: all string types, any of:  
+  `char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `CGS_StrView`, `CGS_ZStrView`, `CGS_DStr`, `CGS_DStr*`, `CGS_StrBuf`, `CGS_StrBuf*`, `CGS_MutStrRef`
+- `mutstr_t`: mutable string types, any of:  
+   `char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `CGS_DStr*`, `CGS_StrBuf*`, `CGS_MutStrRef`
+- `writer_t`: writable types, any of:  
+  `char[]`, `unsigned char[]`, `CGS_DStr*`, `CGS_StrBuf*`, `CGS_MutStrRef`, `FILE*`, `unsigned int*`, and any `CGS_<T>Writer*` type
+- `zstr_t`  : NUL terminated string types, any of:  
+  `char*`, `unsigned char*`, `char[]`, `unsigned char[]`, `CGS_ZStrView`, `CGS_DStr`, `CGS_DStr*`, `CGS_StrBuf`, `CGS_StrBuf*`, `CGS_MutStrRef`
 
 This is a list of all the utility macros CGS provides:
 ```C++
 CGS_StrView             cgs_strv(anystr_t str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
-                  
+CGS_ZStrView            cgs_zstrv(zstr_t str, unsigned int from = 0);
+
 CGS_StrBuf              cgs_strbuf_init_from_cstr([unsigned] char *cstr, unsigned int cap = strlen(cstr) + 1);
 CGS_StrBuf              cgs_strbuf_init_from_cstr([unsigned] char cstr[], unsigned int cap = sizeof(cstr));
 CGS_StrBuf              cgs_strbuf_init_from_buf([unsigned] char *buf, unsigned int cap);
@@ -144,12 +151,12 @@ bool                    cgs_has_tostr(T);
 unsigned int            cgs_tostr_len(T val);
 unsigned int            cgs_tostr_p_len(T *val);
 
-CGS_Error               cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%[arg_index]" for positional arguments, cannot mix and match
-CGS_Error               cgs_appendf(writer_t dst, const char *fmt, ...args with tostr); // identical to cgs_fmt, but appends
-CGS_Error               cgs_appendfln(writer_t dst, const char *fmt, ...args with tostr); // cgs_appendf + '\n'
+CGS_Error               cgs_fmt(mutstr_t dst, zstr_t fmt, ...args with tostr); // clears dst, then writes the formatted string to it. fmt syntax is "%?", or "%[arg_index]" for positional arguments, cannot mix and match
+CGS_Error               cgs_appendf(writer_t dst, zstr_t fmt, ...args with tostr); // identical to cgs_fmt, but appends
+CGS_Error               cgs_appendfln(writer_t dst, zstr_t fmt, ...args with tostr); // cgs_appendf + '\n'
 
-CGS_Error               cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_appendf, but restricted to FILE*
-CGS_Error               cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr); // identical to cgs_appendfln, but restricted to FILE*
+CGS_Error               cgs_fprintf(FILE *stream, zstr_t fmt, ...args with tostr); // identical to cgs_appendf, but restricted to FILE*
+CGS_Error               cgs_fprintfln(FILE *stream, zstr_t fmt, ...args with tostr); // identical to cgs_appendfln, but restricted to FILE*
 
 CGS_Error               cgs_printf(const char *fmt, ...args with tostr); // calls cgs_fprintf on stdout
 CGS_Error               cgs_printfln(const char *fmt, ...args with tostr); // calls cgs_fprintfln on stdout
@@ -201,6 +208,15 @@ Used to view into other strings.
 To initialize:
 ```C
 CGS_StrView cgs_strv(anystr_t str, unsigned int from = 0, unsigned int to_exclusive = cgs_len(str));
+```
+
+## CGS_ZStrView
+
+NUL terminated string view.
+
+To initialize:
+```C
+CGS_ZStrView cgs_zstrv(anystr_t str, unsigned int from = 0);
 ```
 
 ## CGS_MutStrRef
