@@ -1402,6 +1402,22 @@ _Generic((ty){0}, \
     CGS__TOSTR_P_FUNCS_GENERIC_ASSOCIATIONS \
 )
 
+#if defined(__slimcc__) && defined(__INTERP_LIST__)
+
+#define cgs_appendi(dst, fstring)                                                                                          \
+cgs__appendi_combine_lists(                                                                                                \
+    cgs_writer_ptr(dst),                                                                                                   \
+    (const char*[]){__INTERP_LITERAL_LIST__(fstring)},                                                                     \
+    (const void*[]){CGS__FOREACH(cgs__as_ptr_elm, __INTERP_LIST__(fstring))},                                                    \
+    (CGS_Error(*[])(CGS_Writer*, const void*, CGS_StrView)){CGS__FOREACH(cgs__tostr_p_func_elm, __INTERP_LIST__(fstring))},      \
+    __INTERP_LITERAL_COUNT__(fstring)                                                                                      \
+)
+
+#define cgs_printi(fstring) \
+cgs_appendi(stdout, fstring)
+
+#endif
+
 // TODO optimization idea, check if whether dst is a string type, and src is a default tostr type, if so, then call an optimized tostr function that writes directly to buffer
 #define cgs_tostr(dst, src) \
 cgs__get_tostr_func(__typeof__(src))(cgs_writer_ptr(cgs__clear_and_return(cgs_mutstr_ref(dst))), (src), (CGS_StrView){})
@@ -1780,6 +1796,30 @@ cgs__invoke_appendln_tostr(CGS_Writer *writer, const void *obj, CGS_Error (*tost
     CGS_Error err2 = cgs_putc(writer, '\n');
     return err1.ec == CGS_OK ? err2 : err1;
 }
+
+#if defined(__slimcc__) && defined(__INTERP_LIST__)
+
+static inline CGS_Error cgs__appendi_combine_lists(CGS_Writer *dst, const char *literals[], const void *objs[], CGS_Error(*tostr_p[])(CGS_Writer*, const void *, CGS_StrView), int n)
+{
+    CGS_Error err = {CGS_OK};
+    
+    err = cgs_append(dst, literals[0]);
+    if (err.ec != CGS_OK)
+        return err;
+    
+    for (int i = 1 ; i < n ; i++)
+    {
+        err = tostr_p[i - 1](dst, objs[i - 1], (CGS_StrView){});
+        if (err.ec != CGS_OK)
+            return err;
+        err = cgs_append(dst, literals[i]);
+        if (err.ec != CGS_OK)
+            return err;
+    }
+    return err;
+}
+
+#endif
 
 #endif // CGS__H_INCLUDED
 
