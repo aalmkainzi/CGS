@@ -2716,7 +2716,7 @@ CGS_PRIVATE CGS_Error cgs__parse_optional_format_string(CGS_StrView *fmt_walk, C
 }
 
 CGS_API CGS_Error cgs__append_fmt(
-    CGS_Writer *dst, CGS_StrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
     enum
@@ -2726,7 +2726,7 @@ CGS_API CGS_Error cgs__append_fmt(
         SPECIFY_INDEX_MODE
     } index_mode = UNKNOWN_INDEX_MODE; // SPECIFY_INDEX is "%[index]" (e.g. "%[0]" is the first arg). AUTO_INDEX is "%?", cannot mix
 
-    CGS_StrView fmt_walk = fmt;
+    CGS_StrView fmt_walk = cgs_strv(fmt);
 
     size_t how_many_formatted = 0;
     CGS_Error err             = {CGS_OK};
@@ -2874,7 +2874,7 @@ CGS_API CGS_Error cgs__append_fmt(
 }
 
 CGS_API CGS_Error cgs__appendln_fmt_(
-    CGS_Writer *dst, CGS_StrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
     CGS_Error err = cgs__append_fmt(dst, fmt, nargs, args, tostr_p_funcs);
@@ -2885,7 +2885,7 @@ CGS_API CGS_Error cgs__appendln_fmt_(
 }
 
 CGS_API CGS_DStr cgs__asprintf(
-    CGS_Writer *dst, CGS_StrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
     cgs__append_fmt(dst, fmt, nargs, args, tostr_p_funcs);
@@ -2893,7 +2893,7 @@ CGS_API CGS_DStr cgs__asprintf(
 }
 
 CGS_API CGS_DStr cgs__asprintf_with_allocator(
-    CGS_Writer *dst, CGS_StrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
     // shifting the pointers by 1 to skip the fmt arg
@@ -2904,7 +2904,7 @@ CGS_API CGS_DStr cgs__asprintf_with_allocator(
 CGS_PRIVATE unsigned int cgs__numstr_len(unsigned long long num)
 {
     unsigned int i = 1;
-    while(i < CGS__CARR_LEN(cgs__ten_pows_ull) && num >= cgs__ten_pows_ull[i])
+    while (i < CGS__CARR_LEN(cgs__ten_pows_ull) && num >= cgs__ten_pows_ull[i])
         i++;
     return i;
 }
@@ -3050,18 +3050,16 @@ CGS_PRIVATE CGS_Error cgs__llong_min_into(CGS_Writer *dst)
     )
 // clang-format on
 
-static const char *cgs__2digits_decimal_representation = {
-    "00010203040506070809"
-    "10111213141516171819"
-    "20212223242526272829"
-    "30313233343536373839"
-    "40414243444546474849"
-    "50515253545556575859"
-    "60616263646566676869"
-    "70717273747576777879"
-    "80818283848586878889"
-    "90919293949596979899"
-};
+static const char *cgs__2digits_decimal_representation = {"00010203040506070809"
+                                                          "10111213141516171819"
+                                                          "20212223242526272829"
+                                                          "30313233343536373839"
+                                                          "40414243444546474849"
+                                                          "50515253545556575859"
+                                                          "60616263646566676869"
+                                                          "70717273747576777879"
+                                                          "80818283848586878889"
+                                                          "90919293949596979899"};
 
 #define cgs__sinteger_tostr()                                                               \
     do                                                                                      \
@@ -3331,7 +3329,7 @@ CGS_API CGS_Error cgs__alignfmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_St
         CGS_Error err     = {CGS_OK};
         char fill_buf[diff]; // vla
         memset(fill_buf, obj.fill_char, diff);
-        CGS_StrView fill_view = (CGS_StrView){fill_buf, diff};
+        CGS_StrView fill_view = (CGS_StrView) {fill_buf, diff};
 
         switch (obj.align_mode.align_mode)
         {
@@ -3358,18 +3356,12 @@ CGS_API CGS_Error cgs__alignfmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_St
                 if (err.ec != CGS_OK)
                     break;
 
-                unsigned int fills = diff / sizeof(fill_buf);
-                unsigned int rem   = diff % sizeof(fill_buf);
-
                 cgs__invoke_writer(dst, fill_view);
 
                 break;
             }
             case CGS__ALIGNMODE_RIGHT:
             {
-                unsigned int fills = diff / sizeof(fill_buf);
-                unsigned int rem   = diff % sizeof(fill_buf);
-
                 cgs__invoke_writer(dst, fill_view);
 
                 if (err.ec != CGS_OK)
