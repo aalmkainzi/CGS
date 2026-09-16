@@ -25,6 +25,8 @@
             #define CGS_debug_break() __debugbreak()
         #elif defined(__clang__)
             #define CGS_debug_break() __builtin_debugtrap()
+        #elif defined(__GNUC__) && defined(_WIN32)
+            #define CGS_debug_break() __debugbreak()
         #else
             #include <signal.h>
             #define CGS_debug_break() raise(SIGTRAP)
