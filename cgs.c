@@ -2719,15 +2719,12 @@ CGS_API CGS_Error cgs__append_fmt(
     CGS_Writer *dst, CGS_StrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
-    // This should proably be:
-    // do first format specififer, determine mode from it,
-    // and have one outer branch.
     enum
     {
-        UNKNOWN_INDEXING,
-        AUTO_INDEX,
-        SPECIFY_INDEX
-    } index_mode = UNKNOWN_INDEXING; // SPECIFY_INDEX is "%[index]" (e.g. "%[0]" is the first arg). AUTO_INDEX requires "%?", cannot mix
+        UNKNOWN_INDEX_MODE,
+        AUTO_INDEX_MODE,
+        SPECIFY_INDEX_MODE
+    } index_mode = UNKNOWN_INDEX_MODE; // SPECIFY_INDEX is "%[index]" (e.g. "%[0]" is the first arg). AUTO_INDEX is "%?", cannot mix
 
     CGS_StrView fmt_walk = fmt;
 
@@ -2759,13 +2756,13 @@ CGS_API CGS_Error cgs__append_fmt(
                 fmt_walk.len -= 1;
 
             auto_arg:
-                if (index_mode == SPECIFY_INDEX)
+                if (index_mode == SPECIFY_INDEX_MODE)
                 {
                     CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
                     err.ec = CGS_BAD_FORMAT;
                     break;
                 }
-                index_mode = AUTO_INDEX;
+                index_mode = AUTO_INDEX_MODE;
 
                 err = cgs__invoke_writer(dst, chunk);
 
@@ -2780,18 +2777,19 @@ CGS_API CGS_Error cgs__append_fmt(
             }
             else if (fmt_walk.len > 0 && found[1] == '[')
             {
-                if (index_mode == AUTO_INDEX)
+                if (index_mode == AUTO_INDEX_MODE)
                 {
                     CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
                     err.ec = CGS_BAD_FORMAT;
                     break;
                 }
-                index_mode = SPECIFY_INDEX;
+
+                index_mode = SPECIFY_INDEX_MODE;
 
                 char *end               = NULL;
                 unsigned long arg_index = strtoul(found + 2, &end, 10); // we can assume fmt is null terminated
 
-                if (end >= fmt.chars + fmt.len)
+                if (end >= fmt.chars + fmt.len || end == found + 2)
                 {
                     CGS_debug_break();
                     err.ec = CGS_BAD_FORMAT;
@@ -2817,7 +2815,14 @@ CGS_API CGS_Error cgs__append_fmt(
                         break;
                 }
 
-                // skip the ]
+                if (fmt_walk.len == 0 || fmt_walk.chars[0] != ']')
+                {
+                    CGS_debug_break();
+                    err.ec = CGS_BAD_FORMAT;
+                    break;
+                }
+
+                // skip the ']'
                 fmt_walk.len -= 1;
                 fmt_walk.chars += 1;
 
@@ -2861,7 +2866,7 @@ CGS_API CGS_Error cgs__append_fmt(
         }
     }
 
-    if (err.ec == CGS_OK && how_many_formatted < nargs && index_mode != SPECIFY_INDEX)
+    if (err.ec == CGS_OK && how_many_formatted < nargs && index_mode != SPECIFY_INDEX_MODE)
     {
         return (CGS_Error) {CGS_TOO_MANY_ARGS};
     }
