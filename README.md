@@ -355,4 +355,5 @@ You can also always include cgs.c, if you define `#define CGS_API static` before
 ```
 
 ## Try it
-[godbolt link to try it out](https://godbolt.org/z/ozYT3TGWs)
+
+[godbolt link to try it out](https://godbolt.org/z/z7dGe9sWE)
