@@ -19,6 +19,10 @@
 
 #include "cgs.h"
 
+#if defined(NDEBUG) && !defined(CGS_DEBUG)
+    #define CGS_NDEBUG
+#endif
+
 #ifndef CGS_debug_break
     #ifndef CGS_NDEBUG
         #if defined(_MSC_VER)

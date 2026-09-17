@@ -37,9 +37,9 @@
 #  include <time.h>
 #endif
 
-#define CGS_debug_break() unreachable()
-#define CGS_API static inline
-#include "../cgs.c"
+#define CGS_NDEBUG
+// #define CGS_API static inline
+#include "../cgs.h"
 
 /* --------------------------------------------------------------------------
  * Knobs
