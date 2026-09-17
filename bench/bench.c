@@ -37,8 +37,6 @@
 #  include <time.h>
 #endif
 
-#define CGS_NDEBUG
-// #define CGS_API static inline
 #include "../cgs.h"
 
 /* --------------------------------------------------------------------------
