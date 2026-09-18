@@ -285,7 +285,7 @@ CGS_Error foo_to_str(CGS_Writer *dst, struct FOO f, CGS_StrView fmt_arg)
 int main()
 {
     struct FOO f = {'a'};
-    cgs_printf("%?", f); // can now use `struct FOO` in contexts that require a type with tostr
+    cgs_printfln("%?", f); // can now use `struct FOO` in contexts that require a type with tostr
     
     cgs_printfln("%(this is the fmt arg)", f); // prints "a :: this is the fmt arg"
     
