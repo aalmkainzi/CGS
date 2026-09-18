@@ -2677,7 +2677,8 @@ CGS_PRIVATE CGS_Error cgs__parse_optional_format_string(CGS_ZStrView *fmt_walk, 
 }
 
 CGS_API CGS_Error cgs__append_fmt(
-    CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs,
+    CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
     enum
@@ -2686,11 +2687,11 @@ CGS_API CGS_Error cgs__append_fmt(
         AUTO_INDEX_MODE,
         SPECIFY_INDEX_MODE
     };
-    
+
     uint8_t index_mode = UNKNOWN_INDEX_MODE;
-    
+
     CGS_ZStrView fmt_walk = fmt;
-    
+
     size_t how_many_formatted = 0;
     CGS_Error err             = {CGS_OK};
     while (fmt_walk.len != 0 && err.ec == CGS_OK)
@@ -2704,98 +2705,105 @@ CGS_API CGS_Error cgs__append_fmt(
             fmt_walk.chars += (index + 2);
             fmt_walk.len -= (index + 2);
 
-            if (fmt_walk.chars[-1] == '?')
+            switch (fmt_walk.chars[-1])
             {
+                case '?':
+                {
                 auto_arg:
-                if (index_mode == SPECIFY_INDEX_MODE)
-                {
-                    CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
-                    err.ec = CGS_BAD_FORMAT;
-                    break;
+                    if (index_mode == SPECIFY_INDEX_MODE)
+                    {
+                        CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
+                        err.ec = CGS_BAD_FORMAT;
+                        break;
+                    }
+                    index_mode = AUTO_INDEX_MODE;
+
+                    err = cgs__invoke_writer(dst, chunk);
+
+                    if (how_many_formatted >= nargs)
+                    {
+                        CGS_debug_break(); // not enough format args
+                        err.ec = CGS_NOT_ENOUGH_ARGS;
+                        break;
+                    }
+                    err = tostr_p_funcs[how_many_formatted](dst, objs[how_many_formatted], fmt_arg);
+                    how_many_formatted += 1;
                 }
-                index_mode = AUTO_INDEX_MODE;
-                
-                err = cgs__invoke_writer(dst, chunk);
-                
-                if (how_many_formatted >= nargs)
+                break;
+                case '[':
                 {
-                    CGS_debug_break(); // not enough format args
-                    err.ec = CGS_NOT_ENOUGH_ARGS;
-                    break;
+                    if (index_mode == AUTO_INDEX_MODE)
+                    {
+                        CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
+                        err.ec = CGS_BAD_FORMAT;
+                        break;
+                    }
+
+                    index_mode = SPECIFY_INDEX_MODE;
+
+                    char *end               = NULL;
+                    unsigned long arg_index = strtoul(fmt_walk.chars, &end, 10); // we can assume fmt is null terminated
+
+                    if (end == fmt_walk.chars)
+                    {
+                        CGS_debug_break();
+                        err.ec = CGS_BAD_FORMAT;
+                        break;
+                    }
+
+                    unsigned int end_pos = (unsigned int)(end - fmt_walk.chars) + 1;
+
+                    fmt_walk.chars += end_pos;
+                    fmt_walk.len -= end_pos;
+
+                    if (fmt_walk.chars[-1] == '(')
+                    {
+                        err = cgs__parse_optional_format_string(&fmt_walk, &fmt_arg);
+                        fmt_walk.chars += 1;
+                        fmt_walk.len -= 1;
+                        if (err.ec != CGS_OK)
+                            break;
+                    }
+
+                    if (fmt_walk.chars[-1] != ']')
+                    {
+                        CGS_debug_break();
+                        err.ec = CGS_BAD_FORMAT;
+                        break;
+                    }
+
+                    if (arg_index >= nargs)
+                    {
+                        CGS_debug_break(); // not enough format args
+                        err.ec = CGS_INDEX_OUT_OF_BOUNDS;
+                        break;
+                    }
+
+                    err = cgs__invoke_writer(dst, chunk);
+                    err = tostr_p_funcs[arg_index](dst, objs[arg_index], fmt_arg);
                 }
-                err = tostr_p_funcs[how_many_formatted](dst, objs[how_many_formatted], fmt_arg);
-                how_many_formatted += 1;
-            }
-            else if (fmt_walk.chars[-1] == '[')
-            {
-                if (index_mode == AUTO_INDEX_MODE)
-                {
-                    CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
-                    err.ec = CGS_BAD_FORMAT;
-                    break;
-                }
-                
-                index_mode = SPECIFY_INDEX_MODE;
-                
-                char *end               = NULL;
-                unsigned long arg_index = strtoul(fmt_walk.chars, &end, 10); // we can assume fmt is null terminated
-                
-                if (end == fmt_walk.chars)
-                {
-                    CGS_debug_break();
-                    err.ec = CGS_BAD_FORMAT;
-                    break;
-                }
-                
-                unsigned int end_pos = (unsigned int)(end - fmt_walk.chars) + 1;
-                
-                fmt_walk.chars += end_pos;
-                fmt_walk.len -= end_pos;
-                
-                if (fmt_walk.chars[-1] == '(')
+                break;
+                case '(':
                 {
                     err = cgs__parse_optional_format_string(&fmt_walk, &fmt_arg);
-                    fmt_walk.chars += 1;
-                    fmt_walk.len -= 1;
                     if (err.ec != CGS_OK)
                         break;
+
+                    goto auto_arg;
                 }
-                
-                if (fmt_walk.chars[-1] != ']')
+                break;
+                case '%':
                 {
-                    CGS_debug_break();
+                    chunk.len += 1; // to include the first %
+                    err = cgs__invoke_writer(dst, chunk);
+                }
+                break;
+                default:
+                {
+                    CGS_debug_break(); // lone percent
                     err.ec = CGS_BAD_FORMAT;
                     break;
                 }
-
-                if (arg_index >= nargs)
-                {
-                    CGS_debug_break(); // not enough format args
-                    err.ec = CGS_INDEX_OUT_OF_BOUNDS;
-                    break;
-                }
-                
-                err = cgs__invoke_writer(dst, chunk);
-                err = tostr_p_funcs[arg_index](dst, objs[arg_index], fmt_arg);
-            }
-            else if (fmt_walk.chars[-1] == '%')
-            {
-                chunk.len += 1; // to include the first %
-                err = cgs__invoke_writer(dst, chunk);
-            }
-            else if (fmt_walk.chars[-1] == '(')
-            {
-                err = cgs__parse_optional_format_string(&fmt_walk, &fmt_arg);
-                if (err.ec != CGS_OK)
-                    break;
-                
-                goto auto_arg;
-            }
-            else
-            {
-                CGS_debug_break(); // lone percent
-                err.ec = CGS_BAD_FORMAT;
-                break;
             }
         }
         else
@@ -2804,7 +2812,7 @@ CGS_API CGS_Error cgs__append_fmt(
             break;
         }
     }
-    
+
     if (err.ec == CGS_OK && how_many_formatted < nargs && index_mode != SPECIFY_INDEX_MODE)
     {
         return (CGS_Error) {CGS_TOO_MANY_ARGS};
@@ -2813,7 +2821,8 @@ CGS_API CGS_Error cgs__append_fmt(
 }
 
 CGS_API CGS_Error cgs__appendln_fmt_(
-    CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs,
+    CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
     CGS_Error err = cgs__append_fmt(dst, fmt, nargs, objs, tostr_p_funcs);
@@ -2824,7 +2833,8 @@ CGS_API CGS_Error cgs__appendln_fmt_(
 }
 
 CGS_API CGS_DStr cgs__asprintf(
-    CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs,
+    CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
     cgs__append_fmt(dst, fmt, nargs, objs, tostr_p_funcs);
@@ -2832,7 +2842,8 @@ CGS_API CGS_DStr cgs__asprintf(
 }
 
 CGS_API CGS_DStr cgs__asprintf_with_allocator(
-    CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs,
+    CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
     // shifting the pointers by 1 to skip the fmt arg
