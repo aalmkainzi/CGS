@@ -4629,6 +4629,8 @@ CGS_API CGS_Error cgs__append_fmt(
                     }
                     err = tostr_p_funcs[how_many_formatted](dst, objs[how_many_formatted], fmt_arg);
                     how_many_formatted += 1;
+                    if (err.ec != CGS_OK)
+                        goto out;
                 }
                 break;
                 case '[':
@@ -4682,6 +4684,8 @@ CGS_API CGS_Error cgs__append_fmt(
 
                     err = cgs__invoke_writer(dst, chunk);
                     err = tostr_p_funcs[arg_index](dst, objs[arg_index], fmt_arg);
+                    if (err.ec != CGS_OK)
+                        goto out;
                 }
                 break;
                 case '%':
