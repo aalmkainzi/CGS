@@ -1,4 +1,4 @@
-CFLAGS := -DNDEBUG -O3
+CFLAGS := -DNDEBUG -O3 -march=native -flto
 
 bench: bench.c
-	$(CC) bench.c  ../cgs.c -o bench 
+	$(CC) $(CFLAGS) bench.c ../cgs.c -o bench 

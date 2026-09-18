@@ -1603,10 +1603,10 @@ CGS_API CGS_Error cgs__fmutstr_ref_append_fread_until(CGS__FixedMutStrRef dst, F
 CGS_API unsigned int cgs__fprint_strv(FILE *stream, CGS_StrView str);
 CGS_API unsigned int cgs__fprintln_strv(FILE *stream, CGS_StrView str);
 
-CGS_API CGS_Error cgs__append_fmt(CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*, CGS_StrView));
-CGS_API CGS_Error cgs__appendln_fmt_(CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*, CGS_StrView));
-CGS_API CGS_DStr cgs__asprintf(CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*, CGS_StrView));
-CGS_API CGS_DStr cgs__asprintf_with_allocator(CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*, CGS_StrView));
+CGS_API CGS_Error cgs__append_fmt(CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*, CGS_StrView));
+CGS_API CGS_Error cgs__appendln_fmt_(CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*, CGS_StrView));
+CGS_API CGS_DStr cgs__asprintf(CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*, CGS_StrView));
+CGS_API CGS_DStr cgs__asprintf_with_allocator(CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs, CGS_Error(*tostr_p_funcs[])(CGS_Writer*, const void*, CGS_StrView));
 
 CGS_API CGS_MutStrRefWriter cgs__mutstr_ref_to_writer(CGS_MutStrRef ref);
 
@@ -1913,6 +1913,10 @@ CGS__DECL_TOSTR_FUNC(32)
 #endif
 
 
+
+#if defined(NDEBUG) && !defined(CGS_DEBUG)
+    #define CGS_NDEBUG
+#endif
 
 #ifndef CGS_debug_break
     #ifndef CGS_NDEBUG
@@ -4512,17 +4516,15 @@ CGS_API CGS_Error cgs__ChainWriter_write(CGS_Writer *dst, CGS_StrView str)
     return err1.ec == CGS_OK ? err2 : err1;
 }
 
-CGS_PRIVATE CGS_Error cgs__parse_optional_paren_grouping(CGS_StrView *fmt_walk);
-
-CGS_PRIVATE CGS_Error cgs__parse_optional_square_grouping(CGS_StrView *fmt_walk)
+CGS_PRIVATE CGS_Error cgs__parse_optional_grouping(CGS_ZStrView *fmt_walk, char closer)
 {
-    while (fmt_walk->len != 0 && fmt_walk->chars[0] != ']')
+    while (fmt_walk->chars[0] != '\0' && fmt_walk->chars[0] != closer)
     {
         if (fmt_walk->chars[0] == '(')
         {
             fmt_walk->chars += 1;
             fmt_walk->len -= 1;
-            CGS_Error err = cgs__parse_optional_paren_grouping(fmt_walk);
+            CGS_Error err = cgs__parse_optional_grouping(fmt_walk, ')');
             if (err.ec != CGS_OK)
                 return err;
         }
@@ -4530,11 +4532,11 @@ CGS_PRIVATE CGS_Error cgs__parse_optional_square_grouping(CGS_StrView *fmt_walk)
         {
             fmt_walk->chars += 1;
             fmt_walk->len -= 1;
-            CGS_Error err = cgs__parse_optional_square_grouping(fmt_walk);
+            CGS_Error err = cgs__parse_optional_grouping(fmt_walk, ']');
             if (err.ec != CGS_OK)
                 return err;
         }
-        else if (fmt_walk->chars[0] == ')')
+        else if (fmt_walk->chars[0] == ']' || fmt_walk->chars[0] == ')')
         {
             return (CGS_Error) {CGS_BAD_FORMAT};
         }
@@ -4544,6 +4546,7 @@ CGS_PRIVATE CGS_Error cgs__parse_optional_square_grouping(CGS_StrView *fmt_walk)
             fmt_walk->len -= 1;
         }
     }
+
     if (fmt_walk->len == 0)
     {
         return (CGS_Error) {CGS_BAD_FORMAT};
@@ -4556,56 +4559,12 @@ CGS_PRIVATE CGS_Error cgs__parse_optional_square_grouping(CGS_StrView *fmt_walk)
     return (CGS_Error) {CGS_OK};
 }
 
-CGS_PRIVATE CGS_Error cgs__parse_optional_paren_grouping(CGS_StrView *fmt_walk)
+CGS_PRIVATE CGS_Error cgs__parse_optional_format_string(CGS_ZStrView *fmt_walk, CGS_StrView *fmt_arg)
 {
-    while (fmt_walk->len != 0 && fmt_walk->chars[0] != ')')
-    {
-        if (fmt_walk->chars[0] == '(')
-        {
-            fmt_walk->chars += 1;
-            fmt_walk->len -= 1;
-            CGS_Error err = cgs__parse_optional_paren_grouping(fmt_walk);
-            if (err.ec != CGS_OK)
-                return err;
-        }
-        else if (fmt_walk->chars[0] == '[')
-        {
-            fmt_walk->chars += 1;
-            fmt_walk->len -= 1;
-            CGS_Error err = cgs__parse_optional_square_grouping(fmt_walk);
-            if (err.ec != CGS_OK)
-                return err;
-        }
-        else if (fmt_walk->chars[0] == ']')
-        {
-            return (CGS_Error) {CGS_BAD_FORMAT};
-        }
-        else
-        {
-            fmt_walk->chars += 1;
-            fmt_walk->len -= 1;
-        }
-    }
-    if (fmt_walk->len == 0)
-    {
-        return (CGS_Error) {CGS_BAD_FORMAT};
-    }
-    else
-    {
-        fmt_walk->chars += 1;
-        fmt_walk->len -= 1;
-    }
-    return (CGS_Error) {CGS_OK};
-}
-
-CGS_PRIVATE CGS_Error cgs__parse_optional_format_string(CGS_StrView *fmt_walk, CGS_StrView *fmt_arg)
-{
-    assert(fmt_walk->chars[0] == '(');
-    fmt_walk->chars += 1;
-    fmt_walk->len -= 1;
+    assert(fmt_walk->chars[-1] == '(');
 
     fmt_arg->chars = (char *)fmt_walk->chars;
-    CGS_Error err  = cgs__parse_optional_paren_grouping(fmt_walk);
+    CGS_Error err  = cgs__parse_optional_grouping(fmt_walk, ')');
     if (err.ec != CGS_OK)
         return err;
     fmt_arg->len = (unsigned int)((fmt_walk->chars - 1) - fmt_arg->chars);
@@ -4613,7 +4572,7 @@ CGS_PRIVATE CGS_Error cgs__parse_optional_format_string(CGS_StrView *fmt_walk, C
 }
 
 CGS_API CGS_Error cgs__append_fmt(
-    CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
     enum
@@ -4621,10 +4580,12 @@ CGS_API CGS_Error cgs__append_fmt(
         UNKNOWN_INDEX_MODE,
         AUTO_INDEX_MODE,
         SPECIFY_INDEX_MODE
-    } index_mode = UNKNOWN_INDEX_MODE; // SPECIFY_INDEX is "%[index]" (e.g. "%[0]" is the first arg). AUTO_INDEX is "%?", cannot mix
-
-    CGS_StrView fmt_walk = cgs_strv(fmt);
-
+    };
+    
+    uint8_t index_mode = UNKNOWN_INDEX_MODE;
+    
+    CGS_ZStrView fmt_walk = fmt;
+    
     size_t how_many_formatted = 0;
     CGS_Error err             = {CGS_OK};
     while (fmt_walk.len != 0 && err.ec == CGS_OK)
@@ -4635,24 +4596,12 @@ CGS_API CGS_Error cgs__append_fmt(
         {
             unsigned int index = (unsigned int)(found - fmt_walk.chars);
             CGS_StrView chunk  = {.chars = (char *)fmt_walk.chars, .len = index};
-            fmt_walk.chars += (index + 1);
-            fmt_walk.len -= (index + 1);
+            fmt_walk.chars += (index + 2);
+            fmt_walk.len -= (index + 2);
 
-            // '%' without espace "%%" or without format "%?" is rejected
-            if (fmt_walk.len == 0)
+            if (fmt_walk.chars[-1] == '?')
             {
-                CGS_debug_break();
-                err.ec = CGS_BAD_FORMAT;
-                break;
-            }
-
-            if (fmt_walk.len > 0 && found[1] == '?')
-            {
-                // skip the '?'
-                fmt_walk.chars += 1;
-                fmt_walk.len -= 1;
-
-            auto_arg:
+                auto_arg:
                 if (index_mode == SPECIFY_INDEX_MODE)
                 {
                     CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
@@ -4660,19 +4609,19 @@ CGS_API CGS_Error cgs__append_fmt(
                     break;
                 }
                 index_mode = AUTO_INDEX_MODE;
-
+                
                 err = cgs__invoke_writer(dst, chunk);
-
+                
                 if (how_many_formatted >= nargs)
                 {
                     CGS_debug_break(); // not enough format args
                     err.ec = CGS_NOT_ENOUGH_ARGS;
                     break;
                 }
-                err = tostr_p_funcs[how_many_formatted](dst, args[how_many_formatted], fmt_arg);
+                err = tostr_p_funcs[how_many_formatted](dst, objs[how_many_formatted], fmt_arg);
                 how_many_formatted += 1;
             }
-            else if (fmt_walk.len > 0 && found[1] == '[')
+            else if (fmt_walk.chars[-1] == '[')
             {
                 if (index_mode == AUTO_INDEX_MODE)
                 {
@@ -4680,48 +4629,39 @@ CGS_API CGS_Error cgs__append_fmt(
                     err.ec = CGS_BAD_FORMAT;
                     break;
                 }
-
+                
                 index_mode = SPECIFY_INDEX_MODE;
-
+                
                 char *end               = NULL;
-                unsigned long arg_index = strtoul(found + 2, &end, 10); // we can assume fmt is null terminated
-
-                if (end >= fmt.chars + fmt.len || end == found + 2)
+                unsigned long arg_index = strtoul(fmt_walk.chars, &end, 10); // we can assume fmt is null terminated
+                
+                if (end == fmt_walk.chars)
                 {
                     CGS_debug_break();
                     err.ec = CGS_BAD_FORMAT;
                     break;
                 }
-
-                unsigned int end_idx = (unsigned int)(end - fmt_walk.chars);
-
-                fmt_walk.chars += end_idx;
-                fmt_walk.len -= end_idx;
-
-                if (fmt_walk.len == 0)
-                {
-                    CGS_debug_break();
-                    err.ec = CGS_BAD_FORMAT;
-                    break;
-                }
-
-                if (fmt_walk.chars[0] == '(')
+                
+                unsigned int end_pos = (unsigned int)(end - fmt_walk.chars) + 1;
+                
+                fmt_walk.chars += end_pos;
+                fmt_walk.len -= end_pos;
+                
+                if (fmt_walk.chars[-1] == '(')
                 {
                     err = cgs__parse_optional_format_string(&fmt_walk, &fmt_arg);
+                    fmt_walk.chars += 1;
+                    fmt_walk.len -= 1;
                     if (err.ec != CGS_OK)
                         break;
                 }
-
-                if (fmt_walk.len == 0 || fmt_walk.chars[0] != ']')
+                
+                if (fmt_walk.chars[-1] != ']')
                 {
                     CGS_debug_break();
                     err.ec = CGS_BAD_FORMAT;
                     break;
                 }
-
-                // skip the ']'
-                fmt_walk.len -= 1;
-                fmt_walk.chars += 1;
 
                 if (arg_index >= nargs)
                 {
@@ -4729,23 +4669,21 @@ CGS_API CGS_Error cgs__append_fmt(
                     err.ec = CGS_INDEX_OUT_OF_BOUNDS;
                     break;
                 }
-
+                
                 err = cgs__invoke_writer(dst, chunk);
-                err = tostr_p_funcs[arg_index](dst, args[arg_index], fmt_arg);
+                err = tostr_p_funcs[arg_index](dst, objs[arg_index], fmt_arg);
             }
-            else if (fmt_walk.len > 0 && found[1] == '%')
+            else if (fmt_walk.chars[-1] == '%')
             {
                 chunk.len += 1; // to include the first %
-                fmt_walk.chars += 1;
-                fmt_walk.len -= 1;
                 err = cgs__invoke_writer(dst, chunk);
             }
-            else if (fmt_walk.len > 0 && found[1] == '(')
+            else if (fmt_walk.chars[-1] == '(')
             {
                 err = cgs__parse_optional_format_string(&fmt_walk, &fmt_arg);
                 if (err.ec != CGS_OK)
                     break;
-
+                
                 goto auto_arg;
             }
             else
@@ -4757,12 +4695,11 @@ CGS_API CGS_Error cgs__append_fmt(
         }
         else
         {
-            err = cgs__invoke_writer(dst, fmt_walk);
-            fmt_walk.chars += fmt_walk.len;
-            fmt_walk.len = 0;
+            err = cgs__invoke_writer(dst, cgs_strv(fmt_walk));
+            break;
         }
     }
-
+    
     if (err.ec == CGS_OK && how_many_formatted < nargs && index_mode != SPECIFY_INDEX_MODE)
     {
         return (CGS_Error) {CGS_TOO_MANY_ARGS};
@@ -4771,10 +4708,10 @@ CGS_API CGS_Error cgs__append_fmt(
 }
 
 CGS_API CGS_Error cgs__appendln_fmt_(
-    CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
-    CGS_Error err = cgs__append_fmt(dst, fmt, nargs, args, tostr_p_funcs);
+    CGS_Error err = cgs__append_fmt(dst, fmt, nargs, objs, tostr_p_funcs);
     if (err.ec == CGS_OK)
         err = cgs__invoke_writer(dst, cgs_strv("\n"));
 
@@ -4782,19 +4719,19 @@ CGS_API CGS_Error cgs__appendln_fmt_(
 }
 
 CGS_API CGS_DStr cgs__asprintf(
-    CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
-    cgs__append_fmt(dst, fmt, nargs, args, tostr_p_funcs);
+    cgs__append_fmt(dst, fmt, nargs, objs, tostr_p_funcs);
     return *((CGS_DStrWriter *)dst)->dstr;
 }
 
 CGS_API CGS_DStr cgs__asprintf_with_allocator(
-    CGS_Writer *dst, CGS_ZStrView fmt, size_t nargs, void **args, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *dst, CGS_ZStrView fmt, unsigned int nargs, void **objs, CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
     // shifting the pointers by 1 to skip the fmt arg
-    cgs__append_fmt(dst, fmt, nargs - 1, args + 1, tostr_p_funcs + 1);
+    cgs__append_fmt(dst, fmt, nargs - 1, objs + 1, tostr_p_funcs + 1);
     return *((CGS_DStrWriter *)dst)->dstr;
 }
 
@@ -4806,9 +4743,16 @@ CGS_PRIVATE unsigned int cgs__numstr_len(unsigned long long num)
     return i;
 }
 
-#define cgs__sinteger_min(ty) _Generic((ty) {0}, signed char: SCHAR_MIN, short: SHRT_MIN, int: INT_MIN, long: LONG_MIN, long long: LLONG_MIN)
-
 // clang-format off
+#define cgs__sinteger_min(ty)     \
+    _Generic((ty) {0},            \
+        signed char: SCHAR_MIN,   \
+        short      : SHRT_MIN,    \
+        int        : INT_MIN,     \
+        long       : LONG_MIN,    \
+        long long  : LLONG_MIN    \
+    )
+
 #define cgs__min_tostr(ty)                \
     _Generic((ty){0},                     \
         signed char: cgs__schar_min_into, \
