@@ -287,11 +287,11 @@ int main()
     struct FOO f = {'a'};
     cgs_printf("%?", f); // can now use `struct FOO` in contexts that require a type with tostr
     
-    cgs_printf("%(this is the fmt arg)", f); // prints "a :: this is the fmt arg"
+    cgs_printfln("%(this is the fmt arg)", f); // prints "a :: this is the fmt arg"
     
     // syntax to using the fmt_arg with positional arguments:
     struct FOO f2 = {'b'};
-    cgs_printf("%[0(for apple)], %[1(for banana)]", f, f2); // prints "a :: for apple, b :: for banana"
+    cgs_printfln("%[0(for apple)], %[1(for banana)]", f, f2); // prints "a :: for apple, b :: for banana"
 }
 ```
 
