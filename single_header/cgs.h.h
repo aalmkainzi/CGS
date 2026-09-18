@@ -4589,7 +4589,7 @@ CGS_API CGS_Error cgs__append_fmt(
 
     size_t how_many_formatted = 0;
     CGS_Error err             = {CGS_OK};
-    while (fmt_walk.len != 0 && err.ec == CGS_OK)
+    while (fmt_walk.len != 0)
     {
         const char *found   = memchr(fmt_walk.chars, '%', fmt_walk.len);
         CGS_StrView fmt_arg = {};
@@ -4602,14 +4602,20 @@ CGS_API CGS_Error cgs__append_fmt(
 
             switch (fmt_walk.chars[-1])
             {
+                case '(':
+                {
+                    err = cgs__parse_optional_format_string(&fmt_walk, &fmt_arg);
+                    if (err.ec != CGS_OK)
+                        goto out;
+                }
+                // fallthrough
                 case '?':
                 {
-                auto_arg:
                     if (index_mode == SPECIFY_INDEX_MODE)
                     {
                         CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
                         err.ec = CGS_BAD_FORMAT;
-                        break;
+                        goto out;
                     }
                     index_mode = AUTO_INDEX_MODE;
 
@@ -4619,7 +4625,7 @@ CGS_API CGS_Error cgs__append_fmt(
                     {
                         CGS_debug_break(); // not enough format args
                         err.ec = CGS_NOT_ENOUGH_ARGS;
-                        break;
+                        goto out;
                     }
                     err = tostr_p_funcs[how_many_formatted](dst, objs[how_many_formatted], fmt_arg);
                     how_many_formatted += 1;
@@ -4631,7 +4637,7 @@ CGS_API CGS_Error cgs__append_fmt(
                     {
                         CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
                         err.ec = CGS_BAD_FORMAT;
-                        break;
+                        goto out;
                     }
 
                     index_mode = SPECIFY_INDEX_MODE;
@@ -4643,7 +4649,7 @@ CGS_API CGS_Error cgs__append_fmt(
                     {
                         CGS_debug_break();
                         err.ec = CGS_BAD_FORMAT;
-                        break;
+                        goto out;
                     }
 
                     unsigned int end_pos = (unsigned int)(end - fmt_walk.chars) + 1;
@@ -4657,34 +4663,25 @@ CGS_API CGS_Error cgs__append_fmt(
                         fmt_walk.chars += 1;
                         fmt_walk.len -= 1;
                         if (err.ec != CGS_OK)
-                            break;
+                            goto out;
                     }
 
                     if (fmt_walk.chars[-1] != ']')
                     {
                         CGS_debug_break();
                         err.ec = CGS_BAD_FORMAT;
-                        break;
+                        goto out;
                     }
 
                     if (arg_index >= nargs)
                     {
                         CGS_debug_break(); // not enough format args
                         err.ec = CGS_INDEX_OUT_OF_BOUNDS;
-                        break;
+                        goto out;
                     }
 
                     err = cgs__invoke_writer(dst, chunk);
                     err = tostr_p_funcs[arg_index](dst, objs[arg_index], fmt_arg);
-                }
-                break;
-                case '(':
-                {
-                    err = cgs__parse_optional_format_string(&fmt_walk, &fmt_arg);
-                    if (err.ec != CGS_OK)
-                        break;
-
-                    goto auto_arg;
                 }
                 break;
                 case '%':
@@ -4697,7 +4694,7 @@ CGS_API CGS_Error cgs__append_fmt(
                 {
                     CGS_debug_break(); // lone percent
                     err.ec = CGS_BAD_FORMAT;
-                    break;
+                    goto out;
                 }
             }
         }
@@ -4707,6 +4704,7 @@ CGS_API CGS_Error cgs__append_fmt(
             break;
         }
     }
+out:
 
     if (err.ec == CGS_OK && how_many_formatted < nargs && index_mode != SPECIFY_INDEX_MODE)
     {
