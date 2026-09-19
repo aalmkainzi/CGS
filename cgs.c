@@ -2621,58 +2621,54 @@ CGS_API CGS_Error cgs__ChainWriter_write(CGS_Writer *dst, CGS_StrView str)
     return err1.ec == CGS_OK ? err2 : err1;
 }
 
-CGS_PRIVATE CGS_Error cgs__parse_optional_grouping(CGS_ZStrView *fmt_walk, char closer)
+CGS_PRIVATE CGS_Error cgs__parse_optional_grouping(const char **fmt_walk, char closer)
 {
-    while (fmt_walk->chars[0] != '\0' && fmt_walk->chars[0] != closer)
+    while ((*fmt_walk)[0] != '\0' && (*fmt_walk)[0] != closer)
     {
-        if (fmt_walk->chars[0] == '(')
+        if ((*fmt_walk)[0] == '(')
         {
-            fmt_walk->chars += 1;
-            fmt_walk->len -= 1;
+            (*fmt_walk) += 1;
             CGS_Error err = cgs__parse_optional_grouping(fmt_walk, ')');
             if (err.ec != CGS_OK)
                 return err;
         }
-        else if (fmt_walk->chars[0] == '[')
+        else if ((*fmt_walk)[0] == '[')
         {
-            fmt_walk->chars += 1;
-            fmt_walk->len -= 1;
+            (*fmt_walk) += 1;
             CGS_Error err = cgs__parse_optional_grouping(fmt_walk, ']');
             if (err.ec != CGS_OK)
                 return err;
         }
-        else if (fmt_walk->chars[0] == ']' || fmt_walk->chars[0] == ')')
+        else if ((*fmt_walk)[0] == ']' || (*fmt_walk)[0] == ')')
         {
             return (CGS_Error) {CGS_BAD_FORMAT};
         }
         else
         {
-            fmt_walk->chars += 1;
-            fmt_walk->len -= 1;
+            (*fmt_walk) += 1;
         }
     }
 
-    if (fmt_walk->len == 0)
+    if ((*fmt_walk)[0] == '\0')
     {
         return (CGS_Error) {CGS_BAD_FORMAT};
     }
     else
     {
-        fmt_walk->chars += 1;
-        fmt_walk->len -= 1;
+        (*fmt_walk) += 1;
     }
     return (CGS_Error) {CGS_OK};
 }
 
-CGS_PRIVATE CGS_Error cgs__parse_optional_format_string(CGS_ZStrView *fmt_walk, CGS_StrView *fmt_arg)
+CGS_PRIVATE CGS_Error cgs__parse_optional_format_string(const char **fmt_walk, CGS_StrView *fmt_arg)
 {
-    assert(fmt_walk->chars[-1] == '(');
+    assert((*fmt_walk)[-1] == '(');
 
-    fmt_arg->chars = (char *)fmt_walk->chars;
+    fmt_arg->chars = *fmt_walk;
     CGS_Error err  = cgs__parse_optional_grouping(fmt_walk, ')');
     if (err.ec != CGS_OK)
         return err;
-    fmt_arg->len = (unsigned int)((fmt_walk->chars - 1) - fmt_arg->chars);
+    fmt_arg->len = (unsigned int)(((*fmt_walk) - 1) - fmt_arg->chars);
     return (CGS_Error) {CGS_OK};
 }
 
@@ -2690,22 +2686,23 @@ CGS_API CGS_Error cgs__append_fmt(
 
     uint8_t index_mode = UNKNOWN_INDEX_MODE;
 
-    CGS_ZStrView fmt_walk = fmt;
+    const char *fmt_walk = fmt.chars;
 
     size_t how_many_formatted = 0;
     CGS_Error err             = {CGS_OK};
-    while (fmt_walk.len != 0)
+
+    const char *fmt_end = fmt.chars + fmt.len;
+    while (fmt_walk[0] != '\0' && err.ec == CGS_OK)
     {
-        const char *found   = memchr(fmt_walk.chars, '%', fmt_walk.len);
+        const char *found   = memchr(fmt_walk, '%', fmt_end - fmt_walk);
         CGS_StrView fmt_arg = {};
         if (found)
         {
-            unsigned int index = (unsigned int)(found - fmt_walk.chars);
-            CGS_StrView chunk  = {.chars = (char *)fmt_walk.chars, .len = index};
-            fmt_walk.chars += (index + 2);
-            fmt_walk.len -= (index + 2);
+            unsigned int index = (unsigned int)(found - fmt_walk);
+            CGS_StrView chunk  = {.chars = fmt_walk, .len = index};
+            fmt_walk += (index + 2);
 
-            switch (fmt_walk.chars[-1])
+            switch (fmt_walk[-1])
             {
                 case '(':
                 {
@@ -2726,6 +2723,9 @@ CGS_API CGS_Error cgs__append_fmt(
 
                     err = cgs__invoke_writer(dst, chunk);
 
+                    if (err.ec != CGS_OK)
+                        goto out;
+
                     if (how_many_formatted >= nargs)
                     {
                         CGS_debug_break(); // not enough format args
@@ -2734,8 +2734,6 @@ CGS_API CGS_Error cgs__append_fmt(
                     }
                     err = tostr_p_funcs[how_many_formatted](dst, objs[how_many_formatted], fmt_arg);
                     how_many_formatted += 1;
-                    if (err.ec != CGS_OK)
-                        goto out;
                 }
                 break;
                 case '[':
@@ -2750,30 +2748,28 @@ CGS_API CGS_Error cgs__append_fmt(
                     index_mode = SPECIFY_INDEX_MODE;
 
                     char *end               = NULL;
-                    unsigned long arg_index = strtoul(fmt_walk.chars, &end, 10); // we can assume fmt is null terminated
+                    unsigned long arg_index = strtoul(fmt_walk, &end, 10); // we can assume fmt is null terminated
 
-                    if (end == fmt_walk.chars)
+                    if (end == fmt_walk)
                     {
                         CGS_debug_break();
                         err.ec = CGS_BAD_FORMAT;
                         goto out;
                     }
 
-                    unsigned int end_pos = (unsigned int)(end - fmt_walk.chars) + 1;
+                    unsigned int end_pos = (unsigned int)(end - fmt_walk) + 1;
 
-                    fmt_walk.chars += end_pos;
-                    fmt_walk.len -= end_pos;
+                    fmt_walk += end_pos;
 
-                    if (fmt_walk.chars[-1] == '(')
+                    if (fmt_walk[-1] == '(')
                     {
                         err = cgs__parse_optional_format_string(&fmt_walk, &fmt_arg);
-                        fmt_walk.chars += 1;
-                        fmt_walk.len -= 1;
+                        fmt_walk += 1;
                         if (err.ec != CGS_OK)
                             goto out;
                     }
 
-                    if (fmt_walk.chars[-1] != ']')
+                    if (fmt_walk[-1] != ']')
                     {
                         CGS_debug_break();
                         err.ec = CGS_BAD_FORMAT;
@@ -2788,9 +2784,11 @@ CGS_API CGS_Error cgs__append_fmt(
                     }
 
                     err = cgs__invoke_writer(dst, chunk);
-                    err = tostr_p_funcs[arg_index](dst, objs[arg_index], fmt_arg);
+
                     if (err.ec != CGS_OK)
                         goto out;
+
+                    err = tostr_p_funcs[arg_index](dst, objs[arg_index], fmt_arg);
                 }
                 break;
                 case '%':
@@ -2809,7 +2807,7 @@ CGS_API CGS_Error cgs__append_fmt(
         }
         else
         {
-            err = cgs__invoke_writer(dst, cgs_strv(fmt_walk));
+            err = cgs__invoke_writer(dst, (CGS_StrView) {.chars = fmt_walk, .len = fmt_end - fmt_walk});
             break;
         }
     }
