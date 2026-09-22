@@ -158,13 +158,13 @@ CGS_Error               cgs_appendfln(writer_t dst, zstr_t fmt, ...args with tos
 CGS_Error               cgs_fprintf(FILE *stream, zstr_t fmt, ...args with tostr); // identical to cgs_appendf, but restricted to FILE*
 CGS_Error               cgs_fprintfln(FILE *stream, zstr_t fmt, ...args with tostr); // identical to cgs_appendfln, but restricted to FILE*
 
-CGS_Error               cgs_printf(const char *fmt, ...args with tostr); // calls cgs_fprintf on stdout
-CGS_Error               cgs_printfln(const char *fmt, ...args with tostr); // calls cgs_fprintfln on stdout
+CGS_Error               cgs_printf(zstr_t fmt, ...args with tostr); // calls cgs_fprintf on stdout
+CGS_Error               cgs_printfln(zstr_t fmt, ...args with tostr); // calls cgs_fprintfln on stdout
 
-CGS_Error               cgs_sprintf(mutstr_t dst, const char *fmt, ...args with tostr); // alias for cgs_fmt
-CGS_Error               cgs_sprintfln(mutstr_t dst, const char *fmt, ...args with tostr); // cgs_sprintf + '\n'
+CGS_Error               cgs_sprintf(mutstr_t dst, zstr_t fmt, ...args with tostr); // alias for cgs_fmt
+CGS_Error               cgs_sprintfln(mutstr_t dst, zstr_t fmt, ...args with tostr); // cgs_sprintf + '\n'
 
-CGS_DStr                cgs_asprintf(CGS_Allocator *allocator = cgs_get_default_allocator(), const char *fmt, ...args with tostr); // allocates a CGS_DStr and calls cgs_fmt on it
+CGS_DStr                cgs_asprintf(CGS_Allocator *allocator = cgs_get_default_allocator(), zstr_t fmt, ...args with tostr); // allocates a CGS_DStr and calls cgs_fmt on it
 
                         cgs_tostr_many(mutstr_t dst, ...args with tostr); // clears dst, calls the tostr of each ... arg, and appends them to dst
                         cgs_append_tostr_many(writer_t dst, ...args with tostr); // calls the tostr of each ... arg, and appends them to dst
