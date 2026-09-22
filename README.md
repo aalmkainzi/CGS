@@ -299,21 +299,6 @@ int main()
 
 Types that have a `tostr` defined can be used in `cgs_fmt` and its variants:
 
-```C++
-CGS_Error cgs_fmt(mutstr_t dst, const char *fmt, ...args with tostr);
-CGS_Error cgs_appendf(writer_t dst, const char *fmt, ...args with tostr);
-CGS_Error cgs_appendfln(writer_t dst, const char *fmt, ...args with tostr);
-
-CGS_Error cgs_fprintf(FILE *stream, const char *fmt, ...args with tostr);
-CGS_Error cgs_fprintfln(FILE *stream, const char *fmt, ...args with tostr);
-
-CGS_Error cgs_printf(const char *fmt, ...args with tostr);
-CGS_Error cgs_printfln(const char *fmt, ...args with tostr);
-
-CGS_Error cgs_sprintf(mutstr_t dst, const char *fmt, ...args with tostr);
-CGS_Error cgs_sprintfln(mutstr_t dst, const char *fmt, ...args with tostr);
-```
-
 e.g.
 ```C
 #include "cgs.h"
