@@ -984,10 +984,15 @@ cgs_fmt(mutstr_dst, fmt, __VA_ARGS__)
 #define cgs_sprintfln(mutstr_dst, fmt, ...) \
 cgs__fmt_helper(cgs__appendln_fmt_, cgs_writer_ptr(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst))), fmt, __VA_ARGS__)
 
-#define cgs_asprintf(allocator_or_fmt, ...) \
-cgs__fmt_helper( _Generic(allocator_or_fmt, CGS_Allocator*: cgs__asprintf_with_allocator, default: cgs__asprintf), cgs_writer_ptr(cgs__local_ref( \
-cgs_dstr_init(0, _Generic(allocator_or_fmt, CGS_Allocator*: cgs__coerce(allocator_or_fmt, CGS_Allocator*), default: cgs_get_default_allocator())) \
-)), _Generic(allocator_or_fmt, CGS_Allocator*: (CGS__asprintf_FMT_ARG(allocator_or_fmt, __VA_ARGS__)), default: cgs__coerce_cstr(allocator_or_fmt)), __VA_ARGS__)
+#define cgs_asprintf(allocator_or_fmt, ...)                                                                                                               \
+cgs__fmt_helper(                                                                                                                                          \
+    _Generic(allocator_or_fmt, CGS_Allocator*: cgs__asprintf_with_allocator, default: cgs__asprintf),                                                     \
+    cgs_writer_ptr(cgs__local_ref(                                                                                                                        \
+        cgs_dstr_init(0, _Generic(allocator_or_fmt, CGS_Allocator*: cgs__coerce(allocator_or_fmt, CGS_Allocator*), default: cgs_get_default_allocator())) \
+    )),                                                                                                                                                   \
+    _Generic(allocator_or_fmt, CGS_Allocator*: (CGS__asprintf_FMT_ARG(allocator_or_fmt, __VA_ARGS__)), default: cgs__coerce_cstr(allocator_or_fmt)),      \
+    __VA_ARGS__                                                                                                                                           \
+)
 
 // if allocator:
 //  if __VA_ARGS__ empty: error
