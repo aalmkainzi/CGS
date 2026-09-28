@@ -953,9 +953,19 @@ cgs__as_ptr(a),
 #define cgs__tostr_p_func_elm(a) \
 (CGS_Error(*)(CGS_Writer*, const void*, CGS_StrView))cgs__get_tostr_p_func(__typeof__(a)),
 
-#define cgs__fmt_helper(fmt_func, writer, fmt, ...) \
-    __VA_OPT__(fmt_func(writer, cgs__zstrv_1(fmt), 0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__), (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)}, (CGS_Error(*[])(CGS_Writer*,const void*, CGS_StrView)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)})) \
-    CGS__IF_EMPTY((fmt_func(cgs_writer_ptr(writer), cgs__zstrv_1(fmt), 0, NULL, NULL)), __VA_ARGS__)
+#define cgs__fmt_helper(fmt_func, writer, fmt, ...)                                                                   \
+    __VA_OPT__(fmt_func(                                                                                              \
+            writer,                                                                                                   \
+            cgs__zstrv_1(fmt),                                                                                        \
+            0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__),                                                         \
+            (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)},                                                    \
+            (CGS_Error(*[])(CGS_Writer*, const void*, CGS_StrView)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)} \
+        )                                                                                                             \
+    )                                                                                                                 \
+    CGS__IF_EMPTY(                                                                                                    \
+        (fmt_func(cgs_writer_ptr(writer), cgs__zstrv_1(fmt), 0, NULL, NULL)),                                         \
+        __VA_ARGS__                                                                                                   \
+    )
 
 #define cgs_appendf(writer_dst, fmt, ...) \
 cgs__fmt_helper(cgs__append_fmt, cgs_writer_ptr(writer_dst), fmt, __VA_ARGS__)
