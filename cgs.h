@@ -1796,6 +1796,39 @@ cgs__invoke_appendln_tostr(CGS_Writer *writer, const void *obj, CGS_Error (*tost
     return err1.ec == CGS_OK ? err2 : err1;
 }
 
+#if 1 || defined(__FORMAT_INTERPS__)
+
+#define cgs_appendi(writer, fstr, ...) \
+    cgs__appendi(cgs_writer_ptr(writer), , CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__))
+
+#define cgs__signed_of(unsigned_t)               \
+    __typeof__(                                  \
+        _Generic((char(*)[sizeof(unsigned_t)])0, \
+            char(*)[8] : (int8_t) 0,             \
+            char(*)[16]: (int16_t)0,             \
+            char(*)[32]: (int32_t)0,             \
+            char(*)[64]: (int64_t)0,             \
+        )                                        \
+    )
+
+#define cgs__unsigned_of(signed_t)               \
+    __typeof__(                                  \
+        _Generic((char(*)[sizeof(unsigned_t)])0, \
+            char(*)[8] : (uint8_t) 0,            \
+            char(*)[16]: (uint16_t)0,            \
+            char(*)[32]: (uint32_t)0,            \
+            char(*)[64]: (uint64_t)0,            \
+        )                                        \
+    )
+
+#define cgs__ssize_t \
+    cgs__signed_of(size_t)
+
+#define cgs__sptrdiff_t \
+    cgs__unsigned_of(ptrdiff_t)
+
+#endif
+
 #endif // CGS__H_INCLUDED
 
 #ifdef ADD_TOSTR

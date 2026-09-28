@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <math.h>
 
 #ifndef CGS_API
     // for functions exposed in the header
@@ -2849,6 +2850,234 @@ CGS_API CGS_DStr cgs__asprintf_with_allocator(
     // shifting the pointers by 1 to skip the fmt arg
     cgs__append_fmt(dst, fmt, nargs - 1, objs + 1, tostr_p_funcs + 1);
     return *((CGS_DStrWriter *)dst)->dstr;
+}
+
+bool cgs__integral_conversion_char(char c)
+{
+    switch (c)
+    {
+        case 'd':
+        case 'u':
+        case 'o':
+        case 'x':
+        case 'b':
+        case 'i':
+            return true;
+        default:
+            return false;
+    }
+}
+
+int cgs__integral_arg_value_from_tostr_p(CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView fmt_arg), void *arg, int *value)
+{
+    // cant use switch statement with function pointer :(
+
+    if (tostr_p == cgs__char_tostr_p)
+    {
+        *value = *(char*)arg;
+        return sizeof(char);
+    }
+    else if (tostr_p == cgs__schar_tostr_p)
+    {
+        *value = *(signed char*)arg;
+        return sizeof(signed char);
+    }
+    else if (tostr_p == cgs__uchar_tostr_p)
+    {
+        *value = *(unsigned char*)arg;
+        return sizeof(unsigned char);
+    }
+    else if (tostr_p == cgs__short_tostr_p)
+    {
+        *value = *(short*)arg;
+        return sizeof(short);
+    }
+    else if (tostr_p == cgs__ushort_tostr_p)
+    {
+        *value = *(unsigned short*)arg;
+        return sizeof(unsigned short);
+    }
+    else if (tostr_p == cgs__int_tostr_p)
+    {
+        *value = *(int*)arg;
+        return sizeof(int);
+    }
+    else if (tostr_p == cgs__uint_tostr_p)
+    {
+        *value = *(unsigned int*)arg;
+        return sizeof(unsigned int);
+    }
+    else if (tostr_p == cgs__long_tostr_p)
+    {
+        *value = *(int*)arg;
+        return sizeof(int);
+    }
+    else if (tostr_p == cgs__ulong_tostr_p)
+    {
+        *value = *(unsigned long*)arg;
+        return sizeof(unsigned long);
+    }
+    else if (tostr_p == cgs__llong_tostr_p)
+    {
+        *value = *(long long*)arg;
+        return sizeof(long long);
+    }
+    else if (tostr_p == cgs__ullong_tostr_p)
+    {
+        *value = *(unsigned long long*)arg;
+        return sizeof(unsigned long long);
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+static inline CGS_Error cgs__appendi(
+    CGS_Writer *writer, unsigned int n_specifiers, const char *literals[], const char *flags[], const char *widths[], const char *precisions[],
+    const char *length_modifiers[], const char conversion_chars[], unsigned n_interps, void *interps[], unsigned n_objs, void *objs[],
+    CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+)
+{
+    CGS_Error err = {CGS_OK};
+    unsigned obj_iter = 0;
+    unsigned interp_iter = 0;
+    for (unsigned i = 0; i < n_specifiers; i++)
+    {
+        bool left_align     = false;
+        bool zero_pad       = false;
+        bool add_plus       = false;
+        bool alt            = false;
+        int width           = 0;
+        int precision       = -1;
+
+        enum
+        {
+            no_length_modifier,
+            h,
+            hh,
+            l,
+            ll,
+            j,
+            z,
+            t,
+            w8,
+            w16,
+            w32,
+            w64,
+            wf8,
+            wf16,
+            wf32,
+            wf64,
+            LENGTH_MODIFIERS_COUNT
+        } length_modifier = no_length_modifier;
+
+        for (unsigned f = 0, flen = strlen(flags[i]); f < flen; f++)
+        {
+            switch (flags[i][f])
+            {
+                case '-':
+                    left_align = true;
+                    break;
+                case '0':
+                    zero_pad = true;
+                    break;
+                case '+':
+                    add_plus = true;
+                    break;
+                case '#':
+                    alt = true;
+                    break;
+            }
+        }
+        if (widths[i][0] == '*')
+        {
+            void *width_arg = objs[obj_iter];
+            CGS_Error (*tostr_p)(CGS_Writer*, const void*, CGS_StrView) = tostr_p_funcs[obj_iter];
+            obj_iter++;
+            
+            int integer_size = cgs__integral_arg_value_from_tostr_p(tostr_p, width_arg, &width);
+            if (integer_size == -1)
+            {
+                return (CGS_Error){CGS_BAD_FORMAT};
+            }
+        }
+        else if (widths[i][0])
+        {
+            width = strtoul(widths[i], NULL, 10);
+        }
+
+        if (precisions[i][0] == '*')
+        {
+            void *precision_arg = objs[obj_iter];
+            CGS_Error (*tostr_p)(CGS_Writer*, const void*, CGS_StrView) = tostr_p_funcs[obj_iter];
+            obj_iter++;
+
+            int integer_size = cgs__integral_arg_value_from_tostr_p(tostr_p, precision_arg, &precision);
+            if (integer_size == -1)
+            {
+                return (CGS_Error){CGS_BAD_FORMAT};
+            }
+        }
+        else if (precisions[i][0])
+        {
+            precision = strtoul(widths[i], NULL, 10);
+        }
+
+        void *obj = objs[obj_iter];
+        
+        if (strcmp(length_modifiers[i], "h"))
+        {
+            length_modifier = h;
+        }
+        else if (strcmp(length_modifiers[i], "hh"))
+        {
+            length_modifier = hh;
+        }
+        else if (strcmp(length_modifiers[i], "l"))
+        {
+            length_modifier = l;
+        }
+        else if (strcmp(length_modifiers[i], "ll"))
+        {
+            length_modifier = ll;
+        }
+        else if (strcmp(length_modifiers[i], "j"))
+        {
+            length_modifier = j;
+        }
+        else if (strcmp(length_modifiers[i], "z"))
+        {
+            length_modifier = z;
+        }
+        else if (strcmp(length_modifiers[i], "t"))
+        {
+            length_modifier = t;
+        }
+        else if (length_modifiers[i][0] == 'w')
+        {
+            bool is_fast = length_modifiers[i][1] == 'f';
+
+            int wwidth = strtoul(length_modifiers[i] + 1 + is_fast, NULL, 10);
+            wwidth = log2(wwidth) - 3;
+            length_modifier = w8 + wwidth + (is_fast * (wf8 - w8));
+            if (length_modifier >= LENGTH_MODIFIERS_COUNT)
+                return (CGS_Error){CGS_BAD_FORMAT};
+        }
+        
+        if (length_modifier != no_length_modifier)
+        {
+            if (conversion_chars[i] != '?' && !cgs__integral_conversion_char(conversion_chars[i]))
+            {
+                return (CGS_Error){CGS_BAD_FORMAT};
+            }
+        }
+        
+        err = cgs__invoke_writer(writer, cgs__strv_1(literals[i]));
+        if (err.ec != CGS_OK)
+            return err;
+
+    }
 }
 
 CGS_PRIVATE unsigned int cgs__numstr_len(unsigned long long num)
