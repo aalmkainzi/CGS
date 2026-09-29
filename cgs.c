@@ -2941,81 +2941,81 @@ void cgs__float_arg_value_from_callback(
     }
 }
 
-#define cgs__integral_arg_value_from_callback(tostr_p, arg, value, truncate_t, err_out)          \
-    do                                                                                           \
-    {                                                                                            \
-        /* cant use switch statement with function pointer :( */                                 \
-                                                                                                 \
-        if (tostr_p == cgs__char_tostr_p)                                                        \
-        {                                                                                        \
-            if ((value) && (arg))                                                                \
-                *(value) = (truncate_t) * (char *)(arg);                                         \
-            *(integer_size_out) = sizeof(char);                                                  \
-        }                                                                                        \
-        else if (tostr_p == cgs__schar_tostr_p)                                                  \
-        {                                                                                        \
-            if ((value) && (arg))                                                                \
-                *(value) = (truncate_t) * (signed char *)(arg);                                  \
-            *(integer_size_out) = sizeof(signed char);                                           \
-        }                                                                                        \
-        else if (tostr_p == cgs__uchar_tostr_p)                                                  \
-        {                                                                                        \
-            if ((value) && (arg))                                                                \
-                *(value) = (truncate_t) * (unsigned char *)(arg);                                \
-            *(integer_size_out) = sizeof(unsigned char);                                         \
-        }                                                                                        \
-        else if (tostr_p == cgs__short_tostr_p)                                                  \
-        {                                                                                        \
-            if ((value) && (arg))                                                                \
-                *(value) = (truncate_t) * (short *)(arg);                                        \
-            *(integer_size_out) = sizeof(short);                                                 \
-        }                                                                                        \
-        else if (tostr_p == cgs__ushort_tostr_p)                                                 \
-        {                                                                                        \
-            if ((value) && (arg))                                                                \
-                *(value) = (truncate_t) * (unsigned short *)(arg);                               \
-            *(integer_size_out) = sizeof(unsigned short);                                        \
-        }                                                                                        \
-        else if (tostr_p == cgs__int_tostr_p)                                                    \
-        {                                                                                        \
-            if ((value) && (arg))                                                                \
-                *(value) = (truncate_t) * (int *)(arg);                                          \
-            *(integer_size_out) = sizeof(int);                                                   \
-        }                                                                                        \
-        else if (tostr_p == cgs__uint_tostr_p)                                                   \
-        {                                                                                        \
-            if ((value) && (arg))                                                                \
-                *(value) = (truncate_t) * (unsigned int *)(arg);                                 \
-            *(integer_size_out) = sizeof(unsigned int);                                          \
-        }                                                                                        \
-        else if (tostr_p == cgs__long_tostr_p)                                                   \
-        {                                                                                        \
-            if ((value) && (arg))                                                                \
-                *(value) = (truncate_t) * (int *)(arg);                                          \
-            *(integer_size_out) = sizeof(int);                                                   \
-        }                                                                                        \
-        else if (tostr_p == cgs__ulong_tostr_p)                                                  \
-        {                                                                                        \
-            if ((value) && (arg))                                                                \
-                *(value) = (truncate_t) * (unsigned long *)(arg);                                \
-            *(integer_size_out) = sizeof(unsigned long);                                         \
-        }                                                                                        \
-        else if (tostr_p == cgs__llong_tostr_p)                                                  \
-        {                                                                                        \
-            if ((value) && (arg))                                                                \
-                *(value) = (truncate_t) * (long long *)(arg);                                    \
-            *(integer_size_out) = sizeof(long long);                                             \
-        }                                                                                        \
-        else if (tostr_p == cgs__ullong_tostr_p)                                                 \
-        {                                                                                        \
-            if ((value) && (arg))                                                                \
-                *(value) = (truncate_t) * (unsigned long long *)(arg);                           \
-            *(integer_size_out) = sizeof(unsigned long long);                                    \
-        }                                                                                        \
-        else                                                                                     \
-        {                                                                                        \
-            *(integer_size_out) = -1;                                                            \
-        }                                                                                        \
+#define cgs__integral_arg_value_from_callback(tostr_p, arg, value, truncate_t, err_out) \
+    do                                                                                  \
+    {                                                                                   \
+        /* cant use switch statement with function pointer :( */                        \
+                                                                                        \
+        if ((tostr_p) == cgs__char_tostr_p)                                             \
+        {                                                                               \
+            if ((value) && (arg))                                                       \
+                *(value) = (truncate_t) * (char *)(arg);                                \
+            *(integer_size_out) = sizeof(char);                                         \
+        }                                                                               \
+        else if ((tostr_p) == cgs__schar_tostr_p)                                       \
+        {                                                                               \
+            if ((value) && (arg))                                                       \
+                *(value) = (truncate_t) * (signed char *)(arg);                         \
+            *(integer_size_out) = sizeof(signed char);                                  \
+        }                                                                               \
+        else if ((tostr_p) == cgs__uchar_tostr_p)                                       \
+        {                                                                               \
+            if ((value) && (arg))                                                       \
+                *(value) = (truncate_t) * (unsigned char *)(arg);                       \
+            *(integer_size_out) = sizeof(unsigned char);                                \
+        }                                                                               \
+        else if ((tostr_p) == cgs__short_tostr_p)                                       \
+        {                                                                               \
+            if ((value) && (arg))                                                       \
+                *(value) = (truncate_t) * (short *)(arg);                               \
+            *(integer_size_out) = sizeof(short);                                        \
+        }                                                                               \
+        else if ((tostr_p) == cgs__ushort_tostr_p)                                      \
+        {                                                                               \
+            if ((value) && (arg))                                                       \
+                *(value) = (truncate_t) * (unsigned short *)(arg);                      \
+            *(integer_size_out) = sizeof(unsigned short);                               \
+        }                                                                               \
+        else if ((tostr_p) == cgs__int_tostr_p)                                         \
+        {                                                                               \
+            if ((value) && (arg))                                                       \
+                *(value) = (truncate_t) * (int *)(arg);                                 \
+            *(integer_size_out) = sizeof(int);                                          \
+        }                                                                               \
+        else if ((tostr_p) == cgs__uint_tostr_p)                                        \
+        {                                                                               \
+            if ((value) && (arg))                                                       \
+                *(value) = (truncate_t) * (unsigned int *)(arg);                        \
+            *(integer_size_out) = sizeof(unsigned int);                                 \
+        }                                                                               \
+        else if ((tostr_p) == cgs__long_tostr_p)                                        \
+        {                                                                               \
+            if ((value) && (arg))                                                       \
+                *(value) = (truncate_t) * (int *)(arg);                                 \
+            *(integer_size_out) = sizeof(int);                                          \
+        }                                                                               \
+        else if ((tostr_p) == cgs__ulong_tostr_p)                                       \
+        {                                                                               \
+            if ((value) && (arg))                                                       \
+                *(value) = (truncate_t) * (unsigned long *)(arg);                       \
+            *(integer_size_out) = sizeof(unsigned long);                                \
+        }                                                                               \
+        else if ((tostr_p) == cgs__llong_tostr_p)                                       \
+        {                                                                               \
+            if ((value) && (arg))                                                       \
+                *(value) = (truncate_t) * (long long *)(arg);                           \
+            *(integer_size_out) = sizeof(long long);                                    \
+        }                                                                               \
+        else if ((tostr_p) == cgs__ullong_tostr_p)                                      \
+        {                                                                               \
+            if ((value) && (arg))                                                       \
+                *(value) = (truncate_t) * (unsigned long long *)(arg);                  \
+            *(integer_size_out) = sizeof(unsigned long long);                           \
+        }                                                                               \
+        else                                                                            \
+        {                                                                               \
+            *(integer_size_out) = -1;                                                   \
+        }                                                                               \
     } while (0)
 
 #define cgs__format_specifier_read_integral_arg(truncate_t)                                         \
@@ -3046,11 +3046,9 @@ void cgs__float_arg_value_from_callback(
         )                                        \
     )
 
-#define cgs__ssize_t \
-    cgs__signed_of(size_t)
+#define cgs__ssize_t cgs__signed_of(size_t)
 
-#define cgs__uptrdiff_t \
-    cgs__unsigned_of(ptrdiff_t)
+#define cgs__uptrdiff_t cgs__unsigned_of(ptrdiff_t)
 
 CGS_API CGS_Error cgs__appendi(
     CGS_Writer *writer, unsigned int n_specifiers, const char *literals[], const char *flags[], const char *widths[], const char *precisions[],
