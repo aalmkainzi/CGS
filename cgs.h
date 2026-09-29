@@ -263,7 +263,8 @@ typedef struct CGS_MutStrRef
     X(CALLBACK_EXIT)          \
     X(TOO_MANY_ARGS)          \
     X(NOT_ENOUGH_ARGS)        \
-    X(BAD_FORMAT)
+    X(BAD_FORMAT)             \
+    X(TYPE_MISMATCH)
 
 enum CGS__ErrorCode
 {
@@ -1798,34 +1799,32 @@ cgs__invoke_appendln_tostr(CGS_Writer *writer, const void *obj, CGS_Error (*tost
 
 #if 1 || defined(__FORMAT_INTERPS__)
 
-#define cgs_appendi(writer, fstr, ...) \
-    cgs__appendi(cgs_writer_ptr(writer), , CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__))
+CGS_API CGS_Error cgs__appendi(
+    CGS_Writer *writer, unsigned int n_specifiers, const char *literals[], const char *flags[], const char *widths[], const char *precisions[],
+    const char *length_modifiers[], const char conversion_chars[], void *interps[],
+    CGS_Error (*interp_tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg), unsigned n_objs, void *objs[],
+    CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+);
 
-#define cgs__signed_of(unsigned_t)               \
-    __typeof__(                                  \
-        _Generic((char(*)[sizeof(unsigned_t)])0, \
-            char(*)[8] : (int8_t) 0,             \
-            char(*)[16]: (int16_t)0,             \
-            char(*)[32]: (int32_t)0,             \
-            char(*)[64]: (int64_t)0,             \
-        )                                        \
+#define cgs__cstrarr(...) \
+(const char*[]){__VA_ARGS__}
+
+#define cgs_appendi(writer, fstr, ...)                                                                                          \
+    cgs__appendi(                                                                                                               \
+        cgs_writer_ptr(writer),                                                                                                 \
+        CGS__CARR_LEN(cgs__cstrarr(__FORMAT_FLAGS__(fstr))),                                                                    \
+        cgs__cstrarr(__FORMAT_LITERALS__(fstr)),                                                                                \
+        cgs__cstrarr(__FORMAT_FLAGS__(fstr)),                                                                                   \
+        cgs__cstrarr(__FORMAT_WIDTHS__(fstr)),                                                                                  \
+        cgs__cstrarr(__FORMAT_PRECISIONS__(fstr)),                                                                              \
+        cgs__cstrarr(__FORMAT_LENGTH_MODIFIERS__(fstr)),                                                                        \
+        (char[]){__FORMAT_CONVERSION_CHARS__(fstr)},                                                                            \
+        (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __FORMAT_INTERPS__(fstr))},                                                     \
+        (CGS_Error(*[])(CGS_Writer*, const void*, CGS_StrView)){CGS__FOREACH(cgs__tostr_p_func_elm, __FORMAT_INTERPS__(fstr))}, \
+        0 + CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__),                                                                     \
+        (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)},                                                                  \
+        (CGS_Error(*[])(CGS_Writer*, const void*, CGS_StrView)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)}               \
     )
-
-#define cgs__unsigned_of(signed_t)               \
-    __typeof__(                                  \
-        _Generic((char(*)[sizeof(unsigned_t)])0, \
-            char(*)[8] : (uint8_t) 0,            \
-            char(*)[16]: (uint16_t)0,            \
-            char(*)[32]: (uint32_t)0,            \
-            char(*)[64]: (uint64_t)0,            \
-        )                                        \
-    )
-
-#define cgs__ssize_t \
-    cgs__signed_of(size_t)
-
-#define cgs__sptrdiff_t \
-    cgs__unsigned_of(ptrdiff_t)
 
 #endif
 

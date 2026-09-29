@@ -2868,88 +2868,209 @@ bool cgs__integral_conversion_char(char c)
     }
 }
 
-int cgs__integral_arg_value_from_tostr_p(CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView fmt_arg), void *arg, int *value)
+CGS_Error cgs__string_arg_value_from_callback(CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView), void *arg, CGS_StrView *value)
 {
-    // cant use switch statement with function pointer :(
+    if (!((value) && (arg)))
+    {
+        return (CGS_Error){CGS_OK};
+    }
 
-    if (tostr_p == cgs__char_tostr_p)
+    if (tostr_p == cgs__cstr_tostr_p)
     {
-        *value = *(char*)arg;
-        return sizeof(char);
+        *(value) = cgs__strv_1(*(char**)arg);
     }
-    else if (tostr_p == cgs__schar_tostr_p)
+    else if (tostr_p == cgs__ucstr_tostr_p)
     {
-        *value = *(signed char*)arg;
-        return sizeof(signed char);
+        *(value) = cgs__strv_1(*(unsigned char**)arg);
     }
-    else if (tostr_p == cgs__uchar_tostr_p)
+    else if (tostr_p == cgs__strv_tostr_p)
     {
-        *value = *(unsigned char*)arg;
-        return sizeof(unsigned char);
+        *(value) = cgs__strv_1(*(CGS_StrView*)arg);
     }
-    else if (tostr_p == cgs__short_tostr_p)
+    else if (tostr_p == cgs__zstrv_tostr_p)
     {
-        *value = *(short*)arg;
-        return sizeof(short);
+        *(value) = cgs__strv_1(*(CGS_ZStrView*)arg);
     }
-    else if (tostr_p == cgs__ushort_tostr_p)
+    else if (tostr_p == cgs__dstr_tostr_p)
     {
-        *value = *(unsigned short*)arg;
-        return sizeof(unsigned short);
+        *(value) = cgs__strv_1(*(CGS_DStr*)arg);
     }
-    else if (tostr_p == cgs__int_tostr_p)
+    else if (tostr_p == cgs__dstr_ptr_tostr_p)
     {
-        *value = *(int*)arg;
-        return sizeof(int);
+        *(value) = cgs__strv_1(*(CGS_DStr**)arg);
     }
-    else if (tostr_p == cgs__uint_tostr_p)
+    else if (tostr_p == cgs__strbuf_tostr_p)
     {
-        *value = *(unsigned int*)arg;
-        return sizeof(unsigned int);
+        *(value) = cgs__strv_1(*(CGS_StrBuf*)arg);
     }
-    else if (tostr_p == cgs__long_tostr_p)
+    else if (tostr_p == cgs__strbuf_ptr_tostr_p)
     {
-        *value = *(int*)arg;
-        return sizeof(int);
+        *(value) = cgs__strv_1(*(CGS_StrBuf**)arg);
     }
-    else if (tostr_p == cgs__ulong_tostr_p)
+    else if (tostr_p == cgs__mutstr_ref_tostr_p)
     {
-        *value = *(unsigned long*)arg;
-        return sizeof(unsigned long);
-    }
-    else if (tostr_p == cgs__llong_tostr_p)
-    {
-        *value = *(long long*)arg;
-        return sizeof(long long);
-    }
-    else if (tostr_p == cgs__ullong_tostr_p)
-    {
-        *value = *(unsigned long long*)arg;
-        return sizeof(unsigned long long);
+        *(value) = cgs__strv_1(*(CGS_MutStrRef*)arg);
     }
     else
     {
-        return -1;
+        return (CGS_Error){CGS_TYPE_MISMATCH};
+    }
+
+    return (CGS_Error){CGS_OK};
+}
+
+void cgs__float_arg_value_from_callback(
+    CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView), void *arg, double *value, int *float_size_out
+)
+{
+    if (tostr_p == cgs__float_tostr_p)
+    {
+        if ((value) && (arg))
+            *(value) = *(float *)arg;
+        *(float_size_out) = sizeof(float);
+    }
+    else if (tostr_p == cgs__double_tostr_p)
+    {
+        if ((value) && (arg))
+            *(value) = *(double *)arg;
+        *(float_size_out) = sizeof(double);
+    }
+    else
+    {
+        *(float_size_out) = -1;
     }
 }
 
-static inline CGS_Error cgs__appendi(
+#define cgs__integral_arg_value_from_callback(tostr_p, arg, value, truncate_t, err_out)          \
+    do                                                                                           \
+    {                                                                                            \
+        /* cant use switch statement with function pointer :( */                                 \
+                                                                                                 \
+        if (tostr_p == cgs__char_tostr_p)                                                        \
+        {                                                                                        \
+            if ((value) && (arg))                                                                \
+                *(value) = (truncate_t) * (char *)(arg);                                         \
+            *(integer_size_out) = sizeof(char);                                                  \
+        }                                                                                        \
+        else if (tostr_p == cgs__schar_tostr_p)                                                  \
+        {                                                                                        \
+            if ((value) && (arg))                                                                \
+                *(value) = (truncate_t) * (signed char *)(arg);                                  \
+            *(integer_size_out) = sizeof(signed char);                                           \
+        }                                                                                        \
+        else if (tostr_p == cgs__uchar_tostr_p)                                                  \
+        {                                                                                        \
+            if ((value) && (arg))                                                                \
+                *(value) = (truncate_t) * (unsigned char *)(arg);                                \
+            *(integer_size_out) = sizeof(unsigned char);                                         \
+        }                                                                                        \
+        else if (tostr_p == cgs__short_tostr_p)                                                  \
+        {                                                                                        \
+            if ((value) && (arg))                                                                \
+                *(value) = (truncate_t) * (short *)(arg);                                        \
+            *(integer_size_out) = sizeof(short);                                                 \
+        }                                                                                        \
+        else if (tostr_p == cgs__ushort_tostr_p)                                                 \
+        {                                                                                        \
+            if ((value) && (arg))                                                                \
+                *(value) = (truncate_t) * (unsigned short *)(arg);                               \
+            *(integer_size_out) = sizeof(unsigned short);                                        \
+        }                                                                                        \
+        else if (tostr_p == cgs__int_tostr_p)                                                    \
+        {                                                                                        \
+            if ((value) && (arg))                                                                \
+                *(value) = (truncate_t) * (int *)(arg);                                          \
+            *(integer_size_out) = sizeof(int);                                                   \
+        }                                                                                        \
+        else if (tostr_p == cgs__uint_tostr_p)                                                   \
+        {                                                                                        \
+            if ((value) && (arg))                                                                \
+                *(value) = (truncate_t) * (unsigned int *)(arg);                                 \
+            *(integer_size_out) = sizeof(unsigned int);                                          \
+        }                                                                                        \
+        else if (tostr_p == cgs__long_tostr_p)                                                   \
+        {                                                                                        \
+            if ((value) && (arg))                                                                \
+                *(value) = (truncate_t) * (int *)(arg);                                          \
+            *(integer_size_out) = sizeof(int);                                                   \
+        }                                                                                        \
+        else if (tostr_p == cgs__ulong_tostr_p)                                                  \
+        {                                                                                        \
+            if ((value) && (arg))                                                                \
+                *(value) = (truncate_t) * (unsigned long *)(arg);                                \
+            *(integer_size_out) = sizeof(unsigned long);                                         \
+        }                                                                                        \
+        else if (tostr_p == cgs__llong_tostr_p)                                                  \
+        {                                                                                        \
+            if ((value) && (arg))                                                                \
+                *(value) = (truncate_t) * (long long *)(arg);                                    \
+            *(integer_size_out) = sizeof(long long);                                             \
+        }                                                                                        \
+        else if (tostr_p == cgs__ullong_tostr_p)                                                 \
+        {                                                                                        \
+            if ((value) && (arg))                                                                \
+                *(value) = (truncate_t) * (unsigned long long *)(arg);                           \
+            *(integer_size_out) = sizeof(unsigned long long);                                    \
+        }                                                                                        \
+        else                                                                                     \
+        {                                                                                        \
+            *(integer_size_out) = -1;                                                            \
+        }                                                                                        \
+    } while (0)
+
+#define cgs__format_specifier_read_integral_arg(truncate_t)                                         \
+    do                                                                                              \
+    {                                                                                               \
+        if (obj_integer_size == -1)                                                                 \
+            return (CGS_Error) {CGS_BAD_FORMAT};                                                    \
+        cgs__integral_arg_value_from_callback(tostr_p, obj, &integer_value, truncate_t, &(int) {}); \
+    } while (0)
+
+#define cgs__signed_of(unsigned_t)               \
+    __typeof__(                                  \
+        _Generic((char(*)[sizeof(unsigned_t)])0, \
+            char(*)[8] : (int8_t) 0,             \
+            char(*)[16]: (int16_t)0,             \
+            char(*)[32]: (int32_t)0,             \
+            char(*)[64]: (int64_t)0              \
+        )                                        \
+    )
+
+#define cgs__unsigned_of(signed_t)               \
+    __typeof__(                                  \
+        _Generic((char(*)[sizeof(signed_t)])0,   \
+            char(*)[8] : (uint8_t) 0,            \
+            char(*)[16]: (uint16_t)0,            \
+            char(*)[32]: (uint32_t)0,            \
+            char(*)[64]: (uint64_t)0             \
+        )                                        \
+    )
+
+#define cgs__ssize_t \
+    cgs__signed_of(size_t)
+
+#define cgs__uptrdiff_t \
+    cgs__unsigned_of(ptrdiff_t)
+
+CGS_API CGS_Error cgs__appendi(
     CGS_Writer *writer, unsigned int n_specifiers, const char *literals[], const char *flags[], const char *widths[], const char *precisions[],
-    const char *length_modifiers[], const char conversion_chars[], unsigned n_interps, void *interps[], unsigned n_objs, void *objs[],
+    const char *length_modifiers[], const char conversion_chars[], void *interps[],
+    CGS_Error (*interp_tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg), unsigned n_objs, void *objs[],
     CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
 )
 {
-    CGS_Error err = {CGS_OK};
-    unsigned obj_iter = 0;
+    CGS_Error err        = {CGS_OK};
+    unsigned obj_iter    = 0;
     unsigned interp_iter = 0;
+
     for (unsigned i = 0; i < n_specifiers; i++)
     {
-        bool left_align     = false;
-        bool zero_pad       = false;
-        bool add_plus       = false;
-        bool alt            = false;
-        int width           = 0;
-        int precision       = -1;
+        bool left_align = false;
+        bool zero_pad   = false;
+        bool add_plus   = false;
+        bool alt        = false;
+        uint64_t width       = 0;
+        uint64_t precision   = -1;
 
         enum
         {
@@ -2961,6 +3082,8 @@ static inline CGS_Error cgs__appendi(
             j,
             z,
             t,
+            L,
+            H,
             w8,
             w16,
             w32,
@@ -2972,6 +3095,14 @@ static inline CGS_Error cgs__appendi(
             LENGTH_MODIFIERS_COUNT
         } length_modifier = no_length_modifier;
 
+        double float_value;
+        uint64_t integer_value;
+        CGS_StrView string_value;
+
+        // TODO apply the flags
+        // can use cgs_alignfmt
+        // in case of '+', alignfmt a singular +, then write the number by itself
+        // in case of alt, 
         for (unsigned f = 0, flen = strlen(flags[i]); f < flen; f++)
         {
             switch (flags[i][f])
@@ -2993,13 +3124,15 @@ static inline CGS_Error cgs__appendi(
         if (widths[i][0] == '*')
         {
             void *width_arg = objs[obj_iter];
-            CGS_Error (*tostr_p)(CGS_Writer*, const void*, CGS_StrView) = tostr_p_funcs[obj_iter];
+
+            CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView) = tostr_p_funcs[obj_iter];
             obj_iter++;
-            
-            int integer_size = cgs__integral_arg_value_from_tostr_p(tostr_p, width_arg, &width);
+
+            int integer_size;
+            cgs__integral_arg_value_from_callback(tostr_p, width_arg, &width, int, &integer_size);
             if (integer_size == -1)
             {
-                return (CGS_Error){CGS_BAD_FORMAT};
+                return (CGS_Error) {CGS_TYPE_MISMATCH};
             }
         }
         else if (widths[i][0])
@@ -3010,13 +3143,15 @@ static inline CGS_Error cgs__appendi(
         if (precisions[i][0] == '*')
         {
             void *precision_arg = objs[obj_iter];
-            CGS_Error (*tostr_p)(CGS_Writer*, const void*, CGS_StrView) = tostr_p_funcs[obj_iter];
+
+            CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView) = tostr_p_funcs[obj_iter];
             obj_iter++;
 
-            int integer_size = cgs__integral_arg_value_from_tostr_p(tostr_p, precision_arg, &precision);
+            int integer_size;
+            cgs__integral_arg_value_from_callback(tostr_p, precision_arg, &precision, int, &integer_size);
             if (integer_size == -1)
             {
-                return (CGS_Error){CGS_BAD_FORMAT};
+                return (CGS_Error) {CGS_TYPE_MISMATCH};
             }
         }
         else if (precisions[i][0])
@@ -3025,59 +3160,182 @@ static inline CGS_Error cgs__appendi(
         }
 
         void *obj = objs[obj_iter];
+
+        CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView) = tostr_p_funcs[obj_iter];
         
+        bool obj_is_integer;
+        {
+            CGS_Error tmp_err;
+            cgs__integral_arg_value_from_callback(tostr_p, NULL, (int*) NULL, int, &tmp_err);
+            obj_is_integer = tmp_err.ec == CGS_OK;
+        }
+
         if (strcmp(length_modifiers[i], "h"))
         {
+            if (obj_integer_size == -1)
+                return (CGS_Error){CGS_TYPE_MISMATCH};
             length_modifier = h;
+            cgs__format_specifier_read_integral_arg(unsigned short);
         }
         else if (strcmp(length_modifiers[i], "hh"))
         {
+            if (obj_integer_size == -1)
+                return (CGS_Error){CGS_TYPE_MISMATCH};
             length_modifier = hh;
+            cgs__format_specifier_read_integral_arg(unsigned char);
         }
         else if (strcmp(length_modifiers[i], "l"))
         {
+            if (obj_integer_size == -1)
+                return (CGS_Error){CGS_TYPE_MISMATCH};
             length_modifier = l;
+            cgs__format_specifier_read_integral_arg(unsigned long);
         }
         else if (strcmp(length_modifiers[i], "ll"))
         {
+            if (obj_integer_size == -1)
+                return (CGS_Error){CGS_TYPE_MISMATCH};
             length_modifier = ll;
+            cgs__format_specifier_read_integral_arg(unsigned long long);
         }
         else if (strcmp(length_modifiers[i], "j"))
         {
+            if (obj_integer_size == -1)
+                return (CGS_Error){CGS_TYPE_MISMATCH};
             length_modifier = j;
+            cgs__format_specifier_read_integral_arg(uintmax_t);
         }
         else if (strcmp(length_modifiers[i], "z"))
         {
+            if (obj_integer_size == -1)
+                return (CGS_Error){CGS_TYPE_MISMATCH};
             length_modifier = z;
+            cgs__format_specifier_read_integral_arg(size_t);
         }
         else if (strcmp(length_modifiers[i], "t"))
         {
+            if (obj_integer_size == -1)
+                return (CGS_Error){CGS_TYPE_MISMATCH};
             length_modifier = t;
+            cgs__format_specifier_read_integral_arg(cgs__uptrdiff_t);
         }
         else if (length_modifiers[i][0] == 'w')
         {
+            if (obj_integer_size == -1)
+                return (CGS_Error){CGS_TYPE_MISMATCH};
+
             bool is_fast = length_modifiers[i][1] == 'f';
 
-            int wwidth = strtoul(length_modifiers[i] + 1 + is_fast, NULL, 10);
-            wwidth = log2(wwidth) - 3;
+            int wwidth      = strtoul(length_modifiers[i] + 1 + is_fast, NULL, 10);
+            wwidth          = log2(wwidth) - 3; // convert 8->1, 16->2, etc.
             length_modifier = w8 + wwidth + (is_fast * (wf8 - w8));
             if (length_modifier >= LENGTH_MODIFIERS_COUNT)
-                return (CGS_Error){CGS_BAD_FORMAT};
+                return (CGS_Error) {CGS_TYPE_MISMATCH};
+            
+            switch (length_modifier)
+            {
+                case w8:
+                    cgs__format_specifier_read_integral_arg(uint8_t);
+                    break;
+                case w16:
+                    cgs__format_specifier_read_integral_arg(uint16_t);
+                    break;
+                case w32:
+                    cgs__format_specifier_read_integral_arg(uint32_t);
+                    break;
+                case w64:
+                    cgs__format_specifier_read_integral_arg(uint64_t);
+                    break;
+                case wf8:
+                    cgs__format_specifier_read_integral_arg(uint_fast8_t);
+                    break;
+                case wf16:
+                    cgs__format_specifier_read_integral_arg(uint_fast16_t);
+                    break;
+                case wf32:
+                    cgs__format_specifier_read_integral_arg(uint_fast32_t);
+                    break;
+                case wf64:
+                    cgs__format_specifier_read_integral_arg(uint_fast64_t);
+                    break;
+                default:
+                    return (CGS_Error){CGS_TYPE_MISMATCH};
+            }
         }
-        
+        else if (length_modifiers[i][0])
+        {
+            cgs_printfln("length modifier '%?' not yet supported", length_modifiers[i]);
+            return (CGS_Error){CGS_BAD_FORMAT};
+        }
+
         if (length_modifier != no_length_modifier)
         {
             if (conversion_chars[i] != '?' && !cgs__integral_conversion_char(conversion_chars[i]))
             {
-                return (CGS_Error){CGS_BAD_FORMAT};
+                return (CGS_Error) {CGS_TYPE_MISMATCH};
             }
         }
-        
+
+        if ((length_modifier == no_length_modifier && obj_integer_size != -1) &&
+            (conversion_chars[i] == '?' || cgs__integral_conversion_char(conversion_chars[i])))
+        {
+            cgs__format_specifier_read_integral_arg(uint64_t);
+        }
+
+        // write the literal before current specifier
         err = cgs__invoke_writer(writer, cgs__strv_1(literals[i]));
         if (err.ec != CGS_OK)
             return err;
 
+        if (conversion_chars[i] == 'f' || conversion_chars[i] == 'e' || conversion_chars[i] == 'g' || conversion_chars[i] == 'a')
+        {
+            CGS_Error err = cgs__float_arg_value_from_callback(tostr_p, obj, &float_value, &float_size);
+            if (err.ec != CGS_OK)
+                return err;
+        }
+        else if (conversion_chars[i] == 's')
+        {
+            cgs__string_arg_value_from_callback(tostr_p, obj, &string_value);
+        }
+
+        switch (conversion_chars[i])
+        {
+            case 'd':
+            case 'i':
+                // if + flag, write + first
+                cgs_append_tostr(writer, (int64_t)integer_value);
+                break;
+            case 'u':
+                cgs_append_tostr(writer, integer_value);
+                break;
+            case 'o':
+                cgs_append_tostr(writer, cgs_nfmt(integer_value, 'o'));
+                break;
+            case 'x':
+                cgs_append_tostr(writer, cgs_nfmt(integer_value, 'x'));
+                break;
+            case 'X':
+                cgs_append_tostr(writer, cgs_nfmt(integer_value, 'X'));
+                break;
+            case 'b':
+                cgs_append_tostr(writer, cgs_nfmt(integer_value, 'b'));
+                break;
+
+            case 'f':
+                cgs_append_tostr(writer, cgs_nfmt(float_value, 'f'));
+                break;
+            case 'g':
+                cgs_append_tostr(writer, cgs_nfmt(float_value, 'g'));
+                break;
+
+            // TODO handle f, g, a, s, etc.
+            // 's' should handle all string types
+            
+            default:
+                cgs_printfln("conversion character '%?' not yet supported", conversion_chars[i]);
+        }
     }
+    return err;
 }
 
 CGS_PRIVATE unsigned int cgs__numstr_len(unsigned long long num)
