@@ -2950,71 +2950,71 @@ void cgs__float_arg_value_from_callback(
         {                                                                               \
             if ((value) && (arg))                                                       \
                 *(value) = (truncate_t) * (char *)(arg);                                \
-            *(integer_size_out) = sizeof(char);                                         \
+            *(err_out) = (CGS_Error) {CGS_OK};                                          \
         }                                                                               \
         else if ((tostr_p) == cgs__schar_tostr_p)                                       \
         {                                                                               \
             if ((value) && (arg))                                                       \
                 *(value) = (truncate_t) * (signed char *)(arg);                         \
-            *(integer_size_out) = sizeof(signed char);                                  \
+            *(err_out) = (CGS_Error) {CGS_OK};                                          \
         }                                                                               \
         else if ((tostr_p) == cgs__uchar_tostr_p)                                       \
         {                                                                               \
             if ((value) && (arg))                                                       \
                 *(value) = (truncate_t) * (unsigned char *)(arg);                       \
-            *(integer_size_out) = sizeof(unsigned char);                                \
+            *(err_out) = (CGS_Error) {CGS_OK};                                          \
         }                                                                               \
         else if ((tostr_p) == cgs__short_tostr_p)                                       \
         {                                                                               \
             if ((value) && (arg))                                                       \
                 *(value) = (truncate_t) * (short *)(arg);                               \
-            *(integer_size_out) = sizeof(short);                                        \
+            *(err_out) = (CGS_Error) {CGS_OK};                                          \
         }                                                                               \
         else if ((tostr_p) == cgs__ushort_tostr_p)                                      \
         {                                                                               \
             if ((value) && (arg))                                                       \
                 *(value) = (truncate_t) * (unsigned short *)(arg);                      \
-            *(integer_size_out) = sizeof(unsigned short);                               \
+            *(err_out) = (CGS_Error) {CGS_OK};                                          \
         }                                                                               \
         else if ((tostr_p) == cgs__int_tostr_p)                                         \
         {                                                                               \
             if ((value) && (arg))                                                       \
                 *(value) = (truncate_t) * (int *)(arg);                                 \
-            *(integer_size_out) = sizeof(int);                                          \
+            *(err_out) = (CGS_Error) {CGS_OK};                                          \
         }                                                                               \
         else if ((tostr_p) == cgs__uint_tostr_p)                                        \
         {                                                                               \
             if ((value) && (arg))                                                       \
                 *(value) = (truncate_t) * (unsigned int *)(arg);                        \
-            *(integer_size_out) = sizeof(unsigned int);                                 \
+            *(err_out) = (CGS_Error) {CGS_OK};                                          \
         }                                                                               \
         else if ((tostr_p) == cgs__long_tostr_p)                                        \
         {                                                                               \
             if ((value) && (arg))                                                       \
                 *(value) = (truncate_t) * (int *)(arg);                                 \
-            *(integer_size_out) = sizeof(int);                                          \
+            *(err_out) = (CGS_Error) {CGS_OK};                                          \
         }                                                                               \
         else if ((tostr_p) == cgs__ulong_tostr_p)                                       \
         {                                                                               \
             if ((value) && (arg))                                                       \
                 *(value) = (truncate_t) * (unsigned long *)(arg);                       \
-            *(integer_size_out) = sizeof(unsigned long);                                \
+            *(err_out) = (CGS_Error) {CGS_OK};                                          \
         }                                                                               \
         else if ((tostr_p) == cgs__llong_tostr_p)                                       \
         {                                                                               \
             if ((value) && (arg))                                                       \
                 *(value) = (truncate_t) * (long long *)(arg);                           \
-            *(integer_size_out) = sizeof(long long);                                    \
+            *(err_out) = (CGS_Error) {CGS_OK};                                          \
         }                                                                               \
         else if ((tostr_p) == cgs__ullong_tostr_p)                                      \
         {                                                                               \
             if ((value) && (arg))                                                       \
                 *(value) = (truncate_t) * (unsigned long long *)(arg);                  \
-            *(integer_size_out) = sizeof(unsigned long long);                           \
+            *(err_out) = (CGS_Error) {CGS_OK};                                          \
         }                                                                               \
         else                                                                            \
         {                                                                               \
-            *(integer_size_out) = -1;                                                   \
+            *(err_out) = (CGS_Error) {CGS_TYPE_MISMATCH};                               \
         }                                                                               \
     } while (0)
 
@@ -3126,11 +3126,11 @@ CGS_API CGS_Error cgs__appendi(
             CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView) = tostr_p_funcs[obj_iter];
             obj_iter++;
 
-            int integer_size;
-            cgs__integral_arg_value_from_callback(tostr_p, width_arg, &width, int, &integer_size);
-            if (integer_size == -1)
+            CGS_Error err;
+            cgs__integral_arg_value_from_callback(tostr_p, width_arg, &width, int, &err);
+            if (err.ec != CGS_OK)
             {
-                return (CGS_Error) {CGS_TYPE_MISMATCH};
+                return err;
             }
         }
         else if (widths[i][0])
