@@ -1809,9 +1809,9 @@ CGS_API CGS_Error cgs__appendi(
 #define cgs__cstrarr(...) \
 (const char*[]){__VA_ARGS__}
 
-#define cgs_appendi(writer, fstr, ...)                                                                                          \
+#define cgs_appendi(writer_dst, fstr, ...)                                                                                      \
     cgs__appendi(                                                                                                               \
-        cgs_writer_ptr(writer),                                                                                                 \
+        cgs_writer_ptr(writer_dst),                                                                                             \
         CGS__CARR_LEN(cgs__cstrarr(__FORMAT_FLAGS__(fstr))),                                                                    \
         cgs__cstrarr(__FORMAT_LITERALS__(fstr)),                                                                                \
         cgs__cstrarr(__FORMAT_FLAGS__(fstr)),                                                                                   \
@@ -1821,10 +1821,13 @@ CGS_API CGS_Error cgs__appendi(
         (char[]){__FORMAT_CONVERSION_CHARS__(fstr)},                                                                            \
         (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __FORMAT_INTERPS__(fstr))},                                                     \
         (CGS_Error(*[])(CGS_Writer*, const void*, CGS_StrView)){CGS__FOREACH(cgs__tostr_p_func_elm, __FORMAT_INTERPS__(fstr))}, \
-        0 + CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__),                                                                     \
+        0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__),                                                                       \
         (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)},                                                                  \
         (CGS_Error(*[])(CGS_Writer*, const void*, CGS_StrView)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)}               \
     )
+
+#define cgs_sprinti(mutstr_dst, fstr, ...) \
+    cgs_appendi(cgs__clear_and_return(cgs_mutstr_ref(mutstr_dst)), fstr, __VA_ARGS__)
 
 #endif
 
