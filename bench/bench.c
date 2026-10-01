@@ -1,7 +1,7 @@
 /* ===========================================================================
  * bench_cgs_vs_snprintf.c
  *
- * Benchmarks cgs_sprintf against the C standard snprintf on three workloads:
+ * Benchmarks cgs_sprinti against the C standard snprintf on three workloads:
  *
  *   1. views    - 8 string views, each with its own alignment and width
  *   2. ints     - 8 integers in decimal, hex, HEX, octal and binary
@@ -104,17 +104,14 @@ typedef struct Event {
 static CGS_Error event_to_str(CGS_Writer *dst, Event e, CGS_StrView fmt_arg)
 {
     if (cgs_equal(fmt_arg, "short"))
-        return cgs_appendf(dst, "#%? %?", e.id, e.label);
+        return cgs_appendi(dst, f"#%u %s", e.id, e.label);
     
-    return cgs_appendf(dst,
-                       "Event#%? \"%?\" rect(%?,%? %?x%?) rgba(%?,%?,%?,%?) w=%?",
+    return cgs_appendi(dst,
+                       f"Event#%u \"%s\" rect(%d,%d %dx%d) rgba(%hhu,%hhu,%hhu,%hhu) w=%.2f",
                        e.id, e.label,
                        e.area.x, e.area.y, e.area.w, e.area.h,
-                       cgs_nfmt((unsigned)e.color.r, 'd'),
-                       cgs_nfmt((unsigned)e.color.g, 'd'),
-                       cgs_nfmt((unsigned)e.color.b, 'd'),
-                       cgs_nfmt((unsigned)e.color.a, 'd'),
-                       cgs_nfmt(e.weight, 'f', 2));
+                       e.color.r, e.color.g, e.color.b, e.color.a,
+                       e.weight);
 }
 
 #define ADD_TOSTR \
@@ -195,7 +192,8 @@ static Event EV[8] = {
 
 static int cgs_views(CGS_StrBuf *o, unsigned i)
 {
-    cgs_sprintf(o, "%?|%?|%?|%?|%?|%?|%?|%?",
+    /* cgs_alignfmt objects print through their own tostr via %?. */
+    cgs_sprinti(o, f"%?|%?|%?|%?|%?|%?|%?|%?",
                 cgs_alignfmt(V[(i + 0u) & 7u], LEFT,  14),
                 cgs_alignfmt(V[(i + 1u) & 7u], RIGHT, 13),
                 cgs_alignfmt(V[(i + 2u) & 7u], LEFT,  16),
@@ -238,15 +236,17 @@ static int cgs_ints(CGS_StrBuf *o, unsigned i)
 {
     unsigned k = i & 7u;
     
-    cgs_sprintf(o, "d=%? x=%? X=%? o=%? b=%? ll=%? llx=%? z=%?",
-                cgs_nfmt(I32[k],              'd'),
-                cgs_nfmt(U32[k],              'x'),
-                cgs_nfmt(U32[(k + 3u) & 7u],  'X'),
-                cgs_nfmt(U32[(k + 5u) & 7u],  'o'),
-                cgs_nfmt(U32[(k + 1u) & 7u],  'b'),
-                cgs_nfmt(I64[k],              'd'),
-                cgs_nfmt(U64[k],              'x'),
-                cgs_nfmt(SZ[k],               'd'));
+    /* Same format as the snprintf side, but every argument is type-checked
+     * against its specifier. */
+    cgs_sprinti(o, f"d=%d x=%x X=%X o=%o b=%b ll=%lld llx=%llx z=%zu",
+                I32[k],
+                U32[k],
+                U32[(k + 3u) & 7u],
+                U32[(k + 5u) & 7u],
+                U32[(k + 1u) & 7u],
+                I64[k],
+                U64[k],
+                SZ[k]);
     
     return (int)o->len;
 }
@@ -256,7 +256,9 @@ static int std_ints(CGS_StrBuf *o, unsigned i)
     unsigned k = i & 7u;
     
     /* Every length modifier here (ll, ll, z) is a silent-UB landmine that the
-     * cgs version cannot have: cgs_nfmt takes the value, not a promise. */
+     * cgs version cannot have: cgs_sprinti knows each argument's real type, so
+     * a wrong modifier converts the value and a wrong kind of argument is
+     * reported as CGS_TYPE_MISMATCH instead of reading garbage. */
     int n = snprintf(o->chars, o->cap,
                      "d=%d x=%x X=%X o=%o b=%b ll=%lld llx=%llx z=%zu",
                      I32[k],
@@ -288,13 +290,14 @@ static int std_ints(CGS_StrBuf *o, unsigned i)
 
 static int cgs_events(CGS_StrBuf *o, unsigned i)
 {
-    unsigned k = i & 7u;
+    unsigned k  = i & 7u;
+    unsigned k1 = (k + 3u) & 7u;
+    unsigned k2 = (k + 5u) & 7u;
+    unsigned k3 = (k + 7u) & 7u;
     
-    cgs_sprintf(o, "%? | %? | %? | %(short)",
-                EV[k],
-                EV[(k + 3u) & 7u],
-                EV[(k + 5u) & 7u],
-                EV[(k + 7u) & 7u]);     /* %(short) picks the compact tostr branch */
+    /* The events are interpolated and %? prints each through event_to_str.
+     * %? passes no fmt_arg, so the compact form of the last one is spelled out. */
+    cgs_sprinti(o, f"%{EV[k]}? | %{EV[k1]}? | %{EV[k2]}? | #%{EV[k3].id}u %{EV[k3].label}s");
     
     return (int)o->len;
 }
@@ -419,7 +422,7 @@ int main(int argc, char **argv)
     buf[0] = '\0';
     out = cgs_strbuf_init_from_buf(buf, sizeof buf);
     
-    printf("cgs_sprintf vs snprintf -- %u iters x %d rounds, best round kept\n\n",
+    printf("cgs_sprinti vs snprintf -- %u iters x %d rounds, best round kept\n\n",
            g_iters, ROUNDS);
     
     /* Correctness gate first: a benchmark of two different outputs is noise. */
@@ -431,7 +434,7 @@ int main(int argc, char **argv)
     }
     
     printf("%-30s %13s %13s %9s %7s\n",
-           "case", "snprintf", "cgs_sprintf", "speedup", "bytes");
+           "case", "snprintf", "cgs_sprinti", "speedup", "bytes");
     printf("%-30s %13s %13s %9s %7s\n",
            "------------------------------", "-------------", "-------------",
            "---------", "-------");

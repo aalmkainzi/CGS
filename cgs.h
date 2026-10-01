@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <limits.h>
 
 #if !defined(CGS_API)
     #define CGS_API
@@ -1799,31 +1800,185 @@ cgs__invoke_appendln_tostr(CGS_Writer *writer, const void *obj, CGS_Error (*tost
 
 #if 1 || defined(__FORMAT_INTERPS__)
 
-CGS_API CGS_Error cgs__appendi(
-    CGS_Writer *writer, unsigned int n_specifiers, const char *literals[], const char *flags[], const char *widths[], const char *precisions[],
-    const char *length_modifiers[], const char conversion_chars[], void *interps[],
-    CGS_Error (*interp_tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg), unsigned n_objs, void *objs[],
-    CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
-);
-
 #define cgs__cstrarr(...) \
-(const char*[]){__VA_ARGS__}
+    (const char*[]){__VA_ARGS__}
+
+typedef struct CGS__FmtFlags
+{
+    bool left_align : 1;
+    bool add_plus   : 1;
+    bool zero_pad   : 1;
+    bool alt        : 1;
+} CGS__FmtFlags;
+
+
+#define cgs__fmt_spec_extract_flags(flags_str) \
+    (CGS__FmtFlags){ \
+        .left_align = strchr(flags_str, '-'), \
+        .add_plus   = strchr(flags_str, '+'), \
+        .zero_pad   = strchr(flags_str, '0'), \
+        .alt        = strchr(flags_str, '#') \
+    },
+
+#define CGS__LENMOD_LIST(macro) \
+    macro(h   )                 \
+    macro(hh  )                 \
+    macro(l   )                 \
+    macro(ll  )                 \
+    macro(j   )                 \
+    macro(z   )                 \
+    macro(t   )                 \
+    macro(L   )                 \
+    macro(H   )                 \
+    macro(w8  )                 \
+    macro(w16 )                 \
+    macro(w32 )                 \
+    macro(w64 )                 \
+    macro(wf8 )                 \
+    macro(wf16)                 \
+    macro(wf32)                 \
+    macro(wf64)                 \
+
+enum
+{
+    CGS__LENMOD_NONE = 0,
+    CGS__LENMOD_INVALID,
+    
+#define CGS__LIST_EACH(lenmod) CGS__LENMOD_##lenmod,
+
+    CGS__LENMOD_LIST(CGS__LIST_EACH)
+
+#undef CGS__LIST_EACH
+    
+    CGS__LENMOD_interp
+};
+
+[[gnu::always_inline]]
+static inline unsigned char cgs__fmt_spec_extract_length_modifier_(const char *length_modifier)
+{
+    if (strcmp(length_modifier, "h") == 0)
+        return CGS__LENMOD_h;
+    else if (strcmp(length_modifier, "hh") == 0)
+        return CGS__LENMOD_hh;
+    else if (strcmp(length_modifier, "l") == 0)
+        return CGS__LENMOD_l;
+    else if (strcmp(length_modifier, "ll") == 0)
+        return CGS__LENMOD_ll;
+    else if (strcmp(length_modifier, "j") == 0)
+        return CGS__LENMOD_j;
+    else if (strcmp(length_modifier, "z") == 0)
+        return CGS__LENMOD_z;
+    else if (strcmp(length_modifier, "t") == 0)
+        return CGS__LENMOD_t;
+    else if (strcmp(length_modifier, "L") == 0)
+        return CGS__LENMOD_L;
+    else if (strcmp(length_modifier, "H") == 0)
+        return CGS__LENMOD_H;
+    else if (strcmp(length_modifier, "w8") == 0)
+        return CGS__LENMOD_w8;
+    else if (strcmp(length_modifier, "w16") == 0)
+        return CGS__LENMOD_w16;
+    else if (strcmp(length_modifier, "w32") == 0)
+        return CGS__LENMOD_w32;
+    else if (strcmp(length_modifier, "w64") == 0)
+        return CGS__LENMOD_w64;
+    else if (strcmp(length_modifier, "wf8") == 0)
+        return CGS__LENMOD_wf8;
+    else if (strcmp(length_modifier, "wf16") == 0)
+        return CGS__LENMOD_wf16;
+    else if (strcmp(length_modifier, "wf32") == 0)
+        return CGS__LENMOD_wf32;
+    else if (strcmp(length_modifier, "wf64") == 0)
+        return CGS__LENMOD_wf64;
+    else if (strcmp(length_modifier, "{}") == 0)
+        return CGS__LENMOD_interp;
+    else if (length_modifier[0])
+        return CGS__LENMOD_INVALID;
+    else
+        return CGS__LENMOD_NONE;
+}
+
+#define cgs__fmt_spec_extract_length_modifier(lenmod) \
+    cgs__fmt_spec_extract_length_modifier_(lenmod),
+
+static inline unsigned long long cgs__fmt_spec_star_or_num_or_empty_(const char *s)
+{
+    if (s[0] == '*')
+        return (unsigned long long)-2;
+    else if (s[0])
+        return strtoul(s, NULL, 10);
+    else
+        return (unsigned long long)-1;
+}
+
+#define cgs__fmt_spec_star_or_num_or_empty(s) \
+    cgs__fmt_spec_star_or_num_or_empty_(s),
+
+#define cgs__fmt_spec_strv_each_literal(lit) \
+    (CGS_StrView){.chars = lit, .len = sizeof(lit) - 1},
+
+enum
+{
+    CGS__FmtSpec_not_integer,
+    CSG__FmtSpec_ubegin,
+    CGS__FmtSpec_uchar,
+    CGS__FmtSpec_ushort,
+    CGS__FmtSpec_uint,
+    CGS__FmtSpec_ulong,
+    CGS__FmtSpec_ullong,
+    CGS__FmtSpec_uend_if_char_signed,
+    CGS__FmtSpec_sbegin_if_char_signed,
+    CGS__FmtSpec_char,
+    CGS__FmtSpec_uend_if_char_unsigned,
+    CGS__FmtSpec_sbegin_if_char_unsigned,
+    CGS__FmtSpec_schar,
+    CGS__FmtSpec_short,
+    CGS__FmtSpec_int,
+    CGS__FmtSpec_long,
+    CGS__FmtSpec_llong,
+    CGS__FmtSpec_send
+};
+
+#define cgs__fmt_spec_integer_kind(obj)           \
+_Generic(obj,                                     \
+    char               : CGS__FmtSpec_char,       \
+    signed char        : CGS__FmtSpec_schar,      \
+    unsigned char      : CGS__FmtSpec_uchar,      \
+    short              : CGS__FmtSpec_short,      \
+    unsigned short     : CGS__FmtSpec_ushort,     \
+    int                : CGS__FmtSpec_int,        \
+    unsigned int       : CGS__FmtSpec_uint,       \
+    long               : CGS__FmtSpec_long,       \
+    unsigned long      : CGS__FmtSpec_ulong,      \
+    long long          : CGS__FmtSpec_llong,      \
+    unsigned long long : CGS__FmtSpec_ullong,     \
+    default            : CGS__FmtSpec_not_integer \
+),
+
+CGS_API CGS_Error cgs__appendi(
+    CGS_Writer *writer, unsigned int n_specifiers, const CGS_StrView literals[], const CGS__FmtFlags flags[], const unsigned long long widths[],
+    const unsigned long long precisions[], const unsigned char length_modifiers[], const char conversion_chars[], const void *interps[],
+    CGS_Error (*interp_tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg), const signed char *interp_is_integer, unsigned n_objs, void *objs[],
+    CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg), const signed char *obj_is_integer
+);
 
 #define cgs_appendi(writer_dst, fstr, ...)                                                                                      \
     cgs__appendi(                                                                                                               \
         cgs_writer_ptr(writer_dst),                                                                                             \
         CGS__CARR_LEN(cgs__cstrarr(__FORMAT_FLAGS__(fstr))),                                                                    \
-        cgs__cstrarr(__FORMAT_LITERALS__(fstr)),                                                                                \
-        cgs__cstrarr(__FORMAT_FLAGS__(fstr)),                                                                                   \
-        cgs__cstrarr(__FORMAT_WIDTHS__(fstr)),                                                                                  \
-        cgs__cstrarr(__FORMAT_PRECISIONS__(fstr)),                                                                              \
-        cgs__cstrarr(__FORMAT_LENGTH_MODIFIERS__(fstr)),                                                                        \
+        (const CGS_StrView[]){CGS__FOREACH(cgs__fmt_spec_strv_each_literal, __FORMAT_LITERALS__(fstr))},                        \
+        (const CGS__FmtFlags[]){CGS__FOREACH(cgs__fmt_spec_extract_flags, __FORMAT_FLAGS__(fstr))},                             \
+        (const unsigned long long[]){CGS__FOREACH(cgs__fmt_spec_star_or_num_or_empty, __FORMAT_WIDTHS__(fstr))},                \
+        (const unsigned long long[]){CGS__FOREACH(cgs__fmt_spec_star_or_num_or_empty, __FORMAT_PRECISIONS__(fstr))},            \
+        (const unsigned char[]){CGS__FOREACH(cgs__fmt_spec_extract_length_modifier, __FORMAT_LENGTH_MODIFIERS__(fstr))},        \
         (char[]){__FORMAT_CONVERSION_CHARS__(fstr)},                                                                            \
-        (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __FORMAT_INTERPS__(fstr))},                                                     \
+        (const void*[]){CGS__FOREACH(cgs__as_ptr_elm, __FORMAT_INTERPS__(fstr))},                                               \
         (CGS_Error(*[])(CGS_Writer*, const void*, CGS_StrView)){CGS__FOREACH(cgs__tostr_p_func_elm, __FORMAT_INTERPS__(fstr))}, \
+        (const signed char[]){CGS__FOREACH(cgs__fmt_spec_integer_kind, __FORMAT_INTERPS__(fstr))},                              \
         0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__),                                                                       \
         (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)},                                                                  \
-        (CGS_Error(*[])(CGS_Writer*, const void*, CGS_StrView)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)}               \
+        (CGS_Error(*[])(CGS_Writer*, const void*, CGS_StrView)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)},              \
+        (const signed char[]){CGS__FOREACH(cgs__fmt_spec_integer_kind, __VA_ARGS__)}                                            \
     )
 
 #define cgs_sprinti(mutstr_dst, fstr, ...) \

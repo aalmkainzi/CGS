@@ -9,6 +9,11 @@
 #include <stdint.h>
 #include <math.h>
 
+#if defined(CGS_USE_ZMIJ) && __has_include("zmij/zmij-c.h")
+    #define CGS__DO_USE_ZMIJ
+    #include "zmij/zmij-c.h"
+#endif
+
 #ifndef CGS_API
     // for functions exposed in the header
     #define CGS_API
@@ -2869,37 +2874,7 @@ CGS_PRIVATE bool cgs__integral_conversion_char(char c)
     }
 }
 
-CGS_PRIVATE bool cgs__is_signed_integer(CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView))
-{
-    if (tostr_p == cgs__char_tostr_p)
-    {
-        if (CHAR_MIN < 0)
-            return true;
-    }
-    else if (tostr_p == cgs__schar_tostr_p)
-    {
-        return true;
-    }
-    else if (tostr_p == cgs__short_tostr_p)
-    {
-        return true;
-    }
-    else if (tostr_p == cgs__int_tostr_p)
-    {
-        return true;
-    }
-    else if (tostr_p == cgs__long_tostr_p)
-    {
-        return true;
-    }
-    else if (tostr_p == cgs__llong_tostr_p)
-    {
-        return true;
-    }
-    return false;
-}
-
-CGS_PRIVATE CGS_Error cgs__string_arg_value_from_callback(CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView), void *arg, CGS_StrView *value)
+CGS_PRIVATE CGS_Error cgs__string_arg_value_from_callback(CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView), const void *arg, CGS_StrView *value)
 {
     if (!((value) && (arg)))
     {
@@ -2950,7 +2925,7 @@ CGS_PRIVATE CGS_Error cgs__string_arg_value_from_callback(CGS_Error (*tostr_p)(C
     return (CGS_Error){CGS_OK};
 }
 
-CGS_PRIVATE CGS_Error cgs__float_arg_value_from_callback(CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView), void *arg, double *value)
+CGS_PRIVATE CGS_Error cgs__float_arg_value_from_callback(CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView), const void *arg, double *value)
 {
     if (tostr_p == cgs__float_tostr_p)
     {
@@ -2970,111 +2945,111 @@ CGS_PRIVATE CGS_Error cgs__float_arg_value_from_callback(CGS_Error (*tostr_p)(CG
     }
 }
 
-#define cgs__integral_arg_value_from_callback(tostr_p, arg, value, truncate_t, is_signed, err_out) \
-    do                                                                                             \
-    {                                                                                              \
-        /* cant use switch statement with function pointer :( */                                   \
-                                                                                                   \
-        if ((tostr_p) == cgs__char_tostr_p)                                                        \
-        {                                                                                          \
-            if ((value) && (arg))                                                                  \
-                *(value) = (truncate_t) * (char *)(arg);                                           \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                     \
-            if ((is_signed))                                                                       \
-                *(is_signed) = CHAR_MIN < 0;                                                       \
-        }                                                                                          \
-        else if ((tostr_p) == cgs__schar_tostr_p)                                                  \
-        {                                                                                          \
-            if ((value) && (arg))                                                                  \
-                *(value) = (truncate_t) * (signed char *)(arg);                                    \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                     \
-            if (is_signed)                                                                         \
-                *(is_signed) = true;                                                               \
-        }                                                                                          \
-        else if ((tostr_p) == cgs__uchar_tostr_p)                                                  \
-        {                                                                                          \
-            if ((value) && (arg))                                                                  \
-                *(value) = (truncate_t) * (unsigned char *)(arg);                                  \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                     \
-            if (is_signed)                                                                         \
-                *(is_signed) = false;                                                              \
-        }                                                                                          \
-        else if ((tostr_p) == cgs__short_tostr_p)                                                  \
-        {                                                                                          \
-            if ((value) && (arg))                                                                  \
-                *(value) = (truncate_t) * (short *)(arg);                                          \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                     \
-            if (is_signed)                                                                         \
-                *(is_signed) = true;                                                               \
-        }                                                                                          \
-        else if ((tostr_p) == cgs__ushort_tostr_p)                                                 \
-        {                                                                                          \
-            if ((value) && (arg))                                                                  \
-                *(value) = (truncate_t) * (unsigned short *)(arg);                                 \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                     \
-            if (is_signed)                                                                         \
-                *(is_signed) = false;                                                              \
-        }                                                                                          \
-        else if ((tostr_p) == cgs__int_tostr_p)                                                    \
-        {                                                                                          \
-            if ((value) && (arg))                                                                  \
-                *(value) = (truncate_t) * (int *)(arg);                                            \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                     \
-            if (is_signed)                                                                         \
-                *(is_signed) = true;                                                               \
-        }                                                                                          \
-        else if ((tostr_p) == cgs__uint_tostr_p)                                                   \
-        {                                                                                          \
-            if ((value) && (arg))                                                                  \
-                *(value) = (truncate_t) * (unsigned int *)(arg);                                   \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                     \
-            if (is_signed)                                                                         \
-                *(is_signed) = false;                                                              \
-        }                                                                                          \
-        else if ((tostr_p) == cgs__long_tostr_p)                                                   \
-        {                                                                                          \
-            if ((value) && (arg))                                                                  \
-                *(value) = (truncate_t) * (long *)(arg);                                           \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                     \
-            if (is_signed)                                                                         \
-                *(is_signed) = true;                                                               \
-        }                                                                                          \
-        else if ((tostr_p) == cgs__ulong_tostr_p)                                                  \
-        {                                                                                          \
-            if ((value) && (arg))                                                                  \
-                *(value) = (truncate_t) * (unsigned long *)(arg);                                  \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                     \
-            if (is_signed)                                                                         \
-                *(is_signed) = false;                                                              \
-        }                                                                                          \
-        else if ((tostr_p) == cgs__llong_tostr_p)                                                  \
-        {                                                                                          \
-            if ((value) && (arg))                                                                  \
-                *(value) = (truncate_t) * (long long *)(arg);                                      \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                     \
-            if (is_signed)                                                                         \
-                *(is_signed) = true;                                                               \
-        }                                                                                          \
-        else if ((tostr_p) == cgs__ullong_tostr_p)                                                 \
-        {                                                                                          \
-            if ((value) && (arg))                                                                  \
-                *(value) = (truncate_t) * (unsigned long long *)(arg);                             \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                     \
-            if (is_signed)                                                                         \
-                *(is_signed) = false;                                                              \
-        }                                                                                          \
-        else                                                                                       \
-        {                                                                                          \
-            *(err_out) = (CGS_Error) {CGS_TYPE_MISMATCH};                                          \
-        }                                                                                          \
+#define cgs__integral_arg_value_from_callback(tag, arg, value, truncate_t, is_signed, err_out) \
+    do                                                                                         \
+    {                                                                                          \
+        /* cant use switch statement with function pointer :( */                               \
+                                                                                               \
+        if ((tag) == CGS__FmtSpec_char)                                                        \
+        {                                                                                      \
+            if ((value) && (arg))                                                              \
+                *(value) = (truncate_t) * (char *)(arg);                                       \
+            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
+            if ((is_signed))                                                                   \
+                *(is_signed) = CHAR_MIN < 0;                                                   \
+        }                                                                                      \
+        else if ((tag) == CGS__FmtSpec_schar)                                                  \
+        {                                                                                      \
+            if ((value) && (arg))                                                              \
+                *(value) = (truncate_t) * (signed char *)(arg);                                \
+            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
+            if (is_signed)                                                                     \
+                *(is_signed) = true;                                                           \
+        }                                                                                      \
+        else if ((tag) == CGS__FmtSpec_uchar)                                                  \
+        {                                                                                      \
+            if ((value) && (arg))                                                              \
+                *(value) = (truncate_t) * (unsigned char *)(arg);                              \
+            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
+            if (is_signed)                                                                     \
+                *(is_signed) = false;                                                          \
+        }                                                                                      \
+        else if ((tag) == CGS__FmtSpec_short)                                                  \
+        {                                                                                      \
+            if ((value) && (arg))                                                              \
+                *(value) = (truncate_t) * (short *)(arg);                                      \
+            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
+            if (is_signed)                                                                     \
+                *(is_signed) = true;                                                           \
+        }                                                                                      \
+        else if ((tag) == CGS__FmtSpec_ushort)                                                 \
+        {                                                                                      \
+            if ((value) && (arg))                                                              \
+                *(value) = (truncate_t) * (unsigned short *)(arg);                             \
+            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
+            if (is_signed)                                                                     \
+                *(is_signed) = false;                                                          \
+        }                                                                                      \
+        else if ((tag) == CGS__FmtSpec_int)                                                    \
+        {                                                                                      \
+            if ((value) && (arg))                                                              \
+                *(value) = (truncate_t) * (int *)(arg);                                        \
+            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
+            if (is_signed)                                                                     \
+                *(is_signed) = true;                                                           \
+        }                                                                                      \
+        else if ((tag) == CGS__FmtSpec_uint)                                                   \
+        {                                                                                      \
+            if ((value) && (arg))                                                              \
+                *(value) = (truncate_t) * (unsigned int *)(arg);                               \
+            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
+            if (is_signed)                                                                     \
+                *(is_signed) = false;                                                          \
+        }                                                                                      \
+        else if ((tag) == CGS__FmtSpec_long)                                                   \
+        {                                                                                      \
+            if ((value) && (arg))                                                              \
+                *(value) = (truncate_t) * (long *)(arg);                                       \
+            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
+            if (is_signed)                                                                     \
+                *(is_signed) = true;                                                           \
+        }                                                                                      \
+        else if ((tag) == CGS__FmtSpec_ulong)                                                  \
+        {                                                                                      \
+            if ((value) && (arg))                                                              \
+                *(value) = (truncate_t) * (unsigned long *)(arg);                              \
+            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
+            if (is_signed)                                                                     \
+                *(is_signed) = false;                                                          \
+        }                                                                                      \
+        else if ((tag) == CGS__FmtSpec_llong)                                                  \
+        {                                                                                      \
+            if ((value) && (arg))                                                              \
+                *(value) = (truncate_t) * (long long *)(arg);                                  \
+            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
+            if (is_signed)                                                                     \
+                *(is_signed) = true;                                                           \
+        }                                                                                      \
+        else if ((tag) == CGS__FmtSpec_ullong)                                                 \
+        {                                                                                      \
+            if ((value) && (arg))                                                              \
+                *(value) = (truncate_t) * (unsigned long long *)(arg);                         \
+            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
+            if (is_signed)                                                                     \
+                *(is_signed) = false;                                                          \
+        }                                                                                      \
+        else                                                                                   \
+        {                                                                                      \
+            *(err_out) = (CGS_Error) {CGS_TYPE_MISMATCH};                                      \
+        }                                                                                      \
     } while (0)
 
-#define cgs__format_specifier_read_integral_arg(truncate_t)                                                             \
-    do                                                                                                                  \
-    {                                                                                                                   \
-        if (!obj_is_integer)                                                                                            \
-            return (CGS_Error) {CGS_TYPE_MISMATCH};                                                                     \
-        cgs__integral_arg_value_from_callback(tostr_p, obj, &integer_value, truncate_t, (bool*) NULL, &(CGS_Error) {}); \
+#define cgs__format_specifier_read_integral_arg(truncate_t)                                                                 \
+    do                                                                                                                      \
+    {                                                                                                                       \
+        if (!obj_is_integer)                                                                                                \
+            return (CGS_Error) {CGS_TYPE_MISMATCH};                                                                         \
+        cgs__integral_arg_value_from_callback(integer_tag, obj, &integer_value, truncate_t, (bool*) NULL, &(CGS_Error) {}); \
     } while (0)
 
 #define cgs__signed_of(unsigned_t)               \
@@ -3116,11 +3091,19 @@ CGS_PRIVATE CGS_Error cgs__float_arg_value_from_callback(CGS_Error (*tostr_p)(CG
         }                                          \
     } while (0)
 
+const char *cgs__lenmod_strings[] = {
+#define CGS__STRING_EACH(lenmod) [CGS__LENMOD_##lenmod] = #lenmod,
+    
+    CGS__LENMOD_LIST(CGS__STRING_EACH)
+    
+#undef CGS__STRING_EACH
+};
+
 CGS_API CGS_Error cgs__appendi(
-    CGS_Writer *writer, unsigned int n_specifiers, const char *literals[], const char *flags[], const char *widths[], const char *precisions[],
-    const char *length_modifiers[], const char conversion_chars[], void *interps[],
-    CGS_Error (*interp_tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg), unsigned n_objs, void *objs[],
-    CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)
+    CGS_Writer *writer, unsigned int n_specifiers, const CGS_StrView literals[], const CGS__FmtFlags flags[], const unsigned long long widths[],
+    const unsigned long long precisions[], const unsigned char length_modifiers[], const char conversion_chars[], const void *interps[],
+    CGS_Error (*interp_tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg), const signed char *interps_is_integer, unsigned n_objs, void *objs[],
+    CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg), const signed char *objs_is_integer
 )
 {
     CGS_Error err        = {CGS_OK};
@@ -3129,115 +3112,78 @@ CGS_API CGS_Error cgs__appendi(
 
     for (unsigned i = 0; i < n_specifiers && err.ec == CGS_OK ; i++)
     {
-        bool left_align    = false;
-        bool zero_pad      = false;
-        bool add_plus      = false;
-        bool alt           = false;
         uint64_t width     = 0;
         uint64_t precision = -1;
-        
-        bool is_interp = strcmp(length_modifiers[i], "{}") == 0;
-
-        enum
-        {
-            no_length_modifier,
-            h,
-            hh,
-            l,
-            ll,
-            j,
-            z,
-            t,
-            L,
-            H,
-            w8,
-            w16,
-            w32,
-            w64,
-            wf8,
-            wf16,
-            wf32,
-            wf64,
-            LENGTH_MODIFIERS_COUNT
-        } length_modifier = no_length_modifier;
 
         double float_value;
         uint64_t integer_value;
         CGS_StrView string_value;
 
-        for (unsigned f = 0, flen = strlen(flags[i]); f < flen; f++)
-        {
-            switch (flags[i][f])
-            {
-                case '-':
-                    left_align = true;
-                    break;
-                case '0':
-                    zero_pad = true;
-                    break;
-                case '+':
-                    add_plus = true;
-                    break;
-                case '#':
-                    alt = true;
-                    break;
-            }
-        }
-        if (widths[i][0] == '*')
+        if (widths[i] == (unsigned long long)-2)
         {
             void *width_arg;
-            CGS_Error (*width_tostr_p)(CGS_Writer *, const void *, CGS_StrView);
+            signed char width_arg_integer_tag = objs_is_integer[obj_iter];
 
-            cgs__appendi_next_obj(&width_arg, &width_tostr_p);
+            cgs__appendi_next_obj(&width_arg, &(__typeof__(tostr_p_funcs[0])){});
 
-            cgs__integral_arg_value_from_callback(width_tostr_p, width_arg, &width, int, (bool*)NULL, &err);
+            cgs__integral_arg_value_from_callback(width_arg_integer_tag, width_arg, &width, int, (bool*)NULL, &err);
             if (err.ec != CGS_OK)
                 return err;
         }
-        else if (widths[i][0])
+        else if (widths[i] == (unsigned long long)-1)
         {
-            width = strtoul(widths[i], NULL, 10);
-        }
-
-        if (precisions[i][0] == '*')
-        {
-            void *precision_arg;
-            CGS_Error (*precision_tostr_p)(CGS_Writer *, const void *, CGS_StrView);
-
-            cgs__appendi_next_obj(&precision_arg, &precision_tostr_p);
-
-            cgs__integral_arg_value_from_callback(precision_tostr_p, precision_arg, &precision, int, (bool*)NULL, &err);
-            if (err.ec != CGS_OK)
-                return err;
-        }
-        else if (precisions[i][0])
-        {
-            precision = strtoul(precisions[i], NULL, 10);
-        }
-
-        // Take interp if it is interp instead
-        void *obj;
-        CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView);
-
-        if (is_interp)
-        {
-            obj = interps[interp_iter];
-            tostr_p = interp_tostr_p_funcs[interp_iter];
-            interp_iter++;
+            width = 0;
         }
         else
         {
-            cgs__appendi_next_obj(&obj, &tostr_p);
+            width = widths[i];
         }
+
+        if (precisions[i] == (unsigned long long)-2)
+        {
+            void *precision_arg;
+            signed char precision_arg_integer_tag = objs_is_integer[obj_iter];
+
+            cgs__appendi_next_obj(&precision_arg, &(__typeof__(tostr_p_funcs[0])){});
+
+            cgs__integral_arg_value_from_callback(precision_arg_integer_tag, precision_arg, &precision, int, (bool*)NULL, &err);
+            if (err.ec != CGS_OK)
+                return err;
+        }
+        else if (precisions[i] != (unsigned long long)-1)
+        {
+            precision = precisions[i];
+        }
+
+        // Take interp if it is interp instead
+        const void *obj;
+        CGS_Error (*tostr_p)(CGS_Writer *, const void *, CGS_StrView);
 
         bool obj_is_integer = false;
         bool obj_is_signed = false;
         bool conv_is_integer = false;
         bool conv_is_signed = false;
+        signed char integer_tag;
+
+        if (length_modifiers[i] == CGS__LENMOD_interp)
         {
-            CGS_Error tmp_err;
-            cgs__integral_arg_value_from_callback(tostr_p, NULL, (int *)NULL, int, &obj_is_signed, &tmp_err);
-            obj_is_integer = tmp_err.ec == CGS_OK;
+            obj = interps[interp_iter];
+            tostr_p = interp_tostr_p_funcs[interp_iter];
+            integer_tag = interps_is_integer[interp_iter];
+            interp_iter++;
+        }
+        else
+        {
+            integer_tag = objs_is_integer[obj_iter];
+            cgs__appendi_next_obj(&obj, &tostr_p);
+        }
+
+        {
+            obj_is_integer = integer_tag != CGS__FmtSpec_not_integer;
+            if (CHAR_MIN < 0)
+                obj_is_signed = integer_tag > CGS__FmtSpec_sbegin_if_char_signed;
+            else
+                obj_is_integer = integer_tag > CGS__FmtSpec_sbegin_if_char_unsigned;
 
             switch (conversion_chars[i])
             {
@@ -3265,151 +3211,125 @@ CGS_API CGS_Error cgs__appendi(
             }
         }
 
-        if (!is_interp)
+        if (length_modifiers[i] != CGS__LENMOD_interp)
         {
-            if (strcmp(length_modifiers[i], "h") == 0)
+            if (length_modifiers[i] == CGS__LENMOD_h)
             {
-                length_modifier = h;
                 if (conv_is_signed)
                     cgs__format_specifier_read_integral_arg(short);
                 else
                     cgs__format_specifier_read_integral_arg(unsigned short);
             }
-            else if (strcmp(length_modifiers[i], "hh") == 0)
+            else if (length_modifiers[i] == CGS__LENMOD_hh)
             {
-                length_modifier = hh;
                 if (conv_is_signed)
                     cgs__format_specifier_read_integral_arg(signed char);
                 else
                     cgs__format_specifier_read_integral_arg(unsigned char);
             }
-            else if (strcmp(length_modifiers[i], "l") == 0)
+            else if (length_modifiers[i] == CGS__LENMOD_l)
             {
-                length_modifier = l;
                 if (conv_is_signed)
                     cgs__format_specifier_read_integral_arg(long);
                 else
                     cgs__format_specifier_read_integral_arg(unsigned long);
             }
-            else if (strcmp(length_modifiers[i], "ll") == 0)
+            else if (length_modifiers[i] == CGS__LENMOD_ll)
             {
-                length_modifier = ll;
                 if (conv_is_signed)
                     cgs__format_specifier_read_integral_arg(long long);
                 else
                     cgs__format_specifier_read_integral_arg(unsigned long long);
             }
-            else if (strcmp(length_modifiers[i], "j") == 0)
+            else if (length_modifiers[i] == CGS__LENMOD_j)
             {
-                length_modifier = j;
                 if (conv_is_signed)
                     cgs__format_specifier_read_integral_arg(intmax_t);
                 else
                     cgs__format_specifier_read_integral_arg(uintmax_t);
             }
-            else if (strcmp(length_modifiers[i], "z") == 0)
+            else if (length_modifiers[i] == CGS__LENMOD_z)
             {
-                length_modifier = z;
                 if (conv_is_signed)
                     cgs__format_specifier_read_integral_arg(cgs__ssize_t);
                 else
                     cgs__format_specifier_read_integral_arg(size_t);
             }
-            else if (strcmp(length_modifiers[i], "t") == 0)
+            else if (length_modifiers[i] == CGS__LENMOD_t)
             {
-                length_modifier = t;
                 if (conv_is_signed)
                     cgs__format_specifier_read_integral_arg(ptrdiff_t);
                 else
                     cgs__format_specifier_read_integral_arg(cgs__uptrdiff_t);
             }
-            else if (length_modifiers[i][0] == 'w')
+            else if (length_modifiers[i] == CGS__LENMOD_w8)
             {
-                bool is_fast = length_modifiers[i][1] == 'f';
-
-                unsigned long wbits = strtoul(length_modifiers[i] + 1 + is_fast, NULL, 10);
-                int widx;
-                switch (wbits)
-                {
-                    case 8:
-                        widx = 0;
-                        break;
-                    case 16:
-                        widx = 1;
-                        break;
-                    case 32:
-                        widx = 2;
-                        break;
-                    case 64:
-                        widx = 3;
-                        break;
-                    default:
-                        return (CGS_Error) {CGS_BAD_FORMAT};
-                }
-                length_modifier = (is_fast ? wf8 : w8) + widx;
-
-                switch (length_modifier)
-                {
-                    case w8:
-                        if (conv_is_signed)
-                            cgs__format_specifier_read_integral_arg(int8_t);
-                        else
-                            cgs__format_specifier_read_integral_arg(uint8_t);
-                        break;
-                    case w16:
-                        if (conv_is_signed)
-                            cgs__format_specifier_read_integral_arg(int16_t);
-                        else
-                            cgs__format_specifier_read_integral_arg(uint16_t);
-                        break;
-                    case w32:
-                        if (conv_is_signed)
-                            cgs__format_specifier_read_integral_arg(int32_t);
-                        else
-                            cgs__format_specifier_read_integral_arg(uint32_t);
-                        break;
-                    case w64:
-                        if (conv_is_signed)
-                            cgs__format_specifier_read_integral_arg(int64_t);
-                        else
-                            cgs__format_specifier_read_integral_arg(uint64_t);
-                        break;
-                    case wf8:
-                        if (conv_is_signed)
-                            cgs__format_specifier_read_integral_arg(int_fast8_t);
-                        else
-                            cgs__format_specifier_read_integral_arg(uint_fast8_t);
-                        break;
-                    case wf16:
-                        if (conv_is_signed)
-                            cgs__format_specifier_read_integral_arg(int_fast16_t);
-                        else
-                            cgs__format_specifier_read_integral_arg(uint_fast16_t);
-                        break;
-                    case wf32:
-                        if (conv_is_signed)
-                            cgs__format_specifier_read_integral_arg(int_fast32_t);
-                        else
-                            cgs__format_specifier_read_integral_arg(uint_fast32_t);
-                        break;
-                    case wf64:
-                        if (conv_is_signed)
-                            cgs__format_specifier_read_integral_arg(int_fast64_t);
-                        else
-                            cgs__format_specifier_read_integral_arg(uint_fast64_t);
-                        break;
-                    default:
-                        return (CGS_Error) {CGS_TYPE_MISMATCH};
-                }
+                if (conv_is_signed)
+                    cgs__format_specifier_read_integral_arg(int8_t);
+                else
+                    cgs__format_specifier_read_integral_arg(uint8_t);
             }
-            else if (length_modifiers[i][0])
+            else if (length_modifiers[i] == CGS__LENMOD_w16)
             {
-                cgs_printfln("length modifier '%?' not yet supported", length_modifiers[i]);
+                if (conv_is_signed)
+                    cgs__format_specifier_read_integral_arg(int16_t);
+                else
+                    cgs__format_specifier_read_integral_arg(uint16_t);
+            }
+            else if (length_modifiers[i] == CGS__LENMOD_w32)
+            {
+                if (conv_is_signed)
+                    cgs__format_specifier_read_integral_arg(int32_t);
+                else
+                    cgs__format_specifier_read_integral_arg(uint32_t);
+            }
+            else if (length_modifiers[i] == CGS__LENMOD_w64)
+            {
+                if (conv_is_signed)
+                    cgs__format_specifier_read_integral_arg(int64_t);
+                else
+                    cgs__format_specifier_read_integral_arg(uint64_t);
+            }
+            else if (length_modifiers[i] == CGS__LENMOD_wf8)
+            {
+                if (conv_is_signed)
+                    cgs__format_specifier_read_integral_arg(int_fast8_t);
+                else
+                    cgs__format_specifier_read_integral_arg(uint_fast8_t);
+            }
+            else if (length_modifiers[i] == CGS__LENMOD_wf16)
+            {
+                if (conv_is_signed)
+                    cgs__format_specifier_read_integral_arg(int_fast16_t);
+                else
+                    cgs__format_specifier_read_integral_arg(uint_fast16_t);
+            }
+            else if (length_modifiers[i] == CGS__LENMOD_wf32)
+            {
+                if (conv_is_signed)
+                    cgs__format_specifier_read_integral_arg(int_fast32_t);
+                else
+                    cgs__format_specifier_read_integral_arg(uint_fast32_t);
+            }
+            else if (length_modifiers[i] == CGS__LENMOD_wf64)
+            {
+                if (conv_is_signed)
+                    cgs__format_specifier_read_integral_arg(int_fast64_t);
+                else
+                    cgs__format_specifier_read_integral_arg(uint_fast64_t);
+            }
+            else if (length_modifiers[i] == CGS__LENMOD_INVALID)
+            {
+                return (CGS_Error){CGS_BAD_FORMAT};
+            }
+            else if (length_modifiers[i] != CGS__LENMOD_NONE)
+            {
+                cgs_printfln("length modifier '%?' not yet supported", cgs__lenmod_strings[length_modifiers[i]]);
                 return (CGS_Error) {CGS_BAD_FORMAT};
             }
         }
 
-        if (length_modifier == no_length_modifier && obj_is_integer)
+        if ((length_modifiers[i] == CGS__LENMOD_NONE || length_modifiers[i] == CGS__LENMOD_interp) && obj_is_integer)
         {
             if (conversion_chars[i] == '?')
                 cgs__format_specifier_read_integral_arg(uint64_t);
@@ -3420,7 +3340,7 @@ CGS_API CGS_Error cgs__appendi(
         }
 
         // write the literal before current specifier
-        err = cgs__invoke_writer(writer, cgs__strv_1(literals[i]));
+        err = cgs__invoke_writer(writer, literals[i]);
         if (err.ec != CGS_OK)
             return err;
 
@@ -3441,7 +3361,7 @@ CGS_API CGS_Error cgs__appendi(
         {
             case 'd':
             case 'i':
-                if (add_plus && (int64_t)integer_value >= 0)
+                if (flags[i].add_plus && (int64_t)integer_value >= 0)
                     err = cgs_putc(writer, '+');
                 err = cgs_append_tostr(writer, (int64_t)integer_value);
                 break;
@@ -3477,13 +3397,9 @@ CGS_API CGS_Error cgs__appendi(
                 if (obj_is_integer)
                 {
                     if (obj_is_signed)
-                    {
                         err = cgs_append_tostr(writer, (int64_t)integer_value);
-                    }
                     else
-                    {
                         err = cgs_append_tostr(writer, integer_value);
-                    }
                 }
                 else
                 {
@@ -3500,7 +3416,7 @@ CGS_API CGS_Error cgs__appendi(
     if (err.ec != CGS_OK)
         return err;
     
-    err = cgs_append(writer, literals[n_specifiers]);
+    err = cgs__invoke_writer(writer, literals[n_specifiers]);
     
     return err;
 }
@@ -3880,20 +3796,36 @@ CGS_API CGS_Error cgs__ullong_tostr(CGS_Writer *dst, unsigned long long obj, CGS
 
 CGS_API CGS_Error cgs__float_tostr(CGS_Writer *dst, float obj, CGS_StrView fmt_arg)
 {
+#ifdef CGS__DO_USE_ZMIJ
+    (void)fmt_arg;
+    char buffer[zmij_float_buffer_size];
+    size_t size    = zmij_detail_write_f(obj, buffer) - buffer;
+    CGS_StrView sv = {.chars = buffer, .len = size};
+    return cgs__invoke_writer(dst, sv);
+#else
     (void)fmt_arg;
     char tmp[32]    = {0};
     int len         = snprintf(tmp, sizeof(tmp), "%g", obj);
     CGS_StrView str = {.chars = (char *)tmp, .len = (unsigned int)len};
     return cgs__invoke_writer(dst, str);
+#endif
 }
 
 CGS_API CGS_Error cgs__double_tostr(CGS_Writer *dst, double obj, CGS_StrView fmt_arg)
 {
+#ifdef CGS__DO_USE_ZMIJ
+    (void)fmt_arg;
+    char buffer[zmij_float_buffer_size];
+    size_t size    = zmij_detail_write(obj, buffer) - buffer;
+    CGS_StrView sv = {.chars = buffer, .len = size};
+    return cgs__invoke_writer(dst, sv);
+#else
     (void)fmt_arg;
     char tmp[32]    = {0};
     int len         = snprintf(tmp, sizeof(tmp), "%g", obj);
     CGS_StrView str = {.chars = (char *)tmp, .len = (unsigned int)len};
     return cgs__invoke_writer(dst, str);
+#endif
 }
 
 CGS_API CGS_Error cgs__error_tostr(CGS_Writer *dst, CGS_Error obj, CGS_StrView fmt_arg)

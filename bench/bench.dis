@@ -1,0 +1,3100 @@
+
+a.out:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.got:
+
+Disassembly of section .plt.sec:
+
+Disassembly of section .text:
+
+0000000000005910 <cgs_views>:
+    5910:	endbr64
+    5914:	lea    0x8(%rsp),%r10
+    5919:	and    $0xffffffffffffffe0,%rsp
+    591d:	push   -0x8(%r10)
+    5921:	mov    %esi,%edx
+    5923:	and    $0x7,%edx
+    5926:	push   %rbp
+    5927:	lea    0x268b2(%rip),%rcx        # 2c1e0 <V>
+    592e:	shl    $0x4,%rdx
+    5932:	mov    %rsp,%rbp
+    5935:	push   %r12
+    5937:	push   %r10
+    5939:	push   %rbx
+    593a:	mov    %rdi,%rbx
+    593d:	lea    -0x420(%rbp),%rdi
+    5944:	sub    $0x418,%rsp
+    594b:	mov    %fs:0x28,%rax
+    5954:	mov    %rax,-0x38(%rbp)
+    5958:	mov    %esi,%eax
+    595a:	vpbroadcastq 0x2665d(%rip),%ymm0        # 2bfc0 <_GLOBAL_OFFSET_TABLE_+0x128>
+    5963:	lea    -0x2f0(%rbp),%rsi
+    596a:	mov    %rsi,-0x130(%rbp)
+    5971:	vmovdqa %ymm0,-0x170(%rbp)
+    5979:	vmovdqa %ymm0,-0x150(%rbp)
+    5981:	lea    0x1(%rax),%esi
+    5984:	vmovdqa (%rcx,%rdx,1),%xmm0
+    5989:	and    $0x7,%esi
+    598c:	shl    $0x4,%rsi
+    5990:	lea    -0x390(%rbp),%rdx
+    5997:	mov    %rdx,-0x2f0(%rbp)
+    599e:	vmovdqa %xmm0,-0x390(%rbp)
+    59a6:	lea    0x17b3(%rip),%rdx        # 7160 <cgs__strv_tostr_p>
+    59ad:	vmovdqa (%rcx,%rsi,1),%xmm0
+    59b2:	lea    -0x380(%rbp),%rsi
+    59b9:	mov    %rsi,-0x2d0(%rbp)
+    59c0:	lea    -0x2d0(%rbp),%rsi
+    59c7:	mov    %rdx,-0x2e8(%rbp)
+    59ce:	mov    %rdx,-0x2c8(%rbp)
+    59d5:	vmovdqa %xmm0,-0x380(%rbp)
+    59dd:	movq   $0x0,-0x40(%rbp)
+    59e5:	movl   $0xe,-0x2e0(%rbp)
+    59ef:	movw   $0x2001,-0x2dc(%rbp)
+    59f8:	movl   $0xd,-0x2c0(%rbp)
+    5a02:	mov    %rsi,-0x128(%rbp)
+    5a09:	lea    0x2(%rax),%esi
+    5a0c:	and    $0x7,%esi
+    5a0f:	shl    $0x4,%rsi
+    5a13:	vmovdqa (%rcx,%rsi,1),%xmm0
+    5a18:	lea    -0x370(%rbp),%rsi
+    5a1f:	mov    %rsi,-0x2b0(%rbp)
+    5a26:	lea    -0x2b0(%rbp),%rsi
+    5a2d:	mov    %rsi,-0x120(%rbp)
+    5a34:	lea    0x3(%rax),%esi
+    5a37:	and    $0x7,%esi
+    5a3a:	shl    $0x4,%rsi
+    5a3e:	vmovdqa %xmm0,-0x370(%rbp)
+    5a46:	vmovdqa (%rcx,%rsi,1),%xmm0
+    5a4b:	lea    -0x360(%rbp),%rsi
+    5a52:	mov    %rsi,-0x290(%rbp)
+    5a59:	lea    -0x290(%rbp),%rsi
+    5a60:	mov    %rsi,-0x118(%rbp)
+    5a67:	lea    0x4(%rax),%esi
+    5a6a:	and    $0x7,%esi
+    5a6d:	shl    $0x4,%rsi
+    5a71:	vmovdqa %xmm0,-0x360(%rbp)
+    5a79:	vmovdqa (%rcx,%rsi,1),%xmm0
+    5a7e:	lea    -0x350(%rbp),%rsi
+    5a85:	mov    %rsi,-0x270(%rbp)
+    5a8c:	lea    -0x270(%rbp),%rsi
+    5a93:	mov    %rsi,-0x110(%rbp)
+    5a9a:	lea    0x5(%rax),%esi
+    5a9d:	and    $0x7,%esi
+    5aa0:	shl    $0x4,%rsi
+    5aa4:	vmovdqa %xmm0,-0x350(%rbp)
+    5aac:	vmovdqa (%rcx,%rsi,1),%xmm0
+    5ab1:	lea    -0x340(%rbp),%rsi
+    5ab8:	mov    %rsi,-0x250(%rbp)
+    5abf:	lea    -0x250(%rbp),%rsi
+    5ac6:	mov    %rsi,-0x108(%rbp)
+    5acd:	lea    0x6(%rax),%esi
+    5ad0:	and    $0x7,%esi
+    5ad3:	shl    $0x4,%rsi
+    5ad7:	add    $0x7,%eax
+    5ada:	and    $0x7,%eax
+    5add:	vmovdqa %xmm0,-0x340(%rbp)
+    5ae5:	vmovdqa (%rcx,%rsi,1),%xmm0
+    5aea:	shl    $0x4,%rax
+    5aee:	lea    -0x330(%rbp),%rsi
+    5af5:	mov    %rdx,-0x2a8(%rbp)
+    5afc:	mov    %rdx,-0x288(%rbp)
+    5b03:	mov    %rdx,-0x268(%rbp)
+    5b0a:	mov    %rdx,-0x248(%rbp)
+    5b11:	vmovdqa %xmm0,-0x330(%rbp)
+    5b19:	movw   $0x2002,-0x2bc(%rbp)
+    5b22:	movl   $0x10,-0x2a0(%rbp)
+    5b2c:	movw   $0x2001,-0x29c(%rbp)
+    5b35:	movl   $0xc,-0x280(%rbp)
+    5b3f:	movw   $0x2002,-0x27c(%rbp)
+    5b48:	movl   $0xf,-0x260(%rbp)
+    5b52:	movw   $0x2001,-0x25c(%rbp)
+    5b5b:	movl   $0x12,-0x240(%rbp)
+    5b65:	movw   $0x2002,-0x23c(%rbp)
+    5b6e:	mov    %rsi,-0x230(%rbp)
+    5b75:	vmovdqa (%rcx,%rax,1),%xmm0
+    5b7a:	lea    -0x320(%rbp),%rax
+    5b81:	mov    %rax,-0x210(%rbp)
+    5b88:	lea    -0x210(%rbp),%rax
+    5b8f:	mov    %rax,-0xf8(%rbp)
+    5b96:	mov    0x18003(%rip),%rax        # 1dba0 <I32+0x20>
+    5b9d:	mov    %rdx,-0x228(%rbp)
+    5ba4:	mov    %rdx,-0x208(%rbp)
+    5bab:	mov    %rax,-0x48(%rbp)
+    5baf:	lea    0x17515(%rip),%rdx        # 1d0cb <_IO_stdin_used+0xcb>
+    5bb6:	lea    0x17447(%rip),%rax        # 1d004 <_IO_stdin_used+0x4>
+    5bbd:	lea    -0x230(%rbp),%rsi
+    5bc4:	vmovdqa %xmm0,-0x320(%rbp)
+    5bcc:	vpcmpeqd %ymm0,%ymm0,%ymm0
+    5bd0:	mov    %rdx,-0xf0(%rbp)
+    5bd7:	vmovdqa %ymm0,-0x1b0(%rbp)
+    5bdf:	vmovdqa %ymm0,-0x190(%rbp)
+    5be7:	vmovdqa %ymm0,-0x1f0(%rbp)
+    5bef:	vmovdqa %ymm0,-0x1d0(%rbp)
+    5bf7:	mov    %rax,-0xe0(%rbp)
+    5bfe:	mov    %rax,-0xd0(%rbp)
+    5c05:	mov    %rax,-0xc0(%rbp)
+    5c0c:	mov    %rax,-0xb0(%rbp)
+    5c13:	mov    %rax,-0xa0(%rbp)
+    5c1a:	mov    %rax,-0x90(%rbp)
+    5c21:	mov    %rsi,-0x100(%rbp)
+    5c28:	movl   $0x11,-0x220(%rbp)
+    5c32:	movw   $0x2001,-0x21c(%rbp)
+    5c3b:	movl   $0xc,-0x200(%rbp)
+    5c45:	movw   $0x2002,-0x1fc(%rbp)
+    5c4e:	movq   $0x0,-0x50(%rbp)
+    5c56:	movq   $0x0,-0x398(%rbp)
+    5c61:	movl   $0x0,-0xe8(%rbp)
+    5c6b:	movl   $0x1,-0xd8(%rbp)
+    5c75:	movl   $0x1,-0xc8(%rbp)
+    5c7f:	movl   $0x1,-0xb8(%rbp)
+    5c89:	movl   $0x1,-0xa8(%rbp)
+    5c93:	movl   $0x1,-0x98(%rbp)
+    5c9d:	movl   $0x1,-0x88(%rbp)
+    5ca7:	mov    %rdx,-0x70(%rbp)
+    5cab:	mov    %rax,-0x80(%rbp)
+    5caf:	movl   $0x1,-0x78(%rbp)
+    5cb6:	movl   $0x0,-0x68(%rbp)
+    5cbd:	mov    %rbx,%rsi
+    5cc0:	vzeroupper
+    5cc3:	call   c8c0 <cgs__strbuf_ptr_as_mutstr_ref>
+    5cc8:	vmovdqa -0x420(%rbp),%xmm0
+    5cd0:	mov    -0x410(%rbp),%rax
+    5cd7:	sub    $0x20,%rsp
+    5cdb:	mov    %rax,-0x3d0(%rbp)
+    5ce2:	vmovdqa %xmm0,-0x3e0(%rbp)
+    5cea:	movl   $0x0,-0x424(%rbp)
+    5cf4:	mov    %rax,0x10(%rsp)
+    5cf9:	lea    -0x424(%rbp),%rsi
+    5d00:	lea    -0x3c0(%rbp),%rdi
+    5d07:	vmovdqu %xmm0,(%rsp)
+    5d0c:	call   7db0 <cgs__mutstr_ref_as_fmutstr_ref_zero_len>
+    5d11:	vmovdqa -0x3c0(%rbp),%xmm0
+    5d19:	lea    -0x310(%rbp),%r12
+    5d20:	vmovdqu %xmm0,(%rsp)
+    5d25:	mov    -0x3b0(%rbp),%rax
+    5d2c:	mov    %rax,0x10(%rsp)
+    5d31:	call   c780 <cgs__fmutstr_ref_clear>
+    5d36:	vmovdqa -0x3e0(%rbp),%xmm0
+    5d3e:	mov    %r12,%rdi
+    5d41:	vmovdqu %xmm0,(%rsp)
+    5d46:	mov    -0x3d0(%rbp),%rax
+    5d4d:	mov    %rax,0x10(%rsp)
+    5d52:	call   db00 <cgs__mutstr_ref_to_writer>
+    5d57:	add    $0x18,%rsp
+    5d5b:	lea    -0x40(%rbp),%rax
+    5d5f:	push   %rax
+    5d60:	lea    -0x170(%rbp),%rax
+    5d67:	lea    -0xf0(%rbp),%rdx
+    5d6e:	push   %rax
+    5d6f:	lea    -0x130(%rbp),%rax
+    5d76:	lea    -0x398(%rbp),%rcx
+    5d7d:	push   %rax
+    5d7e:	lea    -0x51(%rbp),%rax
+    5d82:	lea    -0x1b0(%rbp),%r9
+    5d89:	push   $0x8
+    5d8b:	lea    -0x1f0(%rbp),%r8
+    5d92:	mov    $0x8,%esi
+    5d97:	push   %rax
+    5d98:	lea    -0x3a0(%rbp),%rax
+    5d9f:	mov    %r12,%rdi
+    5da2:	push   %rax
+    5da3:	lea    -0x3a8(%rbp),%rax
+    5daa:	push   %rax
+    5dab:	lea    -0x48(%rbp),%rax
+    5daf:	push   %rax
+    5db0:	lea    -0x50(%rbp),%rax
+    5db4:	push   %rax
+    5db5:	call   13660 <cgs__appendi>
+    5dba:	add    $0x50,%rsp
+    5dbe:	mov    -0x38(%rbp),%rdx
+    5dc2:	sub    %fs:0x28,%rdx
+    5dcb:	mov    0xc(%rbx),%eax
+    5dce:	jne    5ddf <cgs_views+0x4cf>
+    5dd0:	lea    -0x18(%rbp),%rsp
+    5dd4:	pop    %rbx
+    5dd5:	pop    %r10
+    5dd7:	pop    %r12
+    5dd9:	pop    %rbp
+    5dda:	lea    -0x8(%r10),%rsp
+    5dde:	ret
+    5ddf:	call   5260 <__stack_chk_fail@plt>
+
+Disassembly of section .fini:
+
+a.out:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.got:
+
+Disassembly of section .plt.sec:
+
+Disassembly of section .text:
+
+0000000000006ca0 <cgs_ints>:
+    6ca0:	endbr64
+    6ca4:	lea    0x8(%rsp),%r10
+    6ca9:	and    $0xffffffffffffffe0,%rsp
+    6cad:	push   -0x8(%r10)
+    6cb1:	and    $0x7,%esi
+    6cb4:	lea    0x16ec5(%rip),%rdx        # 1db80 <I32>
+    6cbb:	push   %rbp
+    6cbc:	mov    %rsp,%rbp
+    6cbf:	push   %r12
+    6cc1:	push   %r10
+    6cc3:	push   %rbx
+    6cc4:	sub    $0x2d8,%rsp
+    6ccb:	mov    0x16efe(%rip),%rax        # 1dbd0 <I32+0x50>
+    6cd2:	mov    %fs:0x28,%rbx
+    6cdb:	mov    %rbx,-0x38(%rbp)
+    6cdf:	mov    %rdi,%rbx
+    6ce2:	mov    %rax,-0x40(%rbp)
+    6ce6:	mov    %esi,%eax
+    6ce8:	mov    (%rdx,%rax,4),%edx
+    6ceb:	vmovq  0x2529d(%rip),%xmm3        # 2bf90 <_GLOBAL_OFFSET_TABLE_+0xf8>
+    6cf3:	mov    %edx,-0x244(%rbp)
+    6cf9:	lea    0x16e60(%rip),%rdx        # 1db60 <U32>
+    6d00:	mov    (%rdx,%rax,4),%ecx
+    6d03:	vmovq  0x252a5(%rip),%xmm0        # 2bfb0 <_GLOBAL_OFFSET_TABLE_+0x118>
+    6d0b:	mov    %ecx,-0x240(%rbp)
+    6d11:	lea    0x3(%rsi),%ecx
+    6d14:	and    $0x7,%ecx
+    6d17:	mov    (%rdx,%rcx,4),%ecx
+    6d1a:	vmovq  0x2527e(%rip),%xmm4        # 2bfa0 <_GLOBAL_OFFSET_TABLE_+0x108>
+    6d22:	vpunpcklqdq %xmm0,%xmm0,%xmm2
+    6d26:	vpunpcklqdq %xmm0,%xmm3,%xmm1
+    6d2a:	vinserti128 $0x1,%xmm2,%ymm1,%ymm1
+    6d30:	mov    %ecx,-0x23c(%rbp)
+    6d36:	lea    0x5(%rsi),%ecx
+    6d39:	and    $0x7,%ecx
+    6d3c:	vpinsrq $0x1,0x25292(%rip),%xmm0,%xmm0        # 2bfd8 <_GLOBAL_OFFSET_TABLE_+0x140>
+    6d46:	vmovdqa %ymm1,-0x130(%rbp)
+    6d4e:	vpinsrq $0x1,0x25240(%rip),%xmm4,%xmm1        # 2bf98 <_GLOBAL_OFFSET_TABLE_+0x100>
+    6d58:	mov    (%rdx,%rcx,4),%ecx
+    6d5b:	add    $0x1,%esi
+    6d5e:	and    $0x7,%esi
+    6d61:	vinserti128 $0x1,%xmm1,%ymm0,%ymm0
+    6d67:	vmovdqa %ymm0,-0x110(%rbp)
+    6d6f:	mov    %ecx,-0x238(%rbp)
+    6d75:	mov    (%rdx,%rsi,4),%edx
+    6d78:	lea    -0x23c(%rbp),%rdi
+    6d7f:	mov    %edx,-0x234(%rbp)
+    6d85:	lea    0x16d94(%rip),%rdx        # 1db20 <I64>
+    6d8c:	mov    (%rdx,%rax,8),%rdx
+    6d90:	vmovq  %rdi,%xmm1
+    6d95:	mov    %rdx,-0x230(%rbp)
+    6d9c:	lea    0x16d3d(%rip),%rdx        # 1dae0 <U64>
+    6da3:	mov    (%rdx,%rax,8),%rdx
+    6da7:	lea    -0x228(%rbp),%rdi
+    6dae:	mov    %rdx,-0x228(%rbp)
+    6db5:	lea    0x16ce4(%rip),%rdx        # 1daa0 <SZ>
+    6dbc:	mov    (%rdx,%rax,8),%rax
+    6dc0:	lea    -0x238(%rbp),%rdx
+    6dc7:	mov    %rax,-0x220(%rbp)
+    6dce:	lea    -0x244(%rbp),%rax
+    6dd5:	vmovq  %rax,%xmm0
+    6dda:	lea    -0x240(%rbp),%rax
+    6de1:	vpinsrq $0x1,%rdx,%xmm1,%xmm1
+    6de7:	vpinsrq $0x1,%rax,%xmm0,%xmm0
+    6ded:	vinserti128 $0x1,%xmm1,%ymm0,%ymm0
+    6df3:	lea    -0x234(%rbp),%rax
+    6dfa:	vmovdqa %ymm0,-0x170(%rbp)
+    6e02:	vmovq  %rax,%xmm0
+    6e07:	lea    -0x230(%rbp),%rax
+    6e0e:	vpinsrq $0x1,%rax,%xmm0,%xmm0
+    6e14:	mov    0x16dbd(%rip),%rax        # 1dbd8 <I32+0x58>
+    6e1b:	lea    -0x220(%rbp),%rdx
+    6e22:	mov    %rax,-0x48(%rbp)
+    6e26:	mov    0x16db3(%rip),%rax        # 1dbe0 <I32+0x60>
+    6e2d:	vmovq  %rdi,%xmm1
+    6e32:	mov    %rax,-0x50(%rbp)
+    6e36:	lea    0x161fb(%rip),%rax        # 1d038 <_IO_stdin_used+0x38>
+    6e3d:	mov    %rax,-0xf0(%rbp)
+    6e44:	lea    0x161f0(%rip),%rax        # 1d03b <_IO_stdin_used+0x3b>
+    6e4b:	mov    %rax,-0xe0(%rbp)
+    6e52:	lea    0x161e6(%rip),%rax        # 1d03f <_IO_stdin_used+0x3f>
+    6e59:	mov    %rax,-0xd0(%rbp)
+    6e60:	lea    0x161dc(%rip),%rax        # 1d043 <_IO_stdin_used+0x43>
+    6e67:	mov    %rax,-0xc0(%rbp)
+    6e6e:	lea    0x161d2(%rip),%rax        # 1d047 <_IO_stdin_used+0x47>
+    6e75:	vpinsrq $0x1,%rdx,%xmm1,%xmm1
+    6e7b:	mov    %rax,-0xb0(%rbp)
+    6e82:	lea    0x161c2(%rip),%rax        # 1d04b <_IO_stdin_used+0x4b>
+    6e89:	vinserti128 $0x1,%xmm1,%ymm0,%ymm0
+    6e8f:	mov    %rax,-0xa0(%rbp)
+    6e96:	lea    0x161b3(%rip),%rax        # 1d050 <_IO_stdin_used+0x50>
+    6e9d:	mov    %rax,-0x90(%rbp)
+    6ea4:	vmovdqa %ymm0,-0x150(%rbp)
+    6eac:	lea    0x161a3(%rip),%rax        # 1d056 <_IO_stdin_used+0x56>
+    6eb3:	vpcmpeqd %ymm0,%ymm0,%ymm0
+    6eb7:	vmovdqa %ymm0,-0x1b0(%rbp)
+    6ebf:	vmovdqa %ymm0,-0x190(%rbp)
+    6ec7:	vmovdqa %ymm0,-0x1f0(%rbp)
+    6ecf:	vmovdqa %ymm0,-0x1d0(%rbp)
+    6ed7:	movq   $0x0,-0x218(%rbp)
+    6ee2:	movl   $0x2,-0xe8(%rbp)
+    6eec:	movl   $0x3,-0xd8(%rbp)
+    6ef6:	movl   $0x3,-0xc8(%rbp)
+    6f00:	movl   $0x3,-0xb8(%rbp)
+    6f0a:	movl   $0x3,-0xa8(%rbp)
+    6f14:	movl   $0x4,-0x98(%rbp)
+    6f1e:	movl   $0x5,-0x88(%rbp)
+    6f28:	mov    %rax,-0x80(%rbp)
+    6f2c:	lea    0x16198(%rip),%rax        # 1d0cb <_IO_stdin_used+0xcb>
+    6f33:	mov    %rax,-0x70(%rbp)
+    6f37:	movl   $0x3,-0x78(%rbp)
+    6f3e:	movl   $0x0,-0x68(%rbp)
+    6f45:	lea    -0x2d0(%rbp),%rdi
+    6f4c:	mov    %rbx,%rsi
+    6f4f:	vzeroupper
+    6f52:	call   c8c0 <cgs__strbuf_ptr_as_mutstr_ref>
+    6f57:	vmovdqa -0x2d0(%rbp),%xmm0
+    6f5f:	mov    -0x2c0(%rbp),%rax
+    6f66:	sub    $0x20,%rsp
+    6f6a:	mov    %rax,-0x280(%rbp)
+    6f71:	vmovdqa %xmm0,-0x290(%rbp)
+    6f79:	movl   $0x0,-0x2d4(%rbp)
+    6f83:	mov    %rax,0x10(%rsp)
+    6f88:	lea    -0x2d4(%rbp),%rsi
+    6f8f:	lea    -0x270(%rbp),%rdi
+    6f96:	vmovdqu %xmm0,(%rsp)
+    6f9b:	call   7db0 <cgs__mutstr_ref_as_fmutstr_ref_zero_len>
+    6fa0:	vmovdqa -0x270(%rbp),%xmm0
+    6fa8:	lea    -0x210(%rbp),%r12
+    6faf:	vmovdqu %xmm0,(%rsp)
+    6fb4:	mov    -0x260(%rbp),%rax
+    6fbb:	mov    %rax,0x10(%rsp)
+    6fc0:	call   c780 <cgs__fmutstr_ref_clear>
+    6fc5:	vmovdqa -0x290(%rbp),%xmm0
+    6fcd:	mov    %r12,%rdi
+    6fd0:	vmovdqu %xmm0,(%rsp)
+    6fd5:	mov    -0x280(%rbp),%rax
+    6fdc:	mov    %rax,0x10(%rsp)
+    6fe1:	call   db00 <cgs__mutstr_ref_to_writer>
+    6fe6:	add    $0x18,%rsp
+    6fea:	lea    -0x40(%rbp),%rax
+    6fee:	push   %rax
+    6fef:	lea    -0x130(%rbp),%rax
+    6ff6:	lea    -0xf0(%rbp),%rdx
+    6ffd:	push   %rax
+    6ffe:	lea    -0x170(%rbp),%rax
+    7005:	lea    -0x218(%rbp),%rcx
+    700c:	push   %rax
+    700d:	lea    -0x51(%rbp),%rax
+    7011:	lea    -0x1b0(%rbp),%r9
+    7018:	push   $0x8
+    701a:	lea    -0x1f0(%rbp),%r8
+    7021:	mov    $0x8,%esi
+    7026:	push   %rax
+    7027:	lea    -0x248(%rbp),%rax
+    702e:	mov    %r12,%rdi
+    7031:	push   %rax
+    7032:	lea    -0x250(%rbp),%rax
+    7039:	push   %rax
+    703a:	lea    -0x48(%rbp),%rax
+    703e:	push   %rax
+    703f:	lea    -0x50(%rbp),%rax
+    7043:	push   %rax
+    7044:	call   13660 <cgs__appendi>
+    7049:	add    $0x50,%rsp
+    704d:	mov    -0x38(%rbp),%rdx
+    7051:	sub    %fs:0x28,%rdx
+    705a:	mov    0xc(%rbx),%eax
+    705d:	jne    706e <cgs_ints+0x3ce>
+    705f:	lea    -0x18(%rbp),%rsp
+    7063:	pop    %rbx
+    7064:	pop    %r10
+    7066:	pop    %r12
+    7068:	pop    %rbp
+    7069:	lea    -0x8(%r10),%rsp
+    706d:	ret
+    706e:	call   5260 <__stack_chk_fail@plt>
+
+Disassembly of section .fini:
+
+a.out:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.got:
+
+Disassembly of section .plt.sec:
+
+Disassembly of section .text:
+
+0000000000006940 <cgs_events>:
+    6940:	endbr64
+    6944:	lea    0x8(%rsp),%r10
+    6949:	and    $0xffffffffffffffe0,%rsp
+    694d:	push   -0x8(%r10)
+    6951:	lea    -0x78(%rip),%rax        # 68e0 <cgs__tostr_p_func_1>
+    6958:	vmovq  %rax,%xmm0
+    695d:	push   %rbp
+    695e:	mov    %esi,%eax
+    6960:	and    $0x7,%eax
+    6963:	mov    %rsp,%rbp
+    6966:	push   %r12
+    6968:	mov    %eax,%ecx
+    696a:	lea    (%rcx,%rcx,2),%rcx
+    696e:	push   %r10
+    6970:	shl    $0x4,%rcx
+    6974:	lea    0x7(%rax),%esi
+    6977:	push   %rbx
+    6978:	and    $0x7,%esi
+    697b:	sub    $0x2f8,%rsp
+    6982:	lea    0xa27(%rip),%rdx        # 73b0 <cgs__cstr_tostr_p>
+    6989:	vpinsrq $0x1,0x2561d(%rip),%xmm0,%xmm1        # 2bfb0 <_GLOBAL_OFFSET_TABLE_+0x118>
+    6993:	mov    %fs:0x28,%rbx
+    699c:	mov    %rbx,-0x38(%rbp)
+    69a0:	mov    %rdi,%rbx
+    69a3:	vpunpcklqdq %xmm0,%xmm0,%xmm0
+    69a7:	mov    %rdx,-0x190(%rbp)
+    69ae:	lea    0x2302b(%rip),%rdx        # 299e0 <EV>
+    69b5:	vinserti128 $0x1,%xmm1,%ymm0,%ymm0
+    69bb:	add    %rdx,%rcx
+    69be:	vmovdqa %ymm0,-0x1b0(%rbp)
+    69c6:	vmovdqu (%rcx),%ymm0
+    69ca:	movl   $0x4000000,-0x40(%rbp)
+    69d1:	vmovdqa %ymm0,-0x150(%rbp)
+    69d9:	vmovdqa 0x20(%rcx),%xmm0
+    69de:	lea    -0x150(%rbp),%rcx
+    69e5:	mov    %rcx,-0x180(%rbp)
+    69ec:	lea    0x3(%rax),%ecx
+    69ef:	and    $0x7,%ecx
+    69f2:	lea    (%rcx,%rcx,2),%rcx
+    69f6:	shl    $0x4,%rcx
+    69fa:	add    %rdx,%rcx
+    69fd:	add    $0x5,%eax
+    6a00:	and    $0x7,%eax
+    6a03:	vmovdqa %xmm0,-0x130(%rbp)
+    6a0b:	vmovdqu (%rcx),%ymm0
+    6a0f:	lea    (%rax,%rax,2),%rax
+    6a13:	shl    $0x4,%rax
+    6a17:	vmovdqu %ymm0,-0x120(%rbp)
+    6a1f:	vmovdqa 0x20(%rcx),%xmm0
+    6a24:	add    %rdx,%rax
+    6a27:	lea    -0x120(%rbp),%rcx
+    6a2e:	mov    %rcx,-0x178(%rbp)
+    6a35:	movb   $0x0,-0x3c(%rbp)
+    6a39:	vmovdqa %xmm0,-0x100(%rbp)
+    6a41:	vmovdqu (%rax),%ymm0
+    6a45:	lea    0x165e7(%rip),%rdi        # 1d033 <_IO_stdin_used+0x33>
+    6a4c:	vmovdqa %ymm0,-0xf0(%rbp)
+    6a54:	vmovdqa 0x20(%rax),%xmm0
+    6a59:	lea    (%rsi,%rsi,2),%rax
+    6a5d:	shl    $0x4,%rax
+    6a61:	add    %rax,%rdx
+    6a64:	mov    (%rdx),%eax
+    6a66:	vmovdqa %xmm0,-0xd0(%rbp)
+    6a6e:	mov    %eax,-0x264(%rbp)
+    6a74:	lea    -0xf0(%rbp),%rax
+    6a7b:	vmovq  %rax,%xmm0
+    6a80:	lea    -0x264(%rbp),%rax
+    6a87:	vpinsrq $0x1,%rax,%xmm0,%xmm0
+    6a8d:	mov    0x8(%rdx),%rax
+    6a91:	lea    0x16599(%rip),%rsi        # 1d031 <_IO_stdin_used+0x31>
+    6a98:	mov    %rax,-0x258(%rbp)
+    6a9f:	lea    -0x258(%rbp),%rax
+    6aa6:	lea    0x16582(%rip),%rdx        # 1d02f <_IO_stdin_used+0x2f>
+    6aad:	mov    %rax,-0x160(%rbp)
+    6ab4:	lea    0x16610(%rip),%rax        # 1d0cb <_IO_stdin_used+0xcb>
+    6abb:	mov    %rdx,-0xb0(%rbp)
+    6ac2:	mov    %rdx,-0xa0(%rbp)
+    6ac9:	mov    %rax,-0xc0(%rbp)
+    6ad0:	mov    %rax,-0x70(%rbp)
+    6ad4:	mov    %rdi,-0x90(%rbp)
+    6adb:	mov    %rsi,-0x80(%rbp)
+    6adf:	movl   $0x753f3f3f,-0x48(%rbp)
+    6ae6:	movb   $0x73,-0x44(%rbp)
+    6aea:	movl   $0x13131313,-0x50(%rbp)
+    6af1:	movb   $0x13,-0x4c(%rbp)
+    6af5:	movq   $0xffffffffffffffff,-0x1d0(%rbp)
+    6b00:	movq   $0xffffffffffffffff,-0x210(%rbp)
+    6b0b:	movl   $0x0,-0x25d(%rbp)
+    6b15:	movb   $0x0,-0x259(%rbp)
+    6b1c:	movl   $0x0,-0xb8(%rbp)
+    6b26:	movl   $0x3,-0xa8(%rbp)
+    6b30:	movl   $0x3,-0x98(%rbp)
+    6b3a:	movl   $0x4,-0x88(%rbp)
+    6b44:	movl   $0x1,-0x78(%rbp)
+    6b4b:	movl   $0x0,-0x68(%rbp)
+    6b52:	vmovdqa %xmm0,-0x170(%rbp)
+    6b5a:	vpcmpeqd %ymm0,%ymm0,%ymm0
+    6b5e:	vmovdqa %ymm0,-0x1f0(%rbp)
+    6b66:	vmovdqa %ymm0,-0x230(%rbp)
+    6b6e:	lea    -0x2f0(%rbp),%rdi
+    6b75:	mov    %rbx,%rsi
+    6b78:	vzeroupper
+    6b7b:	call   c8c0 <cgs__strbuf_ptr_as_mutstr_ref>
+    6b80:	vmovdqa -0x2f0(%rbp),%xmm0
+    6b88:	mov    -0x2e0(%rbp),%rax
+    6b8f:	sub    $0x20,%rsp
+    6b93:	mov    %rax,-0x2a0(%rbp)
+    6b9a:	vmovdqa %xmm0,-0x2b0(%rbp)
+    6ba2:	movl   $0x0,-0x2f4(%rbp)
+    6bac:	mov    %rax,0x10(%rsp)
+    6bb1:	lea    -0x2f4(%rbp),%rsi
+    6bb8:	lea    -0x290(%rbp),%rdi
+    6bbf:	vmovdqu %xmm0,(%rsp)
+    6bc4:	call   7db0 <cgs__mutstr_ref_as_fmutstr_ref_zero_len>
+    6bc9:	vmovdqa -0x290(%rbp),%xmm0
+    6bd1:	lea    -0x250(%rbp),%r12
+    6bd8:	vmovdqu %xmm0,(%rsp)
+    6bdd:	mov    -0x280(%rbp),%rax
+    6be4:	mov    %rax,0x10(%rsp)
+    6be9:	call   c780 <cgs__fmutstr_ref_clear>
+    6bee:	vmovdqa -0x2b0(%rbp),%xmm0
+    6bf6:	mov    %r12,%rdi
+    6bf9:	vmovdqu %xmm0,(%rsp)
+    6bfe:	mov    -0x2a0(%rbp),%rax
+    6c05:	mov    %rax,0x10(%rsp)
+    6c0a:	call   db00 <cgs__mutstr_ref_to_writer>
+    6c0f:	add    $0x18,%rsp
+    6c13:	lea    -0x51(%rbp),%rax
+    6c17:	push   %rax
+    6c18:	lea    -0x268(%rbp),%rax
+    6c1f:	lea    -0xc0(%rbp),%rdx
+    6c26:	push   %rax
+    6c27:	lea    -0x270(%rbp),%rax
+    6c2e:	lea    -0x25d(%rbp),%rcx
+    6c35:	push   %rax
+    6c36:	lea    -0x40(%rbp),%rax
+    6c3a:	lea    -0x1f0(%rbp),%r9
+    6c41:	push   $0x0
+    6c43:	lea    -0x230(%rbp),%r8
+    6c4a:	mov    $0x5,%esi
+    6c4f:	push   %rax
+    6c50:	lea    -0x1b0(%rbp),%rax
+    6c57:	mov    %r12,%rdi
+    6c5a:	push   %rax
+    6c5b:	lea    -0x180(%rbp),%rax
+    6c62:	push   %rax
+    6c63:	lea    -0x48(%rbp),%rax
+    6c67:	push   %rax
+    6c68:	lea    -0x50(%rbp),%rax
+    6c6c:	push   %rax
+    6c6d:	call   13660 <cgs__appendi>
+    6c72:	add    $0x50,%rsp
+    6c76:	mov    -0x38(%rbp),%rdx
+    6c7a:	sub    %fs:0x28,%rdx
+    6c83:	mov    0xc(%rbx),%eax
+    6c86:	jne    6c97 <cgs_events+0x357>
+    6c88:	lea    -0x18(%rbp),%rsp
+    6c8c:	pop    %rbx
+    6c8d:	pop    %r10
+    6c8f:	pop    %r12
+    6c91:	pop    %rbp
+    6c92:	lea    -0x8(%r10),%rsp
+    6c96:	ret
+    6c97:	call   5260 <__stack_chk_fail@plt>
+
+Disassembly of section .fini:
+
+a.out:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.got:
+
+Disassembly of section .plt.sec:
+
+Disassembly of section .text:
+
+Disassembly of section .fini:
+
+a.out:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.got:
+
+Disassembly of section .plt.sec:
+
+Disassembly of section .text:
+
+0000000000013660 <cgs__appendi>:
+   13660:	endbr64
+   13664:	push   %r15
+   13666:	mov    %esi,%r11d
+   13669:	mov    %rdi,%r15
+   1366c:	push   %r14
+   1366e:	mov    %rdx,%rdi
+   13671:	push   %r13
+   13673:	push   %r12
+   13675:	push   %rbp
+   13676:	push   %rbx
+   13677:	sub    $0x1a8,%rsp
+   1367e:	mov    %rcx,0xd0(%rsp)
+   13686:	mov    0x1f0(%rsp),%rcx
+   1368e:	mov    0x1e0(%rsp),%rax
+   13696:	mov    %rcx,0x78(%rsp)
+   1369b:	mov    0x1f8(%rsp),%rcx
+   136a3:	mov    0x220(%rsp),%rsi
+   136ab:	mov    %rcx,0x80(%rsp)
+   136b3:	mov    0x200(%rsp),%rcx
+   136bb:	mov    %rax,0x50(%rsp)
+   136c0:	mov    %rcx,0x88(%rsp)
+   136c8:	mov    0x210(%rsp),%rcx
+   136d0:	mov    %r8,0x40(%rsp)
+   136d5:	mov    %rcx,0x68(%rsp)
+   136da:	mov    0x218(%rsp),%rcx
+   136e2:	mov    %rsi,0x28(%rsp)
+   136e7:	mov    %rcx,0x70(%rsp)
+   136ec:	mov    0x1e8(%rsp),%rax
+   136f4:	mov    %fs:0x28,%rdx
+   136fd:	mov    %rdx,0x198(%rsp)
+   13705:	xor    %edx,%edx
+   13707:	test   %r11d,%r11d
+   1370a:	je     13bef <cgs__appendi+0x58f>
+   13710:	mov    %rax,0x18(%rsp)
+   13715:	movl   $0x0,0x60(%rsp)
+   1371d:	movl   $0x0,0x108(%rsp)
+   13728:	mov    %r11d,0x64(%rsp)
+   1372d:	mov    %rdi,0x58(%rsp)
+   13732:	mov    %r9,0x48(%rsp)
+   13737:	xor    %ebp,%ebp
+   13739:	mov    %rbp,0x10(%rsp)
+   1373e:	mov    %rbx,%rbp
+   13741:	mov    0x40(%rsp),%rax
+   13746:	mov    0x10(%rsp),%rbx
+   1374b:	cmpq   $0xfffffffffffffffe,(%rax,%rbx,8)
+   13750:	je     13840 <cgs__appendi+0x1e0>
+   13756:	mov    0x48(%rsp),%rax
+   1375b:	mov    0x10(%rsp),%rcx
+   13760:	cmpq   $0xfffffffffffffffe,(%rax,%rcx,8)
+   13765:	je     13940 <cgs__appendi+0x2e0>
+   1376b:	mov    0x50(%rsp),%rax
+   13770:	mov    0x10(%rsp),%rbx
+   13775:	movzbl (%rax,%rbx,1),%ecx
+   13779:	cmp    $0x13,%cl
+   1377c:	je     13880 <cgs__appendi+0x220>
+   13782:	mov    0x60(%rsp),%eax
+   13786:	mov    0x28(%rsp),%rbx
+   1378b:	cmp    0x208(%rsp),%eax
+   13792:	movzbl (%rbx,%rax,1),%edx
+   13796:	mov    %rax,%rdi
+   13799:	jae    13a93 <cgs__appendi+0x433>
+   1379f:	mov    0x70(%rsp),%rsi
+   137a4:	mov    0x68(%rsp),%rbx
+   137a9:	mov    (%rsi,%rax,8),%r14
+   137ad:	mov    (%rbx,%rax,8),%rbx
+   137b1:	mov    0x18(%rsp),%rax
+   137b6:	add    $0x1,%edi
+   137b9:	movzbl (%rax),%esi
+   137bc:	test   %dl,%dl
+   137be:	mov    %edi,0x60(%rsp)
+   137c2:	setne  0x30(%rsp)
+   137c7:	lea    -0x3f(%rsi),%edi
+   137ca:	cmp    $0x8,%dl
+   137cd:	setg   0x20(%rsp)
+   137d2:	cmp    $0x39,%dil
+   137d6:	movzbl 0x20(%rsp),%r11d
+   137dc:	ja     14230 <cgs__appendi+0xbd0>
+   137e2:	mov    $0x1,%eax
+   137e7:	shlx   %rdi,%rax,%rax
+   137ec:	movabs $0x241000802000000,%rdi
+   137f6:	test   %rdi,%rax
+   137f9:	jne    14080 <cgs__appendi+0xa20>
+   137ff:	movabs $0x42000000000,%rdi
+   13809:	test   %rdi,%rax
+   1380c:	jne    14050 <cgs__appendi+0x9f0>
+   13812:	and    $0x1,%eax
+   13815:	mov    %r11d,%edi
+   13818:	je     14220 <cgs__appendi+0xbc0>
+   1381e:	cmp    $0x12,%cl
+   13821:	ja     1406d <cgs__appendi+0xa0d>
+   13827:	lea    0xa3d2(%rip),%r10        # 1dc00 <I32+0x80>
+   1382e:	movzbl %cl,%eax
+   13831:	movslq (%r10,%rax,4),%rax
+   13835:	add    %r10,%rax
+   13838:	notrack jmp *%rax
+   1383b:	nopl   0x0(%rax,%rax,1)
+   13840:	mov    0x60(%rsp),%eax
+   13844:	mov    0x28(%rsp),%rcx
+   13849:	mov    %rax,%rbx
+   1384c:	cmp    0x208(%rsp),%ebx
+   13853:	movzbl (%rcx,%rax,1),%eax
+   13857:	jae    13a93 <cgs__appendi+0x433>
+   1385d:	cmp    $0x10,%al
+   1385f:	ja     13910 <cgs__appendi+0x2b0>
+   13865:	mov    $0x1f27c,%edx
+   1386a:	bt     %rax,%rdx
+   1386e:	jae    13910 <cgs__appendi+0x2b0>
+   13874:	add    $0x1,%ebx
+   13877:	mov    %ebx,0x60(%rsp)
+   1387b:	jmp    13756 <cgs__appendi+0xf6>
+   13880:	mov    0x108(%rsp),%eax
+   13887:	mov    0x80(%rsp),%rsi
+   1388f:	mov    0x78(%rsp),%rbx
+   13894:	mov    (%rsi,%rax,8),%r14
+   13898:	mov    0x88(%rsp),%rsi
+   138a0:	mov    %rax,%rdi
+   138a3:	movzbl (%rsi,%rax,1),%edx
+   138a7:	mov    (%rbx,%rax,8),%rbx
+   138ab:	mov    0x18(%rsp),%rax
+   138b0:	add    $0x1,%edi
+   138b3:	movzbl (%rax),%esi
+   138b6:	cmp    $0x8,%dl
+   138b9:	mov    %edi,0x108(%rsp)
+   138c0:	lea    -0x3f(%rsi),%edi
+   138c3:	setg   0x20(%rsp)
+   138c8:	cmp    $0x39,%dil
+   138cc:	ja     13906 <cgs__appendi+0x2a6>
+   138ce:	mov    $0x1,%eax
+   138d3:	shlx   %rdi,%rax,%rax
+   138d8:	movabs $0x241000802000000,%rdi
+   138e2:	test   %rdi,%rax
+   138e5:	jne    140d8 <cgs__appendi+0xa78>
+   138eb:	movabs $0x42000000000,%rdi
+   138f5:	test   %rdi,%rax
+   138f8:	jne    13980 <cgs__appendi+0x320>
+   138fe:	test   $0x1,%al
+   13900:	jne    142a0 <cgs__appendi+0xc40>
+   13906:	test   %dl,%dl
+   13908:	je     13aa0 <cgs__appendi+0x440>
+   1390e:	xchg   %ax,%ax
+   13910:	mov    $0xd,%eax
+   13915:	mov    0x198(%rsp),%rdx
+   1391d:	sub    %fs:0x28,%rdx
+   13926:	jne    1610f <cgs__appendi+0x2aaf>
+   1392c:	add    $0x1a8,%rsp
+   13933:	pop    %rbx
+   13934:	pop    %rbp
+   13935:	pop    %r12
+   13937:	pop    %r13
+   13939:	pop    %r14
+   1393b:	pop    %r15
+   1393d:	ret
+   1393e:	xchg   %ax,%ax
+   13940:	mov    0x60(%rsp),%eax
+   13944:	mov    0x28(%rsp),%rcx
+   13949:	mov    %rax,%rdi
+   1394c:	cmp    0x208(%rsp),%edi
+   13953:	movzbl (%rcx,%rax,1),%eax
+   13957:	jae    13a93 <cgs__appendi+0x433>
+   1395d:	cmp    $0x10,%al
+   1395f:	ja     13910 <cgs__appendi+0x2b0>
+   13961:	mov    $0x1f27c,%edx
+   13966:	bt     %rax,%rdx
+   1396a:	jae    13910 <cgs__appendi+0x2b0>
+   1396c:	add    $0x1,%edi
+   1396f:	mov    %edi,0x60(%rsp)
+   13973:	jmp    1376b <cgs__appendi+0x10b>
+   13978:	nopl   0x0(%rax,%rax,1)
+   13980:	test   %dl,%dl
+   13982:	je     13910 <cgs__appendi+0x2b0>
+   13984:	mov    $0x1,%eax
+   13989:	mov    $0x1,%edi
+   1398e:	test   %cl,%cl
+   13990:	sete   %r11b
+   13994:	cmp    $0x13,%cl
+   13997:	sete   %cl
+   1399a:	or     %r11d,%ecx
+   1399d:	and    %al,%cl
+   1399f:	mov    %cl,0x30(%rsp)
+   139a3:	je     16106 <cgs__appendi+0x2aa6>
+   139a9:	cmp    $0x3f,%sil
+   139ad:	je     14260 <cgs__appendi+0xc00>
+   139b3:	test   %dil,%dil
+   139b6:	je     14280 <cgs__appendi+0xc20>
+   139bc:	cmp    $0x10,%dl
+   139bf:	mov    %dil,0x30(%rsp)
+   139c4:	ja     13aa8 <cgs__appendi+0x448>
+   139ca:	lea    0xa27b(%rip),%rcx        # 1dc4c <I32+0xcc>
+   139d1:	movslq (%rcx,%rdx,4),%rax
+   139d5:	add    %rcx,%rax
+   139d8:	notrack jmp *%rax
+   139db:	nopl   0x0(%rax,%rax,1)
+   139e0:	mov    %al,0x150(%rsp)
+   139e7:	lea    0x150(%rsp),%rax
+   139ef:	xor    %edx,%edx
+   139f1:	mov    %rax,0x130(%rsp)
+   139f9:	lea    -0xc970(%rip),%rbx        # 7090 <cgs__char_tostr_p>
+   13a00:	lea    -0xc787(%rip),%rax        # 7280 <cgs__FileWriter_write>
+   13a07:	mov    %rbx,0x138(%rsp)
+   13a0f:	mov    %rax,0x140(%rsp)
+   13a17:	mov    %rdx,%rcx
+   13a1a:	mov    0x1871f(%rip),%rax        # 2c140 <stdout@GLIBC_2.2.5>
+   13a21:	movabs $0xffffffff00000000,%rbx
+   13a2b:	and    %rbx,%rcx
+   13a2e:	or     $0x2b,%rcx
+   13a32:	mov    %rax,0x148(%rsp)
+   13a3a:	lea    0x140(%rsp),%rbp
+   13a42:	lea    0xa017(%rip),%rax        # 1da60 <_IO_stdin_used+0xa60>
+   13a49:	mov    %rcx,%rdx
+   13a4c:	mov    %rax,%rsi
+   13a4f:	lea    0x138(%rsp),%r9
+   13a57:	lea    0x130(%rsp),%r8
+   13a5f:	mov    $0x1,%ecx
+   13a64:	mov    %rbp,%rdi
+   13a67:	call   dbb0 <cgs__append_fmt>
+   13a6c:	test   %al,%al
+   13a6e:	jne    13a93 <cgs__appendi+0x433>
+   13a70:	xor    %edx,%edx
+   13a72:	mov    %rdx,%rcx
+   13a75:	and    %rbx,%rcx
+   13a78:	lea    0x964b(%rip),%rax        # 1d0ca <_IO_stdin_used+0xca>
+   13a7f:	or     $0x1,%rcx
+   13a83:	mov    %rcx,%rdx
+   13a86:	mov    %rax,%rsi
+   13a89:	mov    %rbp,%rdi
+   13a8c:	call   *0x140(%rsp)
+   13a93:	mov    $0xc,%eax
+   13a98:	jmp    13915 <cgs__appendi+0x2b5>
+   13a9d:	nopl   (%rax)
+   13aa0:	movb   $0x0,0x30(%rsp)
+   13aa5:	nopl   (%rax)
+   13aa8:	mov    0x10(%rsp),%rax
+   13aad:	mov    0x58(%rsp),%rcx
+   13ab2:	shl    $0x4,%rax
+   13ab6:	mov    (%rcx,%rax,1),%rsi
+   13aba:	mov    0x8(%rcx,%rax,1),%rdx
+   13abf:	mov    %r15,%rdi
+   13ac2:	call   *(%r15)
+   13ac5:	test   %al,%al
+   13ac7:	jne    13915 <cgs__appendi+0x2b5>
+   13acd:	mov    0x18(%rsp),%rax
+   13ad2:	movzbl (%rax),%eax
+   13ad5:	lea    -0x65(%rax),%edx
+   13ad8:	cmp    $0x2,%dl
+   13adb:	jbe    14010 <cgs__appendi+0x9b0>
+   13ae1:	cmp    $0x61,%al
+   13ae3:	je     14010 <cgs__appendi+0x9b0>
+   13ae9:	cmp    $0x73,%al
+   13aeb:	je     140f0 <cgs__appendi+0xa90>
+   13af1:	lea    -0x3f(%rax),%edx
+   13af4:	cmp    $0x39,%dl
+   13af7:	ja     139e0 <cgs__appendi+0x380>
+   13afd:	lea    0xa18c(%rip),%rcx        # 1dc90 <I32+0x110>
+   13b04:	movzbl %dl,%edx
+   13b07:	movslq (%rcx,%rdx,4),%rdx
+   13b0b:	add    %rcx,%rdx
+   13b0e:	notrack jmp *%rdx
+   13b11:	mov    0xd0(%rsp),%rax
+   13b19:	mov    0x10(%rsp),%rbx
+   13b1e:	testb  $0x2,(%rax,%rbx,1)
+   13b22:	je     13b9b <cgs__appendi+0x53b>
+   13b24:	test   %rbp,%rbp
+   13b27:	js     13b9b <cgs__appendi+0x53b>
+   13b29:	mov    0x118(%rsp),%rdx
+   13b31:	lea    0x120(%rsp),%r14
+   13b39:	mov    %rdx,0x118(%rsp)
+   13b41:	mov    %r14,0x110(%rsp)
+   13b49:	movabs $0xffffffff00000000,%rdx
+   13b53:	mov    0x118(%rsp),%rax
+   13b5b:	mov    0x110(%rsp),%rcx
+   13b63:	and    %rdx,%rax
+   13b66:	or     $0x1,%rax
+   13b6a:	mov    %rcx,0x110(%rsp)
+   13b72:	mov    %rax,0x118(%rsp)
+   13b7a:	movb   $0x2b,0x120(%rsp)
+   13b82:	mov    0x110(%rsp),%rax
+   13b8a:	mov    0x118(%rsp),%rdx
+   13b92:	mov    %rax,%rsi
+   13b95:	mov    %r15,%rdi
+   13b98:	call   *(%r15)
+   13b9b:	xor    %edx,%edx
+   13b9d:	xor    %ecx,%ecx
+   13b9f:	mov    %rbp,%rsi
+   13ba2:	mov    %r15,%rdi
+   13ba5:	call   eec0 <cgs__long_tostr>
+   13baa:	nopw   0x0(%rax,%rax,1)
+   13bb0:	mov    0x10(%rsp),%rbx
+   13bb5:	mov    0x64(%rsp),%ecx
+   13bb9:	lea    0x1(%rbx),%edx
+   13bbc:	cmp    %ecx,%edx
+   13bbe:	setb   %cl
+   13bc1:	test   %al,%al
+   13bc3:	sete   %dl
+   13bc6:	add    $0x1,%rbx
+   13bca:	addq   $0x1,0x18(%rsp)
+   13bd0:	test   %dl,%cl
+   13bd2:	mov    %rbx,0x10(%rsp)
+   13bd7:	jne    13741 <cgs__appendi+0xe1>
+   13bdd:	test   %al,%al
+   13bdf:	mov    0x64(%rsp),%r11d
+   13be4:	mov    0x58(%rsp),%rdi
+   13be9:	jne    13915 <cgs__appendi+0x2b5>
+   13bef:	mov    %r11d,%eax
+   13bf2:	shl    $0x4,%rax
+   13bf6:	add    %rdi,%rax
+   13bf9:	mov    (%rax),%rsi
+   13bfc:	mov    0x8(%rax),%rdx
+   13c00:	mov    %r15,%rdi
+   13c03:	call   *(%r15)
+   13c06:	jmp    13915 <cgs__appendi+0x2b5>
+   13c0b:	lea    0x150(%rsp),%rbx
+   13c13:	vmovsd 0xd8(%rsp),%xmm0
+   13c1c:	mov    %rbx,%rdi
+   13c1f:	mov    $0xffffffff,%r9d
+   13c25:	lea    0x961e(%rip),%r8        # 1d24a <_IO_stdin_used+0x24a>
+   13c2c:	mov    $0x40,%ecx
+   13c31:	mov    $0x2,%edx
+   13c36:	mov    $0x40,%esi
+   13c3b:	mov    $0x1,%eax
+   13c40:	call   5200 <__snprintf_chk@plt>
+   13c45:	mov    0x98(%rsp),%rdi
+   13c4d:	mov    %rbx,0x90(%rsp)
+   13c55:	mov    %rdi,0x98(%rsp)
+   13c5d:	mov    %eax,%edx
+   13c5f:	mov    0x90(%rsp),%rbx
+   13c67:	mov    0x98(%rsp),%rsi
+   13c6f:	movabs $0xffffffff00000000,%rcx
+   13c79:	mov    %rsi,%rax
+   13c7c:	and    %rcx,%rax
+   13c7f:	or     %rdx,%rax
+   13c82:	mov    %rbx,0x90(%rsp)
+   13c8a:	mov    %rax,0x98(%rsp)
+   13c92:	mov    %r15,%rdi
+   13c95:	mov    0x90(%rsp),%rax
+   13c9d:	mov    0x98(%rsp),%rdx
+   13ca5:	mov    %rax,%rsi
+   13ca8:	call   *(%r15)
+   13cab:	jmp    13bb0 <cgs__appendi+0x550>
+   13cb0:	mov    %rbp,0x120(%rsp)
+   13cb8:	mov    %rbp,%rax
+   13cbb:	lea    0x120(%rsp),%r14
+   13cc3:	shr    $0x38,%rax
+   13cc7:	lea    0x127(%rsp),%rcx
+   13ccf:	lea    0x11f(%rsp),%rbx
+   13cd7:	test   %al,%al
+   13cd9:	je     140a8 <cgs__appendi+0xa48>
+   13cdf:	movzbl %al,%eax
+   13ce2:	lea    0xa917(%rip),%rdi        # 1e600 <cgs__byte_to_heX>
+   13ce9:	lea    (%rdi,%rax,2),%rdx
+   13ced:	cmpb   $0x30,(%rdx)
+   13cf0:	mov    $0x2,%eax
+   13cf5:	jne    13d00 <cgs__appendi+0x6a0>
+   13cf7:	add    $0x1,%rdx
+   13cfb:	mov    $0x1,%eax
+   13d00:	mov    %rbp,0x20(%rsp)
+   13d05:	mov    %r13,0x38(%rsp)
+   13d0a:	mov    %r12,0x30(%rsp)
+   13d0f:	mov    0xe8(%rsp),%r10
+   13d17:	movabs $0xffffffff00000000,%r14
+   13d21:	mov    %rcx,%r13
+   13d24:	mov    %rdi,%rbp
+   13d27:	jmp    13d3f <cgs__appendi+0x6df>
+   13d29:	nopl   0x0(%rax)
+   13d30:	movzbl 0x0(%r13),%eax
+   13d35:	lea    0x0(%rbp,%rax,2),%rdx
+   13d3a:	mov    $0x2,%eax
+   13d3f:	mov    %rdx,%r9
+   13d42:	mov    %eax,%edx
+   13d44:	mov    %r10,%rax
+   13d47:	and    %r14,%rax
+   13d4a:	or     %rdx,%rax
+   13d4d:	mov    %r9,%rsi
+   13d50:	mov    %rax,%rdx
+   13d53:	mov    %r15,%rdi
+   13d56:	sub    $0x1,%r13
+   13d5a:	call   *(%r15)
+   13d5d:	cmp    %rbx,%r13
+   13d60:	jne    13d30 <cgs__appendi+0x6d0>
+   13d62:	mov    %r9,0xe0(%rsp)
+   13d6a:	mov    %r10,0xe8(%rsp)
+   13d72:	mov    0x20(%rsp),%rbp
+   13d77:	mov    0x30(%rsp),%r12
+   13d7c:	mov    0x38(%rsp),%r13
+   13d81:	jmp    13bb0 <cgs__appendi+0x550>
+   13d86:	xor    %edx,%edx
+   13d88:	xor    %ecx,%ecx
+   13d8a:	cmpb   $0x0,0x30(%rsp)
+   13d8f:	je     144bc <cgs__appendi+0xe5c>
+   13d95:	cmpb   $0x0,0x20(%rsp)
+   13d9a:	mov    %rbp,%rsi
+   13d9d:	mov    %r15,%rdi
+   13da0:	je     1474d <cgs__appendi+0x10ed>
+   13da6:	call   eec0 <cgs__long_tostr>
+   13dab:	jmp    13bb0 <cgs__appendi+0x550>
+   13db0:	mov    %rbp,0x120(%rsp)
+   13db8:	mov    %rbp,%rax
+   13dbb:	lea    0x120(%rsp),%r14
+   13dc3:	shr    $0x38,%rax
+   13dc7:	lea    0x127(%rsp),%rcx
+   13dcf:	lea    0x11f(%rsp),%rbx
+   13dd7:	test   %al,%al
+   13dd9:	jne    14090 <cgs__appendi+0xa30>
+   13ddf:	sub    $0x1,%rcx
+   13de3:	cmp    %rbx,%rcx
+   13de6:	je     13bb0 <cgs__appendi+0x550>
+   13dec:	cmp    %r14,%rcx
+   13def:	movzbl (%rcx),%eax
+   13df2:	jne    13dd7 <cgs__appendi+0x777>
+   13df4:	lea    0xaa05(%rip),%rdi        # 1e800 <cgs__byte_to_hex>
+   13dfb:	lea    (%rdi,%rax,2),%rdx
+   13dff:	cmpb   $0x30,(%rdx)
+   13e02:	mov    $0x2,%eax
+   13e07:	jne    13e12 <cgs__appendi+0x7b2>
+   13e09:	add    $0x1,%rdx
+   13e0d:	mov    $0x1,%eax
+   13e12:	mov    %rbp,0x20(%rsp)
+   13e17:	mov    %r13,0x38(%rsp)
+   13e1c:	mov    %r12,0x30(%rsp)
+   13e21:	mov    0xf8(%rsp),%r10
+   13e29:	movabs $0xffffffff00000000,%r14
+   13e33:	mov    %rcx,%r13
+   13e36:	mov    %rdi,%rbp
+   13e39:	jmp    13e4f <cgs__appendi+0x7ef>
+   13e3b:	nopl   0x0(%rax,%rax,1)
+   13e40:	movzbl 0x0(%r13),%eax
+   13e45:	lea    0x0(%rbp,%rax,2),%rdx
+   13e4a:	mov    $0x2,%eax
+   13e4f:	mov    %rdx,%r9
+   13e52:	mov    %eax,%edx
+   13e54:	mov    %r10,%rax
+   13e57:	and    %r14,%rax
+   13e5a:	or     %rdx,%rax
+   13e5d:	mov    %r9,%rsi
+   13e60:	mov    %rax,%rdx
+   13e63:	mov    %r15,%rdi
+   13e66:	sub    $0x1,%r13
+   13e6a:	call   *(%r15)
+   13e6d:	cmp    %rbx,%r13
+   13e70:	jne    13e40 <cgs__appendi+0x7e0>
+   13e72:	mov    %r9,0xf0(%rsp)
+   13e7a:	mov    %r10,0xf8(%rsp)
+   13e82:	mov    0x20(%rsp),%rbp
+   13e87:	mov    0x30(%rsp),%r12
+   13e8c:	mov    0x38(%rsp),%r13
+   13e91:	jmp    13bb0 <cgs__appendi+0x550>
+   13e96:	xor    %edx,%edx
+   13e98:	xor    %ecx,%ecx
+   13e9a:	mov    %rbp,%rsi
+   13e9d:	mov    %r15,%rdi
+   13ea0:	call   f510 <cgs__ulong_tostr>
+   13ea5:	jmp    13bb0 <cgs__appendi+0x550>
+   13eaa:	xor    %edx,%edx
+   13eac:	xor    %ecx,%ecx
+   13eae:	mov    %rbp,%rsi
+   13eb1:	mov    %r15,%rdi
+   13eb4:	call   13540 <cgs__Integer_o_Fmt_cgs__ul_tostr>
+   13eb9:	jmp    13bb0 <cgs__appendi+0x550>
+   13ebe:	lea    0x150(%rsp),%rbx
+   13ec6:	vmovsd 0xd8(%rsp),%xmm0
+   13ecf:	mov    %rbx,%rdi
+   13ed2:	mov    $0x6,%r9d
+   13ed8:	lea    0x9366(%rip),%r8        # 1d245 <_IO_stdin_used+0x245>
+   13edf:	mov    $0x40,%ecx
+   13ee4:	mov    $0x2,%edx
+   13ee9:	mov    $0x40,%esi
+   13eee:	mov    $0x1,%eax
+   13ef3:	call   5200 <__snprintf_chk@plt>
+   13ef8:	mov    0xa8(%rsp),%rdi
+   13f00:	mov    %rbx,0xa0(%rsp)
+   13f08:	mov    %rdi,0xa8(%rsp)
+   13f10:	mov    %eax,%edx
+   13f12:	mov    0xa0(%rsp),%rbx
+   13f1a:	mov    0xa8(%rsp),%rsi
+   13f22:	movabs $0xffffffff00000000,%rcx
+   13f2c:	mov    %rsi,%rax
+   13f2f:	and    %rcx,%rax
+   13f32:	or     %rdx,%rax
+   13f35:	mov    %rbx,0xa0(%rsp)
+   13f3d:	mov    %rax,0xa8(%rsp)
+   13f45:	mov    %r15,%rdi
+   13f48:	mov    0xa0(%rsp),%rax
+   13f50:	mov    0xa8(%rsp),%rdx
+   13f58:	mov    %rax,%rsi
+   13f5b:	call   *(%r15)
+   13f5e:	jmp    13bb0 <cgs__appendi+0x550>
+   13f63:	lea    0x150(%rsp),%rbx
+   13f6b:	vmovsd 0xd8(%rsp),%xmm0
+   13f74:	mov    %rbx,%rdi
+   13f77:	mov    $0x6,%r9d
+   13f7d:	lea    0x92bc(%rip),%r8        # 1d240 <_IO_stdin_used+0x240>
+   13f84:	mov    $0x40,%ecx
+   13f89:	mov    $0x2,%edx
+   13f8e:	mov    $0x40,%esi
+   13f93:	mov    $0x1,%eax
+   13f98:	call   5200 <__snprintf_chk@plt>
+   13f9d:	mov    0xb8(%rsp),%rdi
+   13fa5:	mov    %rbx,0xb0(%rsp)
+   13fad:	mov    %rdi,0xb8(%rsp)
+   13fb5:	mov    %eax,%edx
+   13fb7:	mov    0xb0(%rsp),%rbx
+   13fbf:	mov    0xb8(%rsp),%rsi
+   13fc7:	movabs $0xffffffff00000000,%rcx
+   13fd1:	mov    %rsi,%rax
+   13fd4:	and    %rcx,%rax
+   13fd7:	or     %rdx,%rax
+   13fda:	mov    %rbx,0xb0(%rsp)
+   13fe2:	mov    %rax,0xb8(%rsp)
+   13fea:	mov    %r15,%rdi
+   13fed:	mov    0xb0(%rsp),%rax
+   13ff5:	mov    0xb8(%rsp),%rdx
+   13ffd:	mov    %rax,%rsi
+   14000:	call   *(%r15)
+   14003:	jmp    13bb0 <cgs__appendi+0x550>
+   14008:	nopl   0x0(%rax,%rax,1)
+   14010:	lea    -0xcd47(%rip),%rdx        # 72d0 <cgs__float_tostr_p>
+   14017:	cmp    %rdx,%r14
+   1401a:	je     14240 <cgs__appendi+0xbe0>
+   14020:	lea    -0xcce7(%rip),%rdx        # 7340 <cgs__double_tostr_p>
+   14027:	cmp    %rdx,%r14
+   1402a:	jne    13910 <cgs__appendi+0x2b0>
+   14030:	test   %rbx,%rbx
+   14033:	je     13af1 <cgs__appendi+0x491>
+   14039:	vmovsd (%rbx),%xmm1
+   1403d:	vmovsd %xmm1,0xd8(%rsp)
+   14046:	jmp    13af1 <cgs__appendi+0x491>
+   1404b:	nopl   0x0(%rax,%rax,1)
+   14050:	mov    $0x1,%edi
+   14055:	mov    $0x1,%eax
+   1405a:	cmp    0x30(%rsp),%al
+   1405e:	jne    13910 <cgs__appendi+0x2b0>
+   14064:	cmp    $0x12,%cl
+   14067:	jbe    13827 <cgs__appendi+0x1c7>
+   1406d:	test   %cl,%cl
+   1406f:	jne    16067 <cgs__appendi+0x2a07>
+   14075:	movzbl 0x30(%rsp),%eax
+   1407a:	jmp    1398e <cgs__appendi+0x32e>
+   1407f:	nop
+   14080:	xor    %edi,%edi
+   14082:	mov    $0x1,%eax
+   14087:	jmp    1405a <cgs__appendi+0x9fa>
+   14089:	nopl   0x0(%rax)
+   14090:	movzbl %al,%eax
+   14093:	lea    0xa766(%rip),%rdi        # 1e800 <cgs__byte_to_hex>
+   1409a:	lea    (%rdi,%rax,2),%rdx
+   1409e:	jmp    13dff <cgs__appendi+0x79f>
+   140a3:	nopl   0x0(%rax,%rax,1)
+   140a8:	sub    $0x1,%rcx
+   140ac:	cmp    %rbx,%rcx
+   140af:	je     13bb0 <cgs__appendi+0x550>
+   140b5:	cmp    %r14,%rcx
+   140b8:	movzbl (%rcx),%eax
+   140bb:	jne    13cd7 <cgs__appendi+0x677>
+   140c1:	lea    0xa538(%rip),%rdi        # 1e600 <cgs__byte_to_heX>
+   140c8:	lea    (%rdi,%rax,2),%rdx
+   140cc:	jmp    13ced <cgs__appendi+0x68d>
+   140d1:	nopl   0x0(%rax)
+   140d8:	test   %dl,%dl
+   140da:	je     13910 <cgs__appendi+0x2b0>
+   140e0:	mov    $0x1,%eax
+   140e5:	xor    %edi,%edi
+   140e7:	jmp    1398e <cgs__appendi+0x32e>
+   140ec:	nopl   0x0(%rax)
+   140f0:	test   %rbx,%rbx
+   140f3:	je     141c0 <cgs__appendi+0xb60>
+   140f9:	lea    -0xcd50(%rip),%rax        # 73b0 <cgs__cstr_tostr_p>
+   14100:	cmp    %rax,%r14
+   14103:	je     145a8 <cgs__appendi+0xf48>
+   14109:	lea    -0xcd10(%rip),%rax        # 7400 <cgs__ucstr_tostr_p>
+   14110:	cmp    %rax,%r14
+   14113:	je     145a8 <cgs__appendi+0xf48>
+   14119:	lea    -0xcfc0(%rip),%rax        # 7160 <cgs__strv_tostr_p>
+   14120:	cmp    %rax,%r14
+   14123:	je     14757 <cgs__appendi+0x10f7>
+   14129:	lea    -0xcfa0(%rip),%rax        # 7190 <cgs__zstrv_tostr_p>
+   14130:	cmp    %rax,%r14
+   14133:	je     14757 <cgs__appendi+0x10f7>
+   14139:	lea    -0xd050(%rip),%rax        # 70f0 <cgs__dstr_tostr_p>
+   14140:	cmp    %rax,%r14
+   14143:	je     15ff9 <cgs__appendi+0x2999>
+   14149:	lea    -0xd030(%rip),%rax        # 7120 <cgs__dstr_ptr_tostr_p>
+   14150:	cmp    %rax,%r14
+   14153:	je     16013 <cgs__appendi+0x29b3>
+   14159:	lea    -0xcfa0(%rip),%rax        # 71c0 <cgs__strbuf_tostr_p>
+   14160:	cmp    %rax,%r14
+   14163:	je     16030 <cgs__appendi+0x29d0>
+   14169:	lea    -0xcf80(%rip),%rax        # 71f0 <cgs__strbuf_ptr_tostr_p>
+   14170:	cmp    %rax,%r14
+   14173:	je     1604a <cgs__appendi+0x29ea>
+   14179:	lea    -0xcd30(%rip),%rax        # 7450 <cgs__mutstr_ref_tostr_p>
+   14180:	cmp    %rax,%r14
+   14183:	jne    13910 <cgs__appendi+0x2b0>
+   14189:	vmovdqu (%rbx),%xmm0
+   1418d:	sub    $0x20,%rsp
+   14191:	vmovdqu %xmm0,(%rsp)
+   14196:	mov    0x10(%rbx),%rax
+   1419a:	mov    %rax,0x10(%rsp)
+   1419f:	call   cbc0 <cgs__strv_mutstr_ref1>
+   141a4:	add    $0x20,%rsp
+   141a8:	mov    %rax,0x100(%rsp)
+   141b0:	mov    %edx,0x10c(%rsp)
+   141b7:	nopw   0x0(%rax,%rax,1)
+   141c0:	mov    0xc8(%rsp),%rsi
+   141c8:	mov    0x10c(%rsp),%edx
+   141cf:	mov    0x100(%rsp),%rbx
+   141d7:	mov    %rsi,%rax
+   141da:	movabs $0xffffffff00000000,%rcx
+   141e4:	and    %rcx,%rax
+   141e7:	or     %rdx,%rax
+   141ea:	mov    %rbx,0xc0(%rsp)
+   141f2:	mov    %rax,0xc8(%rsp)
+   141fa:	mov    %r15,%rdi
+   141fd:	mov    0xc0(%rsp),%rax
+   14205:	mov    0xc8(%rsp),%rdx
+   1420d:	mov    %rax,%rsi
+   14210:	call   *(%r15)
+   14213:	jmp    13bb0 <cgs__appendi+0x550>
+   14218:	nopl   0x0(%rax,%rax,1)
+   14220:	xor    %edi,%edi
+   14222:	jmp    1405a <cgs__appendi+0x9fa>
+   14227:	nopw   0x0(%rax,%rax,1)
+   14230:	xor    %edi,%edi
+   14232:	xor    %eax,%eax
+   14234:	jmp    1405a <cgs__appendi+0x9fa>
+   14239:	nopl   0x0(%rax)
+   14240:	test   %rbx,%rbx
+   14243:	je     13af1 <cgs__appendi+0x491>
+   14249:	vxorpd %xmm2,%xmm2,%xmm2
+   1424d:	vcvtss2sd (%rbx),%xmm2,%xmm0
+   14251:	vmovlpd %xmm0,0xd8(%rsp)
+   1425a:	jmp    13af1 <cgs__appendi+0x491>
+   1425f:	nop
+   14260:	cmp    $0x10,%dl
+   14263:	ja     13aa8 <cgs__appendi+0x448>
+   14269:	lea    0x9b08(%rip),%rcx        # 1dd78 <I32+0x1f8>
+   14270:	movslq (%rcx,%rdx,4),%rax
+   14274:	add    %rcx,%rax
+   14277:	notrack jmp *%rax
+   1427a:	nopw   0x0(%rax,%rax,1)
+   14280:	cmp    $0x10,%dl
+   14283:	ja     13aa8 <cgs__appendi+0x448>
+   14289:	lea    0x9b2c(%rip),%rcx        # 1ddbc <I32+0x23c>
+   14290:	movslq (%rcx,%rdx,4),%rax
+   14294:	add    %rcx,%rax
+   14297:	notrack jmp *%rax
+   1429a:	nopw   0x0(%rax,%rax,1)
+   142a0:	test   %dl,%dl
+   142a2:	movzbl 0x20(%rsp),%edi
+   142a7:	setne  %al
+   142aa:	jmp    1398e <cgs__appendi+0x32e>
+   142af:	test   %dil,%dil
+   142b2:	je     1467d <cgs__appendi+0x101d>
+   142b8:	cmp    $0x10,%dl
+   142bb:	ja     13aa8 <cgs__appendi+0x448>
+   142c1:	lea    0x9b38(%rip),%rcx        # 1de00 <I32+0x280>
+   142c8:	movslq (%rcx,%rdx,4),%rax
+   142cc:	add    %rcx,%rax
+   142cf:	notrack jmp *%rax
+   142d2:	test   %dil,%dil
+   142d5:	je     145c7 <cgs__appendi+0xf67>
+   142db:	cmp    $0x10,%dl
+   142de:	ja     13aa8 <cgs__appendi+0x448>
+   142e4:	lea    0x9b59(%rip),%rcx        # 1de44 <I32+0x2c4>
+   142eb:	movslq (%rcx,%rdx,4),%rax
+   142ef:	add    %rcx,%rax
+   142f2:	notrack jmp *%rax
+   142f5:	test   %dil,%dil
+   142f8:	je     14615 <cgs__appendi+0xfb5>
+   142fe:	cmp    $0x10,%dl
+   14301:	ja     13aa8 <cgs__appendi+0x448>
+   14307:	lea    0x9b7a(%rip),%rcx        # 1de88 <I32+0x308>
+   1430e:	movslq (%rcx,%rdx,4),%rax
+   14312:	add    %rcx,%rax
+   14315:	notrack jmp *%rax
+   14318:	test   %dil,%dil
+   1431b:	je     145e1 <cgs__appendi+0xf81>
+   14321:	cmp    $0x10,%dl
+   14324:	ja     13aa8 <cgs__appendi+0x448>
+   1432a:	lea    0x9b9b(%rip),%rcx        # 1decc <I32+0x34c>
+   14331:	movslq (%rcx,%rdx,4),%rax
+   14335:	add    %rcx,%rax
+   14338:	notrack jmp *%rax
+   1433b:	test   %dil,%dil
+   1433e:	je     14649 <cgs__appendi+0xfe9>
+   14344:	cmp    $0x10,%dl
+   14347:	ja     13aa8 <cgs__appendi+0x448>
+   1434d:	lea    0x9bbc(%rip),%rcx        # 1df10 <I32+0x390>
+   14354:	movslq (%rcx,%rdx,4),%rax
+   14358:	add    %rcx,%rax
+   1435b:	notrack jmp *%rax
+   1435e:	test   %dil,%dil
+   14361:	je     1462f <cgs__appendi+0xfcf>
+   14367:	cmp    $0x10,%dl
+   1436a:	ja     13aa8 <cgs__appendi+0x448>
+   14370:	lea    0x9bdd(%rip),%rcx        # 1df54 <I32+0x3d4>
+   14377:	movslq (%rcx,%rdx,4),%rax
+   1437b:	add    %rcx,%rax
+   1437e:	notrack jmp *%rax
+   14381:	test   %dil,%dil
+   14384:	je     14663 <cgs__appendi+0x1003>
+   1438a:	cmp    $0x10,%dl
+   1438d:	ja     13aa8 <cgs__appendi+0x448>
+   14393:	lea    0x9bfe(%rip),%rcx        # 1df98 <I32+0x418>
+   1439a:	movslq (%rcx,%rdx,4),%rax
+   1439e:	add    %rcx,%rax
+   143a1:	notrack jmp *%rax
+   143a4:	test   %dil,%dil
+   143a7:	je     146e5 <cgs__appendi+0x1085>
+   143ad:	cmp    $0x10,%dl
+   143b0:	ja     13aa8 <cgs__appendi+0x448>
+   143b6:	lea    0x9c1f(%rip),%rcx        # 1dfdc <I32+0x45c>
+   143bd:	movslq (%rcx,%rdx,4),%rax
+   143c1:	add    %rcx,%rax
+   143c4:	notrack jmp *%rax
+   143c7:	test   %dil,%dil
+   143ca:	je     146b1 <cgs__appendi+0x1051>
+   143d0:	cmp    $0x10,%dl
+   143d3:	ja     13aa8 <cgs__appendi+0x448>
+   143d9:	lea    0x9c40(%rip),%rcx        # 1e020 <I32+0x4a0>
+   143e0:	movslq (%rcx,%rdx,4),%rax
+   143e4:	add    %rcx,%rax
+   143e7:	notrack jmp *%rax
+   143ea:	test   %dil,%dil
+   143ed:	je     14719 <cgs__appendi+0x10b9>
+   143f3:	cmp    $0x10,%dl
+   143f6:	ja     13aa8 <cgs__appendi+0x448>
+   143fc:	lea    0x9c61(%rip),%rcx        # 1e064 <I32+0x4e4>
+   14403:	movslq (%rcx,%rdx,4),%rax
+   14407:	add    %rcx,%rax
+   1440a:	notrack jmp *%rax
+   1440d:	test   %dil,%dil
+   14410:	je     14697 <cgs__appendi+0x1037>
+   14416:	cmp    $0x10,%dl
+   14419:	ja     13aa8 <cgs__appendi+0x448>
+   1441f:	lea    0x9c82(%rip),%rcx        # 1e0a8 <I32+0x528>
+   14426:	movslq (%rcx,%rdx,4),%rax
+   1442a:	add    %rcx,%rax
+   1442d:	notrack jmp *%rax
+   14430:	test   %dil,%dil
+   14433:	je     146ff <cgs__appendi+0x109f>
+   14439:	cmp    $0x10,%dl
+   1443c:	ja     13aa8 <cgs__appendi+0x448>
+   14442:	lea    0x9ca3(%rip),%rcx        # 1e0ec <I32+0x56c>
+   14449:	movslq (%rcx,%rdx,4),%rax
+   1444d:	add    %rcx,%rax
+   14450:	notrack jmp *%rax
+   14453:	test   %dil,%dil
+   14456:	je     146cb <cgs__appendi+0x106b>
+   1445c:	cmp    $0x10,%dl
+   1445f:	ja     13aa8 <cgs__appendi+0x448>
+   14465:	lea    0x9cc4(%rip),%rcx        # 1e130 <I32+0x5b0>
+   1446c:	movslq (%rcx,%rdx,4),%rax
+   14470:	add    %rcx,%rax
+   14473:	notrack jmp *%rax
+   14476:	test   %dil,%dil
+   14479:	je     14733 <cgs__appendi+0x10d3>
+   1447f:	cmp    $0x10,%dl
+   14482:	ja     13aa8 <cgs__appendi+0x448>
+   14488:	lea    0x9ce5(%rip),%rcx        # 1e174 <I32+0x5f4>
+   1448f:	movslq (%rcx,%rdx,4),%rax
+   14493:	add    %rcx,%rax
+   14496:	notrack jmp *%rax
+   14499:	test   %dil,%dil
+   1449c:	je     145fb <cgs__appendi+0xf9b>
+   144a2:	cmp    $0x10,%dl
+   144a5:	ja     13aa8 <cgs__appendi+0x448>
+   144ab:	lea    0x9d06(%rip),%rcx        # 1e1b8 <I32+0x638>
+   144b2:	movslq (%rcx,%rdx,4),%rax
+   144b6:	add    %rcx,%rax
+   144b9:	notrack jmp *%rax
+   144bc:	mov    %rbx,%rsi
+   144bf:	mov    %r15,%rdi
+   144c2:	call   *%r14
+   144c5:	jmp    13bb0 <cgs__appendi+0x550>
+   144ca:	lea    0x120(%rsp),%r14
+   144d2:	mov    %r14,%rax
+   144d5:	mov    $0x40,%ebx
+   144da:	mov    %r15,%r14
+   144dd:	mov    $0x1,%r8d
+   144e3:	mov    %rax,%r15
+   144e6:	cs nopw 0x0(%rax,%rax,1)
+   144f0:	test   %rbp,%rbp
+   144f3:	js     14510 <cgs__appendi+0xeb0>
+   144f5:	test   %r8b,%r8b
+   144f8:	je     14550 <cgs__appendi+0xef0>
+   144fa:	cmp    $0x1,%ebx
+   144fd:	je     14550 <cgs__appendi+0xef0>
+   144ff:	add    %rbp,%rbp
+   14502:	sub    $0x1,%ebx
+   14505:	test   %rbp,%rbp
+   14508:	mov    $0x1,%r8d
+   1450e:	jns    144f5 <cgs__appendi+0xe95>
+   14510:	mov    %r13,%rax
+   14513:	movabs $0xffffffff00000000,%rcx
+   1451d:	and    %rcx,%rax
+   14520:	movb   $0x31,0x120(%rsp)
+   14528:	or     $0x1,%rax
+   1452c:	mov    %r15,%rsi
+   1452f:	mov    %rax,%rdx
+   14532:	mov    %r14,%rdi
+   14535:	call   *(%r14)
+   14538:	xor    %r8d,%r8d
+   1453b:	add    %rbp,%rbp
+   1453e:	sub    $0x1,%ebx
+   14541:	jne    144f0 <cgs__appendi+0xe90>
+   14543:	mov    %r14,%r15
+   14546:	jmp    13bb0 <cgs__appendi+0x550>
+   1454b:	nopl   0x0(%rax,%rax,1)
+   14550:	mov    0x8(%rsp),%rdx
+   14555:	mov    %r15,(%rsp)
+   14559:	mov    %rdx,0x8(%rsp)
+   1455e:	movabs $0xffffffff00000000,%rcx
+   14568:	mov    (%rsp),%rsi
+   1456c:	mov    0x8(%rsp),%rax
+   14571:	mov    %rsi,(%rsp)
+   14575:	and    %rcx,%rax
+   14578:	or     $0x1,%rax
+   1457c:	mov    %rax,0x8(%rsp)
+   14581:	movb   $0x30,0x120(%rsp)
+   14589:	mov    (%rsp),%rax
+   1458d:	mov    0x8(%rsp),%rdx
+   14592:	mov    %rax,%rsi
+   14595:	mov    %r14,%rdi
+   14598:	mov    %r8b,0x20(%rsp)
+   1459d:	call   *(%r14)
+   145a0:	movzbl 0x20(%rsp),%r8d
+   145a6:	jmp    1453b <cgs__appendi+0xedb>
+   145a8:	mov    (%rbx),%rax
+   145ab:	mov    %rax,%rdi
+   145ae:	mov    %rax,0x100(%rsp)
+   145b6:	call   5250 <strlen@plt>
+   145bb:	mov    %eax,0x10c(%rsp)
+   145c2:	jmp    141c0 <cgs__appendi+0xb60>
+   145c7:	cmp    $0x10,%dl
+   145ca:	ja     13aa8 <cgs__appendi+0x448>
+   145d0:	lea    0x9c25(%rip),%rcx        # 1e1fc <I32+0x67c>
+   145d7:	movslq (%rcx,%rdx,4),%rax
+   145db:	add    %rcx,%rax
+   145de:	notrack jmp *%rax
+   145e1:	cmp    $0x10,%dl
+   145e4:	ja     13aa8 <cgs__appendi+0x448>
+   145ea:	lea    0x9c4f(%rip),%rcx        # 1e240 <I32+0x6c0>
+   145f1:	movslq (%rcx,%rdx,4),%rax
+   145f5:	add    %rcx,%rax
+   145f8:	notrack jmp *%rax
+   145fb:	cmp    $0x10,%dl
+   145fe:	ja     13aa8 <cgs__appendi+0x448>
+   14604:	lea    0x9c79(%rip),%rcx        # 1e284 <I32+0x704>
+   1460b:	movslq (%rcx,%rdx,4),%rax
+   1460f:	add    %rcx,%rax
+   14612:	notrack jmp *%rax
+   14615:	cmp    $0x10,%dl
+   14618:	ja     13aa8 <cgs__appendi+0x448>
+   1461e:	lea    0x9ca3(%rip),%rcx        # 1e2c8 <I32+0x748>
+   14625:	movslq (%rcx,%rdx,4),%rax
+   14629:	add    %rcx,%rax
+   1462c:	notrack jmp *%rax
+   1462f:	cmp    $0x10,%dl
+   14632:	ja     13aa8 <cgs__appendi+0x448>
+   14638:	lea    0x9ccd(%rip),%rcx        # 1e30c <I32+0x78c>
+   1463f:	movslq (%rcx,%rdx,4),%rax
+   14643:	add    %rcx,%rax
+   14646:	notrack jmp *%rax
+   14649:	cmp    $0x10,%dl
+   1464c:	ja     13aa8 <cgs__appendi+0x448>
+   14652:	lea    0x9cf7(%rip),%rcx        # 1e350 <I32+0x7d0>
+   14659:	movslq (%rcx,%rdx,4),%rax
+   1465d:	add    %rcx,%rax
+   14660:	notrack jmp *%rax
+   14663:	cmp    $0x10,%dl
+   14666:	ja     13aa8 <cgs__appendi+0x448>
+   1466c:	lea    0x9d21(%rip),%rcx        # 1e394 <I32+0x814>
+   14673:	movslq (%rcx,%rdx,4),%rax
+   14677:	add    %rcx,%rax
+   1467a:	notrack jmp *%rax
+   1467d:	cmp    $0x10,%dl
+   14680:	ja     13aa8 <cgs__appendi+0x448>
+   14686:	lea    0x9d4b(%rip),%rcx        # 1e3d8 <I32+0x858>
+   1468d:	movslq (%rcx,%rdx,4),%rax
+   14691:	add    %rcx,%rax
+   14694:	notrack jmp *%rax
+   14697:	cmp    $0x10,%dl
+   1469a:	ja     13aa8 <cgs__appendi+0x448>
+   146a0:	lea    0x9d75(%rip),%rcx        # 1e41c <I32+0x89c>
+   146a7:	movslq (%rcx,%rdx,4),%rax
+   146ab:	add    %rcx,%rax
+   146ae:	notrack jmp *%rax
+   146b1:	cmp    $0x10,%dl
+   146b4:	ja     13aa8 <cgs__appendi+0x448>
+   146ba:	lea    0x9d9f(%rip),%rcx        # 1e460 <I32+0x8e0>
+   146c1:	movslq (%rcx,%rdx,4),%rax
+   146c5:	add    %rcx,%rax
+   146c8:	notrack jmp *%rax
+   146cb:	cmp    $0x10,%dl
+   146ce:	ja     13aa8 <cgs__appendi+0x448>
+   146d4:	lea    0x9dc9(%rip),%rcx        # 1e4a4 <I32+0x924>
+   146db:	movslq (%rcx,%rdx,4),%rax
+   146df:	add    %rcx,%rax
+   146e2:	notrack jmp *%rax
+   146e5:	cmp    $0x10,%dl
+   146e8:	ja     13aa8 <cgs__appendi+0x448>
+   146ee:	lea    0x9df3(%rip),%rcx        # 1e4e8 <I32+0x968>
+   146f5:	movslq (%rcx,%rdx,4),%rax
+   146f9:	add    %rcx,%rax
+   146fc:	notrack jmp *%rax
+   146ff:	cmp    $0x10,%dl
+   14702:	ja     13aa8 <cgs__appendi+0x448>
+   14708:	lea    0x9e1d(%rip),%rcx        # 1e52c <I32+0x9ac>
+   1470f:	movslq (%rcx,%rdx,4),%rax
+   14713:	add    %rcx,%rax
+   14716:	notrack jmp *%rax
+   14719:	cmp    $0x10,%dl
+   1471c:	ja     13aa8 <cgs__appendi+0x448>
+   14722:	lea    0x9e47(%rip),%rcx        # 1e570 <I32+0x9f0>
+   14729:	movslq (%rcx,%rdx,4),%rax
+   1472d:	add    %rcx,%rax
+   14730:	notrack jmp *%rax
+   14733:	cmp    $0x10,%dl
+   14736:	ja     13aa8 <cgs__appendi+0x448>
+   1473c:	lea    0x9e71(%rip),%rcx        # 1e5b4 <I32+0xa34>
+   14743:	movslq (%rcx,%rdx,4),%rax
+   14747:	add    %rcx,%rax
+   1474a:	notrack jmp *%rax
+   1474d:	call   f510 <cgs__ulong_tostr>
+   14752:	jmp    13bb0 <cgs__appendi+0x550>
+   14757:	mov    (%rbx),%rax
+   1475a:	mov    %rax,0x100(%rsp)
+   14762:	mov    0x8(%rbx),%eax
+   14765:	mov    %eax,0x10c(%rsp)
+   1476c:	jmp    141c0 <cgs__appendi+0xb60>
+   14771:	test   %rbx,%rbx
+   14774:	je     13aa8 <cgs__appendi+0x448>
+   1477a:	mov    (%rbx),%rbp
+   1477d:	jmp    13aa8 <cgs__appendi+0x448>
+   14782:	test   %rbx,%rbx
+   14785:	je     13aa8 <cgs__appendi+0x448>
+   1478b:	mov    (%rbx),%rbp
+   1478e:	jmp    13aa8 <cgs__appendi+0x448>
+   14793:	test   %rbx,%rbx
+   14796:	je     13aa8 <cgs__appendi+0x448>
+   1479c:	movslq (%rbx),%rbp
+   1479f:	jmp    13aa8 <cgs__appendi+0x448>
+   147a4:	test   %rbx,%rbx
+   147a7:	je     13aa8 <cgs__appendi+0x448>
+   147ad:	movswq (%rbx),%rbp
+   147b1:	jmp    13aa8 <cgs__appendi+0x448>
+   147b6:	test   %rbx,%rbx
+   147b9:	je     13aa8 <cgs__appendi+0x448>
+   147bf:	movsbq (%rbx),%rbp
+   147c3:	jmp    13aa8 <cgs__appendi+0x448>
+   147c8:	test   %rbx,%rbx
+   147cb:	je     13aa8 <cgs__appendi+0x448>
+   147d1:	movsbq (%rbx),%rbp
+   147d5:	jmp    13aa8 <cgs__appendi+0x448>
+   147da:	test   %rbx,%rbx
+   147dd:	je     13aa8 <cgs__appendi+0x448>
+   147e3:	mov    (%rbx),%rbp
+   147e6:	jmp    13aa8 <cgs__appendi+0x448>
+   147eb:	test   %rbx,%rbx
+   147ee:	je     13aa8 <cgs__appendi+0x448>
+   147f4:	mov    (%rbx),%rbp
+   147f7:	jmp    13aa8 <cgs__appendi+0x448>
+   147fc:	test   %rbx,%rbx
+   147ff:	je     13aa8 <cgs__appendi+0x448>
+   14805:	mov    (%rbx),%ebp
+   14807:	jmp    13aa8 <cgs__appendi+0x448>
+   1480c:	test   %rbx,%rbx
+   1480f:	je     13aa8 <cgs__appendi+0x448>
+   14815:	movzwl (%rbx),%ebp
+   14818:	jmp    13aa8 <cgs__appendi+0x448>
+   1481d:	test   %rbx,%rbx
+   14820:	je     13aa8 <cgs__appendi+0x448>
+   14826:	movzbl (%rbx),%ebp
+   14829:	jmp    13aa8 <cgs__appendi+0x448>
+   1482e:	test   %rbx,%rbx
+   14831:	je     13aa8 <cgs__appendi+0x448>
+   14837:	mov    (%rbx),%ebp
+   14839:	jmp    13aa8 <cgs__appendi+0x448>
+   1483e:	test   %rbx,%rbx
+   14841:	je     13aa8 <cgs__appendi+0x448>
+   14847:	movzbl (%rbx),%ebp
+   1484a:	jmp    13aa8 <cgs__appendi+0x448>
+   1484f:	test   %rbx,%rbx
+   14852:	je     13aa8 <cgs__appendi+0x448>
+   14858:	movslq (%rbx),%rbp
+   1485b:	jmp    13aa8 <cgs__appendi+0x448>
+   14860:	test   %rbx,%rbx
+   14863:	je     13aa8 <cgs__appendi+0x448>
+   14869:	movzwl (%rbx),%ebp
+   1486c:	jmp    13aa8 <cgs__appendi+0x448>
+   14871:	test   %rbx,%rbx
+   14874:	je     13aa8 <cgs__appendi+0x448>
+   1487a:	movsbq (%rbx),%rbp
+   1487e:	jmp    13aa8 <cgs__appendi+0x448>
+   14883:	test   %rbx,%rbx
+   14886:	je     13aa8 <cgs__appendi+0x448>
+   1488c:	movsbq (%rbx),%rbp
+   14890:	jmp    13aa8 <cgs__appendi+0x448>
+   14895:	test   %rbx,%rbx
+   14898:	je     13aa8 <cgs__appendi+0x448>
+   1489e:	movslq (%rbx),%rbp
+   148a1:	jmp    13aa8 <cgs__appendi+0x448>
+   148a6:	test   %rbx,%rbx
+   148a9:	je     13aa8 <cgs__appendi+0x448>
+   148af:	movslq (%rbx),%rbp
+   148b2:	jmp    13aa8 <cgs__appendi+0x448>
+   148b7:	test   %rbx,%rbx
+   148ba:	je     13aa8 <cgs__appendi+0x448>
+   148c0:	mov    (%rbx),%ebp
+   148c2:	jmp    13aa8 <cgs__appendi+0x448>
+   148c7:	test   %rbx,%rbx
+   148ca:	je     13aa8 <cgs__appendi+0x448>
+   148d0:	mov    (%rbx),%ebp
+   148d2:	jmp    13aa8 <cgs__appendi+0x448>
+   148d7:	test   %rbx,%rbx
+   148da:	je     13aa8 <cgs__appendi+0x448>
+   148e0:	mov    (%rbx),%ebp
+   148e2:	jmp    13aa8 <cgs__appendi+0x448>
+   148e7:	test   %rbx,%rbx
+   148ea:	je     13aa8 <cgs__appendi+0x448>
+   148f0:	mov    (%rbx),%ebp
+   148f2:	jmp    13aa8 <cgs__appendi+0x448>
+   148f7:	test   %rbx,%rbx
+   148fa:	je     13aa8 <cgs__appendi+0x448>
+   14900:	movzwl (%rbx),%ebp
+   14903:	jmp    13aa8 <cgs__appendi+0x448>
+   14908:	test   %rbx,%rbx
+   1490b:	je     13aa8 <cgs__appendi+0x448>
+   14911:	movzbl (%rbx),%ebp
+   14914:	jmp    13aa8 <cgs__appendi+0x448>
+   14919:	test   %rbx,%rbx
+   1491c:	je     13aa8 <cgs__appendi+0x448>
+   14922:	movslq (%rbx),%rbp
+   14925:	jmp    13aa8 <cgs__appendi+0x448>
+   1492a:	test   %rbx,%rbx
+   1492d:	je     13aa8 <cgs__appendi+0x448>
+   14933:	movslq (%rbx),%rbp
+   14936:	jmp    13aa8 <cgs__appendi+0x448>
+   1493b:	test   %rbx,%rbx
+   1493e:	je     13aa8 <cgs__appendi+0x448>
+   14944:	movslq (%rbx),%rbp
+   14947:	jmp    13aa8 <cgs__appendi+0x448>
+   1494c:	test   %rbx,%rbx
+   1494f:	je     13aa8 <cgs__appendi+0x448>
+   14955:	movswq (%rbx),%rbp
+   14959:	jmp    13aa8 <cgs__appendi+0x448>
+   1495e:	test   %rbx,%rbx
+   14961:	je     13aa8 <cgs__appendi+0x448>
+   14967:	movswl (%rbx),%ebp
+   1496a:	jmp    13aa8 <cgs__appendi+0x448>
+   1496f:	test   %rbx,%rbx
+   14972:	je     13aa8 <cgs__appendi+0x448>
+   14978:	movsbl (%rbx),%ebp
+   1497b:	jmp    13aa8 <cgs__appendi+0x448>
+   14980:	test   %rbx,%rbx
+   14983:	je     13aa8 <cgs__appendi+0x448>
+   14989:	movsbl (%rbx),%ebp
+   1498c:	jmp    13aa8 <cgs__appendi+0x448>
+   14991:	test   %rbx,%rbx
+   14994:	je     13aa8 <cgs__appendi+0x448>
+   1499a:	mov    (%rbx),%ebp
+   1499c:	jmp    13aa8 <cgs__appendi+0x448>
+   149a1:	test   %rbx,%rbx
+   149a4:	je     13aa8 <cgs__appendi+0x448>
+   149aa:	mov    (%rbx),%rbp
+   149ad:	jmp    13aa8 <cgs__appendi+0x448>
+   149b2:	test   %rbx,%rbx
+   149b5:	je     13aa8 <cgs__appendi+0x448>
+   149bb:	mov    (%rbx),%rbp
+   149be:	jmp    13aa8 <cgs__appendi+0x448>
+   149c3:	test   %rbx,%rbx
+   149c6:	je     13aa8 <cgs__appendi+0x448>
+   149cc:	movslq (%rbx),%rbp
+   149cf:	jmp    13aa8 <cgs__appendi+0x448>
+   149d4:	test   %rbx,%rbx
+   149d7:	je     13aa8 <cgs__appendi+0x448>
+   149dd:	movswq (%rbx),%rbp
+   149e1:	jmp    13aa8 <cgs__appendi+0x448>
+   149e6:	test   %rbx,%rbx
+   149e9:	je     13aa8 <cgs__appendi+0x448>
+   149ef:	movsbq (%rbx),%rbp
+   149f3:	jmp    13aa8 <cgs__appendi+0x448>
+   149f8:	test   %rbx,%rbx
+   149fb:	je     13aa8 <cgs__appendi+0x448>
+   14a01:	movsbq (%rbx),%rbp
+   14a05:	jmp    13aa8 <cgs__appendi+0x448>
+   14a0a:	test   %rbx,%rbx
+   14a0d:	je     13aa8 <cgs__appendi+0x448>
+   14a13:	mov    (%rbx),%rbp
+   14a16:	jmp    13aa8 <cgs__appendi+0x448>
+   14a1b:	test   %rbx,%rbx
+   14a1e:	je     13aa8 <cgs__appendi+0x448>
+   14a24:	mov    (%rbx),%rbp
+   14a27:	jmp    13aa8 <cgs__appendi+0x448>
+   14a2c:	test   %rbx,%rbx
+   14a2f:	je     13aa8 <cgs__appendi+0x448>
+   14a35:	mov    (%rbx),%ebp
+   14a37:	jmp    13aa8 <cgs__appendi+0x448>
+   14a3c:	test   %rbx,%rbx
+   14a3f:	je     13aa8 <cgs__appendi+0x448>
+   14a45:	movzwl (%rbx),%ebp
+   14a48:	jmp    13aa8 <cgs__appendi+0x448>
+   14a4d:	test   %rbx,%rbx
+   14a50:	je     13aa8 <cgs__appendi+0x448>
+   14a56:	movzbl (%rbx),%ebp
+   14a59:	jmp    13aa8 <cgs__appendi+0x448>
+   14a5e:	test   %rbx,%rbx
+   14a61:	je     13aa8 <cgs__appendi+0x448>
+   14a67:	mov    (%rbx),%ebp
+   14a69:	jmp    13aa8 <cgs__appendi+0x448>
+   14a6e:	test   %rbx,%rbx
+   14a71:	je     13aa8 <cgs__appendi+0x448>
+   14a77:	mov    (%rbx),%ebp
+   14a79:	jmp    13aa8 <cgs__appendi+0x448>
+   14a7e:	test   %rbx,%rbx
+   14a81:	je     13aa8 <cgs__appendi+0x448>
+   14a87:	mov    (%rbx),%ebp
+   14a89:	jmp    13aa8 <cgs__appendi+0x448>
+   14a8e:	test   %rbx,%rbx
+   14a91:	je     13aa8 <cgs__appendi+0x448>
+   14a97:	movswl (%rbx),%ebp
+   14a9a:	jmp    13aa8 <cgs__appendi+0x448>
+   14a9f:	test   %rbx,%rbx
+   14aa2:	je     13aa8 <cgs__appendi+0x448>
+   14aa8:	movsbl (%rbx),%ebp
+   14aab:	jmp    13aa8 <cgs__appendi+0x448>
+   14ab0:	test   %rbx,%rbx
+   14ab3:	je     13aa8 <cgs__appendi+0x448>
+   14ab9:	movsbl (%rbx),%ebp
+   14abc:	jmp    13aa8 <cgs__appendi+0x448>
+   14ac1:	test   %rbx,%rbx
+   14ac4:	je     13aa8 <cgs__appendi+0x448>
+   14aca:	mov    (%rbx),%ebp
+   14acc:	jmp    13aa8 <cgs__appendi+0x448>
+   14ad1:	test   %rbx,%rbx
+   14ad4:	je     13aa8 <cgs__appendi+0x448>
+   14ada:	mov    (%rbx),%ebp
+   14adc:	jmp    13aa8 <cgs__appendi+0x448>
+   14ae1:	test   %rbx,%rbx
+   14ae4:	je     13aa8 <cgs__appendi+0x448>
+   14aea:	mov    (%rbx),%ebp
+   14aec:	jmp    13aa8 <cgs__appendi+0x448>
+   14af1:	test   %rbx,%rbx
+   14af4:	je     13aa8 <cgs__appendi+0x448>
+   14afa:	movzwl (%rbx),%ebp
+   14afd:	jmp    13aa8 <cgs__appendi+0x448>
+   14b02:	test   %rbx,%rbx
+   14b05:	je     13aa8 <cgs__appendi+0x448>
+   14b0b:	movzbl (%rbx),%ebp
+   14b0e:	jmp    13aa8 <cgs__appendi+0x448>
+   14b13:	test   %rbx,%rbx
+   14b16:	je     13aa8 <cgs__appendi+0x448>
+   14b1c:	mov    (%rbx),%rbp
+   14b1f:	jmp    13aa8 <cgs__appendi+0x448>
+   14b24:	test   %rbx,%rbx
+   14b27:	je     13aa8 <cgs__appendi+0x448>
+   14b2d:	mov    (%rbx),%rbp
+   14b30:	jmp    13aa8 <cgs__appendi+0x448>
+   14b35:	test   %rbx,%rbx
+   14b38:	je     13aa8 <cgs__appendi+0x448>
+   14b3e:	movslq (%rbx),%rbp
+   14b41:	jmp    13aa8 <cgs__appendi+0x448>
+   14b46:	test   %rbx,%rbx
+   14b49:	je     13aa8 <cgs__appendi+0x448>
+   14b4f:	movswq (%rbx),%rbp
+   14b53:	jmp    13aa8 <cgs__appendi+0x448>
+   14b58:	test   %rbx,%rbx
+   14b5b:	je     13aa8 <cgs__appendi+0x448>
+   14b61:	movsbq (%rbx),%rbp
+   14b65:	jmp    13aa8 <cgs__appendi+0x448>
+   14b6a:	test   %rbx,%rbx
+   14b6d:	je     13aa8 <cgs__appendi+0x448>
+   14b73:	movsbq (%rbx),%rbp
+   14b77:	jmp    13aa8 <cgs__appendi+0x448>
+   14b7c:	test   %rbx,%rbx
+   14b7f:	je     13aa8 <cgs__appendi+0x448>
+   14b85:	mov    (%rbx),%rbp
+   14b88:	jmp    13aa8 <cgs__appendi+0x448>
+   14b8d:	test   %rbx,%rbx
+   14b90:	je     13aa8 <cgs__appendi+0x448>
+   14b96:	mov    (%rbx),%rbp
+   14b99:	jmp    13aa8 <cgs__appendi+0x448>
+   14b9e:	test   %rbx,%rbx
+   14ba1:	je     13aa8 <cgs__appendi+0x448>
+   14ba7:	mov    (%rbx),%ebp
+   14ba9:	jmp    13aa8 <cgs__appendi+0x448>
+   14bae:	test   %rbx,%rbx
+   14bb1:	je     13aa8 <cgs__appendi+0x448>
+   14bb7:	movzwl (%rbx),%ebp
+   14bba:	jmp    13aa8 <cgs__appendi+0x448>
+   14bbf:	test   %rbx,%rbx
+   14bc2:	je     13aa8 <cgs__appendi+0x448>
+   14bc8:	movzbl (%rbx),%ebp
+   14bcb:	jmp    13aa8 <cgs__appendi+0x448>
+   14bd0:	test   %rbx,%rbx
+   14bd3:	je     13aa8 <cgs__appendi+0x448>
+   14bd9:	mov    (%rbx),%rbp
+   14bdc:	jmp    13aa8 <cgs__appendi+0x448>
+   14be1:	test   %rbx,%rbx
+   14be4:	je     13aa8 <cgs__appendi+0x448>
+   14bea:	mov    (%rbx),%rbp
+   14bed:	jmp    13aa8 <cgs__appendi+0x448>
+   14bf2:	test   %rbx,%rbx
+   14bf5:	je     13aa8 <cgs__appendi+0x448>
+   14bfb:	movslq (%rbx),%rbp
+   14bfe:	jmp    13aa8 <cgs__appendi+0x448>
+   14c03:	test   %rbx,%rbx
+   14c06:	je     13aa8 <cgs__appendi+0x448>
+   14c0c:	movswq (%rbx),%rbp
+   14c10:	jmp    13aa8 <cgs__appendi+0x448>
+   14c15:	test   %rbx,%rbx
+   14c18:	je     13aa8 <cgs__appendi+0x448>
+   14c1e:	movsbq (%rbx),%rbp
+   14c22:	jmp    13aa8 <cgs__appendi+0x448>
+   14c27:	test   %rbx,%rbx
+   14c2a:	je     13aa8 <cgs__appendi+0x448>
+   14c30:	movsbq (%rbx),%rbp
+   14c34:	jmp    13aa8 <cgs__appendi+0x448>
+   14c39:	test   %rbx,%rbx
+   14c3c:	je     13aa8 <cgs__appendi+0x448>
+   14c42:	mov    (%rbx),%rbp
+   14c45:	jmp    13aa8 <cgs__appendi+0x448>
+   14c4a:	test   %rbx,%rbx
+   14c4d:	je     13aa8 <cgs__appendi+0x448>
+   14c53:	mov    (%rbx),%rbp
+   14c56:	jmp    13aa8 <cgs__appendi+0x448>
+   14c5b:	test   %rbx,%rbx
+   14c5e:	je     13aa8 <cgs__appendi+0x448>
+   14c64:	mov    (%rbx),%ebp
+   14c66:	jmp    13aa8 <cgs__appendi+0x448>
+   14c6b:	test   %rbx,%rbx
+   14c6e:	je     13aa8 <cgs__appendi+0x448>
+   14c74:	movzwl (%rbx),%ebp
+   14c77:	jmp    13aa8 <cgs__appendi+0x448>
+   14c7c:	test   %rbx,%rbx
+   14c7f:	je     13aa8 <cgs__appendi+0x448>
+   14c85:	movzbl (%rbx),%ebp
+   14c88:	jmp    13aa8 <cgs__appendi+0x448>
+   14c8d:	test   %rbx,%rbx
+   14c90:	je     13aa8 <cgs__appendi+0x448>
+   14c96:	movzbl (%rbx),%ebp
+   14c99:	jmp    13aa8 <cgs__appendi+0x448>
+   14c9e:	test   %rbx,%rbx
+   14ca1:	je     13aa8 <cgs__appendi+0x448>
+   14ca7:	movzbl (%rbx),%ebp
+   14caa:	jmp    13aa8 <cgs__appendi+0x448>
+   14caf:	test   %rbx,%rbx
+   14cb2:	je     13aa8 <cgs__appendi+0x448>
+   14cb8:	movzbl (%rbx),%ebp
+   14cbb:	jmp    13aa8 <cgs__appendi+0x448>
+   14cc0:	test   %rbx,%rbx
+   14cc3:	je     13aa8 <cgs__appendi+0x448>
+   14cc9:	movzbl (%rbx),%ebp
+   14ccc:	jmp    13aa8 <cgs__appendi+0x448>
+   14cd1:	test   %rbx,%rbx
+   14cd4:	je     13aa8 <cgs__appendi+0x448>
+   14cda:	movzbl (%rbx),%ebp
+   14cdd:	jmp    13aa8 <cgs__appendi+0x448>
+   14ce2:	test   %rbx,%rbx
+   14ce5:	je     13aa8 <cgs__appendi+0x448>
+   14ceb:	movzbl (%rbx),%ebp
+   14cee:	jmp    13aa8 <cgs__appendi+0x448>
+   14cf3:	test   %rbx,%rbx
+   14cf6:	je     13aa8 <cgs__appendi+0x448>
+   14cfc:	movzbl (%rbx),%ebp
+   14cff:	jmp    13aa8 <cgs__appendi+0x448>
+   14d04:	test   %rbx,%rbx
+   14d07:	je     13aa8 <cgs__appendi+0x448>
+   14d0d:	movzbl (%rbx),%ebp
+   14d10:	jmp    13aa8 <cgs__appendi+0x448>
+   14d15:	test   %rbx,%rbx
+   14d18:	je     13aa8 <cgs__appendi+0x448>
+   14d1e:	movzbl (%rbx),%ebp
+   14d21:	jmp    13aa8 <cgs__appendi+0x448>
+   14d26:	test   %rbx,%rbx
+   14d29:	je     13aa8 <cgs__appendi+0x448>
+   14d2f:	movzbl (%rbx),%ebp
+   14d32:	jmp    13aa8 <cgs__appendi+0x448>
+   14d37:	test   %rbx,%rbx
+   14d3a:	je     13aa8 <cgs__appendi+0x448>
+   14d40:	movzbl (%rbx),%ebp
+   14d43:	jmp    13aa8 <cgs__appendi+0x448>
+   14d48:	test   %rbx,%rbx
+   14d4b:	je     13aa8 <cgs__appendi+0x448>
+   14d51:	mov    (%rbx),%rbp
+   14d54:	jmp    13aa8 <cgs__appendi+0x448>
+   14d59:	test   %rbx,%rbx
+   14d5c:	je     13aa8 <cgs__appendi+0x448>
+   14d62:	mov    (%rbx),%rbp
+   14d65:	jmp    13aa8 <cgs__appendi+0x448>
+   14d6a:	test   %rbx,%rbx
+   14d6d:	je     13aa8 <cgs__appendi+0x448>
+   14d73:	movslq (%rbx),%rbp
+   14d76:	jmp    13aa8 <cgs__appendi+0x448>
+   14d7b:	test   %rbx,%rbx
+   14d7e:	je     13aa8 <cgs__appendi+0x448>
+   14d84:	movswq (%rbx),%rbp
+   14d88:	jmp    13aa8 <cgs__appendi+0x448>
+   14d8d:	test   %rbx,%rbx
+   14d90:	je     13aa8 <cgs__appendi+0x448>
+   14d96:	movsbq (%rbx),%rbp
+   14d9a:	jmp    13aa8 <cgs__appendi+0x448>
+   14d9f:	test   %rbx,%rbx
+   14da2:	je     13aa8 <cgs__appendi+0x448>
+   14da8:	movsbq (%rbx),%rbp
+   14dac:	jmp    13aa8 <cgs__appendi+0x448>
+   14db1:	test   %rbx,%rbx
+   14db4:	je     13aa8 <cgs__appendi+0x448>
+   14dba:	mov    (%rbx),%rbp
+   14dbd:	jmp    13aa8 <cgs__appendi+0x448>
+   14dc2:	test   %rbx,%rbx
+   14dc5:	je     13aa8 <cgs__appendi+0x448>
+   14dcb:	mov    (%rbx),%rbp
+   14dce:	jmp    13aa8 <cgs__appendi+0x448>
+   14dd3:	test   %rbx,%rbx
+   14dd6:	je     13aa8 <cgs__appendi+0x448>
+   14ddc:	mov    (%rbx),%ebp
+   14dde:	jmp    13aa8 <cgs__appendi+0x448>
+   14de3:	test   %rbx,%rbx
+   14de6:	je     13aa8 <cgs__appendi+0x448>
+   14dec:	movzwl (%rbx),%ebp
+   14def:	jmp    13aa8 <cgs__appendi+0x448>
+   14df4:	test   %rbx,%rbx
+   14df7:	je     13aa8 <cgs__appendi+0x448>
+   14dfd:	movzbl (%rbx),%ebp
+   14e00:	jmp    13aa8 <cgs__appendi+0x448>
+   14e05:	test   %rbx,%rbx
+   14e08:	je     13aa8 <cgs__appendi+0x448>
+   14e0e:	movzbl (%rbx),%ebp
+   14e11:	jmp    13aa8 <cgs__appendi+0x448>
+   14e16:	test   %rbx,%rbx
+   14e19:	je     13aa8 <cgs__appendi+0x448>
+   14e1f:	movzbl (%rbx),%ebp
+   14e22:	jmp    13aa8 <cgs__appendi+0x448>
+   14e27:	test   %rbx,%rbx
+   14e2a:	je     13aa8 <cgs__appendi+0x448>
+   14e30:	movzbl (%rbx),%ebp
+   14e33:	jmp    13aa8 <cgs__appendi+0x448>
+   14e38:	test   %rbx,%rbx
+   14e3b:	je     13aa8 <cgs__appendi+0x448>
+   14e41:	movzbl (%rbx),%ebp
+   14e44:	jmp    13aa8 <cgs__appendi+0x448>
+   14e49:	test   %rbx,%rbx
+   14e4c:	je     13aa8 <cgs__appendi+0x448>
+   14e52:	movzbl (%rbx),%ebp
+   14e55:	jmp    13aa8 <cgs__appendi+0x448>
+   14e5a:	test   %rbx,%rbx
+   14e5d:	je     13aa8 <cgs__appendi+0x448>
+   14e63:	movzbl (%rbx),%ebp
+   14e66:	jmp    13aa8 <cgs__appendi+0x448>
+   14e6b:	test   %rbx,%rbx
+   14e6e:	je     13aa8 <cgs__appendi+0x448>
+   14e74:	movzbl (%rbx),%ebp
+   14e77:	jmp    13aa8 <cgs__appendi+0x448>
+   14e7c:	test   %rbx,%rbx
+   14e7f:	je     13aa8 <cgs__appendi+0x448>
+   14e85:	movzbl (%rbx),%ebp
+   14e88:	jmp    13aa8 <cgs__appendi+0x448>
+   14e8d:	test   %rbx,%rbx
+   14e90:	je     13aa8 <cgs__appendi+0x448>
+   14e96:	movzbl (%rbx),%ebp
+   14e99:	jmp    13aa8 <cgs__appendi+0x448>
+   14e9e:	test   %rbx,%rbx
+   14ea1:	je     13aa8 <cgs__appendi+0x448>
+   14ea7:	movzbl (%rbx),%ebp
+   14eaa:	jmp    13aa8 <cgs__appendi+0x448>
+   14eaf:	test   %rbx,%rbx
+   14eb2:	je     13aa8 <cgs__appendi+0x448>
+   14eb8:	movzbl (%rbx),%ebp
+   14ebb:	jmp    13aa8 <cgs__appendi+0x448>
+   14ec0:	test   %rbx,%rbx
+   14ec3:	je     13aa8 <cgs__appendi+0x448>
+   14ec9:	mov    (%rbx),%rbp
+   14ecc:	jmp    13aa8 <cgs__appendi+0x448>
+   14ed1:	test   %rbx,%rbx
+   14ed4:	je     13aa8 <cgs__appendi+0x448>
+   14eda:	mov    (%rbx),%rbp
+   14edd:	jmp    13aa8 <cgs__appendi+0x448>
+   14ee2:	test   %rbx,%rbx
+   14ee5:	je     13aa8 <cgs__appendi+0x448>
+   14eeb:	movslq (%rbx),%rbp
+   14eee:	jmp    13aa8 <cgs__appendi+0x448>
+   14ef3:	test   %rbx,%rbx
+   14ef6:	je     13aa8 <cgs__appendi+0x448>
+   14efc:	movswq (%rbx),%rbp
+   14f00:	jmp    13aa8 <cgs__appendi+0x448>
+   14f05:	test   %rbx,%rbx
+   14f08:	je     13aa8 <cgs__appendi+0x448>
+   14f0e:	movsbq (%rbx),%rbp
+   14f12:	jmp    13aa8 <cgs__appendi+0x448>
+   14f17:	test   %rbx,%rbx
+   14f1a:	je     13aa8 <cgs__appendi+0x448>
+   14f20:	movsbq (%rbx),%rbp
+   14f24:	jmp    13aa8 <cgs__appendi+0x448>
+   14f29:	test   %rbx,%rbx
+   14f2c:	je     13aa8 <cgs__appendi+0x448>
+   14f32:	mov    (%rbx),%rbp
+   14f35:	jmp    13aa8 <cgs__appendi+0x448>
+   14f3a:	test   %rbx,%rbx
+   14f3d:	je     13aa8 <cgs__appendi+0x448>
+   14f43:	mov    (%rbx),%rbp
+   14f46:	jmp    13aa8 <cgs__appendi+0x448>
+   14f4b:	test   %rbx,%rbx
+   14f4e:	je     13aa8 <cgs__appendi+0x448>
+   14f54:	mov    (%rbx),%ebp
+   14f56:	jmp    13aa8 <cgs__appendi+0x448>
+   14f5b:	test   %rbx,%rbx
+   14f5e:	je     13aa8 <cgs__appendi+0x448>
+   14f64:	movzwl (%rbx),%ebp
+   14f67:	jmp    13aa8 <cgs__appendi+0x448>
+   14f6c:	test   %rbx,%rbx
+   14f6f:	je     13aa8 <cgs__appendi+0x448>
+   14f75:	movzbl (%rbx),%ebp
+   14f78:	jmp    13aa8 <cgs__appendi+0x448>
+   14f7d:	test   %rbx,%rbx
+   14f80:	je     13aa8 <cgs__appendi+0x448>
+   14f86:	mov    (%rbx),%rbp
+   14f89:	jmp    13aa8 <cgs__appendi+0x448>
+   14f8e:	test   %rbx,%rbx
+   14f91:	je     13aa8 <cgs__appendi+0x448>
+   14f97:	mov    (%rbx),%rbp
+   14f9a:	jmp    13aa8 <cgs__appendi+0x448>
+   14f9f:	test   %rbx,%rbx
+   14fa2:	je     13aa8 <cgs__appendi+0x448>
+   14fa8:	movslq (%rbx),%rbp
+   14fab:	jmp    13aa8 <cgs__appendi+0x448>
+   14fb0:	test   %rbx,%rbx
+   14fb3:	je     13aa8 <cgs__appendi+0x448>
+   14fb9:	movswq (%rbx),%rbp
+   14fbd:	jmp    13aa8 <cgs__appendi+0x448>
+   14fc2:	test   %rbx,%rbx
+   14fc5:	je     13aa8 <cgs__appendi+0x448>
+   14fcb:	movsbq (%rbx),%rbp
+   14fcf:	jmp    13aa8 <cgs__appendi+0x448>
+   14fd4:	test   %rbx,%rbx
+   14fd7:	je     13aa8 <cgs__appendi+0x448>
+   14fdd:	movsbq (%rbx),%rbp
+   14fe1:	jmp    13aa8 <cgs__appendi+0x448>
+   14fe6:	test   %rbx,%rbx
+   14fe9:	je     13aa8 <cgs__appendi+0x448>
+   14fef:	mov    (%rbx),%rbp
+   14ff2:	jmp    13aa8 <cgs__appendi+0x448>
+   14ff7:	test   %rbx,%rbx
+   14ffa:	je     13aa8 <cgs__appendi+0x448>
+   15000:	mov    (%rbx),%rbp
+   15003:	jmp    13aa8 <cgs__appendi+0x448>
+   15008:	test   %rbx,%rbx
+   1500b:	je     13aa8 <cgs__appendi+0x448>
+   15011:	mov    (%rbx),%ebp
+   15013:	jmp    13aa8 <cgs__appendi+0x448>
+   15018:	test   %rbx,%rbx
+   1501b:	je     13aa8 <cgs__appendi+0x448>
+   15021:	movzwl (%rbx),%ebp
+   15024:	jmp    13aa8 <cgs__appendi+0x448>
+   15029:	test   %rbx,%rbx
+   1502c:	je     13aa8 <cgs__appendi+0x448>
+   15032:	movzbl (%rbx),%ebp
+   15035:	jmp    13aa8 <cgs__appendi+0x448>
+   1503a:	test   %rbx,%rbx
+   1503d:	je     13aa8 <cgs__appendi+0x448>
+   15043:	movzbl (%rbx),%ebp
+   15046:	jmp    13aa8 <cgs__appendi+0x448>
+   1504b:	test   %rbx,%rbx
+   1504e:	je     13aa8 <cgs__appendi+0x448>
+   15054:	movzbl (%rbx),%ebp
+   15057:	jmp    13aa8 <cgs__appendi+0x448>
+   1505c:	test   %rbx,%rbx
+   1505f:	je     13aa8 <cgs__appendi+0x448>
+   15065:	movzbl (%rbx),%ebp
+   15068:	jmp    13aa8 <cgs__appendi+0x448>
+   1506d:	test   %rbx,%rbx
+   15070:	je     13aa8 <cgs__appendi+0x448>
+   15076:	movzbl (%rbx),%ebp
+   15079:	jmp    13aa8 <cgs__appendi+0x448>
+   1507e:	test   %rbx,%rbx
+   15081:	je     13aa8 <cgs__appendi+0x448>
+   15087:	movzbl (%rbx),%ebp
+   1508a:	jmp    13aa8 <cgs__appendi+0x448>
+   1508f:	test   %rbx,%rbx
+   15092:	je     13aa8 <cgs__appendi+0x448>
+   15098:	movzbl (%rbx),%ebp
+   1509b:	jmp    13aa8 <cgs__appendi+0x448>
+   150a0:	test   %rbx,%rbx
+   150a3:	je     13aa8 <cgs__appendi+0x448>
+   150a9:	movzbl (%rbx),%ebp
+   150ac:	jmp    13aa8 <cgs__appendi+0x448>
+   150b1:	test   %rbx,%rbx
+   150b4:	je     13aa8 <cgs__appendi+0x448>
+   150ba:	movzbl (%rbx),%ebp
+   150bd:	jmp    13aa8 <cgs__appendi+0x448>
+   150c2:	test   %rbx,%rbx
+   150c5:	je     13aa8 <cgs__appendi+0x448>
+   150cb:	movzbl (%rbx),%ebp
+   150ce:	jmp    13aa8 <cgs__appendi+0x448>
+   150d3:	test   %rbx,%rbx
+   150d6:	je     13aa8 <cgs__appendi+0x448>
+   150dc:	movzbl (%rbx),%ebp
+   150df:	jmp    13aa8 <cgs__appendi+0x448>
+   150e4:	test   %rbx,%rbx
+   150e7:	je     13aa8 <cgs__appendi+0x448>
+   150ed:	movzbl (%rbx),%ebp
+   150f0:	jmp    13aa8 <cgs__appendi+0x448>
+   150f5:	test   %rbx,%rbx
+   150f8:	je     13aa8 <cgs__appendi+0x448>
+   150fe:	mov    (%rbx),%rbp
+   15101:	jmp    13aa8 <cgs__appendi+0x448>
+   15106:	test   %rbx,%rbx
+   15109:	je     13aa8 <cgs__appendi+0x448>
+   1510f:	mov    (%rbx),%rbp
+   15112:	jmp    13aa8 <cgs__appendi+0x448>
+   15117:	test   %rbx,%rbx
+   1511a:	je     13aa8 <cgs__appendi+0x448>
+   15120:	movslq (%rbx),%rbp
+   15123:	jmp    13aa8 <cgs__appendi+0x448>
+   15128:	test   %rbx,%rbx
+   1512b:	je     13aa8 <cgs__appendi+0x448>
+   15131:	movswq (%rbx),%rbp
+   15135:	jmp    13aa8 <cgs__appendi+0x448>
+   1513a:	test   %rbx,%rbx
+   1513d:	je     13aa8 <cgs__appendi+0x448>
+   15143:	movsbq (%rbx),%rbp
+   15147:	jmp    13aa8 <cgs__appendi+0x448>
+   1514c:	test   %rbx,%rbx
+   1514f:	je     13aa8 <cgs__appendi+0x448>
+   15155:	movsbq (%rbx),%rbp
+   15159:	jmp    13aa8 <cgs__appendi+0x448>
+   1515e:	test   %rbx,%rbx
+   15161:	je     13aa8 <cgs__appendi+0x448>
+   15167:	mov    (%rbx),%rbp
+   1516a:	jmp    13aa8 <cgs__appendi+0x448>
+   1516f:	test   %rbx,%rbx
+   15172:	je     13aa8 <cgs__appendi+0x448>
+   15178:	mov    (%rbx),%rbp
+   1517b:	jmp    13aa8 <cgs__appendi+0x448>
+   15180:	test   %rbx,%rbx
+   15183:	je     13aa8 <cgs__appendi+0x448>
+   15189:	mov    (%rbx),%ebp
+   1518b:	jmp    13aa8 <cgs__appendi+0x448>
+   15190:	test   %rbx,%rbx
+   15193:	je     13aa8 <cgs__appendi+0x448>
+   15199:	movzwl (%rbx),%ebp
+   1519c:	jmp    13aa8 <cgs__appendi+0x448>
+   151a1:	test   %rbx,%rbx
+   151a4:	je     13aa8 <cgs__appendi+0x448>
+   151aa:	movzbl (%rbx),%ebp
+   151ad:	jmp    13aa8 <cgs__appendi+0x448>
+   151b2:	test   %rbx,%rbx
+   151b5:	je     13aa8 <cgs__appendi+0x448>
+   151bb:	movzwl (%rbx),%ebp
+   151be:	jmp    13aa8 <cgs__appendi+0x448>
+   151c3:	test   %rbx,%rbx
+   151c6:	je     13aa8 <cgs__appendi+0x448>
+   151cc:	movzwl (%rbx),%ebp
+   151cf:	jmp    13aa8 <cgs__appendi+0x448>
+   151d4:	test   %rbx,%rbx
+   151d7:	je     13aa8 <cgs__appendi+0x448>
+   151dd:	movzwl (%rbx),%ebp
+   151e0:	jmp    13aa8 <cgs__appendi+0x448>
+   151e5:	test   %rbx,%rbx
+   151e8:	je     13aa8 <cgs__appendi+0x448>
+   151ee:	movzwl (%rbx),%ebp
+   151f1:	jmp    13aa8 <cgs__appendi+0x448>
+   151f6:	test   %rbx,%rbx
+   151f9:	je     13aa8 <cgs__appendi+0x448>
+   151ff:	movsbw (%rbx),%r10w
+   15204:	movzwl %r10w,%ebp
+   15208:	jmp    13aa8 <cgs__appendi+0x448>
+   1520d:	test   %rbx,%rbx
+   15210:	je     13aa8 <cgs__appendi+0x448>
+   15216:	movsbw (%rbx),%r10w
+   1521b:	movzwl %r10w,%ebp
+   1521f:	jmp    13aa8 <cgs__appendi+0x448>
+   15224:	test   %rbx,%rbx
+   15227:	je     13aa8 <cgs__appendi+0x448>
+   1522d:	movzwl (%rbx),%ebp
+   15230:	jmp    13aa8 <cgs__appendi+0x448>
+   15235:	test   %rbx,%rbx
+   15238:	je     13aa8 <cgs__appendi+0x448>
+   1523e:	movzwl (%rbx),%ebp
+   15241:	jmp    13aa8 <cgs__appendi+0x448>
+   15246:	test   %rbx,%rbx
+   15249:	je     13aa8 <cgs__appendi+0x448>
+   1524f:	movzwl (%rbx),%ebp
+   15252:	jmp    13aa8 <cgs__appendi+0x448>
+   15257:	test   %rbx,%rbx
+   1525a:	je     13aa8 <cgs__appendi+0x448>
+   15260:	movzwl (%rbx),%ebp
+   15263:	jmp    13aa8 <cgs__appendi+0x448>
+   15268:	test   %rbx,%rbx
+   1526b:	je     13aa8 <cgs__appendi+0x448>
+   15271:	movzbl (%rbx),%ebp
+   15274:	jmp    13aa8 <cgs__appendi+0x448>
+   15279:	test   %rbx,%rbx
+   1527c:	je     13aa8 <cgs__appendi+0x448>
+   15282:	movzwl (%rbx),%ebp
+   15285:	jmp    13aa8 <cgs__appendi+0x448>
+   1528a:	test   %rbx,%rbx
+   1528d:	je     13aa8 <cgs__appendi+0x448>
+   15293:	movzwl (%rbx),%ebp
+   15296:	jmp    13aa8 <cgs__appendi+0x448>
+   1529b:	test   %rbx,%rbx
+   1529e:	je     13aa8 <cgs__appendi+0x448>
+   152a4:	movzwl (%rbx),%ebp
+   152a7:	jmp    13aa8 <cgs__appendi+0x448>
+   152ac:	test   %rbx,%rbx
+   152af:	je     13aa8 <cgs__appendi+0x448>
+   152b5:	movzwl (%rbx),%ebp
+   152b8:	jmp    13aa8 <cgs__appendi+0x448>
+   152bd:	test   %rbx,%rbx
+   152c0:	je     13aa8 <cgs__appendi+0x448>
+   152c6:	movsbw (%rbx),%r10w
+   152cb:	movzwl %r10w,%ebp
+   152cf:	jmp    13aa8 <cgs__appendi+0x448>
+   152d4:	test   %rbx,%rbx
+   152d7:	je     13aa8 <cgs__appendi+0x448>
+   152dd:	movsbw (%rbx),%r10w
+   152e2:	movzwl %r10w,%ebp
+   152e6:	jmp    13aa8 <cgs__appendi+0x448>
+   152eb:	test   %rbx,%rbx
+   152ee:	je     13aa8 <cgs__appendi+0x448>
+   152f4:	movzwl (%rbx),%ebp
+   152f7:	jmp    13aa8 <cgs__appendi+0x448>
+   152fc:	test   %rbx,%rbx
+   152ff:	je     13aa8 <cgs__appendi+0x448>
+   15305:	movzwl (%rbx),%ebp
+   15308:	jmp    13aa8 <cgs__appendi+0x448>
+   1530d:	test   %rbx,%rbx
+   15310:	je     13aa8 <cgs__appendi+0x448>
+   15316:	movzwl (%rbx),%ebp
+   15319:	jmp    13aa8 <cgs__appendi+0x448>
+   1531e:	test   %rbx,%rbx
+   15321:	je     13aa8 <cgs__appendi+0x448>
+   15327:	movzwl (%rbx),%ebp
+   1532a:	jmp    13aa8 <cgs__appendi+0x448>
+   1532f:	test   %rbx,%rbx
+   15332:	je     13aa8 <cgs__appendi+0x448>
+   15338:	movzbl (%rbx),%ebp
+   1533b:	jmp    13aa8 <cgs__appendi+0x448>
+   15340:	test   %rbx,%rbx
+   15343:	je     13aa8 <cgs__appendi+0x448>
+   15349:	mov    (%rbx),%rbp
+   1534c:	jmp    13aa8 <cgs__appendi+0x448>
+   15351:	test   %rbx,%rbx
+   15354:	je     13aa8 <cgs__appendi+0x448>
+   1535a:	mov    (%rbx),%rbp
+   1535d:	jmp    13aa8 <cgs__appendi+0x448>
+   15362:	test   %rbx,%rbx
+   15365:	je     13aa8 <cgs__appendi+0x448>
+   1536b:	movslq (%rbx),%rbp
+   1536e:	jmp    13aa8 <cgs__appendi+0x448>
+   15373:	test   %rbx,%rbx
+   15376:	je     13aa8 <cgs__appendi+0x448>
+   1537c:	movswq (%rbx),%rbp
+   15380:	jmp    13aa8 <cgs__appendi+0x448>
+   15385:	test   %rbx,%rbx
+   15388:	je     13aa8 <cgs__appendi+0x448>
+   1538e:	movsbq (%rbx),%rbp
+   15392:	jmp    13aa8 <cgs__appendi+0x448>
+   15397:	test   %rbx,%rbx
+   1539a:	je     13aa8 <cgs__appendi+0x448>
+   153a0:	movsbq (%rbx),%rbp
+   153a4:	jmp    13aa8 <cgs__appendi+0x448>
+   153a9:	test   %rbx,%rbx
+   153ac:	je     13aa8 <cgs__appendi+0x448>
+   153b2:	mov    (%rbx),%rbp
+   153b5:	jmp    13aa8 <cgs__appendi+0x448>
+   153ba:	test   %rbx,%rbx
+   153bd:	je     13aa8 <cgs__appendi+0x448>
+   153c3:	mov    (%rbx),%rbp
+   153c6:	jmp    13aa8 <cgs__appendi+0x448>
+   153cb:	test   %rbx,%rbx
+   153ce:	je     13aa8 <cgs__appendi+0x448>
+   153d4:	mov    (%rbx),%ebp
+   153d6:	jmp    13aa8 <cgs__appendi+0x448>
+   153db:	test   %rbx,%rbx
+   153de:	je     13aa8 <cgs__appendi+0x448>
+   153e4:	movzwl (%rbx),%ebp
+   153e7:	jmp    13aa8 <cgs__appendi+0x448>
+   153ec:	test   %rbx,%rbx
+   153ef:	je     13aa8 <cgs__appendi+0x448>
+   153f5:	movzbl (%rbx),%ebp
+   153f8:	jmp    13aa8 <cgs__appendi+0x448>
+   153fd:	test   %rbx,%rbx
+   15400:	je     13aa8 <cgs__appendi+0x448>
+   15406:	mov    (%rbx),%rbp
+   15409:	jmp    13aa8 <cgs__appendi+0x448>
+   1540e:	test   %rbx,%rbx
+   15411:	je     13aa8 <cgs__appendi+0x448>
+   15417:	mov    (%rbx),%rbp
+   1541a:	jmp    13aa8 <cgs__appendi+0x448>
+   1541f:	test   %rbx,%rbx
+   15422:	je     13aa8 <cgs__appendi+0x448>
+   15428:	movslq (%rbx),%rbp
+   1542b:	jmp    13aa8 <cgs__appendi+0x448>
+   15430:	test   %rbx,%rbx
+   15433:	je     13aa8 <cgs__appendi+0x448>
+   15439:	movswq (%rbx),%rbp
+   1543d:	jmp    13aa8 <cgs__appendi+0x448>
+   15442:	test   %rbx,%rbx
+   15445:	je     13aa8 <cgs__appendi+0x448>
+   1544b:	movsbq (%rbx),%rbp
+   1544f:	jmp    13aa8 <cgs__appendi+0x448>
+   15454:	test   %rbx,%rbx
+   15457:	je     13aa8 <cgs__appendi+0x448>
+   1545d:	movsbq (%rbx),%rbp
+   15461:	jmp    13aa8 <cgs__appendi+0x448>
+   15466:	test   %rbx,%rbx
+   15469:	je     13aa8 <cgs__appendi+0x448>
+   1546f:	mov    (%rbx),%rbp
+   15472:	jmp    13aa8 <cgs__appendi+0x448>
+   15477:	test   %rbx,%rbx
+   1547a:	je     13aa8 <cgs__appendi+0x448>
+   15480:	mov    (%rbx),%rbp
+   15483:	jmp    13aa8 <cgs__appendi+0x448>
+   15488:	test   %rbx,%rbx
+   1548b:	je     13aa8 <cgs__appendi+0x448>
+   15491:	mov    (%rbx),%ebp
+   15493:	jmp    13aa8 <cgs__appendi+0x448>
+   15498:	test   %rbx,%rbx
+   1549b:	je     13aa8 <cgs__appendi+0x448>
+   154a1:	movzwl (%rbx),%ebp
+   154a4:	jmp    13aa8 <cgs__appendi+0x448>
+   154a9:	test   %rbx,%rbx
+   154ac:	je     13aa8 <cgs__appendi+0x448>
+   154b2:	movzbl (%rbx),%ebp
+   154b5:	jmp    13aa8 <cgs__appendi+0x448>
+   154ba:	test   %rbx,%rbx
+   154bd:	je     13aa8 <cgs__appendi+0x448>
+   154c3:	movswq (%rbx),%rbp
+   154c7:	jmp    13aa8 <cgs__appendi+0x448>
+   154cc:	test   %rbx,%rbx
+   154cf:	je     13aa8 <cgs__appendi+0x448>
+   154d5:	movswq (%rbx),%rbp
+   154d9:	jmp    13aa8 <cgs__appendi+0x448>
+   154de:	test   %rbx,%rbx
+   154e1:	je     13aa8 <cgs__appendi+0x448>
+   154e7:	movswq (%rbx),%rbp
+   154eb:	jmp    13aa8 <cgs__appendi+0x448>
+   154f0:	test   %rbx,%rbx
+   154f3:	je     13aa8 <cgs__appendi+0x448>
+   154f9:	movswq (%rbx),%rbp
+   154fd:	jmp    13aa8 <cgs__appendi+0x448>
+   15502:	test   %rbx,%rbx
+   15505:	je     13aa8 <cgs__appendi+0x448>
+   1550b:	movsbq (%rbx),%rbp
+   1550f:	jmp    13aa8 <cgs__appendi+0x448>
+   15514:	test   %rbx,%rbx
+   15517:	je     13aa8 <cgs__appendi+0x448>
+   1551d:	movsbq (%rbx),%rbp
+   15521:	jmp    13aa8 <cgs__appendi+0x448>
+   15526:	test   %rbx,%rbx
+   15529:	je     13aa8 <cgs__appendi+0x448>
+   1552f:	movswq (%rbx),%rbp
+   15533:	jmp    13aa8 <cgs__appendi+0x448>
+   15538:	test   %rbx,%rbx
+   1553b:	je     13aa8 <cgs__appendi+0x448>
+   15541:	movswq (%rbx),%rbp
+   15545:	jmp    13aa8 <cgs__appendi+0x448>
+   1554a:	test   %rbx,%rbx
+   1554d:	je     13aa8 <cgs__appendi+0x448>
+   15553:	movswq (%rbx),%rbp
+   15557:	jmp    13aa8 <cgs__appendi+0x448>
+   1555c:	test   %rbx,%rbx
+   1555f:	je     13aa8 <cgs__appendi+0x448>
+   15565:	movswq (%rbx),%rbp
+   15569:	jmp    13aa8 <cgs__appendi+0x448>
+   1556e:	test   %rbx,%rbx
+   15571:	je     13aa8 <cgs__appendi+0x448>
+   15577:	movzbl (%rbx),%ebp
+   1557a:	jmp    13aa8 <cgs__appendi+0x448>
+   1557f:	test   %rbx,%rbx
+   15582:	je     13aa8 <cgs__appendi+0x448>
+   15588:	mov    (%rbx),%rbp
+   1558b:	jmp    13aa8 <cgs__appendi+0x448>
+   15590:	test   %rbx,%rbx
+   15593:	je     13aa8 <cgs__appendi+0x448>
+   15599:	mov    (%rbx),%rbp
+   1559c:	jmp    13aa8 <cgs__appendi+0x448>
+   155a1:	test   %rbx,%rbx
+   155a4:	je     13aa8 <cgs__appendi+0x448>
+   155aa:	movslq (%rbx),%rbp
+   155ad:	jmp    13aa8 <cgs__appendi+0x448>
+   155b2:	test   %rbx,%rbx
+   155b5:	je     13aa8 <cgs__appendi+0x448>
+   155bb:	movswq (%rbx),%rbp
+   155bf:	jmp    13aa8 <cgs__appendi+0x448>
+   155c4:	test   %rbx,%rbx
+   155c7:	je     13aa8 <cgs__appendi+0x448>
+   155cd:	movsbq (%rbx),%rbp
+   155d1:	jmp    13aa8 <cgs__appendi+0x448>
+   155d6:	test   %rbx,%rbx
+   155d9:	je     13aa8 <cgs__appendi+0x448>
+   155df:	movsbq (%rbx),%rbp
+   155e3:	jmp    13aa8 <cgs__appendi+0x448>
+   155e8:	test   %rbx,%rbx
+   155eb:	je     13aa8 <cgs__appendi+0x448>
+   155f1:	mov    (%rbx),%rbp
+   155f4:	jmp    13aa8 <cgs__appendi+0x448>
+   155f9:	test   %rbx,%rbx
+   155fc:	je     13aa8 <cgs__appendi+0x448>
+   15602:	mov    (%rbx),%rbp
+   15605:	jmp    13aa8 <cgs__appendi+0x448>
+   1560a:	test   %rbx,%rbx
+   1560d:	je     13aa8 <cgs__appendi+0x448>
+   15613:	mov    (%rbx),%ebp
+   15615:	jmp    13aa8 <cgs__appendi+0x448>
+   1561a:	test   %rbx,%rbx
+   1561d:	je     13aa8 <cgs__appendi+0x448>
+   15623:	movzwl (%rbx),%ebp
+   15626:	jmp    13aa8 <cgs__appendi+0x448>
+   1562b:	test   %rbx,%rbx
+   1562e:	je     13aa8 <cgs__appendi+0x448>
+   15634:	movzbl (%rbx),%ebp
+   15637:	jmp    13aa8 <cgs__appendi+0x448>
+   1563c:	test   %rbx,%rbx
+   1563f:	je     13aa8 <cgs__appendi+0x448>
+   15645:	movsbq (%rbx),%rbp
+   15649:	jmp    13aa8 <cgs__appendi+0x448>
+   1564e:	test   %rbx,%rbx
+   15651:	je     13aa8 <cgs__appendi+0x448>
+   15657:	movsbq (%rbx),%rbp
+   1565b:	jmp    13aa8 <cgs__appendi+0x448>
+   15660:	test   %rbx,%rbx
+   15663:	je     13aa8 <cgs__appendi+0x448>
+   15669:	movsbq (%rbx),%rbp
+   1566d:	jmp    13aa8 <cgs__appendi+0x448>
+   15672:	test   %rbx,%rbx
+   15675:	je     13aa8 <cgs__appendi+0x448>
+   1567b:	movsbq (%rbx),%rbp
+   1567f:	jmp    13aa8 <cgs__appendi+0x448>
+   15684:	test   %rbx,%rbx
+   15687:	je     13aa8 <cgs__appendi+0x448>
+   1568d:	movsbq (%rbx),%rbp
+   15691:	jmp    13aa8 <cgs__appendi+0x448>
+   15696:	test   %rbx,%rbx
+   15699:	je     13aa8 <cgs__appendi+0x448>
+   1569f:	movsbq (%rbx),%rbp
+   156a3:	jmp    13aa8 <cgs__appendi+0x448>
+   156a8:	test   %rbx,%rbx
+   156ab:	je     13aa8 <cgs__appendi+0x448>
+   156b1:	movsbq (%rbx),%rbp
+   156b5:	jmp    13aa8 <cgs__appendi+0x448>
+   156ba:	test   %rbx,%rbx
+   156bd:	je     13aa8 <cgs__appendi+0x448>
+   156c3:	movsbq (%rbx),%rbp
+   156c7:	jmp    13aa8 <cgs__appendi+0x448>
+   156cc:	test   %rbx,%rbx
+   156cf:	je     13aa8 <cgs__appendi+0x448>
+   156d5:	movsbq (%rbx),%rbp
+   156d9:	jmp    13aa8 <cgs__appendi+0x448>
+   156de:	test   %rbx,%rbx
+   156e1:	je     13aa8 <cgs__appendi+0x448>
+   156e7:	movsbq (%rbx),%rbp
+   156eb:	jmp    13aa8 <cgs__appendi+0x448>
+   156f0:	test   %rbx,%rbx
+   156f3:	je     13aa8 <cgs__appendi+0x448>
+   156f9:	movsbq (%rbx),%rbp
+   156fd:	jmp    13aa8 <cgs__appendi+0x448>
+   15702:	test   %rbx,%rbx
+   15705:	je     13aa8 <cgs__appendi+0x448>
+   1570b:	mov    (%rbx),%rbp
+   1570e:	jmp    13aa8 <cgs__appendi+0x448>
+   15713:	test   %rbx,%rbx
+   15716:	je     13aa8 <cgs__appendi+0x448>
+   1571c:	mov    (%rbx),%rbp
+   1571f:	jmp    13aa8 <cgs__appendi+0x448>
+   15724:	test   %rbx,%rbx
+   15727:	je     13aa8 <cgs__appendi+0x448>
+   1572d:	movslq (%rbx),%rbp
+   15730:	jmp    13aa8 <cgs__appendi+0x448>
+   15735:	test   %rbx,%rbx
+   15738:	je     13aa8 <cgs__appendi+0x448>
+   1573e:	movswq (%rbx),%rbp
+   15742:	jmp    13aa8 <cgs__appendi+0x448>
+   15747:	test   %rbx,%rbx
+   1574a:	je     13aa8 <cgs__appendi+0x448>
+   15750:	movsbq (%rbx),%rbp
+   15754:	jmp    13aa8 <cgs__appendi+0x448>
+   15759:	test   %rbx,%rbx
+   1575c:	je     13aa8 <cgs__appendi+0x448>
+   15762:	movsbq (%rbx),%rbp
+   15766:	jmp    13aa8 <cgs__appendi+0x448>
+   1576b:	test   %rbx,%rbx
+   1576e:	je     13aa8 <cgs__appendi+0x448>
+   15774:	mov    (%rbx),%rbp
+   15777:	jmp    13aa8 <cgs__appendi+0x448>
+   1577c:	test   %rbx,%rbx
+   1577f:	je     13aa8 <cgs__appendi+0x448>
+   15785:	mov    (%rbx),%rbp
+   15788:	jmp    13aa8 <cgs__appendi+0x448>
+   1578d:	test   %rbx,%rbx
+   15790:	je     13aa8 <cgs__appendi+0x448>
+   15796:	mov    (%rbx),%ebp
+   15798:	jmp    13aa8 <cgs__appendi+0x448>
+   1579d:	test   %rbx,%rbx
+   157a0:	je     13aa8 <cgs__appendi+0x448>
+   157a6:	movzwl (%rbx),%ebp
+   157a9:	jmp    13aa8 <cgs__appendi+0x448>
+   157ae:	test   %rbx,%rbx
+   157b1:	je     13aa8 <cgs__appendi+0x448>
+   157b7:	movzbl (%rbx),%ebp
+   157ba:	jmp    13aa8 <cgs__appendi+0x448>
+   157bf:	test   %rbx,%rbx
+   157c2:	je     13aa8 <cgs__appendi+0x448>
+   157c8:	movsbq (%rbx),%rbp
+   157cc:	jmp    13aa8 <cgs__appendi+0x448>
+   157d1:	test   %rbx,%rbx
+   157d4:	je     13aa8 <cgs__appendi+0x448>
+   157da:	movsbq (%rbx),%rbp
+   157de:	jmp    13aa8 <cgs__appendi+0x448>
+   157e3:	test   %rbx,%rbx
+   157e6:	je     13aa8 <cgs__appendi+0x448>
+   157ec:	movsbq (%rbx),%rbp
+   157f0:	jmp    13aa8 <cgs__appendi+0x448>
+   157f5:	test   %rbx,%rbx
+   157f8:	je     13aa8 <cgs__appendi+0x448>
+   157fe:	movsbq (%rbx),%rbp
+   15802:	jmp    13aa8 <cgs__appendi+0x448>
+   15807:	test   %rbx,%rbx
+   1580a:	je     13aa8 <cgs__appendi+0x448>
+   15810:	movsbq (%rbx),%rbp
+   15814:	jmp    13aa8 <cgs__appendi+0x448>
+   15819:	test   %rbx,%rbx
+   1581c:	je     13aa8 <cgs__appendi+0x448>
+   15822:	movsbq (%rbx),%rbp
+   15826:	jmp    13aa8 <cgs__appendi+0x448>
+   1582b:	test   %rbx,%rbx
+   1582e:	je     13aa8 <cgs__appendi+0x448>
+   15834:	movsbq (%rbx),%rbp
+   15838:	jmp    13aa8 <cgs__appendi+0x448>
+   1583d:	test   %rbx,%rbx
+   15840:	je     13aa8 <cgs__appendi+0x448>
+   15846:	movsbq (%rbx),%rbp
+   1584a:	jmp    13aa8 <cgs__appendi+0x448>
+   1584f:	test   %rbx,%rbx
+   15852:	je     13aa8 <cgs__appendi+0x448>
+   15858:	movsbq (%rbx),%rbp
+   1585c:	jmp    13aa8 <cgs__appendi+0x448>
+   15861:	test   %rbx,%rbx
+   15864:	je     13aa8 <cgs__appendi+0x448>
+   1586a:	movsbq (%rbx),%rbp
+   1586e:	jmp    13aa8 <cgs__appendi+0x448>
+   15873:	test   %rbx,%rbx
+   15876:	je     13aa8 <cgs__appendi+0x448>
+   1587c:	movsbq (%rbx),%rbp
+   15880:	jmp    13aa8 <cgs__appendi+0x448>
+   15885:	test   %rbx,%rbx
+   15888:	je     13aa8 <cgs__appendi+0x448>
+   1588e:	movslq (%rbx),%rbp
+   15891:	jmp    13aa8 <cgs__appendi+0x448>
+   15896:	test   %rbx,%rbx
+   15899:	je     13aa8 <cgs__appendi+0x448>
+   1589f:	movslq (%rbx),%rbp
+   158a2:	jmp    13aa8 <cgs__appendi+0x448>
+   158a7:	test   %rbx,%rbx
+   158aa:	je     13aa8 <cgs__appendi+0x448>
+   158b0:	movslq (%rbx),%rbp
+   158b3:	jmp    13aa8 <cgs__appendi+0x448>
+   158b8:	test   %rbx,%rbx
+   158bb:	je     13aa8 <cgs__appendi+0x448>
+   158c1:	movswq (%rbx),%rbp
+   158c5:	jmp    13aa8 <cgs__appendi+0x448>
+   158ca:	test   %rbx,%rbx
+   158cd:	je     13aa8 <cgs__appendi+0x448>
+   158d3:	movsbq (%rbx),%rbp
+   158d7:	jmp    13aa8 <cgs__appendi+0x448>
+   158dc:	test   %rbx,%rbx
+   158df:	je     13aa8 <cgs__appendi+0x448>
+   158e5:	movsbq (%rbx),%rbp
+   158e9:	jmp    13aa8 <cgs__appendi+0x448>
+   158ee:	test   %rbx,%rbx
+   158f1:	je     13aa8 <cgs__appendi+0x448>
+   158f7:	movslq (%rbx),%rbp
+   158fa:	jmp    13aa8 <cgs__appendi+0x448>
+   158ff:	test   %rbx,%rbx
+   15902:	je     13aa8 <cgs__appendi+0x448>
+   15908:	movslq (%rbx),%rbp
+   1590b:	jmp    13aa8 <cgs__appendi+0x448>
+   15910:	test   %rbx,%rbx
+   15913:	je     13aa8 <cgs__appendi+0x448>
+   15919:	movslq (%rbx),%rbp
+   1591c:	jmp    13aa8 <cgs__appendi+0x448>
+   15921:	test   %rbx,%rbx
+   15924:	je     13aa8 <cgs__appendi+0x448>
+   1592a:	movzwl (%rbx),%ebp
+   1592d:	jmp    13aa8 <cgs__appendi+0x448>
+   15932:	test   %rbx,%rbx
+   15935:	je     13aa8 <cgs__appendi+0x448>
+   1593b:	movzbl (%rbx),%ebp
+   1593e:	jmp    13aa8 <cgs__appendi+0x448>
+   15943:	test   %rbx,%rbx
+   15946:	je     13aa8 <cgs__appendi+0x448>
+   1594c:	mov    (%rbx),%rbp
+   1594f:	jmp    13aa8 <cgs__appendi+0x448>
+   15954:	test   %rbx,%rbx
+   15957:	je     13aa8 <cgs__appendi+0x448>
+   1595d:	mov    (%rbx),%rbp
+   15960:	jmp    13aa8 <cgs__appendi+0x448>
+   15965:	test   %rbx,%rbx
+   15968:	je     13aa8 <cgs__appendi+0x448>
+   1596e:	movslq (%rbx),%rbp
+   15971:	jmp    13aa8 <cgs__appendi+0x448>
+   15976:	test   %rbx,%rbx
+   15979:	je     13aa8 <cgs__appendi+0x448>
+   1597f:	movswq (%rbx),%rbp
+   15983:	jmp    13aa8 <cgs__appendi+0x448>
+   15988:	test   %rbx,%rbx
+   1598b:	je     13aa8 <cgs__appendi+0x448>
+   15991:	movsbq (%rbx),%rbp
+   15995:	jmp    13aa8 <cgs__appendi+0x448>
+   1599a:	test   %rbx,%rbx
+   1599d:	je     13aa8 <cgs__appendi+0x448>
+   159a3:	movsbq (%rbx),%rbp
+   159a7:	jmp    13aa8 <cgs__appendi+0x448>
+   159ac:	test   %rbx,%rbx
+   159af:	je     13aa8 <cgs__appendi+0x448>
+   159b5:	mov    (%rbx),%rbp
+   159b8:	jmp    13aa8 <cgs__appendi+0x448>
+   159bd:	test   %rbx,%rbx
+   159c0:	je     13aa8 <cgs__appendi+0x448>
+   159c6:	mov    (%rbx),%rbp
+   159c9:	jmp    13aa8 <cgs__appendi+0x448>
+   159ce:	test   %rbx,%rbx
+   159d1:	je     13aa8 <cgs__appendi+0x448>
+   159d7:	mov    (%rbx),%ebp
+   159d9:	jmp    13aa8 <cgs__appendi+0x448>
+   159de:	test   %rbx,%rbx
+   159e1:	je     13aa8 <cgs__appendi+0x448>
+   159e7:	movzwl (%rbx),%ebp
+   159ea:	jmp    13aa8 <cgs__appendi+0x448>
+   159ef:	test   %rbx,%rbx
+   159f2:	je     13aa8 <cgs__appendi+0x448>
+   159f8:	movzbl (%rbx),%ebp
+   159fb:	jmp    13aa8 <cgs__appendi+0x448>
+   15a00:	test   %rbx,%rbx
+   15a03:	je     13aa8 <cgs__appendi+0x448>
+   15a09:	mov    (%rbx),%rbp
+   15a0c:	jmp    13aa8 <cgs__appendi+0x448>
+   15a11:	test   %rbx,%rbx
+   15a14:	je     13aa8 <cgs__appendi+0x448>
+   15a1a:	mov    (%rbx),%rbp
+   15a1d:	jmp    13aa8 <cgs__appendi+0x448>
+   15a22:	test   %rbx,%rbx
+   15a25:	je     13aa8 <cgs__appendi+0x448>
+   15a2b:	movslq (%rbx),%rbp
+   15a2e:	jmp    13aa8 <cgs__appendi+0x448>
+   15a33:	test   %rbx,%rbx
+   15a36:	je     13aa8 <cgs__appendi+0x448>
+   15a3c:	movswq (%rbx),%rbp
+   15a40:	jmp    13aa8 <cgs__appendi+0x448>
+   15a45:	test   %rbx,%rbx
+   15a48:	je     13aa8 <cgs__appendi+0x448>
+   15a4e:	movsbq (%rbx),%rbp
+   15a52:	jmp    13aa8 <cgs__appendi+0x448>
+   15a57:	test   %rbx,%rbx
+   15a5a:	je     13aa8 <cgs__appendi+0x448>
+   15a60:	movsbq (%rbx),%rbp
+   15a64:	jmp    13aa8 <cgs__appendi+0x448>
+   15a69:	test   %rbx,%rbx
+   15a6c:	je     13aa8 <cgs__appendi+0x448>
+   15a72:	mov    (%rbx),%rbp
+   15a75:	jmp    13aa8 <cgs__appendi+0x448>
+   15a7a:	test   %rbx,%rbx
+   15a7d:	je     13aa8 <cgs__appendi+0x448>
+   15a83:	mov    (%rbx),%rbp
+   15a86:	jmp    13aa8 <cgs__appendi+0x448>
+   15a8b:	test   %rbx,%rbx
+   15a8e:	je     13aa8 <cgs__appendi+0x448>
+   15a94:	mov    (%rbx),%ebp
+   15a96:	jmp    13aa8 <cgs__appendi+0x448>
+   15a9b:	test   %rbx,%rbx
+   15a9e:	je     13aa8 <cgs__appendi+0x448>
+   15aa4:	movzwl (%rbx),%ebp
+   15aa7:	jmp    13aa8 <cgs__appendi+0x448>
+   15aac:	test   %rbx,%rbx
+   15aaf:	je     13aa8 <cgs__appendi+0x448>
+   15ab5:	movzbl (%rbx),%ebp
+   15ab8:	jmp    13aa8 <cgs__appendi+0x448>
+   15abd:	test   %rbx,%rbx
+   15ac0:	je     13aa8 <cgs__appendi+0x448>
+   15ac6:	mov    (%rbx),%rbp
+   15ac9:	jmp    13aa8 <cgs__appendi+0x448>
+   15ace:	test   %rbx,%rbx
+   15ad1:	je     13aa8 <cgs__appendi+0x448>
+   15ad7:	mov    (%rbx),%rbp
+   15ada:	jmp    13aa8 <cgs__appendi+0x448>
+   15adf:	test   %rbx,%rbx
+   15ae2:	je     13aa8 <cgs__appendi+0x448>
+   15ae8:	movslq (%rbx),%rbp
+   15aeb:	jmp    13aa8 <cgs__appendi+0x448>
+   15af0:	test   %rbx,%rbx
+   15af3:	je     13aa8 <cgs__appendi+0x448>
+   15af9:	movswq (%rbx),%rbp
+   15afd:	jmp    13aa8 <cgs__appendi+0x448>
+   15b02:	test   %rbx,%rbx
+   15b05:	je     13aa8 <cgs__appendi+0x448>
+   15b0b:	movsbq (%rbx),%rbp
+   15b0f:	jmp    13aa8 <cgs__appendi+0x448>
+   15b14:	test   %rbx,%rbx
+   15b17:	je     13aa8 <cgs__appendi+0x448>
+   15b1d:	movsbq (%rbx),%rbp
+   15b21:	jmp    13aa8 <cgs__appendi+0x448>
+   15b26:	test   %rbx,%rbx
+   15b29:	je     13aa8 <cgs__appendi+0x448>
+   15b2f:	mov    (%rbx),%rbp
+   15b32:	jmp    13aa8 <cgs__appendi+0x448>
+   15b37:	test   %rbx,%rbx
+   15b3a:	je     13aa8 <cgs__appendi+0x448>
+   15b40:	mov    (%rbx),%rbp
+   15b43:	jmp    13aa8 <cgs__appendi+0x448>
+   15b48:	test   %rbx,%rbx
+   15b4b:	je     13aa8 <cgs__appendi+0x448>
+   15b51:	mov    (%rbx),%ebp
+   15b53:	jmp    13aa8 <cgs__appendi+0x448>
+   15b58:	test   %rbx,%rbx
+   15b5b:	je     13aa8 <cgs__appendi+0x448>
+   15b61:	movzwl (%rbx),%ebp
+   15b64:	jmp    13aa8 <cgs__appendi+0x448>
+   15b69:	test   %rbx,%rbx
+   15b6c:	je     13aa8 <cgs__appendi+0x448>
+   15b72:	movzbl (%rbx),%ebp
+   15b75:	jmp    13aa8 <cgs__appendi+0x448>
+   15b7a:	test   %rbx,%rbx
+   15b7d:	je     13aa8 <cgs__appendi+0x448>
+   15b83:	mov    (%rbx),%rbp
+   15b86:	jmp    13aa8 <cgs__appendi+0x448>
+   15b8b:	test   %rbx,%rbx
+   15b8e:	je     13aa8 <cgs__appendi+0x448>
+   15b94:	mov    (%rbx),%rbp
+   15b97:	jmp    13aa8 <cgs__appendi+0x448>
+   15b9c:	test   %rbx,%rbx
+   15b9f:	je     13aa8 <cgs__appendi+0x448>
+   15ba5:	movslq (%rbx),%rbp
+   15ba8:	jmp    13aa8 <cgs__appendi+0x448>
+   15bad:	test   %rbx,%rbx
+   15bb0:	je     13aa8 <cgs__appendi+0x448>
+   15bb6:	movswq (%rbx),%rbp
+   15bba:	jmp    13aa8 <cgs__appendi+0x448>
+   15bbf:	test   %rbx,%rbx
+   15bc2:	je     13aa8 <cgs__appendi+0x448>
+   15bc8:	movsbq (%rbx),%rbp
+   15bcc:	jmp    13aa8 <cgs__appendi+0x448>
+   15bd1:	test   %rbx,%rbx
+   15bd4:	je     13aa8 <cgs__appendi+0x448>
+   15bda:	movsbq (%rbx),%rbp
+   15bde:	jmp    13aa8 <cgs__appendi+0x448>
+   15be3:	test   %rbx,%rbx
+   15be6:	je     13aa8 <cgs__appendi+0x448>
+   15bec:	mov    (%rbx),%rbp
+   15bef:	jmp    13aa8 <cgs__appendi+0x448>
+   15bf4:	test   %rbx,%rbx
+   15bf7:	je     13aa8 <cgs__appendi+0x448>
+   15bfd:	mov    (%rbx),%rbp
+   15c00:	jmp    13aa8 <cgs__appendi+0x448>
+   15c05:	test   %rbx,%rbx
+   15c08:	je     13aa8 <cgs__appendi+0x448>
+   15c0e:	mov    (%rbx),%ebp
+   15c10:	jmp    13aa8 <cgs__appendi+0x448>
+   15c15:	test   %rbx,%rbx
+   15c18:	je     13aa8 <cgs__appendi+0x448>
+   15c1e:	movzwl (%rbx),%ebp
+   15c21:	jmp    13aa8 <cgs__appendi+0x448>
+   15c26:	test   %rbx,%rbx
+   15c29:	je     13aa8 <cgs__appendi+0x448>
+   15c2f:	movzbl (%rbx),%ebp
+   15c32:	jmp    13aa8 <cgs__appendi+0x448>
+   15c37:	test   %rbx,%rbx
+   15c3a:	je     13aa8 <cgs__appendi+0x448>
+   15c40:	movsbq (%rbx),%rbp
+   15c44:	jmp    13aa8 <cgs__appendi+0x448>
+   15c49:	test   %rbx,%rbx
+   15c4c:	je     13aa8 <cgs__appendi+0x448>
+   15c52:	movsbq (%rbx),%rbp
+   15c56:	jmp    13aa8 <cgs__appendi+0x448>
+   15c5b:	test   %rbx,%rbx
+   15c5e:	je     13aa8 <cgs__appendi+0x448>
+   15c64:	movsbq (%rbx),%rbp
+   15c68:	jmp    13aa8 <cgs__appendi+0x448>
+   15c6d:	test   %rbx,%rbx
+   15c70:	je     13aa8 <cgs__appendi+0x448>
+   15c76:	movsbq (%rbx),%rbp
+   15c7a:	jmp    13aa8 <cgs__appendi+0x448>
+   15c7f:	test   %rbx,%rbx
+   15c82:	je     13aa8 <cgs__appendi+0x448>
+   15c88:	movsbq (%rbx),%rbp
+   15c8c:	jmp    13aa8 <cgs__appendi+0x448>
+   15c91:	test   %rbx,%rbx
+   15c94:	je     13aa8 <cgs__appendi+0x448>
+   15c9a:	movsbq (%rbx),%rbp
+   15c9e:	jmp    13aa8 <cgs__appendi+0x448>
+   15ca3:	test   %rbx,%rbx
+   15ca6:	je     13aa8 <cgs__appendi+0x448>
+   15cac:	movsbq (%rbx),%rbp
+   15cb0:	jmp    13aa8 <cgs__appendi+0x448>
+   15cb5:	test   %rbx,%rbx
+   15cb8:	je     13aa8 <cgs__appendi+0x448>
+   15cbe:	movsbq (%rbx),%rbp
+   15cc2:	jmp    13aa8 <cgs__appendi+0x448>
+   15cc7:	test   %rbx,%rbx
+   15cca:	je     13aa8 <cgs__appendi+0x448>
+   15cd0:	movsbq (%rbx),%rbp
+   15cd4:	jmp    13aa8 <cgs__appendi+0x448>
+   15cd9:	test   %rbx,%rbx
+   15cdc:	je     13aa8 <cgs__appendi+0x448>
+   15ce2:	movsbq (%rbx),%rbp
+   15ce6:	jmp    13aa8 <cgs__appendi+0x448>
+   15ceb:	test   %rbx,%rbx
+   15cee:	je     13aa8 <cgs__appendi+0x448>
+   15cf4:	movsbq (%rbx),%rbp
+   15cf8:	jmp    13aa8 <cgs__appendi+0x448>
+   15cfd:	test   %rbx,%rbx
+   15d00:	je     13aa8 <cgs__appendi+0x448>
+   15d06:	mov    (%rbx),%rbp
+   15d09:	jmp    13aa8 <cgs__appendi+0x448>
+   15d0e:	test   %rbx,%rbx
+   15d11:	je     13aa8 <cgs__appendi+0x448>
+   15d17:	mov    (%rbx),%rbp
+   15d1a:	jmp    13aa8 <cgs__appendi+0x448>
+   15d1f:	test   %rbx,%rbx
+   15d22:	je     13aa8 <cgs__appendi+0x448>
+   15d28:	movslq (%rbx),%rbp
+   15d2b:	jmp    13aa8 <cgs__appendi+0x448>
+   15d30:	test   %rbx,%rbx
+   15d33:	je     13aa8 <cgs__appendi+0x448>
+   15d39:	movswq (%rbx),%rbp
+   15d3d:	jmp    13aa8 <cgs__appendi+0x448>
+   15d42:	test   %rbx,%rbx
+   15d45:	je     13aa8 <cgs__appendi+0x448>
+   15d4b:	movsbq (%rbx),%rbp
+   15d4f:	jmp    13aa8 <cgs__appendi+0x448>
+   15d54:	test   %rbx,%rbx
+   15d57:	je     13aa8 <cgs__appendi+0x448>
+   15d5d:	movsbq (%rbx),%rbp
+   15d61:	jmp    13aa8 <cgs__appendi+0x448>
+   15d66:	test   %rbx,%rbx
+   15d69:	je     13aa8 <cgs__appendi+0x448>
+   15d6f:	mov    (%rbx),%rbp
+   15d72:	jmp    13aa8 <cgs__appendi+0x448>
+   15d77:	test   %rbx,%rbx
+   15d7a:	je     13aa8 <cgs__appendi+0x448>
+   15d80:	mov    (%rbx),%rbp
+   15d83:	jmp    13aa8 <cgs__appendi+0x448>
+   15d88:	test   %rbx,%rbx
+   15d8b:	je     13aa8 <cgs__appendi+0x448>
+   15d91:	mov    (%rbx),%ebp
+   15d93:	jmp    13aa8 <cgs__appendi+0x448>
+   15d98:	test   %rbx,%rbx
+   15d9b:	je     13aa8 <cgs__appendi+0x448>
+   15da1:	movzwl (%rbx),%ebp
+   15da4:	jmp    13aa8 <cgs__appendi+0x448>
+   15da9:	test   %rbx,%rbx
+   15dac:	je     13aa8 <cgs__appendi+0x448>
+   15db2:	movzbl (%rbx),%ebp
+   15db5:	jmp    13aa8 <cgs__appendi+0x448>
+   15dba:	test   %rbx,%rbx
+   15dbd:	je     13aa8 <cgs__appendi+0x448>
+   15dc3:	movswq (%rbx),%rbp
+   15dc7:	jmp    13aa8 <cgs__appendi+0x448>
+   15dcc:	test   %rbx,%rbx
+   15dcf:	je     13aa8 <cgs__appendi+0x448>
+   15dd5:	movswq (%rbx),%rbp
+   15dd9:	jmp    13aa8 <cgs__appendi+0x448>
+   15dde:	test   %rbx,%rbx
+   15de1:	je     13aa8 <cgs__appendi+0x448>
+   15de7:	movswq (%rbx),%rbp
+   15deb:	jmp    13aa8 <cgs__appendi+0x448>
+   15df0:	test   %rbx,%rbx
+   15df3:	je     13aa8 <cgs__appendi+0x448>
+   15df9:	movswq (%rbx),%rbp
+   15dfd:	jmp    13aa8 <cgs__appendi+0x448>
+   15e02:	test   %rbx,%rbx
+   15e05:	je     13aa8 <cgs__appendi+0x448>
+   15e0b:	movsbq (%rbx),%rbp
+   15e0f:	jmp    13aa8 <cgs__appendi+0x448>
+   15e14:	test   %rbx,%rbx
+   15e17:	je     13aa8 <cgs__appendi+0x448>
+   15e1d:	movsbq (%rbx),%rbp
+   15e21:	jmp    13aa8 <cgs__appendi+0x448>
+   15e26:	test   %rbx,%rbx
+   15e29:	je     13aa8 <cgs__appendi+0x448>
+   15e2f:	movswq (%rbx),%rbp
+   15e33:	jmp    13aa8 <cgs__appendi+0x448>
+   15e38:	test   %rbx,%rbx
+   15e3b:	je     13aa8 <cgs__appendi+0x448>
+   15e41:	movswq (%rbx),%rbp
+   15e45:	jmp    13aa8 <cgs__appendi+0x448>
+   15e4a:	test   %rbx,%rbx
+   15e4d:	je     13aa8 <cgs__appendi+0x448>
+   15e53:	movswq (%rbx),%rbp
+   15e57:	jmp    13aa8 <cgs__appendi+0x448>
+   15e5c:	test   %rbx,%rbx
+   15e5f:	je     13aa8 <cgs__appendi+0x448>
+   15e65:	movswq (%rbx),%rbp
+   15e69:	jmp    13aa8 <cgs__appendi+0x448>
+   15e6e:	test   %rbx,%rbx
+   15e71:	je     13aa8 <cgs__appendi+0x448>
+   15e77:	movzbl (%rbx),%ebp
+   15e7a:	jmp    13aa8 <cgs__appendi+0x448>
+   15e7f:	test   %rbx,%rbx
+   15e82:	je     13aa8 <cgs__appendi+0x448>
+   15e88:	mov    (%rbx),%rbp
+   15e8b:	jmp    13aa8 <cgs__appendi+0x448>
+   15e90:	test   %rbx,%rbx
+   15e93:	je     13aa8 <cgs__appendi+0x448>
+   15e99:	mov    (%rbx),%rbp
+   15e9c:	jmp    13aa8 <cgs__appendi+0x448>
+   15ea1:	test   %rbx,%rbx
+   15ea4:	je     13aa8 <cgs__appendi+0x448>
+   15eaa:	movslq (%rbx),%rbp
+   15ead:	jmp    13aa8 <cgs__appendi+0x448>
+   15eb2:	test   %rbx,%rbx
+   15eb5:	je     13aa8 <cgs__appendi+0x448>
+   15ebb:	movswq (%rbx),%rbp
+   15ebf:	jmp    13aa8 <cgs__appendi+0x448>
+   15ec4:	test   %rbx,%rbx
+   15ec7:	je     13aa8 <cgs__appendi+0x448>
+   15ecd:	movsbq (%rbx),%rbp
+   15ed1:	jmp    13aa8 <cgs__appendi+0x448>
+   15ed6:	test   %rbx,%rbx
+   15ed9:	je     13aa8 <cgs__appendi+0x448>
+   15edf:	movsbq (%rbx),%rbp
+   15ee3:	jmp    13aa8 <cgs__appendi+0x448>
+   15ee8:	test   %rbx,%rbx
+   15eeb:	je     13aa8 <cgs__appendi+0x448>
+   15ef1:	mov    (%rbx),%rbp
+   15ef4:	jmp    13aa8 <cgs__appendi+0x448>
+   15ef9:	test   %rbx,%rbx
+   15efc:	je     13aa8 <cgs__appendi+0x448>
+   15f02:	mov    (%rbx),%rbp
+   15f05:	jmp    13aa8 <cgs__appendi+0x448>
+   15f0a:	test   %rbx,%rbx
+   15f0d:	je     13aa8 <cgs__appendi+0x448>
+   15f13:	mov    (%rbx),%ebp
+   15f15:	jmp    13aa8 <cgs__appendi+0x448>
+   15f1a:	test   %rbx,%rbx
+   15f1d:	je     13aa8 <cgs__appendi+0x448>
+   15f23:	movzwl (%rbx),%ebp
+   15f26:	jmp    13aa8 <cgs__appendi+0x448>
+   15f2b:	test   %rbx,%rbx
+   15f2e:	je     13aa8 <cgs__appendi+0x448>
+   15f34:	movzbl (%rbx),%ebp
+   15f37:	jmp    13aa8 <cgs__appendi+0x448>
+   15f3c:	test   %rbx,%rbx
+   15f3f:	je     13aa8 <cgs__appendi+0x448>
+   15f45:	mov    (%rbx),%rbp
+   15f48:	jmp    13aa8 <cgs__appendi+0x448>
+   15f4d:	test   %rbx,%rbx
+   15f50:	je     13aa8 <cgs__appendi+0x448>
+   15f56:	mov    (%rbx),%rbp
+   15f59:	jmp    13aa8 <cgs__appendi+0x448>
+   15f5e:	test   %rbx,%rbx
+   15f61:	je     13aa8 <cgs__appendi+0x448>
+   15f67:	movslq (%rbx),%rbp
+   15f6a:	jmp    13aa8 <cgs__appendi+0x448>
+   15f6f:	test   %rbx,%rbx
+   15f72:	je     13aa8 <cgs__appendi+0x448>
+   15f78:	movswq (%rbx),%rbp
+   15f7c:	jmp    13aa8 <cgs__appendi+0x448>
+   15f81:	test   %rbx,%rbx
+   15f84:	je     13aa8 <cgs__appendi+0x448>
+   15f8a:	movsbq (%rbx),%rbp
+   15f8e:	jmp    13aa8 <cgs__appendi+0x448>
+   15f93:	test   %rbx,%rbx
+   15f96:	je     13aa8 <cgs__appendi+0x448>
+   15f9c:	movsbq (%rbx),%rbp
+   15fa0:	jmp    13aa8 <cgs__appendi+0x448>
+   15fa5:	test   %rbx,%rbx
+   15fa8:	je     13aa8 <cgs__appendi+0x448>
+   15fae:	mov    (%rbx),%rbp
+   15fb1:	jmp    13aa8 <cgs__appendi+0x448>
+   15fb6:	test   %rbx,%rbx
+   15fb9:	je     13aa8 <cgs__appendi+0x448>
+   15fbf:	mov    (%rbx),%rbp
+   15fc2:	jmp    13aa8 <cgs__appendi+0x448>
+   15fc7:	test   %rbx,%rbx
+   15fca:	je     13aa8 <cgs__appendi+0x448>
+   15fd0:	mov    (%rbx),%ebp
+   15fd2:	jmp    13aa8 <cgs__appendi+0x448>
+   15fd7:	test   %rbx,%rbx
+   15fda:	je     13aa8 <cgs__appendi+0x448>
+   15fe0:	movzwl (%rbx),%ebp
+   15fe3:	jmp    13aa8 <cgs__appendi+0x448>
+   15fe8:	test   %rbx,%rbx
+   15feb:	je     13aa8 <cgs__appendi+0x448>
+   15ff1:	movzbl (%rbx),%ebp
+   15ff4:	jmp    13aa8 <cgs__appendi+0x448>
+   15ff9:	mov    (%rbx),%rax
+   15ffc:	mov    %rax,0x100(%rsp)
+   16004:	mov    0x14(%rbx),%eax
+   16007:	mov    %eax,0x10c(%rsp)
+   1600e:	jmp    141c0 <cgs__appendi+0xb60>
+   16013:	mov    (%rbx),%rax
+   16016:	mov    (%rax),%rbx
+   16019:	mov    0x14(%rax),%eax
+   1601c:	mov    %rbx,0x100(%rsp)
+   16024:	mov    %eax,0x10c(%rsp)
+   1602b:	jmp    141c0 <cgs__appendi+0xb60>
+   16030:	mov    (%rbx),%rax
+   16033:	mov    %rax,0x100(%rsp)
+   1603b:	mov    0xc(%rbx),%eax
+   1603e:	mov    %eax,0x10c(%rsp)
+   16045:	jmp    141c0 <cgs__appendi+0xb60>
+   1604a:	mov    (%rbx),%rax
+   1604d:	mov    (%rax),%rbx
+   16050:	mov    0xc(%rax),%eax
+   16053:	mov    %rbx,0x100(%rsp)
+   1605b:	mov    %eax,0x10c(%rsp)
+   16062:	jmp    141c0 <cgs__appendi+0xb60>
+   16067:	lea    -0xecbe(%rip),%rax        # 73b0 <cgs__cstr_tostr_p>
+   1606e:	mov    %rax,0x138(%rsp)
+   16076:	xor    %edx,%edx
+   16078:	lea    0x16001(%rip),%rax        # 2c080 <cgs__lenmod_strings>
+   1607f:	mov    (%rax,%rcx,8),%rax
+   16083:	movabs $0xffffffff00000000,%rsi
+   1608d:	mov    %rdx,%rcx
+   16090:	and    %rsi,%rcx
+   16093:	or     $0x26,%rcx
+   16097:	mov    %rax,0x128(%rsp)
+   1609f:	mov    %rcx,%rdx
+   160a2:	lea    0x128(%rsp),%rax
+   160aa:	mov    0x1608f(%rip),%rcx        # 2c140 <stdout@GLIBC_2.2.5>
+   160b1:	mov    %rax,0x130(%rsp)
+   160b9:	lea    0x7978(%rip),%rax        # 1da38 <_IO_stdin_used+0xa38>
+   160c0:	mov    %rcx,0x148(%rsp)
+   160c8:	lea    -0xee4f(%rip),%rbx        # 7280 <cgs__FileWriter_write>
+   160cf:	mov    %rax,%rsi
+   160d2:	lea    0x140(%rsp),%rdi
+   160da:	lea    0x138(%rsp),%r9
+   160e2:	lea    0x130(%rsp),%r8
+   160ea:	mov    $0x1,%ecx
+   160ef:	mov    %rbx,0x140(%rsp)
+   160f7:	call   e040 <cgs__appendln_fmt_>
+   160fc:	mov    $0xc,%eax
+   16101:	jmp    13915 <cgs__appendi+0x2b5>
+   16106:	mov    %al,0x30(%rsp)
+   1610a:	jmp    13aa8 <cgs__appendi+0x448>
+   1610f:	call   5260 <__stack_chk_fail@plt>
+
+Disassembly of section .fini:
+
+a.out:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.got:
+
+Disassembly of section .plt.sec:
+
+Disassembly of section .text:
+
+Disassembly of section .fini:
+
+a.out:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .plt:
+
+Disassembly of section .plt.got:
+
+Disassembly of section .plt.sec:
+
+Disassembly of section .text:
+
+Disassembly of section .fini:

@@ -1,0 +1,3 @@
+[submodule "zmij"]
+	path = zmij
+	url = https://github.com/vitaut/zmij
