@@ -2014,6 +2014,7 @@ _Generic(arg,                                                                   
             long long         : (long long)         cgs__coerce_integer(arg),                                                      \
             unsigned long long: (unsigned long long)cgs__coerce_integer(arg),                                                      \
             float             : (double)            cgs__coerce(arg, float),                                                       \
+            bool              : (unsigned long long)cgs__coerce(arg, bool),                                                        \
             default           : arg                                                                                                \
         )                                                                                                                          \
 ),

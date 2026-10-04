@@ -3186,8 +3186,8 @@ CGS_API CGS_Error cgs__appendi(
             cgs__appendi_next_obj(&obj);
         }
 
-        bool conv_is_signed;
-        bool obj_is_integer;
+        bool conv_is_signed = false;
+        bool obj_is_integer = false;
         switch (conversion_chars[i])
         {
             case 'd':

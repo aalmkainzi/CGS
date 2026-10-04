@@ -10,12 +10,18 @@
  *
  * Define CGS_TEST_PENDING to also run the tests for features that are still
  * TODO: width, precision, the '-', '0' and '#' flags, '+' on floats, %e and %c.
+ *
+ * Also run the suite with -fsanitize=address,undefined, and under valgrind.
+ * test_bool_args and test_self_append target memory errors (an out-of-bounds
+ * read, a use-after-free) that can print the right text by accident, so a plain
+ * build may pass them. valgrind also catches reads of uninitialized variables.
  */
 
 #include "cgs.h" /* adjust to your header */
 
 #include <inttypes.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -102,12 +108,12 @@ static void check_trunc(
 
 /* Formats into an empty char[512] and compares with `want`. */
 #define EXPECT(want, ...)                                                                          \
-do                                                                                             \
-{                                                                                              \
-    char got_[512] = "";                                                                       \
-    CGS_Error err_ = cgs_appendi(got_, __VA_ARGS__);                                           \
-    check_output(__FILE__, __LINE__, "cgs_appendi(buf, " #__VA_ARGS__ ")", err_, got_, (want)); \
-} while (0)
+    do                                                                                             \
+    {                                                                                              \
+        char got_[512] = "";                                                                       \
+        CGS_Error err_ = cgs_appendi(got_, __VA_ARGS__);                                           \
+        check_output(__FILE__, __LINE__, "cgs_appendi(buf, " #__VA_ARGS__ ")", err_, got_, (want)); \
+    } while (0)
 
 /*
  * Runs the same arguments through the C library's snprintf with `c_fmt` and
@@ -115,21 +121,21 @@ do                                                                              
  * should be the same text, one plain and one f"...".
  */
 #define EXPECT_PRINTF(c_fmt, cgs_fmt, ...)                       \
-do                                                           \
-{                                                            \
-    char want_[512];                                         \
-    snprintf(want_, sizeof want_, c_fmt, __VA_ARGS__);       \
-    EXPECT(want_, cgs_fmt, __VA_ARGS__);                     \
-} while (0)
+    do                                                           \
+    {                                                            \
+        char want_[512];                                         \
+        snprintf(want_, sizeof want_, c_fmt, __VA_ARGS__);       \
+        EXPECT(want_, cgs_fmt, __VA_ARGS__);                     \
+    } while (0)
 
 /* Expects cgs_appendi to fail with the given error code. */
 #define EXPECT_ERR(code, ...)                                                                      \
-do                                                                                             \
-{                                                                                              \
-    char got_[512] = "";                                                                       \
-    CGS_Error err_ = cgs_appendi(got_, __VA_ARGS__);                                           \
-    check_error(__FILE__, __LINE__, "cgs_appendi(buf, " #__VA_ARGS__ ")", err_, (code), #code); \
-} while (0)
+    do                                                                                             \
+    {                                                                                              \
+        char got_[512] = "";                                                                       \
+        CGS_Error err_ = cgs_appendi(got_, __VA_ARGS__);                                           \
+        check_error(__FILE__, __LINE__, "cgs_appendi(buf, " #__VA_ARGS__ ")", err_, (code), #code); \
+    } while (0)
 
 /* Expects the call to succeed. */
 #define CHECK_OK(expr) check_ok(__FILE__, __LINE__, #expr, (expr))
@@ -140,21 +146,21 @@ do                                                                              
  * NUL-terminated, and that it holds `want`.
  */
 #define EXPECT_TRUNC(size, prefill, want, ...)                                                            \
-do                                                                                                    \
-{                                                                                                     \
-    struct                                                                                            \
-    {                                                                                                 \
-        char buf[size];                                                                               \
-        unsigned char guard[16];                                                                      \
-    } t_;                                                                                             \
-    memset(&t_, 0x5A, sizeof t_);                                                                     \
-    strcpy(t_.buf, (prefill));                                                                        \
-    cgs_appendi(t_.buf, __VA_ARGS__);                                                                 \
-    check_trunc(                                                                                      \
-    __FILE__, __LINE__, "char[" #size "] = \"" prefill "\"; cgs_appendi(buf, " #__VA_ARGS__ ")", \
-    t_.buf, sizeof t_.buf, t_.guard, sizeof t_.guard, (want)                                      \
-    );                                                                                                \
-} while (0)
+    do                                                                                                    \
+    {                                                                                                     \
+        struct                                                                                            \
+        {                                                                                                 \
+            char buf[size];                                                                               \
+            unsigned char guard[16];                                                                      \
+        } t_;                                                                                             \
+        memset(&t_, 0x5A, sizeof t_);                                                                     \
+        strcpy(t_.buf, (prefill));                                                                        \
+        cgs_appendi(t_.buf, __VA_ARGS__);                                                                 \
+        check_trunc(                                                                                      \
+            __FILE__, __LINE__, "char[" #size "] = \"" prefill "\"; cgs_appendi(buf, " #__VA_ARGS__ ")", \
+            t_.buf, sizeof t_.buf, t_.guard, sizeof t_.guard, (want)                                      \
+        );                                                                                                \
+    } while (0)
 
 /* ------------------------------------------------------------------------- */
 /* Literals                                                                  */
@@ -332,6 +338,24 @@ static void test_plus_flag(void)
     EXPECT("ff", f"%+x", 255);
 }
 
+/*
+ * bool is 1 byte, but printf accepts it for %d because it is promoted to int.
+ * Integer arguments are read as 8 bytes, so a bool must be converted at the
+ * call site like the other integer types, or these read past it.
+ */
+static void test_bool_args(void)
+{
+    bool yes = true;
+    bool no  = false;
+
+    EXPECT("1", f"%d", yes);
+    EXPECT("0", f"%d", no);
+    EXPECT("1 0", f"%u %u", yes, no);
+    EXPECT("1", f"%x", yes);
+    EXPECT("0 1 0", f"%d %d %d", no, yes, no);
+    EXPECT("1", f"%{yes}d");
+}
+
 /* ------------------------------------------------------------------------- */
 /* The %? extension (interpolation only: %{expr}?)                           */
 /* ------------------------------------------------------------------------- */
@@ -452,6 +476,31 @@ static void test_arg_count_errors(void)
     EXPECT_ERR(CGS_BAD_FORMAT, f"%*.*d", 5, 1);
 }
 
+/* A writer that fails when asked to write the '+' sign of %+d. */
+typedef struct RejectPlusWriter
+{
+    CGS_Writer base;
+} RejectPlusWriter;
+
+static CGS_Error reject_plus_write(CGS_Writer *dst, CGS_StrView str)
+{
+    (void)dst;
+    if (str.len == 1 && str.chars[0] == '+')
+        return (CGS_Error) {CGS_IO_ERROR};
+    return (CGS_Error) {CGS_OK};
+}
+
+/* A failed write must be returned, not overwritten by the write after it. */
+static void test_writer_errors(void)
+{
+    RejectPlusWriter w = {.base = {.write = reject_plus_write}};
+
+    check_error(
+        __FILE__, __LINE__, "cgs_appendi(writer that rejects '+', f\"%+d\", 5)",
+        cgs_appendi(&w.base, f"%+d", 5), CGS_IO_ERROR, "CGS_IO_ERROR"
+    );
+}
+
 /* ------------------------------------------------------------------------- */
 /* char[] destinations                                                       */
 /* ------------------------------------------------------------------------- */
@@ -525,6 +574,43 @@ static void test_dstr(void)
     TEST_DSTR_DEINIT(s);
 }
 
+/*
+ * A DStr passed as an argument while also being the destination. Arguments are
+ * read as they were when cgs_appendi was called. The strings are long enough
+ * that the append has to reallocate, which frees the storage a %s view of the
+ * same DStr points into if that view is taken before the destination grows.
+ */
+static void test_self_append(void)
+{
+    static char init[1001];
+    static char want[4096];
+
+    for (int k = 0; k < 1000; k++)
+        init[k] = (char)('a' + k % 26);
+    init[1000] = '\0';
+
+    CGS_DStr s = cgs_dstr_init();
+    CHECK_OK(cgs_appendi(&s, f"%s", init));
+    CHECK_OK(cgs_appendi(&s, f"x%s", &s));
+    snprintf(want, sizeof want, "%sx%s", init, init);
+    check_dstr(__FILE__, __LINE__, &s, want);
+    TEST_DSTR_DEINIT(s);
+
+    s = cgs_dstr_init();
+    CHECK_OK(cgs_appendi(&s, f"%s", init));
+    CHECK_OK(cgs_appendi(&s, f"%s%s", &s, &s));
+    snprintf(want, sizeof want, "%s%s%s", init, init, init);
+    check_dstr(__FILE__, __LINE__, &s, want);
+    TEST_DSTR_DEINIT(s);
+
+    s = cgs_dstr_init();
+    CHECK_OK(cgs_appendi(&s, f"%s", init));
+    CHECK_OK(cgs_appendi(&s, f"[%{&s}s]"));
+    snprintf(want, sizeof want, "%s[%s]", init, init);
+    check_dstr(__FILE__, __LINE__, &s, want);
+    TEST_DSTR_DEINIT(s);
+}
+
 /* ------------------------------------------------------------------------- */
 /* Not implemented yet                                                       */
 /* ------------------------------------------------------------------------- */
@@ -544,6 +630,8 @@ static void test_pending(void)
     EXPECT("ab   |", f"%-5s|", "ab");
     EXPECT("   42", f"%*d", 5, 42);
     EXPECT("42   |", f"%*d|", -5, 42); /* a negative '*' width means '-' */
+    EXPECT("ab   |", f"%*s|", -5, "ab");
+    EXPECT("42   |", f"%-*d|", -5, 42); /* '-' given twice is still '-' */
 
     /* precision */
     EXPECT("007", f"%.3d", 7);
@@ -552,6 +640,9 @@ static void test_pending(void)
     EXPECT("     007", f"%08.3d", 7); /* '0' is ignored when there's a precision */
     EXPECT("", f"%.0d", 0);
     EXPECT("42", f"%.*d", -1, 42); /* a negative '*' precision is as if omitted */
+    EXPECT("42", f"%.*d", -5, 42); /* any negative value, not just -1 */
+    EXPECT("0", f"%.*d", -5, 0);   /* as if omitted, not precision 0 (which prints "") */
+    EXPECT("hello", f"%.*s", -3, "hello");
     EXPECT("he", f"%.2s", "hello");
     EXPECT("hel", f"%.*s", 3, "hello");
     EXPECT("3.14", f"%.2f", 3.14159);
@@ -588,6 +679,7 @@ int main(void)
     test_size_types();
     test_exact_width();
     test_plus_flag();
+    test_bool_args();
     test_question_mark();
     test_interpolation();
     test_strings();
@@ -595,11 +687,13 @@ int main(void)
     test_star_args();
     test_multiple_specifiers();
     test_arg_count_errors();
+    test_writer_errors();
     test_char_array();
     test_dstr();
-    #ifdef CGS_TEST_PENDING
+    test_self_append();
+#ifdef CGS_TEST_PENDING
     test_pending();
-    #endif
+#endif
 
     printf("%d/%d checks passed\n", g_checks - g_failures, g_checks);
     return g_failures != 0;
