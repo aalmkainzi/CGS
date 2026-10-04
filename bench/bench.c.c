@@ -503,6 +503,14 @@ extern int sscanf (const char *restrict __s,
 
 # 1 "/usr/include/x86_64-linux-gnu/bits/long-double.h"
 
+# 214 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h"
+typedef float _Float32;
+# 251 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h"
+typedef double _Float64;
+# 268 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h"
+typedef double _Float32x;
+# 285 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h"
+typedef long double _Float64x;
 # 463 "/usr/include/stdio.h"
 extern int fscanf (FILE *restrict __stream, const char *restrict __format, ...) __asm__("__isoc99_fscanf")
 

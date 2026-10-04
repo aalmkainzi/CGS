@@ -1839,17 +1839,17 @@ typedef struct CGS__FmtFlags
     macro(wf32)                 \
     macro(wf64)                 \
 
-enum
+enum CGS__appendi_LengthModifier
 {
     CGS__LENMOD_NONE = 0,
     CGS__LENMOD_INVALID,
-    
+
 #define CGS__LIST_EACH(lenmod) CGS__LENMOD_##lenmod,
 
     CGS__LENMOD_LIST(CGS__LIST_EACH)
 
 #undef CGS__LIST_EACH
-    
+
     CGS__LENMOD_interp
 };
 
@@ -1955,30 +1955,118 @@ _Generic(obj,                                     \
     default            : CGS__FmtSpec_not_integer \
 ),
 
+#define cgs__coerce_str(arg)         \
+_Generic(arg,                        \
+    CGS_StrBuf    : arg,             \
+    CGS_StrBuf*   : arg,             \
+    CGS_DStr      : arg,             \
+    CGS_DStr*     : arg,             \
+    CGS_MutStrRef : arg,             \
+    char*         : arg,             \
+    unsigned char*: arg,             \
+    default       : (CGS_StrView){0} \
+)
+
+#define cgs__coerce_integer(arg) \
+_Generic(arg,                    \
+    char               : arg,    \
+    signed char        : arg,    \
+    unsigned char      : arg,    \
+    short              : arg,    \
+    unsigned short     : arg,    \
+    int                : arg,    \
+    unsigned int       : arg,    \
+    long               : arg,    \
+    unsigned long      : arg,    \
+    long long          : arg,    \
+    unsigned long long : arg,    \
+    default            : 0       \
+)
+
+#define cgs__appendi_arg_conversion(arg)                                                                                           \
+_Generic(arg,                                                                                                                      \
+    CGS_StrBuf    : cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
+    CGS_StrBuf*   : cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
+    CGS_DStr      : cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
+    CGS_DStr*     : cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
+    CGS_MutStrRef : cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
+    char*         : cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
+    unsigned char*: cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
+    default       :                                                                                                                \
+        _Generic(arg,                                                                                                              \
+            char              : CHAR_MIN < 0 ? (long long)cgs__coerce_integer(arg) : (unsigned long long)cgs__coerce_integer(arg), \
+            signed char       : (long long)         cgs__coerce_integer(arg),                                                      \
+            unsigned char     : (unsigned long long)cgs__coerce_integer(arg),                                                      \
+            short             : (long long)         cgs__coerce_integer(arg),                                                      \
+            unsigned short    : (unsigned long long)cgs__coerce_integer(arg),                                                      \
+            int               : (long long)         cgs__coerce_integer(arg),                                                      \
+            unsigned int      : (unsigned long long)cgs__coerce_integer(arg),                                                      \
+            long              : (long long)         cgs__coerce_integer(arg),                                                      \
+            unsigned long     : (unsigned long long)cgs__coerce_integer(arg),                                                      \
+            long long         : (long long)         cgs__coerce_integer(arg),                                                      \
+            unsigned long long: (unsigned long long)cgs__coerce_integer(arg),                                                      \
+            default           :           arg                                                                                      \
+        )                                                                                                                          \
+),
+
 CGS_API CGS_Error cgs__appendi(
-    CGS_Writer *writer, unsigned int n_specifiers, const CGS_StrView literals[], const CGS__FmtFlags flags[], const unsigned long long widths[],
-    const unsigned long long precisions[], const unsigned char length_modifiers[], const char conversion_chars[], const void *interps[],
-    CGS_Error (*interp_tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg), const signed char *interp_is_integer, unsigned n_objs, void *objs[],
-    CGS_Error (*tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg), const signed char *obj_is_integer
+    CGS_Writer *writer,
+    unsigned int n_specifiers,
+    const CGS_StrView literals[],
+    const CGS__FmtFlags flags[],
+    const unsigned long long widths[],
+    const unsigned long long precisions[],
+    const unsigned char length_modifiers[],
+    const char conversion_chars[],
+    const void *interps[],
+    CGS_Error (*interp_tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg),
+    const unsigned char interp_length_modifiers[],
+    unsigned n_objs,
+    void *objs[]
 );
 
-#define cgs_appendi(writer_dst, fstr, ...)                                                                                      \
-    cgs__appendi(                                                                                                               \
-        cgs_writer_ptr(writer_dst),                                                                                             \
-        CGS__CARR_LEN(cgs__cstrarr(__FORMAT_FLAGS__(fstr))),                                                                    \
-        (const CGS_StrView[]){CGS__FOREACH(cgs__fmt_spec_strv_each_literal, __FORMAT_LITERALS__(fstr))},                        \
-        (const CGS__FmtFlags[]){CGS__FOREACH(cgs__fmt_spec_extract_flags, __FORMAT_FLAGS__(fstr))},                             \
-        (const unsigned long long[]){CGS__FOREACH(cgs__fmt_spec_star_or_num_or_empty, __FORMAT_WIDTHS__(fstr))},                \
-        (const unsigned long long[]){CGS__FOREACH(cgs__fmt_spec_star_or_num_or_empty, __FORMAT_PRECISIONS__(fstr))},            \
-        (const unsigned char[]){CGS__FOREACH(cgs__fmt_spec_extract_length_modifier, __FORMAT_LENGTH_MODIFIERS__(fstr))},        \
-        (char[]){__FORMAT_CONVERSION_CHARS__(fstr)},                                                                            \
-        (const void*[]){CGS__FOREACH(cgs__as_ptr_elm, __FORMAT_INTERPS__(fstr))},                                               \
-        (CGS_Error(*[])(CGS_Writer*, const void*, CGS_StrView)){CGS__FOREACH(cgs__tostr_p_func_elm, __FORMAT_INTERPS__(fstr))}, \
-        (const signed char[]){CGS__FOREACH(cgs__fmt_spec_integer_kind, __FORMAT_INTERPS__(fstr))},                              \
-        0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__),                                                                       \
-        (void*[]){CGS__FOREACH(cgs__as_ptr_elm, __VA_ARGS__)},                                                                  \
-        (CGS_Error(*[])(CGS_Writer*, const void*, CGS_StrView)){CGS__FOREACH(cgs__tostr_p_func_elm, __VA_ARGS__)},              \
-        (const signed char[]){CGS__FOREACH(cgs__fmt_spec_integer_kind, __VA_ARGS__)}                                            \
+#define cgs__appendi_interps_arg(...) \
+    (const void *[]) \
+    {CGS__FOREACH(cgs__as_ptr_elm,       CGS__FOREACH(cgs__appendi_arg_conversion, __VA_ARGS__))}
+
+#define cgs__appendi_interps_tostr_arg(...) \
+    (CGS_Error(*[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)) \
+    {CGS__FOREACH(cgs__tostr_p_func_elm, CGS__FOREACH(cgs__appendi_arg_conversion, __VA_ARGS__))}
+
+#define cgs__fmt_spec_type_to_length_modifier(T)                       \
+_Generic((__typeof__(T)){},                                            \
+    char          : CGS__LENMOD_hh   | (CHAR_MIN < 0 ? SCHAR_MIN : 0), \
+    signed char   : CGS__LENMOD_hh   | SCHAR_MIN,                      \
+    unsigned char : CGS__LENMOD_hh,                                    \
+    short         : CGS__LENMOD_h    | SCHAR_MIN,                      \
+    unsigned short: CGS__LENMOD_h,                                     \
+    int           : CGS__LENMOD_none | SCHAR_MIN,                      \
+    unsigned int  : CGS__LENMOD_none,                                  \
+    long          : CGS__LENMOD_l    | SCHAR_MIN,                      \
+    unsigned long : CGS__LENMOD_l,                                     \
+    long long     : CGS__LENMOD_ll   | SCHAR_MIN,                      \
+    unsigned long : CGS__LENMOD_ll,                                    \
+    default       : CGS__LENMOD_none                                   \
+),
+
+#define cgs__appendi_interp_length_modifiers_arg(...) \
+    (const unsigned char[] {CGS__FOREACH(cgs__fmt_spec_type_to_length_modifier, __VA_ARGS__)}
+
+#define cgs_appendi(writer_dst, fstr, ...)                                                                                \
+    cgs__appendi(                                                                                                         \
+        cgs_writer_ptr(writer_dst),                                                                                       \
+        CGS__CARR_LEN(cgs__cstrarr(__FORMAT_FLAGS__(fstr))),                                                              \
+        (const CGS_StrView[]) {CGS__FOREACH(cgs__fmt_spec_strv_each_literal, __FORMAT_LITERALS__(fstr))},                 \
+        (const CGS__FmtFlags[]) {CGS__FOREACH(cgs__fmt_spec_extract_flags, __FORMAT_FLAGS__(fstr))},                      \
+        (const unsigned long long[]) {CGS__FOREACH(cgs__fmt_spec_star_or_num_or_empty, __FORMAT_WIDTHS__(fstr))},         \
+        (const unsigned long long[]) {CGS__FOREACH(cgs__fmt_spec_star_or_num_or_empty, __FORMAT_PRECISIONS__(fstr))},     \
+        (const unsigned char[]) {CGS__FOREACH(cgs__fmt_spec_extract_length_modifier, __FORMAT_LENGTH_MODIFIERS__(fstr))}, \
+        (char[]) {__FORMAT_CONVERSION_CHARS__(fstr)},                                                                     \
+        cgs__appendi_interps_arg(__FORMAT_INTERPS__(fstr)),                                                               \
+        cgs__appendi_interps_tostr_arg(__FORMAT_INTERPS__(fstr)),                                                         \
+        cgs__appendi_interp_length_modifiers_arg(__FORMAT_INTERPS__(fstr)),                                               \
+        0 CGS__FOREACH(cgs__arg_count_each, __VA_ARGS__),                                                                 \
+        (void *[]) {CGS__FOREACH(cgs__as_ptr_elm, CGS__FOREACH(cgs__appendi_arg_conversion, __VA_ARGS__))}                \
     )
 
 #define cgs_sprinti(mutstr_dst, fstr, ...) \
