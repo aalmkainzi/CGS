@@ -105,7 +105,7 @@ static CGS_Error event_to_str(CGS_Writer *dst, Event e, CGS_StrView fmt_arg)
 {
     if (cgs_equal(fmt_arg, "short"))
         return cgs_appendi(dst, f"#%u %s", e.id, e.label);
-    
+
     return cgs_appendi(dst,
                        f"Event#%u \"%s\" rect(%d,%d %dx%d) rgba(%hhu,%hhu,%hhu,%hhu) w=%.2f",
                        e.id, e.label,
@@ -192,17 +192,18 @@ static Event EV[8] = {
 
 static int cgs_views(CGS_StrBuf *o, unsigned i)
 {
-    /* cgs_alignfmt objects print through their own tostr via %?. */
-    cgs_sprinti(o, f"%?|%?|%?|%?|%?|%?|%?|%?",
-                cgs_alignfmt(V[(i + 0u) & 7u], LEFT,  14),
-                cgs_alignfmt(V[(i + 1u) & 7u], RIGHT, 13),
-                cgs_alignfmt(V[(i + 2u) & 7u], LEFT,  16),
-                cgs_alignfmt(V[(i + 3u) & 7u], RIGHT, 12),
-                cgs_alignfmt(V[(i + 4u) & 7u], LEFT,  15),
-                cgs_alignfmt(V[(i + 5u) & 7u], RIGHT, 18),
-                cgs_alignfmt(V[(i + 6u) & 7u], LEFT,  17),
-                cgs_alignfmt(V[(i + 7u) & 7u], RIGHT, 12));
-    
+    /* The cgs_alignfmt objects are interpolated and print through their own
+     * tostr via %{...}?. The f-string continues over backslash-newlines; the
+     * continued lines start at column 0 so no indentation ends up in the output. */
+    cgs_sprinti(o, f"%{cgs_alignfmt(V[(i + 0u) & 7u], LEFT,  14)}?|\
+%{cgs_alignfmt(V[(i + 1u) & 7u], RIGHT, 13)}?|\
+%{cgs_alignfmt(V[(i + 2u) & 7u], LEFT,  16)}?|\
+%{cgs_alignfmt(V[(i + 3u) & 7u], RIGHT, 12)}?|\
+%{cgs_alignfmt(V[(i + 4u) & 7u], LEFT,  15)}?|\
+%{cgs_alignfmt(V[(i + 5u) & 7u], RIGHT, 18)}?|\
+%{cgs_alignfmt(V[(i + 6u) & 7u], LEFT,  17)}?|\
+%{cgs_alignfmt(V[(i + 7u) & 7u], RIGHT, 12)}?");
+
     return (int)o->len;
 }
 
@@ -212,7 +213,7 @@ static int std_views(CGS_StrBuf *o, unsigned i)
     const Slice *c = &S[(i + 2u) & 7u], *d = &S[(i + 3u) & 7u];
     const Slice *e = &S[(i + 4u) & 7u], *f = &S[(i + 5u) & 7u];
     const Slice *g = &S[(i + 6u) & 7u], *h = &S[(i + 7u) & 7u];
-    
+
     int n = snprintf(o->chars, o->cap,
                      "%-*.*s|%*.*s|%-*.*s|%*.*s|%-*.*s|%*.*s|%-*.*s|%*.*s",
                      14, a->n, a->p,
@@ -223,7 +224,7 @@ static int std_views(CGS_StrBuf *o, unsigned i)
                      18, f->n, f->p,
                      17, g->n, g->p,
                      12, h->n, h->p);        /* 24 variadic arguments, none type-checked */
-    
+
     o->len = clamp_len(n, o->cap);
     return n;
 }
@@ -235,9 +236,9 @@ static int std_views(CGS_StrBuf *o, unsigned i)
 static int cgs_ints(CGS_StrBuf *o, unsigned i)
 {
     unsigned k = i & 7u;
-    
-    /* Same format as the snprintf side, but every argument is type-checked
-     * against its specifier. */
+
+    /* Same format as the snprintf side. Integer arguments are converted to the
+     * width each length modifier asks for. */
     cgs_sprinti(o, f"d=%d x=%x X=%X o=%o b=%b ll=%lld llx=%llx z=%zu",
                 I32[k],
                 U32[k],
@@ -247,18 +248,18 @@ static int cgs_ints(CGS_StrBuf *o, unsigned i)
                 I64[k],
                 U64[k],
                 SZ[k]);
-    
+
     return (int)o->len;
 }
 
 static int std_ints(CGS_StrBuf *o, unsigned i)
 {
     unsigned k = i & 7u;
-    
-    /* Every length modifier here (ll, ll, z) is a silent-UB landmine that the
-     * cgs version cannot have: cgs_sprinti knows each argument's real type, so
-     * a wrong modifier converts the value and a wrong kind of argument is
-     * reported as CGS_TYPE_MISMATCH instead of reading garbage. */
+
+    /* Every length modifier here (ll, ll, z) is a silent-UB landmine if it does
+     * not match its argument. cgs_sprinti knows each integer argument's real
+     * type, so a mismatched length modifier converts the value instead of
+     * reading garbage. (A non-integer passed to %d is undefined in both.) */
     int n = snprintf(o->chars, o->cap,
                      "d=%d x=%x X=%X o=%o b=%b ll=%lld llx=%llx z=%zu",
                      I32[k],
@@ -269,7 +270,7 @@ static int std_ints(CGS_StrBuf *o, unsigned i)
                      I64[k],
                      U64[k],
                      SZ[k]);
-    
+
     o->len = clamp_len(n, o->cap);
     return n;
 }
@@ -294,11 +295,11 @@ static int cgs_events(CGS_StrBuf *o, unsigned i)
     unsigned k1 = (k + 3u) & 7u;
     unsigned k2 = (k + 5u) & 7u;
     unsigned k3 = (k + 7u) & 7u;
-    
+
     /* The events are interpolated and %? prints each through event_to_str.
      * %? passes no fmt_arg, so the compact form of the last one is spelled out. */
     cgs_sprinti(o, f"%{EV[k]}? | %{EV[k1]}? | %{EV[k2]}? | #%{EV[k3].id}u %{EV[k3].label}s");
-    
+
     return (int)o->len;
 }
 
@@ -309,7 +310,7 @@ static int std_events(CGS_StrBuf *o, unsigned i)
     const Event *e1 = &EV[(k + 3u) & 7u];
     const Event *e2 = &EV[(k + 5u) & 7u];
     const Event *e3 = &EV[(k + 7u) & 7u];
-    
+
     /* The macro is the charitable version -- without it this is 33 arguments
      * written out three times. Note it still cannot compose with positional
      * specifiers, cannot be nested inside another field, and cannot switch
@@ -318,7 +319,7 @@ static int std_events(CGS_StrBuf *o, unsigned i)
                      EVT_FMT " | " EVT_FMT " | " EVT_FMT " | #%u %s",
                      EVT_ARGS(e0), EVT_ARGS(e1), EVT_ARGS(e2),
                      e3->id, e3->label);
-    
+
     o->len = clamp_len(n, o->cap);
     return n;
 }
@@ -350,17 +351,17 @@ NOINLINE static double run(bench_fn f, CGS_StrBuf *out,
                            unsigned iters, unsigned rounds)
 {
     double best = 1e300;
-    
+
     for (unsigned r = 0; r < rounds; ++r) {
         unsigned long long acc = 0;
         double t0 = now_sec();
-        
+
         for (unsigned i = 0; i < iters; ++i) {
             f(out, i);
             acc += out->len;
             acc += (unsigned char)out->chars[out->len ? out->len - 1u : 0u];
         }
-        
+
         double dt = now_sec() - t0;
         g_sink += acc;
         if (dt < best) best = dt;
@@ -374,13 +375,13 @@ static int verify(const Case *c)
     CGS_StrBuf a = cgs_strbuf_init_from_buf(sa, sizeof sa);
     CGS_StrBuf b = cgs_strbuf_init_from_buf(sb, sizeof sb);
     int ok = 1;
-    
+
     sa[0] = sb[0] = '\0';
-    
+
     for (unsigned i = 0; i < 8u; ++i) {
         c->std_fn(&a, i);
         c->cgs_fn(&b, i);
-        
+
         if (strcmp(sa, sb) != 0) {
             if (ok) {
                 printf("  MISMATCH in %s at i=%u\n", c->name, i);
@@ -412,19 +413,19 @@ int main(int argc, char **argv)
     char       buf[BUF_CAP];
     CGS_StrBuf out;
     size_t     ncases = sizeof CASES / sizeof CASES[0];
-    
+
     if (argc > 1) {
         unsigned long v = strtoul(argv[1], NULL, 10);
         if (v) g_iters = (unsigned)v;
     }
-    
+
     init_views();
     buf[0] = '\0';
     out = cgs_strbuf_init_from_buf(buf, sizeof buf);
-    
+
     printf("cgs_sprinti vs snprintf -- %u iters x %d rounds, best round kept\n\n",
            g_iters, ROUNDS);
-    
+
     /* Correctness gate first: a benchmark of two different outputs is noise. */
     for (size_t k = 0; k < ncases; ++k) {
         printf("%s\n", CASES[k].name);
@@ -432,28 +433,28 @@ int main(int argc, char **argv)
         printf("  verify: %s\n\n", verify(&CASES[k]) ? "identical output" :
         "DIFFERS (see above)");
     }
-    
+
     printf("%-30s %13s %13s %9s %7s\n",
            "case", "snprintf", "cgs_sprinti", "speedup", "bytes");
     printf("%-30s %13s %13s %9s %7s\n",
            "------------------------------", "-------------", "-------------",
            "---------", "-------");
-    
+
     for (size_t k = 0; k < ncases; ++k) {
         double tstd, tcgs;
         unsigned bytes;
-        
+
         /* Warm up both sides: caches, branch predictors, any lazy locale init
          * inside the C library's printf machinery. */
         run(CASES[k].std_fn, &out, WARMUP, 1);
         run(CASES[k].cgs_fn, &out, WARMUP, 1);
-        
+
         tstd = run(CASES[k].std_fn, &out, g_iters, ROUNDS);
         tcgs = run(CASES[k].cgs_fn, &out, g_iters, ROUNDS);
-        
+
         CASES[k].cgs_fn(&out, 0u);
         bytes = out.len;
-        
+
         printf("%-30s %10.1f ns %10.1f ns %8.2fx %7u\n",
                CASES[k].name,
                tstd * 1e9 / (double)g_iters,
@@ -461,7 +462,7 @@ int main(int argc, char **argv)
                tstd / tcgs,
                bytes);
     }
-    
+
     printf("\nchecksum %llu\n", g_sink);
     return 0;
 }

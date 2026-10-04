@@ -3187,10 +3187,12 @@ CGS_API CGS_Error cgs__appendi(
         }
 
         bool conv_is_signed;
+        bool obj_is_integer;
         switch (conversion_chars[i])
         {
             case 'd':
             case 'i':
+                obj_is_integer = true;
                 conv_is_signed  = true;
                 break;
             case 'u':
@@ -3198,6 +3200,7 @@ CGS_API CGS_Error cgs__appendi(
             case 'b':
             case 'x':
             case 'X':
+                obj_is_integer = true;
                 conv_is_signed  = false;
                 break;
             case '?':
@@ -3208,13 +3211,20 @@ CGS_API CGS_Error cgs__appendi(
                 }
                 conv_is_signed = lenmod & ~SCHAR_MAX;
                 lenmod &= SCHAR_MAX;
+
+                // whether %{}? represents an integer, one of:
+                // the original type is signed
+                // the original type needs a length modifier
+                // the original type is uint
+                obj_is_integer = conv_is_signed || (lenmod != CGS__LENMOD_NONE) || (tostr_p == cgs__uint_tostr_p);
         }
+        lenmod &= SCHAR_MAX;
 
         uint64_t int_val;
+        if (obj_is_integer)
         {
             int truncate_by = sizeof(unsigned long long);
 
-            try_lenmod_again:
             switch(lenmod)
             {
                 case CGS__LENMOD_h:
@@ -3303,7 +3313,6 @@ CGS_API CGS_Error cgs__appendi(
             }
         }
 
-        skip_integer_truncation:
         // write the literal before current specifier
         err = cgs__invoke_writer(writer, literals[i]);
         if (err.ec != CGS_OK)
@@ -3311,9 +3320,7 @@ CGS_API CGS_Error cgs__appendi(
 
         if (conversion_chars[i] == 'f' || conversion_chars[i] == 'e' || conversion_chars[i] == 'g' || conversion_chars[i] == 'a')
         {
-            err = cgs__float_arg_value_from_callback(tostr_p, obj, &float_value);
-            if (err.ec != CGS_OK)
-                return err;
+            float_value = *(double*)obj;
         }
 
         switch (conversion_chars[i])

@@ -2,5 +2,6 @@
 
 int main()
 {
-    cgs_appendi(stdout, f"%?", 1);
+    const char *hi = "hi";
+    cgs_appendi(stdout, f"%{hi}?");
 }

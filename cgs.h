@@ -1955,16 +1955,20 @@ _Generic(obj,                                     \
     default            : CGS__FmtSpec_not_integer \
 ),
 
-#define cgs__coerce_str(arg)         \
-_Generic(arg,                        \
-    CGS_StrBuf    : arg,             \
-    CGS_StrBuf*   : arg,             \
-    CGS_DStr      : arg,             \
-    CGS_DStr*     : arg,             \
-    CGS_MutStrRef : arg,             \
-    char*         : arg,             \
-    unsigned char*: arg,             \
-    default       : (CGS_StrView){0} \
+#define cgs__coerce_str(arg)               \
+_Generic(arg,                              \
+    CGS_StrBuf          : arg,             \
+    CGS_StrBuf*         : arg,             \
+    const CGS_StrBuf*   : arg,             \
+    CGS_DStr            : arg,             \
+    CGS_DStr*           : arg,             \
+    const CGS_DStr*     : arg,             \
+    CGS_MutStrRef       : arg,             \
+    char*               : arg,             \
+    unsigned char*      : arg,             \
+    const char*         : arg,             \
+    const unsigned char*: arg,             \
+    default             : (CGS_StrView){0} \
 )
 
 #define cgs__coerce_integer(arg) \
@@ -1985,14 +1989,18 @@ _Generic(arg,                    \
 
 #define cgs__appendi_arg_conversion(arg)                                                                                           \
 _Generic(arg,                                                                                                                      \
-    CGS_StrBuf    : cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
-    CGS_StrBuf*   : cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
-    CGS_DStr      : cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
-    CGS_DStr*     : cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
-    CGS_MutStrRef : cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
-    char*         : cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
-    unsigned char*: cgs__strv_1(cgs__coerce_str(arg)),                                                                             \
-    default       :                                                                                                                \
+    CGS_StrBuf          : cgs__strv_1(cgs__coerce_str(arg)),                                                                       \
+    CGS_StrBuf*         : cgs__strv_1(cgs__coerce_str(arg)),                                                                       \
+    const CGS_StrBuf*   : cgs__strv_1(cgs__coerce_str(arg)),                                                                       \
+    CGS_DStr            : cgs__strv_1(cgs__coerce_str(arg)),                                                                       \
+    CGS_DStr*           : cgs__strv_1(cgs__coerce_str(arg)),                                                                       \
+    const CGS_DStr*     : cgs__strv_1(cgs__coerce_str(arg)),                                                                       \
+    CGS_MutStrRef       : cgs__strv_1(cgs__coerce_str(arg)),                                                                       \
+    char*               : cgs__strv_1(cgs__coerce_str(arg)),                                                                       \
+    unsigned char*      : cgs__strv_1(cgs__coerce_str(arg)),                                                                       \
+    const char*         : cgs__strv_1(cgs__coerce_str(arg)),                                                                       \
+    const unsigned char*: cgs__strv_1(cgs__coerce_str(arg)),                                                                       \
+    default             :                                                                                                          \
         _Generic(arg,                                                                                                              \
             char              : CHAR_MIN < 0 ? (long long)cgs__coerce_integer(arg) : (unsigned long long)cgs__coerce_integer(arg), \
             signed char       : (long long)         cgs__coerce_integer(arg),                                                      \
@@ -2005,7 +2013,8 @@ _Generic(arg,                                                                   
             unsigned long     : (unsigned long long)cgs__coerce_integer(arg),                                                      \
             long long         : (long long)         cgs__coerce_integer(arg),                                                      \
             unsigned long long: (unsigned long long)cgs__coerce_integer(arg),                                                      \
-            default           :           arg                                                                                      \
+            float             : (double)            cgs__coerce(arg, float),                                                       \
+            default           : arg                                                                                                \
         )                                                                                                                          \
 ),
 
@@ -2033,24 +2042,24 @@ CGS_API CGS_Error cgs__appendi(
     (CGS_Error(*[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)) \
     {CGS__FOREACH(cgs__tostr_p_func_elm, CGS__FOREACH(cgs__appendi_arg_conversion, __VA_ARGS__))}
 
-#define cgs__fmt_spec_type_to_length_modifier(T)                       \
-_Generic((__typeof__(T)){},                                            \
-    char          : CGS__LENMOD_hh   | (CHAR_MIN < 0 ? SCHAR_MIN : 0), \
-    signed char   : CGS__LENMOD_hh   | SCHAR_MIN,                      \
-    unsigned char : CGS__LENMOD_hh,                                    \
-    short         : CGS__LENMOD_h    | SCHAR_MIN,                      \
-    unsigned short: CGS__LENMOD_h,                                     \
-    int           : CGS__LENMOD_none | SCHAR_MIN,                      \
-    unsigned int  : CGS__LENMOD_none,                                  \
-    long          : CGS__LENMOD_l    | SCHAR_MIN,                      \
-    unsigned long : CGS__LENMOD_l,                                     \
-    long long     : CGS__LENMOD_ll   | SCHAR_MIN,                      \
-    unsigned long : CGS__LENMOD_ll,                                    \
-    default       : CGS__LENMOD_none                                   \
+#define cgs__fmt_spec_type_to_length_modifier(T)                           \
+_Generic((__typeof__(T)){},                                                \
+    char              : CGS__LENMOD_hh   | (CHAR_MIN < 0 ? SCHAR_MIN : 0), \
+    signed char       : CGS__LENMOD_hh   | SCHAR_MIN,                      \
+    unsigned char     : CGS__LENMOD_hh,                                    \
+    short             : CGS__LENMOD_h    | SCHAR_MIN,                      \
+    unsigned short    : CGS__LENMOD_h,                                     \
+    int               : CGS__LENMOD_NONE | SCHAR_MIN,                      \
+    unsigned int      : CGS__LENMOD_NONE,                                  \
+    long              : CGS__LENMOD_l    | SCHAR_MIN,                      \
+    unsigned long     : CGS__LENMOD_l,                                     \
+    long long         : CGS__LENMOD_ll   | SCHAR_MIN,                      \
+    unsigned long long: CGS__LENMOD_ll,                                    \
+    default           : CGS__LENMOD_NONE                                   \
 ),
 
 #define cgs__appendi_interp_length_modifiers_arg(...) \
-    (const unsigned char[] {CGS__FOREACH(cgs__fmt_spec_type_to_length_modifier, __VA_ARGS__)}
+    (const unsigned char[]) {CGS__FOREACH(cgs__fmt_spec_type_to_length_modifier, __VA_ARGS__)}
 
 #define cgs_appendi(writer_dst, fstr, ...)                                                                                \
     cgs__appendi(                                                                                                         \
