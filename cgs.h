@@ -1917,44 +1917,6 @@ static inline unsigned long long cgs__fmt_spec_star_or_num_or_empty_(const char 
 #define cgs__fmt_spec_strv_each_literal(lit) \
     (CGS_StrView){.chars = lit, .len = sizeof(lit) - 1},
 
-enum
-{
-    CGS__FmtSpec_not_integer,
-    CSG__FmtSpec_ubegin,
-    CGS__FmtSpec_uchar,
-    CGS__FmtSpec_ushort,
-    CGS__FmtSpec_uint,
-    CGS__FmtSpec_ulong,
-    CGS__FmtSpec_ullong,
-    CGS__FmtSpec_uend_if_char_signed,
-    CGS__FmtSpec_sbegin_if_char_signed,
-    CGS__FmtSpec_char,
-    CGS__FmtSpec_uend_if_char_unsigned,
-    CGS__FmtSpec_sbegin_if_char_unsigned,
-    CGS__FmtSpec_schar,
-    CGS__FmtSpec_short,
-    CGS__FmtSpec_int,
-    CGS__FmtSpec_long,
-    CGS__FmtSpec_llong,
-    CGS__FmtSpec_send
-};
-
-#define cgs__fmt_spec_integer_kind(obj)           \
-_Generic(obj,                                     \
-    char               : CGS__FmtSpec_char,       \
-    signed char        : CGS__FmtSpec_schar,      \
-    unsigned char      : CGS__FmtSpec_uchar,      \
-    short              : CGS__FmtSpec_short,      \
-    unsigned short     : CGS__FmtSpec_ushort,     \
-    int                : CGS__FmtSpec_int,        \
-    unsigned int       : CGS__FmtSpec_uint,       \
-    long               : CGS__FmtSpec_long,       \
-    unsigned long      : CGS__FmtSpec_ulong,      \
-    long long          : CGS__FmtSpec_llong,      \
-    unsigned long long : CGS__FmtSpec_ullong,     \
-    default            : CGS__FmtSpec_not_integer \
-),
-
 #define cgs__coerce_str(arg)               \
 _Generic(arg,                              \
     CGS_StrBuf          : arg,             \
@@ -2043,6 +2005,7 @@ CGS_API CGS_Error cgs__appendi(
     (CGS_Error(*[])(CGS_Writer *, const void *, CGS_StrView fmt_arg)) \
     {CGS__FOREACH(cgs__tostr_p_func_elm, CGS__FOREACH(cgs__appendi_arg_conversion, __VA_ARGS__))}
 
+// should encode type kind in the high 4 bits (int? float? string?)
 #define cgs__fmt_spec_type_to_length_modifier(T)                           \
 _Generic((__typeof__(T)){},                                                \
     char              : CGS__LENMOD_hh   | (CHAR_MIN < 0 ? SCHAR_MIN : 0), \

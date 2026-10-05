@@ -2950,97 +2950,53 @@ CGS_PRIVATE CGS_Error cgs__float_arg_value_from_callback(CGS_Error (*tostr_p)(CG
     {                                                                                          \
         /* cant use switch statement with function pointer :( */                               \
                                                                                                \
-        if ((tag) == CGS__FmtSpec_char)                                                        \
+        if ((cb) == cgs__char_tostr_p)                                                        \
         {                                                                                      \
-            if ((value) && (arg))                                                              \
-                *(value) = (truncate_t) * (char *)(arg);                                       \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
-            if ((is_signed))                                                                   \
-                *(is_signed) = CHAR_MIN < 0;                                                   \
+            return true;                                       \
         }                                                                                      \
-        else if ((tag) == CGS__FmtSpec_schar)                                                  \
+        else if ((cb) == cgs__schar_tostr_p)                                                  \
         {                                                                                      \
-            if ((value) && (arg))                                                              \
-                *(value) = (truncate_t) * (signed char *)(arg);                                \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
-            if (is_signed)                                                                     \
-                *(is_signed) = true;                                                           \
+            return true;                                                           \
         }                                                                                      \
-        else if ((tag) == CGS__FmtSpec_uchar)                                                  \
+        else if ((cb) == cgs__uchar_tostr_p)                                                  \
         {                                                                                      \
-            if ((value) && (arg))                                                              \
-                *(value) = (truncate_t) * (unsigned char *)(arg);                              \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
-            if (is_signed)                                                                     \
-                *(is_signed) = false;                                                          \
+            return true;                                                          \
         }                                                                                      \
-        else if ((tag) == CGS__FmtSpec_short)                                                  \
+        else if ((cb) == cgs__short_tostr_p)                                                  \
         {                                                                                      \
-            if ((value) && (arg))                                                              \
-                *(value) = (truncate_t) * (short *)(arg);                                      \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
-            if (is_signed)                                                                     \
-                *(is_signed) = true;                                                           \
+            return true;                                                           \
         }                                                                                      \
-        else if ((tag) == CGS__FmtSpec_ushort)                                                 \
+        else if ((cb) == cgs__ushort_tostr_p)                                                 \
         {                                                                                      \
-            if ((value) && (arg))                                                              \
-                *(value) = (truncate_t) * (unsigned short *)(arg);                             \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
-            if (is_signed)                                                                     \
-                *(is_signed) = false;                                                          \
+            return true;                                                          \
         }                                                                                      \
-        else if ((tag) == CGS__FmtSpec_int)                                                    \
+        else if ((cb) == cgs__int_tostr_p)                                                    \
         {                                                                                      \
-            if ((value) && (arg))                                                              \
-                *(value) = (truncate_t) * (int *)(arg);                                        \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
-            if (is_signed)                                                                     \
-                *(is_signed) = true;                                                           \
+            return true;                                                           \
         }                                                                                      \
-        else if ((tag) == CGS__FmtSpec_uint)                                                   \
+        else if ((cb) == cgs__uint_tostr_p)                                                   \
         {                                                                                      \
-            if ((value) && (arg))                                                              \
-                *(value) = (truncate_t) * (unsigned int *)(arg);                               \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
-            if (is_signed)                                                                     \
-                *(is_signed) = false;                                                          \
+            return true;                                                          \
         }                                                                                      \
-        else if ((tag) == CGS__FmtSpec_long)                                                   \
+        else if ((cb) == cgs__long_tostr_p)                                                   \
         {                                                                                      \
-            if ((value) && (arg))                                                              \
-                *(value) = (truncate_t) * (long *)(arg);                                       \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
-            if (is_signed)                                                                     \
-                *(is_signed) = true;                                                           \
+            return true;                                                           \
         }                                                                                      \
-        else if ((tag) == CGS__FmtSpec_ulong)                                                  \
+        else if ((cb) == cgs__ulong_tostr_p)                                                  \
         {                                                                                      \
-            if ((value) && (arg))                                                              \
-                *(value) = (truncate_t) * (unsigned long *)(arg);                              \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
-            if (is_signed)                                                                     \
-                *(is_signed) = false;                                                          \
+            return true;                                                          \
         }                                                                                      \
-        else if ((tag) == CGS__FmtSpec_llong)                                                  \
+        else if ((cb) == cgs__llong_tostr_p)                                                  \
         {                                                                                      \
-            if ((value) && (arg))                                                              \
-                *(value) = (truncate_t) * (long long *)(arg);                                  \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
-            if (is_signed)                                                                     \
-                *(is_signed) = true;                                                           \
+            return true;                                                           \
         }                                                                                      \
-        else if ((tag) == CGS__FmtSpec_ullong)                                                 \
+        else if ((cb) == cgs__ullong_tostr_p)                                                 \
         {                                                                                      \
-            if ((value) && (arg))                                                              \
-                *(value) = (truncate_t) * (unsigned long long *)(arg);                         \
-            *(err_out) = (CGS_Error) {CGS_OK};                                                 \
-            if (is_signed)                                                                     \
-                *(is_signed) = false;                                                          \
+            return true;                                                          \
         }                                                                                      \
         else                                                                                   \
         {                                                                                      \
-            *(err_out) = (CGS_Error) {CGS_TYPE_MISMATCH};                                      \
+            return false;                                      \
         }                                                                                      \
     } while (0)
 
@@ -3121,6 +3077,13 @@ CGS_PRIVATE enum CGS__appendi_LengthModifier cgs__tostr_p_to_lenmod(CGS_Error (*
         return CGS__LENMOD_INVALID;
 }
 
+// %s  -> char*
+// %D  -> CGS_DStr
+// %zD -> CGS_DStr*
+// %V  -> CGS_StrView
+// %U  -> CGS_StrBuf
+// %zU -> CGS_StrBuf*
+// %tS -> CGS_MutStrRef
 CGS_API CGS_Error cgs__appendi(
     CGS_Writer *writer, unsigned int n_specifiers, const CGS_StrView literals[], const CGS__FmtFlags flags[], const unsigned long long widths[],
     const unsigned long long precisions[], const unsigned char length_modifiers[], const char conversion_chars[], const void *interps[],
@@ -3135,9 +3098,6 @@ CGS_API CGS_Error cgs__appendi(
     {
         uint64_t width     = 0;
         uint64_t precision = -1;
-
-        double float_value;
-        CGS_StrView string_value;
 
         if (widths[i] == (unsigned long long)-2)
         {
@@ -3318,11 +3278,6 @@ CGS_API CGS_Error cgs__appendi(
         if (err.ec != CGS_OK)
             return err;
 
-        if (conversion_chars[i] == 'f' || conversion_chars[i] == 'e' || conversion_chars[i] == 'g' || conversion_chars[i] == 'a')
-        {
-            float_value = *(double*)obj;
-        }
-
         switch (conversion_chars[i])
         {
             case 'd':
@@ -3348,13 +3303,16 @@ CGS_API CGS_Error cgs__appendi(
                 break;
 
             case 'f':
-                err = cgs_append_tostr(writer, cgs_nfmt(float_value, 'f'));
+                err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'f'));
+                break;
+            case 'e':
+                err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'e'));
                 break;
             case 'g':
-                err = cgs_append_tostr(writer, cgs_nfmt(float_value, 'g'));
+                err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'g'));
                 break;
             case 'a':
-                err = cgs_append_tostr(writer, cgs_nfmt(float_value, 'a'));
+                err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'a'));
                 break;
             case 's':
                 err = cgs__invoke_writer(writer, *(CGS_StrView *)obj);
