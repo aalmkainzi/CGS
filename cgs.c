@@ -3084,6 +3084,7 @@ CGS_PRIVATE enum CGS__appendi_LengthModifier cgs__tostr_p_to_lenmod(CGS_Error (*
 // %zs  -> CGS_StrBuf
 // %zS  -> CGS_StrBuf*
 // %ts  -> CGS_MutStrRef
+// TODO make local var for conversion char, modify it in case of interp with the correct conversion
 CGS_API CGS_Error cgs__appendi(
     CGS_Writer *writer,
     unsigned int n_specifiers,
@@ -3317,16 +3318,16 @@ CGS_API CGS_Error cgs__appendi(
                 break;
 
             case 'f':
-                err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'f'));
+                err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'f', precision));
                 break;
             case 'e':
-                err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'e'));
+                err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'e', precision));
                 break;
             case 'g':
-                err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'g'));
+                err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'g', precision));
                 break;
             case 'a':
-                err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'a'));
+                err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'a', precision));
                 break;
             case 's':
                 if (lenmod == CGS__LENMOD_D)
