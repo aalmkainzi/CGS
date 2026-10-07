@@ -3288,7 +3288,11 @@ CGS_API CGS_Error cgs__appendi(
             return err;
 
         if (conv_is_signed && flags[i].add_plus && (int64_t)int_val >= 0)
+        {
             err = cgs_putc(writer, '+');
+            if (err.ec != CGS_OK)
+                return err;
+        }
 
         switch (conversion_chars[i])
         {

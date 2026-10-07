@@ -8,13 +8,25 @@
  * Formats are always f"..." literals. A plain "..." literal is written out
  * as-is, which test_plain_literals checks.
  *
+ * Each string type has its own conversion:
+ *
+ *     %s   char*              %Hs  CGS_StrView
+ *     %Ds  CGS_DStr           %zs  CGS_StrBuf
+ *     %DS  CGS_DStr*          %zS  CGS_StrBuf*
+ *     %ts  CGS_MutStrRef
+ *
+ * CGS_ZStrView isn't in that table, so it's only tested through %{expr}?,
+ * which takes the type from the expression.
+ *
  * Define CGS_TEST_PENDING to also run the tests for features that are still
  * TODO: width, precision, the '-', '0' and '#' flags, '+' on floats, %e and %c.
  *
  * Also run the suite with -fsanitize=address,undefined, and under valgrind.
  * test_bool_args and test_self_append target memory errors (an out-of-bounds
  * read, a use-after-free) that can print the right text by accident, so a plain
- * build may pass them. valgrind also catches reads of uninitialized variables.
+ * build may pass them. The empty-DStr checks in test_dstr can pass a NULL buffer
+ * to memcpy with a length of 0, which only UBSan reports. valgrind also catches
+ * reads of uninitialized variables.
  */
 
 #include "cgs.h" /* adjust to your header */
@@ -106,6 +118,48 @@ static void check_trunc(
     }
 }
 
+/* Checks that a stored length matches `want`. */
+static void check_len(const char *file, int line, const char *call, unsigned int len, const char *want)
+{
+    g_checks++;
+    if (len != strlen(want))
+    {
+        fail(file, line, call);
+        fprintf(stderr, "    len is %u, expected %zu\n", len, strlen(want));
+    }
+}
+
+/* Checks a StrBuf's text, and that its len matches the text. Reads the buffer directly. */
+static void check_strbuf(const char *file, int line, const CGS_StrBuf *sb, const char *want)
+{
+    g_checks++;
+    if (memchr(sb->chars, '\0', sb->cap) == NULL)
+    {
+        fail(file, line, "contents of the StrBuf");
+        fprintf(stderr, "    not NUL-terminated within its cap (%u)\n", sb->cap);
+    }
+    else if (strcmp(sb->chars, want) != 0)
+    {
+        fail(file, line, "contents of the StrBuf");
+        fprintf(stderr, "    got      \"%s\"\n    expected \"%s\"\n", sb->chars, want);
+    }
+    else if (sb->len != strlen(want))
+    {
+        fail(file, line, "contents of the StrBuf");
+        fprintf(stderr, "    text is right, but len is %u, expected %zu\n", sb->len, strlen(want));
+    }
+}
+
+/* Reads the DStr back through %DS (CGS_DStr*) and compares. */
+static void check_dstr(const char *file, int line, CGS_DStr *s, const char *want)
+{
+    static char got[8192];
+    got[0] = '\0';
+
+    CGS_Error err = cgs_appendi(got, f"%DS", s);
+    check_output(file, line, "contents of the DStr", err, got, want);
+}
+
 /* Formats into an empty char[512] and compares with `want`. */
 #define EXPECT(want, ...)                                                                          \
     do                                                                                             \
@@ -158,6 +212,50 @@ static void check_trunc(
         cgs_appendi(t_.buf, __VA_ARGS__);                                                                 \
         check_trunc(                                                                                      \
             __FILE__, __LINE__, "char[" #size "] = \"" prefill "\"; cgs_appendi(buf, " #__VA_ARGS__ ")", \
+            t_.buf, sizeof t_.buf, t_.guard, sizeof t_.guard, (want)                                      \
+        );                                                                                                \
+    } while (0)
+
+/*
+ * Same as EXPECT_TRUNC, but appends through a CGS_StrBuf over the char[size],
+ * and also checks that the StrBuf's len matches the text.
+ */
+#define EXPECT_STRBUF(size, prefill, want, ...)                                                           \
+    do                                                                                                    \
+    {                                                                                                     \
+        struct                                                                                            \
+        {                                                                                                 \
+            char buf[size];                                                                               \
+            unsigned char guard[16];                                                                      \
+        } t_;                                                                                             \
+        memset(&t_, 0x5A, sizeof t_);                                                                     \
+        strcpy(t_.buf, (prefill));                                                                        \
+        CGS_StrBuf sb_ = {.chars = t_.buf, .cap = sizeof t_.buf, .len = (unsigned int)strlen(prefill)};   \
+        cgs_appendi(&sb_, __VA_ARGS__);                                                                   \
+        check_trunc(                                                                                      \
+            __FILE__, __LINE__,                                                                           \
+            "StrBuf over char[" #size "] = \"" prefill "\"; cgs_appendi(&sb, " #__VA_ARGS__ ")",          \
+            t_.buf, sizeof t_.buf, t_.guard, sizeof t_.guard, (want)                                      \
+        );                                                                                                \
+        check_len(__FILE__, __LINE__, "StrBuf len after cgs_appendi(&sb, " #__VA_ARGS__ ")", sb_.len, (want)); \
+    } while (0)
+
+/* Same as EXPECT_TRUNC, but appends through cgs_mutstr_ref(buf). */
+#define EXPECT_REF_TRUNC(size, prefill, want, ...)                                                        \
+    do                                                                                                    \
+    {                                                                                                     \
+        struct                                                                                            \
+        {                                                                                                 \
+            char buf[size];                                                                               \
+            unsigned char guard[16];                                                                      \
+        } t_;                                                                                             \
+        memset(&t_, 0x5A, sizeof t_);                                                                     \
+        strcpy(t_.buf, (prefill));                                                                        \
+        CGS_MutStrRef ref_ = cgs_mutstr_ref(t_.buf);                                                      \
+        cgs_appendi(ref_, __VA_ARGS__);                                                                   \
+        check_trunc(                                                                                      \
+            __FILE__, __LINE__,                                                                           \
+            "cgs_mutstr_ref(char[" #size "] = \"" prefill "\"); cgs_appendi(ref, " #__VA_ARGS__ ")",      \
             t_.buf, sizeof t_.buf, t_.guard, sizeof t_.guard, (want)                                      \
         );                                                                                                \
     } while (0)
@@ -402,9 +500,10 @@ static void test_interpolation(void)
 }
 
 /* ------------------------------------------------------------------------- */
-/* Strings and floats                                                        */
+/* Strings                                                                   */
 /* ------------------------------------------------------------------------- */
 
+/* %s: char* and char[] */
 static void test_strings(void)
 {
     char arr[]    = "array";
@@ -415,6 +514,111 @@ static void test_strings(void)
     EXPECT("array", f"%s", arr);
     EXPECT("[ptr]", f"[%s]", p);
 }
+
+/* %Hs: a CGS_StrView isn't NUL-terminated, so it must stop at the view's length. */
+static void test_strview(void)
+{
+    char text[]       = "hello, world";
+    CGS_StrView all   = cgs_strv(text);
+    CGS_StrView hello = cgs_strv(text, 0, 5);
+    CGS_StrView world = cgs_strv(text, 7);
+    CGS_StrView ll    = cgs_strv(text, 2, 4);
+    CGS_StrView wor   = cgs_strv(world, 0, 3); /* a view of a view */
+    CGS_StrView empty = cgs_strv(text, 3, 3);
+
+    EXPECT("hello, world", f"%Hs", all);
+    EXPECT("hello", f"%Hs", hello);
+    EXPECT("world", f"%Hs", world);
+    EXPECT("ll", f"%Hs", ll);
+    EXPECT("wor", f"%Hs", wor);
+    EXPECT("<>", f"<%Hs>", empty);
+    EXPECT("hello|world", f"%Hs|%Hs", hello, world);
+    EXPECT("hello", f"%{hello}?");
+    EXPECT("wor", f"%{wor}?");
+
+    EXPECT_TRUNC(4, "", "hel", f"%Hs", hello);
+    EXPECT_TRUNC(8, "ab", "abhello", f"%Hs", hello);
+}
+
+/* CGS_ZStrView has no conversion in the table, so only %? is tested. */
+static void test_zstrview(void)
+{
+    char text[]        = "hello";
+    CGS_ZStrView all   = cgs_zstrv(text);
+    CGS_ZStrView tail  = cgs_zstrv(text, 2);
+    CGS_ZStrView empty = cgs_zstrv(text, 5);
+
+    EXPECT("hello", f"%{all}?");
+    EXPECT("llo", f"%{tail}?");
+    EXPECT("<>", f"<%{empty}?>");
+}
+
+/* %zs and %zS: CGS_StrBuf by value and by pointer */
+static void test_strbuf_args(void)
+{
+    char arr[32]     = "buf";
+    char cstr[]      = "from cstr";
+    char none[8]     = "";
+    CGS_StrBuf sb    = {.chars = arr, .cap = sizeof arr, .len = 3};
+    CGS_StrBuf from  = cgs_strbuf_init_from_cstr(cstr);
+    CGS_StrBuf empty = {.chars = none, .cap = sizeof none, .len = 0};
+
+    EXPECT("buf", f"%zs", sb);
+    EXPECT("buf", f"%zS", &sb);
+    EXPECT("[buf]", f"[%zs]", sb);
+    EXPECT("from cstr", f"%zs", from);
+    EXPECT("from cstr", f"%zS", &from);
+    EXPECT("<>", f"<%zs>", empty);
+    EXPECT("<>", f"<%zS>", &empty);
+    EXPECT("buf", f"%{sb}?");
+    EXPECT("buf", f"%{&sb}?");
+
+    /* 'z' still means size_t before an integer conversion */
+    EXPECT("buf 3", f"%zs %zu", sb, (size_t)3);
+}
+
+/* %ts: CGS_MutStrRef */
+static void test_mutstr_ref_args(void)
+{
+    char arr[32]     = "ref";
+    char backing[16] = "ptr+cap";
+    char *p          = backing;
+    CGS_MutStrRef r  = cgs_mutstr_ref(arr);
+    CGS_MutStrRef rp = cgs_mutstr_ref(p, sizeof backing);
+
+    EXPECT("ref", f"%ts", r);
+    EXPECT("[ref]", f"[%ts]", r);
+    EXPECT("ptr+cap", f"%ts", rp);
+    EXPECT("ref|ptr+cap", f"%ts|%ts", r, rp);
+    EXPECT("ref", f"%{r}?");
+
+    /* 't' still means ptrdiff_t before an integer conversion */
+    EXPECT("ref -3", f"%ts %td", r, (ptrdiff_t)-3);
+}
+
+/* Each string conversion takes exactly one argument, of its own type. */
+static void test_string_types_mixed(void)
+{
+    char arr[]      = "arr";
+    char sbarr[16]  = "sb";
+    char refarr[16] = "ref";
+    CGS_StrBuf sb   = {.chars = sbarr, .cap = sizeof sbarr, .len = 2};
+    CGS_StrView v   = cgs_strv(arr, 0, 2);
+    CGS_MutStrRef r = cgs_mutstr_ref(refarr);
+    CGS_DStr ds     = cgs_dstr_init();
+
+    CHECK_OK(cgs_appendi(&ds, "ds"));
+
+    EXPECT("arr|ds|ds|ar|sb|sb|ref|7", f"%s|%Ds|%DS|%Hs|%zs|%zS|%ts|%d", arr, ds, &ds, v, sb, &sb, r, 7);
+    EXPECT("7|ref|sb|ar|ds|ds|arr|8", f"%d|%ts|%zS|%Hs|%DS|%Ds|%s|%d", 7, r, &sb, v, &ds, ds, arr, 8);
+    EXPECT("ds 1 ar 2 sb 3", f"%Ds %d %Hs %d %zs %d", ds, 1, v, 2, sb, 3);
+
+    TEST_DSTR_DEINIT(ds);
+}
+
+/* ------------------------------------------------------------------------- */
+/* Floats                                                                    */
+/* ------------------------------------------------------------------------- */
 
 static void test_floats(void)
 {
@@ -470,10 +674,17 @@ static void test_multiple_specifiers(void)
 
 static void test_arg_count_errors(void)
 {
+    char arr[8]   = "x";
+    CGS_StrBuf sb = {.chars = arr, .cap = sizeof arr, .len = 1};
+
     EXPECT_ERR(CGS_BAD_FORMAT, f"%d");
     EXPECT_ERR(CGS_BAD_FORMAT, f"%d %d", 1);
     EXPECT_ERR(CGS_BAD_FORMAT, f"%*d", 5);
     EXPECT_ERR(CGS_BAD_FORMAT, f"%*.*d", 5, 1);
+
+    EXPECT_ERR(CGS_BAD_FORMAT, f"%Hs");
+    EXPECT_ERR(CGS_BAD_FORMAT, f"%DS");
+    EXPECT_ERR(CGS_BAD_FORMAT, f"%zs %zS", sb);
 }
 
 /* A writer that fails when asked to write the '+' sign of %+d. */
@@ -526,18 +737,70 @@ static void test_char_array(void)
 }
 
 /* ------------------------------------------------------------------------- */
-/* CGS_DStr destinations                                                     */
+/* CGS_StrBuf destinations                                                   */
 /* ------------------------------------------------------------------------- */
 
-/* Reads the DStr back through %s (CGS_DStr*) and compares. */
-static void check_dstr(const char *file, int line, CGS_DStr *s, const char *want)
+/* Appends, never writes past cap, keeps the NUL, and keeps len in sync. */
+static void test_strbuf_dest(void)
 {
-    static char got[8192];
-    got[0] = '\0';
+    EXPECT_STRBUF(32, "ab", "ab1", f"%d", 1);
+    EXPECT_STRBUF(32, "", "x=-5, y=hi", f"x=%d, y=%s", -5, "hi");
 
-    CGS_Error err = cgs_appendi(got, f"%s", s);
-    check_output(file, line, "contents of the DStr", err, got, want);
+    EXPECT_STRBUF(8, "", "0123456", f"%s", "0123456789");
+    EXPECT_STRBUF(8, "", "1234-56", f"%d-%d", 1234, 5678);
+    EXPECT_STRBUF(8, "abcde", "abcde12", f"%d", 12345);
+    EXPECT_STRBUF(8, "abcdefg", "abcdefg", f"%d", 1);
+
+    EXPECT_STRBUF(4, "", "123", f"%d", 123);
+    EXPECT_STRBUF(1, "", "", f"%d", 5);
+
+    /* when it fits, it succeeds */
+    {
+        char arr[16]  = "";
+        CGS_StrBuf sb = {.chars = arr, .cap = sizeof arr, .len = 0};
+
+        CHECK_OK(cgs_appendi(&sb, f"%d-%s", 1, "a"));
+        check_strbuf(__FILE__, __LINE__, &sb, "1-a");
+    }
 }
+
+/* ------------------------------------------------------------------------- */
+/* CGS_MutStrRef destinations                                                */
+/* ------------------------------------------------------------------------- */
+
+static void test_mutstr_ref_dest(void)
+{
+    /* over a char[]: same rules as writing to the char[] directly */
+    EXPECT_REF_TRUNC(32, "ab", "ab1", f"%d", 1);
+    EXPECT_REF_TRUNC(8, "", "0123456", f"%s", "0123456789");
+    EXPECT_REF_TRUNC(8, "abcde", "abcde12", f"%d", 12345);
+    EXPECT_REF_TRUNC(4, "", "123", f"%d", 123);
+
+    /* over a StrBuf: the StrBuf's len must follow */
+    {
+        char arr[32]    = "ab";
+        CGS_StrBuf sb   = {.chars = arr, .cap = sizeof arr, .len = 2};
+        CGS_MutStrRef r = cgs_mutstr_ref(&sb);
+
+        CHECK_OK(cgs_appendi(r, f"%d-%s", 1, "x"));
+        check_strbuf(__FILE__, __LINE__, &sb, "ab1-x");
+    }
+
+    /* over a DStr with enough room that it doesn't have to grow */
+    {
+        CGS_DStr s = cgs_dstr_init(64);
+        CHECK_OK(cgs_appendi(&s, "ab"));
+
+        CGS_MutStrRef r = cgs_mutstr_ref(&s);
+        CHECK_OK(cgs_appendi(r, f"%d-%s", 1, "x"));
+        check_dstr(__FILE__, __LINE__, &s, "ab1-x");
+        TEST_DSTR_DEINIT(s);
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+/* CGS_DStr destinations                                                     */
+/* ------------------------------------------------------------------------- */
 
 static void test_dstr(void)
 {
@@ -565,20 +828,34 @@ static void test_dstr(void)
         TEST_DSTR_DEINIT(s);
     }
 
-    /* a DStr as a %s argument, by value and by pointer */
+    /* a DStr as a string argument: %Ds by value, %DS by pointer */
     s = cgs_dstr_init();
     CHECK_OK(cgs_appendi(&s, "inner"));
-    EXPECT("[inner]", f"[%s]", s);
-    EXPECT("[inner]", f"[%s]", &s);
+    EXPECT("[inner]", f"[%Ds]", s);
+    EXPECT("[inner]", f"[%DS]", &s);
+    EXPECT("[inner]", f"[%{s}?]");
     EXPECT("[inner]", f"[%{&s}?]");
+    {
+        CGS_StrView v = cgs_strv(&s, 1, 3);
+        EXPECT("nn", f"%Hs", v);
+    }
+    TEST_DSTR_DEINIT(s);
+
+    /* an empty DStr that never allocated */
+    s = cgs_dstr_init();
+    EXPECT("<>", f"<%Ds>", s);
+    EXPECT("<>", f"<%DS>", &s);
+    EXPECT("<>", f"<%{&s}?>");
+    check_dstr(__FILE__, __LINE__, &s, "");
     TEST_DSTR_DEINIT(s);
 }
 
 /*
- * A DStr passed as an argument while also being the destination. Arguments are
- * read as they were when cgs_appendi was called. The strings are long enough
- * that the append has to reallocate, which frees the storage a %s view of the
- * same DStr points into if that view is taken before the destination grows.
+ * A string passed as an argument while also being the destination. An argument
+ * is read when its specifier is reached, so it includes whatever the same call
+ * has already written. The DStr strings are long enough that the append has to
+ * reallocate, which frees the storage a %DS view of the same DStr points into
+ * if that view is taken before the destination grows.
  */
 static void test_self_append(void)
 {
@@ -591,24 +868,33 @@ static void test_self_append(void)
 
     CGS_DStr s = cgs_dstr_init();
     CHECK_OK(cgs_appendi(&s, f"%s", init));
-    CHECK_OK(cgs_appendi(&s, f"x%s", &s));
-    snprintf(want, sizeof want, "%sx%s", init, init);
+    CHECK_OK(cgs_appendi(&s, f"x%DS", &s));
+    snprintf(want, sizeof want, "%sx%sx", init, init); /* %DS sees the 'x' */
     check_dstr(__FILE__, __LINE__, &s, want);
     TEST_DSTR_DEINIT(s);
 
     s = cgs_dstr_init();
     CHECK_OK(cgs_appendi(&s, f"%s", init));
-    CHECK_OK(cgs_appendi(&s, f"%s%s", &s, &s));
-    snprintf(want, sizeof want, "%s%s%s", init, init, init);
+    CHECK_OK(cgs_appendi(&s, f"%DS%DS", &s, &s));
+    snprintf(want, sizeof want, "%s%s%s%s", init, init, init, init); /* the 2nd %DS sees the 1st */
     check_dstr(__FILE__, __LINE__, &s, want);
     TEST_DSTR_DEINIT(s);
 
     s = cgs_dstr_init();
     CHECK_OK(cgs_appendi(&s, f"%s", init));
-    CHECK_OK(cgs_appendi(&s, f"[%{&s}s]"));
-    snprintf(want, sizeof want, "%s[%s]", init, init);
+    CHECK_OK(cgs_appendi(&s, f"[%{&s}?]"));
+    snprintf(want, sizeof want, "%s[%s[]", init, init); /* the interp sees the '[' */
     check_dstr(__FILE__, __LINE__, &s, want);
     TEST_DSTR_DEINIT(s);
+
+    /* a StrBuf doesn't reallocate, but the same rule applies */
+    {
+        char arr[32]  = "ab";
+        CGS_StrBuf sb = {.chars = arr, .cap = sizeof arr, .len = 2};
+
+        CHECK_OK(cgs_appendi(&sb, f"%zS%zS", &sb, &sb));
+        check_strbuf(__FILE__, __LINE__, &sb, "abababab");
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -649,6 +935,17 @@ static void test_pending(void)
     EXPECT("   3.142", f"%8.3f", 3.14159);
     EXPECT("3", f"%.0f", 2.6);
 
+    /* width and precision on a StrView; a precision past its length must still stop at the view's end */
+    {
+        char text[]       = "hello, world";
+        CGS_StrView hello = cgs_strv(text, 0, 5);
+
+        EXPECT("hel", f"%.3Hs", hello);
+        EXPECT("hello", f"%.20Hs", hello);
+        EXPECT("  hello|", f"%7Hs|", hello);
+        EXPECT("hello  |", f"%-7Hs|", hello);
+    }
+
     /* '#' */
     EXPECT("0xff", f"%#x", 255);
     EXPECT("0XFF", f"%#X", 255);
@@ -683,12 +980,19 @@ int main(void)
     test_question_mark();
     test_interpolation();
     test_strings();
+    test_strview();
+    test_zstrview();
+    test_strbuf_args();
+    test_mutstr_ref_args();
+    test_string_types_mixed();
     test_floats();
     test_star_args();
     test_multiple_specifiers();
     test_arg_count_errors();
     test_writer_errors();
     test_char_array();
+    test_strbuf_dest();
+    test_mutstr_ref_dest();
     test_dstr();
     test_self_append();
 #ifdef CGS_TEST_PENDING

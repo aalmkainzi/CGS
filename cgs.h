@@ -1798,7 +1798,7 @@ cgs__invoke_appendln_tostr(CGS_Writer *writer, const void *obj, CGS_Error (*tost
     return err1.ec == CGS_OK ? err2 : err1;
 }
 
-#if 1 || defined(__FORMAT_INTERPS__)
+#if defined(__FORMAT_INTERPS__)
 
 #define cgs__cstrarr(...) \
     (const char*[]){__VA_ARGS__}
