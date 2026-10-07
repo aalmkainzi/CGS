@@ -3077,17 +3077,27 @@ CGS_PRIVATE enum CGS__appendi_LengthModifier cgs__tostr_p_to_lenmod(CGS_Error (*
         return CGS__LENMOD_INVALID;
 }
 
-// %s  -> char*
-// %D  -> CGS_DStr
-// %zD -> CGS_DStr*
-// %V  -> CGS_StrView
-// %U  -> CGS_StrBuf
-// %zU -> CGS_StrBuf*
-// %tS -> CGS_MutStrRef
+// %s   -> char*
+// %Ds  -> CGS_DStr
+// %DS  -> CGS_DStr*
+// %Hs  -> CGS_StrView
+// %zs  -> CGS_StrBuf
+// %zS  -> CGS_StrBuf*
+// %ts  -> CGS_MutStrRef
 CGS_API CGS_Error cgs__appendi(
-    CGS_Writer *writer, unsigned int n_specifiers, const CGS_StrView literals[], const CGS__FmtFlags flags[], const unsigned long long widths[],
-    const unsigned long long precisions[], const unsigned char length_modifiers[], const char conversion_chars[], const void *interps[],
-    CGS_Error (*interp_tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg), const unsigned char interp_length_modifiers[], unsigned n_objs, void *objs[]
+    CGS_Writer *writer,
+    unsigned int n_specifiers,
+    const CGS_StrView literals[],
+    const CGS__FmtFlags flags[],
+    const unsigned long long widths[],
+    const unsigned long long precisions[],
+    const unsigned char length_modifiers[],
+    const char conversion_chars[],
+    const void *interps[],
+    CGS_Error (*interp_tostr_p_funcs[])(CGS_Writer *, const void *, CGS_StrView fmt_arg),
+    const unsigned char interp_length_modifiers[],
+    unsigned n_objs,
+    void *objs[]
 )
 {
     CGS_Error err        = {CGS_OK};
@@ -3148,6 +3158,10 @@ CGS_API CGS_Error cgs__appendi(
 
         bool conv_is_signed = false;
         bool obj_is_integer = false;
+
+        unsigned char type_category = (lenmod & 0b11000000); // extract the 2 high bits
+        lenmod &= 0b00111111; // zero out high 2 bits
+
         switch (conversion_chars[i])
         {
             case 'd':
@@ -3169,16 +3183,11 @@ CGS_API CGS_Error cgs__appendi(
                     cgs_writeln("'?' conversion can only be used with interpolated specifier '%{}?'");
                     return (CGS_Error) {CGS_BAD_FORMAT};
                 }
-                conv_is_signed = lenmod & ~SCHAR_MAX;
-                lenmod &= SCHAR_MAX;
+                conv_is_signed = type_category == CGS__TC_SIGNED;
 
-                // whether %{}? represents an integer, one of:
-                // the original type is signed
-                // the original type needs a length modifier
-                // the original type is uint
-                obj_is_integer = conv_is_signed || (lenmod != CGS__LENMOD_NONE) || (tostr_p == cgs__uint_tostr_p);
+                // whether %{}? represents an integer
+                obj_is_integer = conv_is_signed || (type_category == CGS__TC_UNSIGNED);
         }
-        lenmod &= SCHAR_MAX;
 
         uint64_t int_val;
         if (obj_is_integer)
@@ -3278,12 +3287,13 @@ CGS_API CGS_Error cgs__appendi(
         if (err.ec != CGS_OK)
             return err;
 
+        if (conv_is_signed && flags[i].add_plus && (int64_t)int_val >= 0)
+            err = cgs_putc(writer, '+');
+
         switch (conversion_chars[i])
         {
             case 'd':
             case 'i':
-                if (flags[i].add_plus && (int64_t)int_val >= 0)
-                    err = cgs_putc(writer, '+');
                 err = cgs_append_tostr(writer, (int64_t)int_val);
                 break;
             case 'u':
@@ -3315,7 +3325,24 @@ CGS_API CGS_Error cgs__appendi(
                 err = cgs_append_tostr(writer, cgs_nfmt(*(double*)obj, 'a'));
                 break;
             case 's':
-                err = cgs__invoke_writer(writer, *(CGS_StrView *)obj);
+                if (lenmod == CGS__LENMOD_D)
+                    err = cgs__dstr_tostr(writer, *(CGS_DStr*)obj, (CGS_StrView){});
+                else if (lenmod == CGS__LENMOD_t)
+                    err = cgs__mutstr_ref_tostr(writer, *(CGS_MutStrRef*)obj, (CGS_StrView){});
+                else if (lenmod == CGS__LENMOD_z)
+                    err = cgs__strbuf_tostr(writer, *(CGS_StrBuf*)obj, (CGS_StrView){});
+                else if (lenmod == CGS__LENMOD_H)
+                    err = cgs__invoke_writer(writer, *(CGS_StrView*)obj);
+                else
+                    err = cgs__cstr_tostr(writer, *(char**)obj, (CGS_StrView){});
+                break;
+            case 'S':
+                if (lenmod == CGS__LENMOD_D)
+                    err = cgs__dstr_ptr_tostr(writer, *(CGS_DStr**)obj, (CGS_StrView){});
+                else if (lenmod == CGS__LENMOD_z)
+                    err = cgs__strbuf_ptr_tostr(writer, *(CGS_StrBuf**)obj, (CGS_StrView){});
+                else
+                    return (CGS_Error) {CGS_BAD_FORMAT};
                 break;
             case '?':
                 err = tostr_p(writer, obj, (CGS_StrView) {});
