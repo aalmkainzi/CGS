@@ -578,10 +578,10 @@ _Generic(mutstr_dst, \
 cgs_insert(mutstr_dst, anystr_src, 0)
 
 #define cgs_find(anystr_hay, anystr_needle) \
-cgs__strv_find(cgs__strv_1(anystr_hay), cgs__strv_1(anystr_needle))
+cgs__find(cgs__strv_1(anystr_hay), cgs__strv_1(anystr_needle))
 
 #define cgs_count(anystr_hay, anystr_needle) \
-cgs__strv_count(cgs__strv_1(anystr_hay), cgs__strv_1(anystr_needle))
+cgs__count(cgs__strv_1(anystr_hay), cgs__strv_1(anystr_needle))
 
 #define cgs_spn(anystr, anystr_charset) \
 cgs__strv_spn(cgs__strv_1(anystr), cgs__strv_1(anystr_charset))
@@ -1543,10 +1543,10 @@ CGS_API unsigned int cgs__mutstr_ref_cap(CGS_MutStrRef str);
 CGS_API unsigned int cgs__mutstr_ref_len(CGS_MutStrRef str);
 
 CGS__NODISCARD("discarding a new DStr may cause a memory leak")
-CGS_API CGS_DStr cgs__dstr_init(unsigned int cap, CGS_Allocator *allocator);
+CGS_API CGS_DStr  cgs__dstr_init(unsigned int cap, CGS_Allocator *allocator);
 CGS__NODISCARD("discarding a new DStr may cause a memory leak")
-CGS_API CGS_DStr cgs__dstr_init_from(CGS_StrView from, CGS_Allocator *allocator);
-CGS_API void cgs__dstr_deinit(CGS_DStr *dstr);
+CGS_API CGS_DStr  cgs__dstr_init_from(CGS_StrView from, CGS_Allocator *allocator);
+CGS_API void      cgs__dstr_deinit(CGS_DStr *dstr);
 CGS_API CGS_Error cgs__dstr_append(CGS_DStr *dstr, CGS_StrView src);
 CGS_API CGS_Error cgs__dstr_prepend_strv(CGS_DStr *dstr, CGS_StrView src);
 CGS_API CGS_Error cgs__dstr_insert(CGS_DStr *dstr, CGS_StrView src, unsigned int idx);
@@ -1555,58 +1555,58 @@ CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, int
 CGS_API CGS_Error cgs__dstr_shrink_to_fit(CGS_DStr *dstr);
 CGS_API CGS_Error cgs__dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_least);
 
-CGS_API CGS_Error cgs__mutstr_ref_putc(CGS_MutStrRef dst, char c);
-CGS_API CGS_Error cgs__mutstr_ref_copy(CGS_MutStrRef dst, CGS_StrView src);
-CGS_API CGS_Error cgs__mutstr_ref_append(CGS_MutStrRef dst, CGS_StrView src);
-CGS_API CGS_Error cgs__mutstr_ref_delete_range(CGS_MutStrRef str, unsigned int begin, unsigned int end);
-CGS_API CGS_Error cgs__mutstr_ref_insert(CGS_MutStrRef dst, CGS_StrView src, unsigned int idx);
-CGS_API CGS_Result(int) cgs__mutstr_ref_replace(CGS_MutStrRef str, CGS_StrView target, CGS_StrView replacement);
-CGS_API CGS_Error cgs__mutstr_ref_replace_first(CGS_MutStrRef str, CGS_StrView target, CGS_StrView replacement);
-CGS_API CGS_Error cgs__mutstr_ref_replace_range(CGS_MutStrRef str, unsigned int begin, unsigned int end, CGS_StrView replacement);
-CGS_API CGS_Error cgs__mutstr_ref_clear(CGS_MutStrRef str);
-CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, CGS_StrViewArray strs, CGS_StrView delim);
+CGS_API CGS_Error               cgs__mutstr_ref_putc(CGS_MutStrRef dst, char c);
+CGS_API CGS_Error               cgs__mutstr_ref_copy(CGS_MutStrRef dst, CGS_StrView src);
+CGS_API CGS_Error               cgs__mutstr_ref_append(CGS_MutStrRef dst, CGS_StrView src);
+CGS_API CGS_Error               cgs__mutstr_ref_delete_range(CGS_MutStrRef str, unsigned int begin, unsigned int end);
+CGS_API CGS_Error               cgs__mutstr_ref_insert(CGS_MutStrRef dst, CGS_StrView src, unsigned int idx);
+CGS_API CGS_Result(int)         cgs__mutstr_ref_replace(CGS_MutStrRef str, CGS_StrView target, CGS_StrView replacement);
+CGS_API CGS_Error               cgs__mutstr_ref_replace_first(CGS_MutStrRef str, CGS_StrView target, CGS_StrView replacement);
+CGS_API CGS_Error               cgs__mutstr_ref_replace_range(CGS_MutStrRef str, unsigned int begin, unsigned int end, CGS_StrView replacement);
+CGS_API CGS_Error               cgs__mutstr_ref_clear(CGS_MutStrRef str);
+CGS_API CGS_Error               cgs__strv_arr_join(CGS_MutStrRef dst, CGS_StrViewArray strs, CGS_StrView delim);
 CGS_API CGS_Result(CGS_StrView) cgs__next_tok(CGS_StrView *base, CGS_StrView delim);
 CGS_API CGS_Result(CGS_StrView) cgs__next_tok_any(CGS_StrView *base, CGS_StrView delim_set);
-CGS_API CGS_StrView cgs__skip(CGS_StrView src, CGS_StrView delim);
-CGS_API CGS_StrView cgs__skip_any(CGS_StrView src, CGS_StrView delim_set);
+CGS_API CGS_StrView             cgs__skip(CGS_StrView src, CGS_StrView delim);
+CGS_API CGS_StrView             cgs__skip_any(CGS_StrView src, CGS_StrView delim_set);
 
-CGS_API CGS_Error cgs__fmutstr_ref_putc(CGS__FixedMutStrRef dst, char c);
-CGS_API CGS_Error cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, CGS_StrView src);
-CGS_API CGS_Error cgs__fmutstr_ref_append(CGS__FixedMutStrRef dst, CGS_StrView src);
-CGS_API CGS_Error cgs__fmutstr_ref_delete_range(CGS__FixedMutStrRef str, unsigned int begin, unsigned int end);
-CGS_API CGS_Error cgs__fmutstr_ref_insert(CGS__FixedMutStrRef dst, CGS_StrView src, unsigned int idx);
+CGS_API CGS_Error       cgs__fmutstr_ref_putc(CGS__FixedMutStrRef dst, char c);
+CGS_API CGS_Error       cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, CGS_StrView src);
+CGS_API CGS_Error       cgs__fmutstr_ref_append(CGS__FixedMutStrRef dst, CGS_StrView src);
+CGS_API CGS_Error       cgs__fmutstr_ref_delete_range(CGS__FixedMutStrRef str, unsigned int begin, unsigned int end);
+CGS_API CGS_Error       cgs__fmutstr_ref_insert(CGS__FixedMutStrRef dst, CGS_StrView src, unsigned int idx);
 CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, CGS_StrView target, CGS_StrView replacement);
-CGS_API CGS_Error cgs__fmutstr_ref_replace_first(CGS__FixedMutStrRef str, CGS_StrView target, CGS_StrView replacement);
-CGS_API CGS_Error cgs__fmutstr_ref_replace_range(CGS__FixedMutStrRef str, unsigned int begin, unsigned int end, CGS_StrView replacement);
-CGS_API CGS_Error cgs__fmutstr_ref_clear(CGS__FixedMutStrRef str);
-CGS_API CGS_Error cgs__strv_arr_join_into_fmutstr_ref(CGS__FixedMutStrRef dst, CGS_StrViewArray strs, CGS_StrView delim);
+CGS_API CGS_Error       cgs__fmutstr_ref_replace_first(CGS__FixedMutStrRef str, CGS_StrView target, CGS_StrView replacement);
+CGS_API CGS_Error       cgs__fmutstr_ref_replace_range(CGS__FixedMutStrRef str, unsigned int begin, unsigned int end, CGS_StrView replacement);
+CGS_API CGS_Error       cgs__fmutstr_ref_clear(CGS__FixedMutStrRef str);
+CGS_API CGS_Error       cgs__strv_arr_join_into_fmutstr_ref(CGS__FixedMutStrRef dst, CGS_StrViewArray strs, CGS_StrView delim);
 
-CGS_API CGS_Error cgs__dstr_putc(CGS_DStr *dst, char c);
-CGS_API CGS_Error cgs__dstr_copy(CGS_DStr *dstr, CGS_StrView src);
+CGS_API CGS_Error       cgs__dstr_putc(CGS_DStr *dst, char c);
+CGS_API CGS_Error       cgs__dstr_copy(CGS_DStr *dstr, CGS_StrView src);
 CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, CGS_StrView target, CGS_StrView replacement);
-CGS_API CGS_Error cgs__dstr_replace_first(CGS_DStr *dstr, CGS_StrView target, CGS_StrView replacement);
-CGS_API CGS_Error cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int begin, unsigned int end, CGS_StrView replacement);
-CGS_API CGS_Error cgs__strv_arr_join_into_dstr(CGS_DStr *dstr, CGS_StrViewArray strs, CGS_StrView delim);
+CGS_API CGS_Error       cgs__dstr_replace_first(CGS_DStr *dstr, CGS_StrView target, CGS_StrView replacement);
+CGS_API CGS_Error       cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int begin, unsigned int end, CGS_StrView replacement);
+CGS_API CGS_Error       cgs__strv_arr_join_into_dstr(CGS_DStr *dstr, CGS_StrViewArray strs, CGS_StrView delim);
 
 CGS__NODISCARD("str_split returns a heap allocated array")
 CGS_API CGS_StrViewArray cgs__strv_split(CGS_StrView str, CGS_StrView delim, CGS_Allocator* allocator);
-CGS_API CGS_Error cgs__strv_split_iter(CGS_StrView str, CGS_StrView delim, bool(*cb)(CGS_StrView found, void *ctx), void *ctx);
+CGS_API CGS_Error        cgs__strv_split_iter(CGS_StrView str, CGS_StrView delim, bool(*cb)(CGS_StrView found, void *ctx), void *ctx);
 
 CGS_API CGS_StrViewArray cgs__strv_arr_from(const CGS_StrView *carr, unsigned int nb);
 
-CGS_API bool         cgs__strv_equal(CGS_StrView str1, CGS_StrView str2);
-CGS_API CGS_StrView  cgs__strv_find(CGS_StrView hay, CGS_StrView needle);
-CGS_API unsigned int cgs__strv_count(CGS_StrView hay, CGS_StrView needle);
-CGS_API CGS_StrView  cgs__trim_view(CGS_StrView str);
-CGS_API CGS_Error    cgs__trim(CGS__FixedMutStrRef str);
-CGS_API CGS_StrView  cgs__strv_cspn(CGS_StrView src, CGS_StrView charset);
-CGS_API CGS_StrView  cgs__strv_spn(CGS_StrView src, CGS_StrView charset);
-CGS_API bool cgs__strv_starts_with(CGS_StrView hay, CGS_StrView needle);
-CGS_API bool cgs__strv_ends_with(CGS_StrView hay, CGS_StrView needle);
+CGS_API bool            cgs__strv_equal(CGS_StrView str1, CGS_StrView str2);
+CGS_API CGS_Result(int) cgs__find(CGS_StrView hay, CGS_StrView needle);
+CGS_API unsigned int    cgs__count(CGS_StrView hay, CGS_StrView needle);
+CGS_API CGS_StrView     cgs__trim_view(CGS_StrView str);
+CGS_API CGS_Error       cgs__trim(CGS__FixedMutStrRef str);
+CGS_API CGS_StrView     cgs__strv_cspn(CGS_StrView src, CGS_StrView charset);
+CGS_API CGS_StrView     cgs__strv_spn(CGS_StrView src, CGS_StrView charset);
+CGS_API bool            cgs__strv_starts_with(CGS_StrView hay, CGS_StrView needle);
+CGS_API bool            cgs__strv_ends_with(CGS_StrView hay, CGS_StrView needle);
 
 CGS_API CGS_Error cgs__map_chars(CGS__FixedMutStrRef str, bool(*map)(char *c,void *arg), void *arg);
-CGS_API void cgs__chars_tolower(CGS__FixedMutStrRef str);
-CGS_API void cgs__chars_toupper(CGS__FixedMutStrRef str);
+CGS_API void      cgs__chars_tolower(CGS__FixedMutStrRef str);
+CGS_API void      cgs__chars_toupper(CGS__FixedMutStrRef str);
 
 CGS_API CGS_Error cgs__mutstr_ref_fread_until(CGS_MutStrRef dst, FILE *stream, int delim);
 CGS_API CGS_Error cgs__mutstr_ref_append_fread_until(CGS_MutStrRef dst, FILE *stream, int delim);

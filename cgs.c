@@ -874,18 +874,12 @@ CGS_API bool cgs__strv_equal(CGS_StrView str1, CGS_StrView str2)
     return (str1.len == str2.len) && (memcmp(str1.chars, str2.chars, str1.len) == 0);
 }
 
-CGS_API CGS_StrView cgs__strv_find(CGS_StrView hay, CGS_StrView needle)
+CGS_API CGS_Result(int) cgs__find(CGS_StrView hay, CGS_StrView needle)
 {
-    if (hay.chars == NULL || needle.chars == NULL || needle.len > hay.len)
-        return (CGS_StrView) {
-            .chars = NULL,
-            .len   = 0,
-        };
     if (needle.len == 0)
-        return (CGS_StrView) {
-            .chars = hay.chars,
-            .len   = 0,
-        };
+        return (CGS_Result(int)) {.val = 0};
+    if (hay.chars == NULL || needle.chars == NULL || needle.len > hay.len)
+        return (CGS_Result(int)) {.err = {CGS_NOT_FOUND}};
 
     unsigned int scan_end        = hay.len - needle.len;
     const char *max_possible_ptr = &hay.chars[scan_end];
@@ -895,18 +889,13 @@ CGS_API CGS_StrView cgs__strv_find(CGS_StrView hay, CGS_StrView needle)
     while (first_char && first_char <= max_possible_ptr)
     {
         if (memcmp(first_char, needle.chars, needle.len) == 0)
-            return (CGS_StrView) {
-                .chars = (char *)first_char,
-                .len   = needle.len,
-            };
+            return (CGS_Result(int)) {.val = first_char - hay.chars};
+
         remaining_len = scan_end - (unsigned int)(first_char - hay.chars);
         first_char    = memchr(first_char + 1, needle.chars[0], remaining_len);
     }
 
-    return (CGS_StrView) {
-        .chars = NULL,
-        .len   = 0,
-    };
+    return (CGS_Result(int)) {.err = {CGS_NOT_FOUND}};
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, CGS_StrView src)
@@ -1233,10 +1222,10 @@ CGS_API CGS_Result(CGS_StrView) cgs__next_tok(CGS_StrView *base, CGS_StrView del
         return (CGS_Result(CGS_StrView)) {.val = rest, .err = {CGS_NOT_FOUND}};
     }
 
-    CGS_StrView found = cgs__strv_find(*base, delim);
-    if (found.chars)
+    CGS_Result(int) found = cgs__find(*base, delim);
+    if (found.err.ec == CGS_OK)
     {
-        unsigned int index = (unsigned int)(found.chars - base->chars);
+        unsigned int index = found.val;
         CGS_StrView ret    = {.chars = base->chars, .len = index};
 
         base->chars += index;
@@ -1418,10 +1407,10 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, CGS_St
     {
         for (unsigned int i = 0; i <= *str.len - target.len;)
         {
-            CGS_StrView match = cgs__strv_find(cgs__strv_fmutstr_ref2(str, i), target);
-            if (match.chars != NULL)
+            CGS_Result(int) found = cgs__find(cgs__strv_fmutstr_ref2(str, i), target);
+            if (found.err.ec == CGS_OK)
             {
-                unsigned int idx = (unsigned int)(match.chars - str.chars);
+                unsigned int idx = found.val + i;
 
                 if (str.cap > *str.len + (replacement.len - target.len))
                 {
@@ -1455,10 +1444,10 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, CGS_St
     {
         for (unsigned int i = 0; i <= *str.len - target.len;)
         {
-            CGS_StrView match = cgs__strv_find(cgs__strv_fmutstr_ref2(str, i), target);
-            if (match.chars != NULL)
+            CGS_Result(int) found = cgs__find(cgs__strv_fmutstr_ref2(str, i), target);
+            if (found.err.ec == CGS_OK)
             {
-                unsigned int idx = (unsigned int)(match.chars - str.chars);
+                unsigned int idx = found.val + i;
 
                 // shift left
                 cgs__memmove(
@@ -1484,11 +1473,11 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, CGS_St
     {
         for (unsigned int i = 0; i <= *str.len - target.len;)
         {
-            CGS_StrView match = cgs__strv_find(cgs__strv_fmutstr_ref2(str, i), target);
-            if (match.chars != NULL)
+            CGS_Result(int) found = cgs__find(cgs__strv_fmutstr_ref2(str, i), target);
+            if (found.err.ec == CGS_OK)
             {
                 err.ec           = CGS_OK;
-                unsigned int idx = (unsigned int)(match.chars - str.chars);
+                unsigned int idx = found.val + i;
 
                 // put the replacement
                 cgs__memmove(str.chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
@@ -1539,10 +1528,10 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, CGS_StrView target, CG
     {
         for (unsigned int i = 0; i <= dstr->len - target.len;)
         {
-            CGS_StrView match = cgs__strv_find(cgs__strv_dstr_ptr2(dstr, i), target);
-            if (match.chars != NULL)
+            CGS_Result(int) found = cgs__find(cgs__strv_dstr_ptr2(dstr, i), target);
+            if (found.err.ec == CGS_OK)
             {
-                unsigned int idx = (unsigned int)(match.chars - dstr->chars);
+                unsigned int idx = found.val + i;
 
                 err = cgs__dstr_ensure_cap(dstr, dstr->len + (replacement.len - target.len) + 1);
 
@@ -1570,10 +1559,10 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, CGS_StrView target, CG
     {
         for (unsigned int i = 0; i <= dstr->len - target.len;)
         {
-            CGS_StrView match = cgs__strv_find(cgs__strv_dstr_ptr2(dstr, i), target);
-            if (match.chars != NULL)
+            CGS_Result(int) found = cgs__find(cgs__strv_dstr_ptr2(dstr, i), target);
+            if (found.err.ec == CGS_OK)
             {
-                unsigned int idx = (unsigned int)(match.chars - dstr->chars);
+                unsigned int idx = found.val + i;
 
                 // shift left
                 cgs__memmove(
@@ -1599,10 +1588,10 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, CGS_StrView target, CG
     {
         for (unsigned int i = 0; i <= dstr->len - target.len;)
         {
-            CGS_StrView match = cgs__strv_find(cgs__strv_dstr_ptr2(dstr, i), target);
-            if (match.chars != NULL)
+            CGS_Result(int) found = cgs__find(cgs__strv_dstr_ptr2(dstr, i), target);
+            if (found.err.ec == CGS_OK)
             {
-                unsigned int idx = (unsigned int)(match.chars - dstr->chars);
+                unsigned int idx = found.val + i;
 
                 // put the replacement
                 cgs__memmove(dstr->chars + idx, replacement.chars, replacement.len * sizeof(unsigned char));
@@ -1645,11 +1634,11 @@ CGS_API CGS_Error cgs__dstr_replace_first(CGS_DStr *dstr, CGS_StrView target, CG
 {
     CGS_Error err = {CGS_NOT_FOUND};
 
-    CGS_StrView match = cgs__strv_find(cgs__strv_dstr_ptr2(dstr, 0), target);
-    if (match.chars != NULL)
+    CGS_Result(int) found = cgs__find(cgs__strv_dstr_ptr2(dstr, 0), target);
+    if (found.err.ec == CGS_OK)
     {
-        unsigned int begin = (unsigned int)(match.chars - dstr->chars);
-        unsigned int end   = begin + match.len;
+        unsigned int begin = found.val;
+        unsigned int end   = begin + target.len;
         err                = cgs__dstr_replace_range(dstr, begin, end, replacement);
     }
 
@@ -1660,13 +1649,13 @@ CGS_API CGS_Error cgs__fmutstr_ref_replace_first(CGS__FixedMutStrRef str, CGS_St
 {
     CGS_Error err = {CGS_NOT_FOUND};
 
-    CGS_StrView match = cgs__strv_find(cgs__strv_fmutstr_ref2(str, 0), target);
-    if (match.chars != NULL)
+    CGS_Result(int) found = cgs__find(cgs__strv_fmutstr_ref2(str, 0), target);
+    if (found.err.ec == CGS_OK)
     {
         // TODO make this fill as much as possible. just call replace_range
         if (str.cap > 0 && str.cap - 1 > *str.len + (replacement.len - target.len))
         {
-            unsigned int idx = (unsigned int)(match.chars - str.chars);
+            unsigned int idx = found.val;
 
             // shift
             cgs__memmove(str.chars + idx + replacement.len, str.chars + idx + target.len, (*str.len - idx - target.len) * sizeof(unsigned char));
@@ -1705,18 +1694,19 @@ CGS_API CGS_Error cgs__mutstr_ref_replace_first(CGS_MutStrRef str, CGS_StrView t
     };
 }
 
-CGS_API unsigned int cgs__strv_count(CGS_StrView hay, CGS_StrView needle)
+CGS_API unsigned int cgs__count(CGS_StrView hay, CGS_StrView needle)
 {
     if (needle.len == 0)
         return hay.len + 1;
 
     unsigned int count = 0;
-    CGS_StrView found  = cgs__strv_find(hay, needle);
-
-    while (found.chars != NULL)
+    CGS_Result(int) found  = cgs__find(hay, needle);
+    while (found.err.ec == CGS_OK)
     {
+        hay.chars += found.val + needle.len;
+        hay.len -= found.val + needle.len;
         count += 1;
-        found = cgs__strv_find(cgs__strv_strv2(hay, (unsigned int)(found.chars - hay.chars) + found.len), needle);
+        found = cgs__find(hay, needle);
     }
 
     return count;

@@ -130,120 +130,125 @@ void test_str_equal_edge_cases() {
 // ============================================================================
 
 void test_str_find_edge_cases() {
+    // unit tests for a C string library
     TEST("cgs_find: basic match");;;
     {
         char hay[] = "hello world";
-        CGS_StrView v = cgs_find(hay, "world");
-        // Should return view starting at index 6, length 5
-        ASSERT_TRUE(v.chars == &hay[6]);
-        ASSERT_TRUE(v.len == 5);
-    }
-    
-    TEST("cgs_find: not found");;;
-    {
-        CGS_StrView v = cgs_find("apple", "orange");
-        // Usually returns a null view (chars == NULL) or a view with len 0
-        ASSERT_TRUE(v.chars == NULL || v.len == 0);
+        CGS_Result(int) r = cgs_find(hay, "world");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_EQ(r.val, 6);
     }
     
     TEST("cgs_find: match at start and end");;;
     {
         char hay[] = "bracket";
-        CGS_StrView start = cgs_find(hay, "b");
-        CGS_StrView end = cgs_find(hay, "t");
+        CGS_Result(int) start = cgs_find(hay, "b");
+        CGS_Result(int) end = cgs_find(hay, "t");
         
-        ASSERT_TRUE(start.chars == &hay[0]);
-        ASSERT_TRUE(end.chars == &hay[6]);
+        ASSERT_TRUE(start.err.ec == CGS_OK);
+        ASSERT_EQ(start.val, 0);
+        ASSERT_TRUE(end.err.ec == CGS_OK);
+        ASSERT_EQ(end.val, 6);
     }
     
-    TEST("cgs_find: empty needle");;;
+    TEST("cgs_find: needle at very start");;;
     {
-        char hay[] = "abc";
-        CGS_StrView v = cgs_find(hay, "");
-        // In most languages, finding "" returns the start of the string
-        ASSERT_TRUE(v.chars == &hay[0]);
-        ASSERT_TRUE(v.len == 0);
+        char hay[] = "abcdefghij";
+        CGS_Result(int) r = cgs_find(hay, "abc");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_EQ(r.val, 0);
+    }
+    
+    TEST("cgs_find: needle at very end");;;
+    {
+        char hay[] = "abcdefghij";
+        CGS_Result(int) r = cgs_find(hay, "hij");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_EQ(r.val, 7);
     }
     
     TEST("cgs_find: needle equals haystack");;;
     {
         char hay[] = "same";
-        CGS_StrView v = cgs_find(hay, "same");
-        ASSERT_TRUE(v.len == 4 && v.chars == &hay[0]);
+        CGS_Result(int) r = cgs_find(hay, "same");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_EQ(r.val, 0);
     }
     
-    TEST("cgs_find: needle longer than haystack");;;
+    TEST("cgs_find: returns first of several occurrences");;;
     {
-        CGS_StrView v = cgs_find("short", "much longer needle");
-        ASSERT_TRUE(v.chars == NULL || v.len == 0);
+        char hay[] = "abcabc";
+        CGS_Result(int) r = cgs_find(hay, "bc");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_EQ(r.val, 1);
+    }
+    
+    TEST("cgs_find: overlapping pattern");;;
+    {
+        char hay[] = "aaaa";
+        CGS_Result(int) r = cgs_find(hay, "aa");
+        // Should find first occurrence
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_EQ(r.val, 0);
+    }
+    
+    TEST("cgs_find: pattern that almost matches");;;
+    {
+        char hay[] = "abcabcabd";
+        CGS_Result(int) r = cgs_find(hay, "abcabd");
+        // False start at 0, real match at 3
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_EQ(r.val, 3);
+    }
+    
+    TEST("cgs_find: empty needle");;;
+    {
+        char hay[] = "abc";
+        CGS_Result(int) r = cgs_find(hay, "");
+        // Empty needle matches at the start
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_EQ(r.val, 0);
     }
     
     TEST("cgs_find: empty needle in empty haystack");;;
     {
         char hay[] = "";
         char needle[] = "";
-        CGS_StrView result = cgs_find(hay, needle);
-        // Finding empty in empty might return start or invalid
-        // Check it doesn't crash
-        ASSERT_TRUE((char*)result.chars == hay);
+        CGS_Result(int) r = cgs_find(hay, needle);
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_EQ(r.val, 0);
     }
     
-    TEST("cgs_find: empty needle in non-empty haystack");;;
+    TEST("cgs_find: not found");;;
     {
-        char hay[] = "test";
-        char needle[] = "";
-        CGS_StrView result = cgs_find(hay, needle);
-        // Should probably find at position 0 or be invalid
-        ASSERT_TRUE(result.chars == hay);
+        CGS_Result(int) r = cgs_find("apple", "orange");
+        ASSERT_TRUE(r.err.ec == CGS_NOT_FOUND);
+    }
+    
+    TEST("cgs_find: non-empty needle in empty haystack");;;
+    {
+        char hay[] = "";
+        CGS_Result(int) r = cgs_find(hay, "a");
+        ASSERT_TRUE(r.err.ec == CGS_NOT_FOUND);
     }
     
     TEST("cgs_find: needle longer than haystack");;;
     {
+        CGS_Result(int) r1 = cgs_find("short", "much longer needle");
+        ASSERT_TRUE(r1.err.ec == CGS_NOT_FOUND);
+        
+        // Haystack is a prefix of the needle
         char hay[] = "ab";
         char needle[] = "abcdef";
-        CGS_StrView result = cgs_find(hay, needle);
-        ASSERT_EQ(cgs_len(result), 0); // Not found
+        CGS_Result(int) r2 = cgs_find(hay, needle);
+        ASSERT_TRUE(r2.err.ec == CGS_NOT_FOUND);
     }
     
-    TEST("cgs_find: needle equals haystack");;;
+    TEST("cgs_find: partial match runs off end of haystack");;;
     {
-        char hay[] = "exact";
-        char needle[] = "exact";
-        CGS_StrView result = cgs_find(hay, needle);
-        ASSERT_EQ(cgs_len(result), 5);
-    }
-    
-    TEST("cgs_find: needle at very end");;;
-    {
-        char hay[] = "abcdefghij";
-        char needle[] = "hij";
-        CGS_StrView result = cgs_find(hay, needle);
-        ASSERT_EQ(cgs_len(result), 3);
-    }
-    
-    TEST("cgs_find: needle at very start");;;
-    {
-        char hay[] = "abcdefghij";
-        char needle[] = "abc";
-        CGS_StrView result = cgs_find(hay, needle);
-        ASSERT_EQ(cgs_len(result), 3);
-    }
-    
-    TEST("cgs_find: overlapping pattern");;;
-    {
-        char hay[] = "aaaa";
-        char needle[] = "aa";
-        CGS_StrView result = cgs_find(hay, needle);
-        // Should find first occurrence
-        ASSERT_TRUE(cgs_len(result) > 0);
-    }
-    
-    TEST("cgs_find: pattern that almost matches");;;
-    {
-        char hay[] = "abcabcabd";
-        char needle[] = "abcabd";
-        CGS_StrView result = cgs_find(hay, needle);
-        ASSERT_TRUE(cgs_len(result) > 0);
+        char hay[] = "hello wor";
+        CGS_Result(int) r = cgs_find(hay, "world");
+        ASSERT_TRUE(r.err.ec == CGS_NOT_FOUND);
     }
     
     /* --- cgs_trim_view --- */

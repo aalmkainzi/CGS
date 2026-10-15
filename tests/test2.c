@@ -815,7 +815,10 @@ void test_dstring_edge_cases() {
     {
         CGS_DStr dstr = cgs_dstr_init();
         ASSERT_TRUE(dstr.chars == NULL);
-        ASSERT_TRUE(cgs_find(dstr, "").chars == dstr.chars);
+        CGS_Result(int) r = cgs_find(dstr, "");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_EQ(r.val, 0);
+        ASSERT_TRUE(cgs_find(dstr, "something").err.ec == CGS_NOT_FOUND);
         ASSERT_TRUE(cgs_equal(dstr, ""));
         ASSERT_TRUE(cgs_starts_with(dstr, ""));
         ASSERT_TRUE(cgs_ends_with(dstr, ""));
@@ -1405,15 +1408,17 @@ void test_zstrv()
     TEST("cgs_zstrv: cgs_find with ZStrView as haystack");
     {
         CGS_ZStrView z = cgs_zstrv("hello world");
-        CGS_StrView f = cgs_find(z, "world");
-        ASSERT_TRUE(cgs_equal(f, "world"));
+        CGS_Result(int) r = cgs_find(z, "world");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_EQ(r.val, 6);
     }
-    
+
     TEST("cgs_zstrv: cgs_find with ZStrView as needle");
     {
         CGS_ZStrView needle = cgs_zstrv("wor");
-        CGS_StrView f = cgs_find("hello world", needle);
-        ASSERT_TRUE(cgs_equal(f, "wor"));
+        CGS_Result(int) r = cgs_find("hello world", needle);
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_EQ(r.val, 6);
     }
     
     TEST("cgs_zstrv: cgs_count with ZStrView");
