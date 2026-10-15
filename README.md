@@ -87,7 +87,7 @@ unsigned int            cgs_cap(anystr_t);
 bool                    cgs_equal(anystr_t a, anystr_t b);
 char*                   cgs_chars(anystr_t);
 
-CGS_StrView             cgs_find(anystr_t hay, anystr_t needle);
+CGS_Result(int)         cgs_find(anystr_t hay, anystr_t needle);
 unsigned int            cgs_count(anystr_t hay, anystr_t needle);
 CGS_Error               cgs_clear(mutstr_t);
 bool                    cgs_starts_with(anystr_t hay, anystr_t needle);
