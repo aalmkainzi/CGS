@@ -666,20 +666,20 @@ void test_spn_cspn_tok()
     {
         CGS_StrView base = cgs_strv("one,two,three");
 
-        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r1.err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(r1.val, cgs_strv("one")));
 
-        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r2.err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(r2.val, cgs_strv("two")));
 
-        CGS_Result(CGS_StrView) r3 = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r3 = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r3.err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(r3.val, cgs_strv("three")));
 
         /* base now exhausted */
-        CGS_Result(CGS_StrView) r4 = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r4 = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r4.err.ec == CGS_NOT_FOUND);
     }
 
@@ -687,7 +687,7 @@ void test_spn_cspn_tok()
     {
         /* leading commas are skipped, first token is "a" */
         CGS_StrView base = cgs_strv(",,,a,b");
-        CGS_Result(CGS_StrView) r = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r.err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(r.val, cgs_strv("a")));
     }
@@ -697,15 +697,15 @@ void test_spn_cspn_tok()
         /* "a,,,b" → "a" then "b" (no empty tokens) */
         CGS_StrView base = cgs_strv("a,,,b");
 
-        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r1.err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(r1.val, cgs_strv("a")));
 
-        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r2.err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(r2.val, cgs_strv("b")));
 
-        CGS_Result(CGS_StrView) r3 = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r3 = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r3.err.ec == CGS_NOT_FOUND);
     }
 
@@ -713,38 +713,38 @@ void test_spn_cspn_tok()
     {
         CGS_StrView base = cgs_strv("a,b,,,");
 
-        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, ',');
         ASSERT_TRUE(cgs_equal(r1.val, cgs_strv("a")));
 
-        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, ',');
         ASSERT_TRUE(cgs_equal(r2.val, cgs_strv("b")));
 
-        CGS_Result(CGS_StrView) r3 = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r3 = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r3.err.ec == CGS_NOT_FOUND);
     }
 
     TEST("cgs_next_tok: empty base → NOT_FOUND");
     {
         CGS_StrView base = cgs_strv("");
-        CGS_Result(CGS_StrView) r = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r.err.ec == CGS_NOT_FOUND);
     }
 
     TEST("cgs_next_tok: base entirely delimiters → NOT_FOUND");
     {
         CGS_StrView base = cgs_strv(",,,,");
-        CGS_Result(CGS_StrView) r = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r.err.ec == CGS_NOT_FOUND);
     }
 
     TEST("cgs_next_tok: no delimiter present → whole string is one token");
     {
         CGS_StrView base = cgs_strv("nodelim");
-        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r1.err.ec == CGS_OK);
         ASSERT_TRUE(cgs_equal(r1.val, cgs_strv("nodelim")));
 
-        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, cgs_strv(","));
+        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, ',');
         ASSERT_TRUE(r2.err.ec == CGS_NOT_FOUND);
     }
 
@@ -753,26 +753,17 @@ void test_spn_cspn_tok()
         /* delim "::" → "a", "b", "c" */
         CGS_StrView base = cgs_strv("a::b::c");
 
-        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, cgs_strv("::"));
+        CGS_Result(CGS_StrView) r1 = cgs_next_tok(&base, ':');
         ASSERT_TRUE(cgs_equal(r1.val, cgs_strv("a")));
 
-        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, cgs_strv("::"));
+        CGS_Result(CGS_StrView) r2 = cgs_next_tok(&base, ':');
         ASSERT_TRUE(cgs_equal(r2.val, cgs_strv("b")));
 
-        CGS_Result(CGS_StrView) r3 = cgs_next_tok(&base, cgs_strv("::"));
+        CGS_Result(CGS_StrView) r3 = cgs_next_tok(&base, ':');
         ASSERT_TRUE(cgs_equal(r3.val, cgs_strv("c")));
 
-        CGS_Result(CGS_StrView) r4 = cgs_next_tok(&base, cgs_strv("::"));
+        CGS_Result(CGS_StrView) r4 = cgs_next_tok(&base, ':');
         ASSERT_TRUE(r4.err.ec == CGS_NOT_FOUND);
-    }
-
-    TEST("cgs_next_tok: multi-char delimiter, partial prefix is not a match");
-    {
-        /* "key-value" contains '-' but not "->" so no split should occur */
-        CGS_StrView base = cgs_strv("key-value");
-        CGS_Result(CGS_StrView) r = cgs_next_tok(&base, cgs_strv("->"));
-        ASSERT_TRUE(r.err.ec == CGS_OK);
-        ASSERT_TRUE(cgs_equal(r.val, cgs_strv("key-value")));
     }
 
     TEST("cgs_next_tok: drive a full loop to collect all tokens");
@@ -783,7 +774,7 @@ void test_spn_cspn_tok()
 
         for (;;)
         {
-            CGS_Result(CGS_StrView) r = cgs_next_tok(&base, cgs_strv(" "));
+            CGS_Result(CGS_StrView) r = cgs_next_tok(&base, ' ');
             if (r.err.ec == CGS_NOT_FOUND) break;
             ASSERT_TRUE(cgs_equal(r.val, cgs_strv(expected[i])));
             i++;
