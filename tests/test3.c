@@ -1962,7 +1962,7 @@ void test_spn_cspn_tok();
 void test_zstrv();
 void test_chain_writer();
 void test_custom_writer();
-
+void test_starts_with_tokens();
 
 int test_count;
 int passed_count;
@@ -2007,7 +2007,8 @@ int main() {
     test_zstrv();
     test_chain_writer();
     test_custom_writer();
-    
+    test_starts_with_tokens();
+
     printf("\n========================================\n");
     printf("Test Results: %d/%d passed\n", passed_count, test_count);
     printf("========================================\n");
