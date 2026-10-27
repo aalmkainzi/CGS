@@ -9,11 +9,6 @@
 #include <stdint.h>
 #include <math.h>
 
-#if defined(CGS_USE_ZMIJ) && __has_include("zmij/zmij-c.h")
-    #define CGS__DO_USE_ZMIJ
-    #include "zmij/zmij-c.h"
-#endif
-
 #ifndef CGS_API
     // for functions exposed in the header
     #define CGS_API
@@ -3742,36 +3737,20 @@ CGS_API CGS_Error cgs__ullong_tostr(CGS_Writer *dst, unsigned long long obj, CGS
 
 CGS_API CGS_Error cgs__float_tostr(CGS_Writer *dst, float obj, CGS_StrView fmt_arg)
 {
-#ifdef CGS__DO_USE_ZMIJ
-    (void)fmt_arg;
-    char buffer[zmij_float_buffer_size];
-    size_t size    = zmij_detail_write_f(obj, buffer) - buffer;
-    CGS_StrView sv = {.chars = buffer, .len = size};
-    return cgs__invoke_writer(dst, sv);
-#else
     (void)fmt_arg;
     char tmp[32]    = {0};
     int len         = snprintf(tmp, sizeof(tmp), "%g", obj);
     CGS_StrView str = {.chars = (char *)tmp, .len = (unsigned int)len};
     return cgs__invoke_writer(dst, str);
-#endif
 }
 
 CGS_API CGS_Error cgs__double_tostr(CGS_Writer *dst, double obj, CGS_StrView fmt_arg)
 {
-#ifdef CGS__DO_USE_ZMIJ
-    (void)fmt_arg;
-    char buffer[zmij_float_buffer_size];
-    size_t size    = zmij_detail_write(obj, buffer) - buffer;
-    CGS_StrView sv = {.chars = buffer, .len = size};
-    return cgs__invoke_writer(dst, sv);
-#else
     (void)fmt_arg;
     char tmp[32]    = {0};
     int len         = snprintf(tmp, sizeof(tmp), "%g", obj);
     CGS_StrView str = {.chars = (char *)tmp, .len = (unsigned int)len};
     return cgs__invoke_writer(dst, str);
-#endif
 }
 
 CGS_API CGS_Error cgs__error_tostr(CGS_Writer *dst, CGS_Error obj, CGS_StrView fmt_arg)

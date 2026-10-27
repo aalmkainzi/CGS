@@ -2,5 +2,5 @@
 
 int main()
 {
-    cgs_appendi(stdout, f"%+{-1}?");
+    cgs_appendi(stdout, f"%{}?");
 }

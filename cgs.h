@@ -1855,7 +1855,6 @@ enum CGS__appendi_LengthModifier
     CGS__LENMOD_interp
 };
 
-[[gnu::always_inline]]
 static inline unsigned char cgs__fmt_spec_extract_length_modifier_(const char *length_modifier)
 {
     if (strcmp(length_modifier, "h") == 0)
@@ -1921,20 +1920,20 @@ static inline unsigned long long cgs__fmt_spec_star_or_num_or_empty_(const char 
 #define cgs__fmt_spec_strv_each_literal(lit) \
     (CGS_StrView){.chars = lit, .len = sizeof(lit) - 1},
 
-#define cgs__coerce_str(arg)               \
-_Generic(arg,                              \
-    CGS_StrBuf          : arg,             \
-    CGS_StrBuf*         : arg,             \
-    const CGS_StrBuf*   : arg,             \
-    CGS_DStr            : arg,             \
-    CGS_DStr*           : arg,             \
-    const CGS_DStr*     : arg,             \
-    CGS_MutStrRef       : arg,             \
-    char*               : arg,             \
-    unsigned char*      : arg,             \
-    const char*         : arg,             \
-    const unsigned char*: arg,             \
-    default             : (CGS_StrView){0} \
+#define cgs__coerce_str(arg)                \
+_Generic(arg,                               \
+    CGS_StrBuf           : arg,             \
+    CGS_StrBuf*          : arg,             \
+    const CGS_StrBuf*    : arg,             \
+    CGS_DStr             : arg,             \
+    CGS_DStr*            : arg,             \
+    const CGS_DStr*      : arg,             \
+    CGS_MutStrRef        : arg,             \
+    char*                : arg,             \
+    unsigned char*       : arg,             \
+    const char*          : arg,             \
+    const unsigned char* : arg,             \
+    default              : (CGS_StrView){0} \
 )
 
 #define cgs__coerce_integer(arg) \
@@ -2004,8 +2003,7 @@ enum CGS__TypeCategory
     CGS__TC_FLOAT    = 3 << 6,
 };
 
-// should encode type kind in the high 4 bits (int? float? string?)
-#define cgs__fmt_spec_type_to_length_modifier(T)                                                     \
+#define cgs__default_fmt_spec_of_type(T)                                                             \
 _Generic((__typeof__(T)){},                                                                          \
     char                    : CGS__LENMOD_hh   | (CHAR_MIN < 0 ? CGS__TC_SIGNED : CGS__TC_UNSIGNED), \
     signed char             : CGS__LENMOD_hh   | CGS__TC_SIGNED,                                     \
@@ -2024,7 +2022,7 @@ _Generic((__typeof__(T)){},                                                     
 ),
 
 #define cgs__appendi_interp_length_modifiers_arg(...) \
-    (const unsigned char[]) {CGS__FOREACH(cgs__fmt_spec_type_to_length_modifier, __VA_ARGS__)}
+    (const unsigned char[]) {CGS__FOREACH(cgs__default_fmt_spec_of_type, __VA_ARGS__)}
 
 #define cgs_appendi(writer_dst, fstr, ...)                                                                                \
     cgs__appendi(                                                                                                         \
