@@ -106,6 +106,15 @@ _Generic(exp, \
     default: (exp) \
 )
 
+#define cgs__coerce_not_str_generic_assoc(T, name, arg) \
+T: (arg){},
+
+#define cgs__coerce_not_str(exp, fallback_ty)                          \
+_Generic(exp,                                                          \
+    CGS__T_ALL_STRINGS(cgs__coerce_not_str_generic_assoc, fallback_ty) \
+    default: (exp)                                                     \
+)
+
 #define CGS__CARR_LEN(carr) (sizeof(carr) / sizeof((carr)[0]))
 
 #define CGS__T_APPENDABLE_STRINGS(macro, arg) \
@@ -884,8 +893,7 @@ T: cgs__strv_##name##1(cgs__strv_type_erasure(cgs__coerce((arg), T))),
 #define cgs__strv_1_allow_char(anystr_or_char) \
 _Generic(anystr_or_char, \
     CGS__T_ALL_STRINGS(cgs__strv_allow_char_generic_assoc, anystr_or_char) \
-    char: (CGS_StrView){.chars = (&(char){cgs__coerce(anystr_or_char, char)}), .len = 1}, \
-    unsigned char: (CGS_StrView){.chars = (&(char){cgs__coerce(anystr_or_char, unsigned char)}), .len = 1} \
+    default: (CGS_StrView){.chars = (&(char){cgs__coerce_not_str(anystr_or_char, char)}), .len = 1} \
 )
 
 #define cgs_zstrv(nstr, ...) \
