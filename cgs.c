@@ -1290,13 +1290,23 @@ CGS_API CGS_Result(int) cgs__starts_with_tokens(CGS_StrView src, CGS_StrView del
     unsigned int end_of_last_match = 0;
     for (unsigned int i = 0; i < tokens.len; i++)
     {
-        CGS_StrView expected_tok = tokens.strs[i];
-        CGS_Result(CGS_StrView) found_tok = cgs__next_tok_any(&src, delim_set);
-        
-        if (found_tok.err.ec != CGS_OK || !cgs__strv_equal(expected_tok, found_tok.val))
-            return (CGS_Result(int)){.err.ec = CGS_NOT_FOUND, .val = end_of_last_match};
-        
-        end_of_last_match = (found_tok.val.chars + found_tok.val.len) - src_start;
+        unsigned int before_skip_len = src.len;
+        src = cgs_skip_any(src, delim_set);
+        if (before_skip_len != src.len && tokens.strs[i].len == 1 && cgs_find(delim_set, tokens.strs[i]).err.ec == CGS_OK)
+        {
+            ; // explicit whitespace as a token
+        }
+        else if (cgs_starts_with(src, tokens.strs[i]))
+        {
+            src.chars += tokens.strs[i].len;
+            src.len -= tokens.strs[i].len;
+        }
+        else
+        {
+            return (CGS_Result(int)){.err.ec = CGS_NOT_FOUND, .val = end_of_last_match};   
+        }
+
+        end_of_last_match = src.chars - src_start;
     }
     return (CGS_Result(int)){.err.ec = CGS_OK, .val = end_of_last_match};
 }

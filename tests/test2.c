@@ -1673,68 +1673,75 @@ void test_starts_with_tokens()
         ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 7);
     }
     
-    /* ===== whole-token comparison ===== */
+    /* ===== delimiters between tokens are optional ===== */
     
-    TEST("cgs_starts_with_tokens: expected token is a prefix of the src token");
+    TEST("cgs_starts_with_tokens: no delimiters between any tokens");
     {
-        char s[] = "helloworld";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "hello");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
+        char s[] = "a!.";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", "!", ".");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 3);
     }
     
-    TEST("cgs_starts_with_tokens: char not in delim_set does not split");
-    {
-        char s[] = "a\tb";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", "b");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
-    }
-    
-    TEST("cgs_starts_with_tokens: src token is a prefix of the expected token");
-    {
-        char s[] = "help";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "hello");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
-    }
-    
-    TEST("cgs_starts_with_tokens: last expected token is a prefix of the src token");
-    {
-        char s[] = "a bc";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", "b");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 1);
-    }
-    
-    TEST("cgs_starts_with_tokens: middle expected token is a prefix of the src token");
-    {
-        char s[] = "-> -- ==";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "->", "-", "==");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 2);
-    }
-    
-    TEST("cgs_starts_with_tokens: adjacent tokens with no delimiter form one src token");
+    TEST("cgs_starts_with_tokens: no delimiters between multi-character tokens");
     {
         char s[] = "->-==";
         CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "->", "-", "==");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 5);
     }
     
-    TEST("cgs_starts_with_tokens: expected token containing a delimiter never matches");
+    TEST("cgs_starts_with_tokens: some gaps have delimiters, others don't");
     {
-        char s[] = "a b c";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a b", "c");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
+        char s[] = "a!  .";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", "!", ".");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 5);
     }
     
-    TEST("cgs_starts_with_tokens: expected token made only of delimiters never matches");
+    TEST("cgs_starts_with_tokens: consecutive identical tokens without delimiters");
     {
-        char s[] = "a -- b";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " -", "a", "--", "b");
+        char s[] = "aaa";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", "a", "a");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 3);
+    }
+    
+    TEST("cgs_starts_with_tokens: next token overlaps what a longer previous token could have taken");
+    {
+        char s[] = "aab";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", "ab");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 3);
+    }
+    
+    TEST("cgs_starts_with_tokens: no delimiter needed after the last token");
+    {
+        char s[] = "helloworld";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "hello");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 5);
+    }
+    
+    TEST("cgs_starts_with_tokens: later last token followed directly by more text");
+    {
+        char s[] = "a bc";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", "b");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 3);
+    }
+    
+    TEST("cgs_starts_with_tokens: token followed directly by text that doesn't start the next token");
+    {
+        char s[] = "-> -- ==";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "->", "-", "==");
+        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 4);
+    }
+    
+    TEST("cgs_starts_with_tokens: a char not in delim_set between tokens is not skipped");
+    {
+        char s[] = "a\tb";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", "b");
         ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 1);
     }
     
-    TEST("cgs_starts_with_tokens: empty expected token does not match a non-empty src token");
+    TEST("cgs_starts_with_tokens: expected token only partially present");
     {
-        char s[] = "abc";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "");
+        char s[] = "help";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "hello");
         ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
     }
     
@@ -1743,6 +1750,388 @@ void test_starts_with_tokens()
         char s[] = "Hello";
         CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "hello");
         ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
+    }
+    
+    /* ===== explicit delimiters in expected tokens ===== */
+    
+    TEST("cgs_starts_with_tokens: expected token is a single delimiter between tokens");
+    {
+        char s[] = "a -";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", " ", "-");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 3);
+    }
+    
+    TEST("cgs_starts_with_tokens: explicit delimiter token requires the delimiter to be present");
+    {
+        char s[] = "a-";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", " ", "-");
+        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 1);
+    }
+    
+    TEST("cgs_starts_with_tokens: explicit delimiter token, extra delimiters after it are skipped");
+    {
+        char s[] = "a   -";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", " ", "-");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 5);
+    }
+    
+    TEST("cgs_starts_with_tokens: explicit delimiter token matches any delimiter in delim_set");
+    {
+        char s1[] = "a\t-";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " \t", "a", " ", "-");
+        ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 3);
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s1, " \t", "a", "\t", "-");
+        ASSERT_TRUE(r2.err.ec == CGS_OK && r2.val == 3);
+        
+        char s2[] = "a -";
+        CGS_Result(int) r3 = cgs_starts_with_tokens(s2, " \t", "a", "\t", "-");
+        ASSERT_TRUE(r3.err.ec == CGS_OK && r3.val == 3);
+    }
+    
+    TEST("cgs_starts_with_tokens: a token char is only an explicit delimiter if it's in delim_set");
+    {
+        char s1[] = "a\t-";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, "\t", "a", " ", "-");
+        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 1);
+        
+        char s2[] = "a -";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, "\t", "a", " ", "-");
+        ASSERT_TRUE(r2.err.ec == CGS_OK && r2.val == 3);
+    }
+    
+    TEST("cgs_starts_with_tokens: operator-like token starting with a delimiter char never matches");
+    {
+        char s1[] = "a ->";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " -", "a", "->");
+        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 1);
+        
+        char s2[] = "->";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " -", "->");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
+        
+        CGS_Result(int) r3 = cgs_starts_with_tokens(s1, " ", "a", "->");
+        ASSERT_TRUE(r3.err.ec == CGS_OK && r3.val == 4);
+    }
+    
+    TEST("cgs_starts_with_tokens: two delimiter tokens back to back never match");
+    {
+        char s1[] = "a  b";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " ", "a", " ", " ", "b");
+        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 3);
+        
+        char s2[] = "a b";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " ", "a", " ", " ", "b");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 2);
+        
+        char s3[] = "a \tb";
+        CGS_Result(int) r3 = cgs_starts_with_tokens(s3, " \t", "a", " ", "\t", "b");
+        ASSERT_TRUE(r3.err.ec != CGS_OK && r3.val == 3);
+    }
+    
+    TEST("cgs_starts_with_tokens: explicit delimiter token at the start");
+    {
+        char s1[] = " a";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " ", " ", "a");
+        ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 2);
+        
+        char s2[] = "a";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " ", " ", "a");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
+        
+        char s3[] = "  a";
+        CGS_Result(int) r3 = cgs_starts_with_tokens(s3, " ", " ", "a");
+        ASSERT_TRUE(r3.err.ec == CGS_OK && r3.val == 3);
+    }
+    
+    TEST("cgs_starts_with_tokens: explicit delimiter token at the end");
+    {
+        char s1[] = "a ";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " ", "a", " ");
+        ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 2);
+        
+        char s2[] = "a";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " ", "a", " ");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 1);
+        
+        char s3[] = "ab";
+        CGS_Result(int) r3 = cgs_starts_with_tokens(s3, " ", "a", " ");
+        ASSERT_TRUE(r3.err.ec != CGS_OK && r3.val == 1);
+    }
+    
+    TEST("cgs_starts_with_tokens: first expected token starting with a delimiter never matches");
+    {
+        char s1[] = " a";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " ", " a");
+        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 0);
+        
+        char s2[] = "a";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " ", " a");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
+        
+        char s3[] = "  a";
+        CGS_Result(int) r3 = cgs_starts_with_tokens(s3, " ", " a");
+        ASSERT_TRUE(r3.err.ec != CGS_OK && r3.val == 0);
+    }
+    
+    TEST("cgs_starts_with_tokens: later expected token starting with a delimiter never matches");
+    {
+        char s1[] = "a b";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " ", "a", " b");
+        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 1);
+        
+        char s2[] = "ab";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " ", "a", " b");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 1);
+        
+        char s3[] = "a\t b";
+        CGS_Result(int) r3 = cgs_starts_with_tokens(s3, " \t", "a", " b");
+        ASSERT_TRUE(r3.err.ec != CGS_OK && r3.val == 1);
+    }
+    
+    TEST("cgs_starts_with_tokens: token starting with a non-space delimiter never matches");
+    {
+        char s1[] = "\ta";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " \t", "\ta");
+        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 0);
+        
+        char s2[] = "\xff" "a";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, "\xff", "\xff" "a");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
+    }
+    
+    TEST("cgs_starts_with_tokens: a token's first char only counts as a delimiter if it's in the delim_set view");
+    {
+        char s[] = "\na";
+        char dset[] = " \n";
+        CGS_StrView space_only = cgs_strv(dset, 0, 1);
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s, space_only, "\na");
+        ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 2);
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s, dset, "\na");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
+    }
+    
+    TEST("cgs_starts_with_tokens: expected token ends with a delimiter");
+    {
+        char s1[] = "a ";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " ", "a ");
+        ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 2);
+        
+        char s2[] = "a";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " ", "a ");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
+        
+        char s3[] = "ab";
+        CGS_Result(int) r3 = cgs_starts_with_tokens(s3, " ", "a ");
+        ASSERT_TRUE(r3.err.ec != CGS_OK && r3.val == 0);
+        
+        char s4[] = "a\tb";
+        CGS_Result(int) r4 = cgs_starts_with_tokens(s4, " \t", "a ");
+        ASSERT_TRUE(r4.err.ec != CGS_OK && r4.val == 0);
+    }
+    
+    TEST("cgs_starts_with_tokens: expected token ends with a delimiter, val excludes the rest of the run");
+    {
+        char s[] = "a   b";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a ");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 2);
+    }
+    
+    TEST("cgs_starts_with_tokens: expected token ends with a delimiter, then another token");
+    {
+        char s[] = "a  b";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a ", "b");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 4);
+    }
+    
+    TEST("cgs_starts_with_tokens: later expected token ends with a delimiter");
+    {
+        char s[] = "x a  b";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "x", "a ", "b");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 6);
+    }
+    
+    TEST("cgs_starts_with_tokens: expected token starting and ending with a delimiter never matches");
+    {
+        char s1[] = " a ";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " ", " a ");
+        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 0);
+        
+        char s2[] = "x  a  ";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " ", "x", " a ");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 1);
+    }
+    
+    TEST("cgs_starts_with_tokens: expected token with a delimiter in the middle");
+    {
+        char s[] = "a b c";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a b", "c");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 5);
+    }
+    
+    TEST("cgs_starts_with_tokens: later expected token with a delimiter in the middle");
+    {
+        char s[] = "x a b c";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "x", "a b", "c");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 7);
+    }
+    
+    TEST("cgs_starts_with_tokens: expected token with a delimiter in the middle, after leading delimiters");
+    {
+        char s[] = "  a b";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a b");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 5);
+    }
+    
+    TEST("cgs_starts_with_tokens: delimiter inside an expected token must match exactly");
+    {
+        char s1[] = "a\tb";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " \t", "a b");
+        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 0);
+        
+        char s2[] = "a\t b";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " \t", "a b");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
+        
+        char s3[] = "a b";
+        CGS_Result(int) r3 = cgs_starts_with_tokens(s3, " \t", "a b");
+        ASSERT_TRUE(r3.err.ec == CGS_OK && r3.val == 3);
+    }
+    
+    TEST("cgs_starts_with_tokens: delimiters inside an expected token are not collapsed");
+    {
+        char s1[] = "a  b";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " ", "a  b");
+        ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 4);
+        
+        char s2[] = "a b";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " ", "a  b");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
+        
+        char s3[] = "a   b";
+        CGS_Result(int) r3 = cgs_starts_with_tokens(s3, " ", "a  b");
+        ASSERT_TRUE(r3.err.ec != CGS_OK && r3.val == 0);
+        
+        char s4[] = "a\t b";
+        CGS_Result(int) r4 = cgs_starts_with_tokens(s4, " \t", "a  b");
+        ASSERT_TRUE(r4.err.ec != CGS_OK && r4.val == 0);
+    }
+    
+    TEST("cgs_starts_with_tokens: non-space delimiter inside an expected token must match exactly");
+    {
+        char s1[] = "a\tb";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " \t", "a\tb");
+        ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 3);
+        
+        char s2[] = "a b";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " \t", "a\tb");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
+    }
+    
+    TEST("cgs_starts_with_tokens: high-bit delimiter inside an expected token must match exactly");
+    {
+        char s1[] = "a\xff" "b";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, "\xff", "a\xff" "b");
+        ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 3);
+        
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s1, " \xff", "a b");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
+        
+        char s2[] = "a b";
+        CGS_Result(int) r3 = cgs_starts_with_tokens(s2, " \xff", "a\xff" "b");
+        ASSERT_TRUE(r3.err.ec != CGS_OK && r3.val == 0);
+    }
+    
+    TEST("cgs_starts_with_tokens: token of several mixed delimiters never matches");
+    {
+        char s1[] = "a \t\n b";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " \t\n", "a", " \t\n ", "b");
+        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 1);
+        
+        char s2[] = "a\t \n b";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " \t\n", "a", " \t\n ", "b");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 1);
+    }
+    
+    TEST("cgs_starts_with_tokens: token of several identical delimiters never matches");
+    {
+        char s1[] = "a   ";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, " ", "a", "   ");
+        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 1);
+        
+        char s2[] = "   ";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, " ", "   ");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
+        
+        char s3[] = "a--b";
+        CGS_Result(int) r3 = cgs_starts_with_tokens(s3, " -", "a", "--", "b");
+        ASSERT_TRUE(r3.err.ec != CGS_OK && r3.val == 1);
+        
+        char s4[] = "a -- b";
+        CGS_Result(int) r4 = cgs_starts_with_tokens(s4, " -", "a", "--", "b");
+        ASSERT_TRUE(r4.err.ec != CGS_OK && r4.val == 1);
+    }
+    
+    TEST("cgs_starts_with_tokens: whitespace not in delim_set is an ordinary token char");
+    {
+        char s[] = "a\tb c";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a\tb", "c");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 5);
+    }
+    
+    TEST("cgs_starts_with_tokens: whether a single-char token is a delimiter token follows the delim_set view");
+    {
+        char s[] = "a -";
+        char dset[] = " \t";
+        CGS_StrView space_only = cgs_strv(dset, 0, 1);
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s, space_only, "a", "\t", "-");
+        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 1);
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s, dset, "a", "\t", "-");
+        ASSERT_TRUE(r2.err.ec == CGS_OK && r2.val == 3);
+    }
+    
+    /* ===== a single-delimiter token consumes the whole run ===== */
+    
+    TEST("cgs_starts_with_tokens: last token is a single delimiter, val is after the whole run");
+    {
+        char s[] = "a   ";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", " ");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 4);
+    }
+    
+    TEST("cgs_starts_with_tokens: single delimiter token consumes a mixed run");
+    {
+        char s[] = "a \t \t-";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " \t", "a", " ", "-");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 6);
+    }
+    
+    TEST("cgs_starts_with_tokens: single delimiter as the only token consumes the whole run");
+    {
+        char s[] = "   a";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", " ");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 3);
+    }
+    
+    TEST("cgs_starts_with_tokens: failure after a single delimiter token, val includes the consumed run");
+    {
+        char s[] = "a  x";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", " ", "b");
+        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 3);
+    }
+    
+    TEST("cgs_starts_with_tokens: val after a single delimiter token can be used to continue parsing");
+    {
+        char s[] = "a   tail";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", " ");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 4);
+        ASSERT_TRUE(cgs_equal(cgs_strv(s, r.val), "tail"));
+    }
+    
+    TEST("cgs_starts_with_tokens: empty expected token matches trivially");
+    {
+        char s[] = "abc";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 0);
     }
     
     /* ===== failures and the value of val ===== */
@@ -1789,7 +2178,7 @@ void test_starts_with_tokens()
         ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 1);
     }
     
-    TEST("cgs_starts_with_tokens: src token is a prefix of the expected token at end of src");
+    TEST("cgs_starts_with_tokens: token only partially present at end of src");
     {
         char s[] = "-> =";
         CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "->", "==");
@@ -1833,18 +2222,36 @@ void test_starts_with_tokens()
         ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
     }
     
-    TEST("cgs_starts_with_tokens: empty delim_set makes the whole src one token");
+    TEST("cgs_starts_with_tokens: src is only delimiters, match delim");
     {
-        char s1[] = "->";
-        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, "", "->");
-        ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 2);
-        
-        char s2[] = "-> -";
-        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, "", "->");
-        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
+        char s[] = "   ";
+        CGS_Result(int) r = cgs_starts_with_tokens(s, " \t\v", " ");
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 3);
     }
     
-    TEST("cgs_starts_with_tokens: empty delim_set, second token can never match");
+    TEST("cgs_starts_with_tokens: empty delim_set, tokens must be directly adjacent");
+    {
+        char s1[] = "->-";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, "", "->", "-");
+        ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 3);
+        
+        char s2[] = "-> -";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, "", "->", "-");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 2);
+    }
+    
+    TEST("cgs_starts_with_tokens: empty delim_set, space in a token matches only a literal space");
+    {
+        char s1[] = "a b";
+        CGS_Result(int) r1 = cgs_starts_with_tokens(s1, "", "a", " ", "b");
+        ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 3);
+        
+        char s2[] = "a\tb";
+        CGS_Result(int) r2 = cgs_starts_with_tokens(s2, "", "a", " ", "b");
+        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 1);
+    }
+    
+    TEST("cgs_starts_with_tokens: src ends before the second token");
     {
         char s[] = "->";
         CGS_Result(int) r = cgs_starts_with_tokens(s, "", "->", "-");
@@ -1871,14 +2278,14 @@ void test_starts_with_tokens()
         ASSERT_TRUE(r2.err.ec == CGS_OK && r2.val == 5);
     }
     
-    TEST("cgs_starts_with_tokens: end of src view counts as a token boundary");
+    TEST("cgs_starts_with_tokens: src continuing past the last token doesn't change val");
     {
         char buf[] = "a bcd";
         CGS_StrView cut = cgs_strv(buf, 0, 4);
         CGS_Result(int) r1 = cgs_starts_with_tokens(cut, " ", "a", "bc");
         ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 4);
         CGS_Result(int) r2 = cgs_starts_with_tokens(buf, " ", "a", "bc");
-        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 1);
+        ASSERT_TRUE(r2.err.ec == CGS_OK && r2.val == 4);
     }
     
     TEST("cgs_starts_with_tokens: respects delim_set view length");
@@ -1887,7 +2294,7 @@ void test_starts_with_tokens()
         char dset[] = " \n";
         CGS_StrView space_only = cgs_strv(dset, 0, 1);
         CGS_Result(int) r1 = cgs_starts_with_tokens(s, space_only, "a", "b");
-        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 0);
+        ASSERT_TRUE(r1.err.ec != CGS_OK && r1.val == 1);
         CGS_Result(int) r2 = cgs_starts_with_tokens(s, dset, "a", "b");
         ASSERT_TRUE(r2.err.ec == CGS_OK && r2.val == 3);
     }
@@ -1966,6 +2373,8 @@ void test_starts_with_tokens()
         cgs_dstr_deinit(&t3);
     }
     
+    /* ===== leading delimiters ===== */
+    
     TEST("cgs_starts_with_tokens: leading delimiters before the first token are skipped");
     {
         char s[] = " ->";
@@ -2015,11 +2424,11 @@ void test_starts_with_tokens()
         ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 3);
     }
     
-    TEST("cgs_starts_with_tokens: leading delimiters, first token is a prefix of the src token");
+    TEST("cgs_starts_with_tokens: leading delimiters, no delimiter needed after the token");
     {
         char s[] = "  helloworld";
         CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "hello");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
+        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 7);
     }
     
     TEST("cgs_starts_with_tokens: leading char not in delim_set is not skipped");
@@ -2061,128 +2470,5 @@ void test_starts_with_tokens()
         CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "->");
         ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 4);
         ASSERT_TRUE(cgs_equal(cgs_strv(s, r.val), " tail"));
-    }
-    
-    TEST("cgs_starts_with_tokens: expected token starts with a delimiter");
-    {
-        char s[] = " a";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", " a");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
-    }
-    
-    TEST("cgs_starts_with_tokens: later expected token starts with a delimiter");
-    {
-        char s[] = "a  b";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", " b");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 1);
-    }
-    
-    TEST("cgs_starts_with_tokens: expected token ends with a delimiter, end of src");
-    {
-        char s[] = "a ";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a ");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
-    }
-    
-    TEST("cgs_starts_with_tokens: expected token ends with a delimiter, more delimiters follow");
-    {
-        char s[] = "a  b";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a ", "b");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
-    }
-    
-    TEST("cgs_starts_with_tokens: expected token ends with a delimiter, non-delimiter follows");
-    {
-        char s[] = "a b";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a ");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
-    }
-    
-    TEST("cgs_starts_with_tokens: later expected token ends with a delimiter");
-    {
-        char s[] = "x a  b";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "x", "a ", "b");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 1);
-    }
-    
-    TEST("cgs_starts_with_tokens: expected token starts and ends with a delimiter");
-    {
-        char s[] = "  a  ";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", " a ");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
-    }
-    
-    TEST("cgs_starts_with_tokens: later expected token has a delimiter in the middle");
-    {
-        char s[] = "x a b c";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "x", "a b", "c");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 1);
-    }
-    
-    TEST("cgs_starts_with_tokens: expected token has a delimiter in the middle, after leading delimiters");
-    {
-        char s[] = "  a b";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a b");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
-    }
-    
-    TEST("cgs_starts_with_tokens: expected token contains a non-space delimiter");
-    {
-        char s[] = "a\tb";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " \t", "a\tb");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
-    }
-    
-    TEST("cgs_starts_with_tokens: high-bit delimiter inside an expected token");
-    {
-        char s[] = "a\xff" "b";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, "\xff", "a\xff" "b");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
-    }
-    
-    TEST("cgs_starts_with_tokens: expected token is a single delimiter, between tokens");
-    {
-        char s[] = "a b";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", " ", "b");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 1);
-    }
-    
-    TEST("cgs_starts_with_tokens: expected token is mixed delimiter characters");
-    {
-        char s[] = "a \t\n b";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " \t\n", "a", " \t\n ", "b");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 1);
-    }
-    
-    TEST("cgs_starts_with_tokens: expected token is all delimiters, src ends in delimiters");
-    {
-        char s[] = "a   ";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a", "   ");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 1);
-    }
-    
-    TEST("cgs_starts_with_tokens: expected token is all delimiters, src is all delimiters");
-    {
-        char s[] = "   ";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "   ");
-        ASSERT_TRUE(r.err.ec != CGS_OK && r.val == 0);
-    }
-    
-    TEST("cgs_starts_with_tokens: whitespace not in delim_set is an ordinary token char");
-    {
-        char s[] = "a\tb c";
-        CGS_Result(int) r = cgs_starts_with_tokens(s, " ", "a\tb", "c");
-        ASSERT_TRUE(r.err.ec == CGS_OK && r.val == 5);
-    }
-    
-    TEST("cgs_starts_with_tokens: whether a token char is a delimiter follows the delim_set view");
-    {
-        char s[] = "a\nb";
-        char dset[] = " \n";
-        CGS_StrView space_only = cgs_strv(dset, 0, 1);
-        CGS_Result(int) r1 = cgs_starts_with_tokens(s, space_only, "a\nb");
-        ASSERT_TRUE(r1.err.ec == CGS_OK && r1.val == 3);
-        CGS_Result(int) r2 = cgs_starts_with_tokens(s, dset, "a\nb");
-        ASSERT_TRUE(r2.err.ec != CGS_OK && r2.val == 0);
     }
 }
