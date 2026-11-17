@@ -1292,7 +1292,7 @@ CGS_API CGS_Result(int) cgs__starts_with_tokens(CGS_StrView src, CGS_StrView del
     {
         unsigned int before_skip_len = src.len;
         src = cgs_skip_any(src, delim_set);
-        if (before_skip_len != src.len && tokens.strs[i].len == 1 && cgs_find(delim_set, tokens.strs[i]).err.ec == CGS_OK)
+        if (before_skip_len != src.len && tokens.strs[i].len == 1 && memchr(delim_set.chars, tokens.strs[i].chars[0], delim_set.len))
         {
             ; // explicit whitespace as a token
         }
@@ -1303,7 +1303,7 @@ CGS_API CGS_Result(int) cgs__starts_with_tokens(CGS_StrView src, CGS_StrView del
         }
         else
         {
-            return (CGS_Result(int)){.err.ec = CGS_NOT_FOUND, .val = end_of_last_match};   
+            return (CGS_Result(int)){.err.ec = CGS_NOT_FOUND, .val = end_of_last_match};
         }
 
         end_of_last_match = src.chars - src_start;
@@ -3357,10 +3357,10 @@ CGS_API CGS_Error cgs__alignfmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_St
     }
 }
 
-#undef cgs__fill_pad
-
 CGS_API CGS_Error cgs__repeatfmt_tostr(CGS_Writer *dst, CGS__RepeatFmt obj, CGS_StrView fmt_arg)
 {
+    // TODO can do an optimization by checking if dst is actually a string writer.
+    // in which case do a memset
     (void)fmt_arg;
     for (unsigned int i = 0; i < obj.n; i++)
     {

@@ -1,5 +1,5 @@
 #if !defined(CGS__H_INCLUDED) && !defined(ONLY_TOSTR)
-    #define CGS__H_INCLUDED
+#define CGS__H_INCLUDED
 
 // clang-format off
 
@@ -91,9 +91,6 @@ _Generic(exp, \
 #define cgs__coerce(exp, t) \
 cgs__coerce_fallback(exp, t, (t){0})
 
-#define cgs__coerce2(exp, t1, t2) \
-_Generic(exp, t1: exp, t2: exp, default: (t1){})
-
 #define cgs__coerce4(exp, t1, t2, t3, t4) \
 _Generic(exp, t1: exp, t2: exp, t3: exp, t4: exp, default: (t1){})
 
@@ -143,9 +140,6 @@ macro(unsigned char*, ucstr, arg)          \
 CGS__T_NULL_TERMINATED_STRINGS(macro, arg)  \
 macro(CGS_StrView, strv, arg)               \
 
-#define cgs__strv_type_erasure_generic_assoc(T, name, arg) \
-T: *(CGS_StrView*)cgs__local_ref(cgs__coerce2(arg, CGS_StrView, CGS_ZStrView)),
-
 #define cgs__strv_type_erasure(anystr) \
 _Generic(anystr, \
     CGS_ZStrView: cgs__strv_zstrv1(cgs__coerce((anystr), CGS_ZStrView)), \
@@ -154,7 +148,6 @@ _Generic(anystr, \
 
 typedef struct CGS__INCOMPAT {char c;} CGS__INCOMPAT; // used in generic association to not match with
 
-struct CGS_Allocator;
 
 typedef struct CGS_Allocation
 {
@@ -162,16 +155,18 @@ typedef struct CGS_Allocation
     size_t n;
 } CGS_Allocation;
 
+typedef struct CGS_Allocator CGS_Allocator;
+
 typedef CGS_Allocation(*cgs_alloc_func)  (struct CGS_Allocator*, size_t alignment, size_t n);
 typedef void          (*cgs_dealloc_func)(struct CGS_Allocator*, void *ptr, size_t n);
 typedef CGS_Allocation(*cgs_realloc_func)(struct CGS_Allocator*, void *ptr, size_t alignment, size_t old_size, size_t new_size);
 
-typedef struct CGS_Allocator
+struct CGS_Allocator
 {
     cgs_alloc_func alloc;
     cgs_dealloc_func dealloc;
     cgs_realloc_func realloc;
-} CGS_Allocator;
+};
 
 typedef struct CGS_Buffer
 {
@@ -534,7 +529,7 @@ _Generic(anystr, \
 cgs__strv_equal(cgs__strv_1(anystr1), cgs__strv_1(anystr2))
 
 #define cgs_dup(anystr_src, ...) \
-cgs__dstr_init_from(cgs__strv_1(anystr_src), CGS__VA_OR(cgs_get_default_allocator(), __VA_ARGS__))
+cgs_dstr_init_from((anystr_src), __VA_ARGS__)
 
 #define cgs_copy(mutstr_dst, anystr_src) \
 _Generic(mutstr_dst, \
@@ -625,8 +620,8 @@ cgs__chars_toupper(cgs__fmutstr_ref(mutstr))
 #define cgs_replace(mutstr_dst, anystr_target, anystr_replacement) \
 _Generic(mutstr_dst, \
     CGS_MutStrRef : cgs__mutstr_ref_replace(cgs__coerce((mutstr_dst), CGS_MutStrRef), cgs__strv_1(anystr_target), cgs__strv_1(anystr_replacement)), \
-    CGS_DStr* : cgs__dstr_replace(cgs__coerce((mutstr_dst), CGS_DStr*), cgs__strv_1(anystr_target), cgs__strv_1(anystr_replacement)), \
-    default   : cgs__fmutstr_ref_replace(cgs__fmutstr_ref(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), cgs__strv_1(anystr_target), cgs__strv_1(anystr_replacement)) \
+    CGS_DStr*     : cgs__dstr_replace(cgs__coerce((mutstr_dst), CGS_DStr*), cgs__strv_1(anystr_target), cgs__strv_1(anystr_replacement)), \
+    default       : cgs__fmutstr_ref_replace(cgs__fmutstr_ref(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), cgs__strv_1(anystr_target), cgs__strv_1(anystr_replacement)) \
 )
 
 #define cgs_replace_first(mutstr_dst, anystr_target, anystr_replacement) \
