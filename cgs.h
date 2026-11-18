@@ -644,6 +644,9 @@ cgs__strv_split(cgs__strv_1(anystr), cgs__strv_1(anystr_delim), CGS__VA_OR(cgs_g
 #define cgs_split_iter(anystr, anystr_delim, callback, ...) \
 cgs__strv_split_iter(cgs__strv_1(anystr), cgs__strv_1(anystr_delim), callback, CGS__VA_OR(NULL, __VA_ARGS__))
 
+#define cgs_split_foreach(base, delim, name) \
+for (CGS_StrView cgs__base = cgs__strv_1(base), cgs__it_prev = {}, cgs__delim = cgs__strv_1(delim), name = cgs__split_foreach_next(&cgs__base, cgs__delim); cgs__it_prev.chars != name.chars; cgs__it_prev = name, name = cgs__split_foreach_next(&cgs__base, cgs__delim))
+
 #define cgs_join(mutstr_dst, strv_arr, anystr_delim) \
 _Generic(mutstr_dst, \
     CGS_MutStrRef : cgs__strv_arr_join(cgs__coerce((mutstr_dst), CGS_MutStrRef), strv_arr, cgs__strv_1(anystr_delim)), \
@@ -1612,8 +1615,9 @@ CGS_API CGS_Error       cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int beg
 CGS_API CGS_Error       cgs__strv_arr_join_into_dstr(CGS_DStr *dstr, CGS_StrViewArray strs, CGS_StrView delim);
 
 CGS__NODISCARD("str_split returns a heap allocated array")
-CGS_API CGS_StrViewArray cgs__strv_split(CGS_StrView str, CGS_StrView delim, CGS_Allocator* allocator);
-CGS_API CGS_Error        cgs__strv_split_iter(CGS_StrView str, CGS_StrView delim, bool(*cb)(CGS_StrView found, void *ctx), void *ctx);
+CGS_API CGS_StrViewArray       cgs__strv_split(CGS_StrView str, CGS_StrView delim, CGS_Allocator* allocator);
+CGS_API CGS_Error              cgs__strv_split_iter(CGS_StrView str, CGS_StrView delim, bool(*cb)(CGS_StrView found, void *ctx), void *ctx);
+CGS_API CGS_StrView            cgs__split_foreach_next(CGS_StrView *base, CGS_StrView delim);
 
 CGS_API CGS_StrViewArray cgs__strv_arr_from(const CGS_StrView *carr, unsigned int nb);
 

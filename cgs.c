@@ -617,7 +617,7 @@ CGS_API CGS_Error cgs__dstr_prepend_strv(CGS_DStr *dstr, CGS_StrView src)
     CGS_StrView to_prepend = src;
     CGS_Error err          = (CGS_Error) {CGS_OK};
 
-    if (cgs__is_strv_within(cgs__strv_dstr_ptr2(dstr, 0), src))
+    if (cgs__is_strv_within(cgs__strv_dstr_ptr1(dstr), src))
     {
         unsigned int begin_idx = (unsigned int)(src.chars - dstr->chars);
         err                    = cgs__dstr_maybe_grow(dstr, src.len);
@@ -878,8 +878,8 @@ CGS_API CGS_Result(int) cgs__find(CGS_StrView hay, CGS_StrView needle)
 {
     if (needle.len == 0)
         return (CGS_Result(int)) {.val = 0};
-    if (hay.chars == NULL || needle.chars == NULL || needle.len > hay.len)
-        return (CGS_Result(int)) {.err = {CGS_NOT_FOUND}};
+    if(needle.len > hay.len)
+        return (CGS_Result(int)) {.err.ec = CGS_NOT_FOUND};
 
     unsigned int scan_end        = hay.len - needle.len;
     const char *max_possible_ptr = &hay.chars[scan_end];
@@ -1124,6 +1124,25 @@ CGS_API CGS_Error cgs__strv_split_iter(CGS_StrView str, CGS_StrView delim, bool 
         {
             return (CGS_Error) {CGS_OK};
         }
+    }
+}
+
+CGS_API CGS_StrView cgs__split_foreach_next(CGS_StrView *base, CGS_StrView delim)
+{
+    CGS_Result(int) found = cgs__find(*base, delim);
+    if (found.err.ec == CGS_OK)
+    {
+        CGS_StrView cur = {.chars = base->chars, .len = found.val};
+        base->chars += found.val + delim.len;
+        base->len -= found.val + delim.len;
+        return cur;
+    }
+    else
+    {
+        CGS_StrView cur = {.chars = base->chars, .len = base->len};
+        base->chars += base->len;
+        base->len = 0;
+        return cur;
     }
 }
 
