@@ -878,7 +878,7 @@ CGS_API CGS_Result(int) cgs__find(CGS_StrView hay, CGS_StrView needle)
 {
     if (needle.len == 0)
         return (CGS_Result(int)) {.val = 0};
-    if(needle.len > hay.len)
+    if (needle.len > hay.len)
         return (CGS_Result(int)) {.err.ec = CGS_NOT_FOUND};
 
     unsigned int scan_end        = hay.len - needle.len;
@@ -1127,23 +1127,48 @@ CGS_API CGS_Error cgs__strv_split_iter(CGS_StrView str, CGS_StrView delim, bool 
     }
 }
 
-CGS_API CGS_StrView cgs__split_foreach_next(CGS_StrView *base, CGS_StrView delim)
+CGS_PRIVATE bool cgs__split_foreach_next_impl(CGS__SplitForeachIter *iter)
 {
-    CGS_Result(int) found = cgs__find(*base, delim);
+    CGS_Result(int) found = cgs__find(*iter->base, iter->delim);
     if (found.err.ec == CGS_OK)
     {
-        CGS_StrView cur = {.chars = base->chars, .len = found.val};
-        base->chars += found.val + delim.len;
-        base->len -= found.val + delim.len;
-        return cur;
+        CGS_StrView view = {.chars = iter->base->chars, .len = found.val};
+        iter->base->chars += found.val + iter->delim.len;
+        iter->base->len -= found.val + iter->delim.len;
+        *iter->view = view;
+        return true;
     }
     else
     {
-        CGS_StrView cur = {.chars = base->chars, .len = base->len};
-        base->chars += base->len;
-        base->len = 0;
-        return cur;
+        CGS_StrView view = {.chars = iter->base->chars, .len = iter->base->len};
+        iter->base->chars += iter->base->len;
+        iter->base->len = 0;
+        *iter->view     = view;
+        return false;
     }
+}
+
+CGS_API CGS__SplitForeachIter cgs__split_foreach_begin(CGS_StrView *base, CGS_StrView *view, CGS_StrView delim)
+{
+    CGS__SplitForeachIter ret = {
+        .base      = base,
+        .view      = view,
+        .delim     = delim,
+        .done      = false,
+        .next_done = false,
+    };
+    if (!cgs__split_foreach_next_impl(&ret))
+        ret.next_done = true;
+    return ret;
+}
+
+CGS_API void cgs__split_foreach_next(CGS__SplitForeachIter *iter)
+{
+    if (iter->next_done)
+        iter->done = true;
+
+    if (!iter->done && !cgs__split_foreach_next_impl(iter))
+        iter->next_done = true;
 }
 
 CGS_PRIVATE bool cgs__combine_views_into_array(CGS_StrView str, void *ctx)
@@ -1305,11 +1330,12 @@ CGS_API CGS_StrView cgs__skip_any(CGS_StrView src, CGS_StrView delim_set)
 
 CGS_API CGS_Result(int) cgs__starts_with_tokens(CGS_StrView src, CGS_StrView delim_set, CGS_StrViewArray tokens)
 {
-    const char *src_start = src.chars;
+    const char *src_start          = src.chars;
     unsigned int end_of_last_match = 0;
     for (unsigned int i = 0; i < tokens.len; i++)
     {
         unsigned int before_skip_len = src.len;
+
         src = cgs_skip_any(src, delim_set);
         if (before_skip_len != src.len && tokens.strs[i].len == 1 && memchr(delim_set.chars, tokens.strs[i].chars[0], delim_set.len))
         {
@@ -1322,12 +1348,12 @@ CGS_API CGS_Result(int) cgs__starts_with_tokens(CGS_StrView src, CGS_StrView del
         }
         else
         {
-            return (CGS_Result(int)){.err.ec = CGS_NOT_FOUND, .val = end_of_last_match};
+            return (CGS_Result(int)) {.err.ec = CGS_NOT_FOUND, .val = end_of_last_match};
         }
 
         end_of_last_match = src.chars - src_start;
     }
-    return (CGS_Result(int)){.err.ec = CGS_OK, .val = end_of_last_match};
+    return (CGS_Result(int)) {.err.ec = CGS_OK, .val = end_of_last_match};
 }
 
 CGS_API CGS_Error cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int begin, unsigned int end, CGS_StrView replacement)
@@ -1745,8 +1771,8 @@ CGS_API unsigned int cgs__count(CGS_StrView hay, CGS_StrView needle)
     if (needle.len == 0)
         return hay.len + 1;
 
-    unsigned int count = 0;
-    CGS_Result(int) found  = cgs__find(hay, needle);
+    unsigned int count    = 0;
+    CGS_Result(int) found = cgs__find(hay, needle);
     while (found.err.ec == CGS_OK)
     {
         hay.chars += found.val + needle.len;
