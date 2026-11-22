@@ -2472,3 +2472,1381 @@ void test_starts_with_tokens()
         ASSERT_TRUE(cgs_equal(cgs_strv(s, r.val), " tail"));
     }
 }
+
+void test_split_foreach()
+{
+    TEST("cgs_split_foreach: example from docs");
+    {
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(" abc", " ", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(p[0].len == 0);
+        ASSERT_TRUE(cgs_equal(p[1], "abc"));
+    }
+
+    TEST("cgs_split_foreach: no delimiter in base yields the whole base once");
+    {
+        char s[] = "abc";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 1);
+        ASSERT_TRUE(cgs_equal(p[0], "abc") && p[0].chars == &s[0]);
+    }
+
+    TEST("cgs_split_foreach: one delimiter");
+    {
+        char s[] = "a,b";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == &s[2]);
+    }
+
+    TEST("cgs_split_foreach: several delimiters, pieces in order");
+    {
+        char s[] = "a,b,c";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == &s[2]);
+        ASSERT_TRUE(cgs_equal(p[2], "c") && p[2].chars == &s[4]);
+    }
+
+    TEST("cgs_split_foreach: multi-character pieces");
+    {
+        char s[] = "hello,world,foo";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(cgs_equal(p[0], "hello") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "world") && p[1].chars == &s[6]);
+        ASSERT_TRUE(cgs_equal(p[2], "foo") && p[2].chars == &s[12]);
+    }
+
+    TEST("cgs_split_foreach: pieces are not trimmed");
+    {
+        char s[] = "a , b";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a ") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], " b") && p[1].chars == &s[3]);
+    }
+
+    TEST("cgs_split_foreach: a different punctuation char does not split");
+    {
+        char s[] = "a;b";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 1);
+        ASSERT_TRUE(cgs_equal(p[0], "a;b") && p[0].chars == &s[0]);
+    }
+
+    TEST("cgs_split_foreach: matching is case-sensitive");
+    {
+        char s[] = "aXbxc";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "x", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "aXb") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "c") && p[1].chars == &s[4]);
+    }
+
+    /* ===== multi-character delimiters ===== */
+
+    TEST("cgs_split_foreach: two-character delimiter");
+    {
+        char s[] = "a, b, c";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ", ", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == &s[3]);
+        ASSERT_TRUE(cgs_equal(p[2], "c") && p[2].chars == &s[6]);
+    }
+
+    TEST("cgs_split_foreach: only the full delimiter splits, not its first char alone");
+    {
+        char s[] = "a,b, c";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ", ", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a,b") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "c") && p[1].chars == &s[5]);
+    }
+
+    TEST("cgs_split_foreach: partial delimiter at the end of base stays in the last piece");
+    {
+        char s[] = "a,-b,";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",-", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "b,") && p[1].chars == &s[3]);
+    }
+
+    TEST("cgs_split_foreach: delimiter longer than base");
+    {
+        char s[] = "ab";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "abc", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 1);
+        ASSERT_TRUE(cgs_equal(p[0], "ab") && p[0].chars == &s[0]);
+    }
+
+    TEST("cgs_split_foreach: base starts with a partial delimiter");
+    {
+        char s[] = "abX";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "abc", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 1);
+        ASSERT_TRUE(cgs_equal(p[0], "abX") && p[0].chars == &s[0]);
+    }
+
+    TEST("cgs_split_foreach: base ends with a partial delimiter");
+    {
+        char s[] = "xab";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "abc", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 1);
+        ASSERT_TRUE(cgs_equal(p[0], "xab") && p[0].chars == &s[0]);
+    }
+
+    TEST("cgs_split_foreach: long delimiter");
+    {
+        char s[] = "one<-->two<-->three";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "<-->", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(cgs_equal(p[0], "one") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "two") && p[1].chars == &s[7]);
+        ASSERT_TRUE(cgs_equal(p[2], "three") && p[2].chars == &s[14]);
+    }
+
+    TEST("cgs_split_foreach: delimiter of a repeated char, odd run leaves one char in the next piece");
+    {
+        char s[] = "a--b---c";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "--", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == &s[3]);
+        ASSERT_TRUE(cgs_equal(p[2], "-c") && p[2].chars == &s[6]);
+    }
+
+    /* ===== empty pieces ===== */
+
+    TEST("cgs_split_foreach: leading delimiter gives a leading empty piece");
+    {
+        char s[] = ",a";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(p[0].len == 0);
+        ASSERT_TRUE(cgs_equal(p[1], "a") && p[1].chars == &s[1]);
+    }
+
+    TEST("cgs_split_foreach: trailing delimiter gives a trailing empty piece");
+    {
+        char s[] = "a,";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(p[1].len == 0);
+    }
+
+    TEST("cgs_split_foreach: leading and trailing delimiters");
+    {
+        char s[] = ",a,";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(p[0].len == 0);
+        ASSERT_TRUE(cgs_equal(p[1], "a") && p[1].chars == &s[1]);
+        ASSERT_TRUE(p[2].len == 0);
+    }
+
+    TEST("cgs_split_foreach: two adjacent delimiters give an empty piece between them");
+    {
+        char s[] = "a,,b";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(p[1].len == 0);
+        ASSERT_TRUE(cgs_equal(p[2], "b") && p[2].chars == &s[3]);
+    }
+
+    TEST("cgs_split_foreach: run of delimiters gives one empty piece per extra delimiter");
+    {
+        char s[] = "a,,,b";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 4);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(p[1].len == 0 && p[2].len == 0);
+        ASSERT_TRUE(cgs_equal(p[3], "b") && p[3].chars == &s[4]);
+    }
+
+    TEST("cgs_split_foreach: base that is exactly one delimiter gives two empty pieces");
+    {
+        char s[] = ",";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(p[0].len == 0 && p[1].len == 0);
+    }
+
+    TEST("cgs_split_foreach: base of only delimiters");
+    {
+        char s[] = ",,,";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 4);
+        ASSERT_TRUE(p[0].len == 0 && p[1].len == 0 && p[2].len == 0 && p[3].len == 0);
+    }
+
+    TEST("cgs_split_foreach: base equal to a multi-character delimiter");
+    {
+        char s[] = "abc";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "abc", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(p[0].len == 0 && p[1].len == 0);
+    }
+
+    TEST("cgs_split_foreach: leading multi-character delimiter");
+    {
+        char s[] = ", a";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ", ", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(p[0].len == 0);
+        ASSERT_TRUE(cgs_equal(p[1], "a") && p[1].chars == &s[2]);
+    }
+
+    TEST("cgs_split_foreach: trailing multi-character delimiter");
+    {
+        char s[] = "a, ";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ", ", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(p[1].len == 0);
+    }
+
+    TEST("cgs_split_foreach: adjacent multi-character delimiters");
+    {
+        char s[] = "a, , b";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ", ", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(p[1].len == 0);
+        ASSERT_TRUE(cgs_equal(p[2], "b") && p[2].chars == &s[5]);
+    }
+
+    TEST("cgs_split_foreach: single-char delimiter on a doubled delimiter");
+    {
+        char s[] = "a--b";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "-", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(p[1].len == 0);
+        ASSERT_TRUE(cgs_equal(p[2], "b") && p[2].chars == &s[3]);
+    }
+
+    TEST("cgs_split_foreach: number of pieces is the number of delimiters plus one");
+    {
+        char s[] = "a,b,,c,";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 5 && n == cgs_count(s, ",") + 1);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && cgs_equal(p[1], "b") && p[2].len == 0);
+        ASSERT_TRUE(cgs_equal(p[3], "c") && p[4].len == 0);
+    }
+
+    /* ===== empty base ===== */
+
+    TEST("cgs_split_foreach: empty base gives one empty piece");
+    {
+        char s[] = "";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 1 && p[0].len == 0);
+    }
+
+    TEST("cgs_split_foreach: empty base with a multi-character delimiter gives one empty piece");
+    {
+        char s[] = "";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ", ", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 1 && p[0].len == 0);
+    }
+
+    TEST("cgs_split_foreach: empty view cut from the middle of a buffer gives one empty piece");
+    {
+        char buf[] = "a,b";
+        CGS_StrView empty = cgs_strv(buf, 1, 1);
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(empty, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 1 && p[0].len == 0);
+    }
+
+    /* ===== left-to-right, non-overlapping matching ===== */
+
+    TEST("cgs_split_foreach: overlapping candidates, first match wins (aaa on aa)");
+    {
+        char s[] = "aaa";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "aa", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(p[0].len == 0);
+        ASSERT_TRUE(cgs_equal(p[1], "a") && p[1].chars == &s[2]);
+    }
+
+    TEST("cgs_split_foreach: delimiter repeated back to back (aaaa on aa)");
+    {
+        char s[] = "aaaa";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "aa", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(p[0].len == 0 && p[1].len == 0 && p[2].len == 0);
+    }
+
+    TEST("cgs_split_foreach: odd-length run of a self-overlapping delimiter (aaaaa on aa)");
+    {
+        char s[] = "aaaaa";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "aa", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(p[0].len == 0 && p[1].len == 0);
+        ASSERT_TRUE(cgs_equal(p[2], "a") && p[2].chars == &s[4]);
+    }
+
+    TEST("cgs_split_foreach: overlapping occurrences of a delimiter only split once (abab on aba)");
+    {
+        char s[] = "abab";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "aba", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(p[0].len == 0);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == &s[3]);
+    }
+
+    TEST("cgs_split_foreach: overlapping occurrences in the middle (xababx on aba)");
+    {
+        char s[] = "xababx";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "aba", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "x") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "bx") && p[1].chars == &s[4]);
+    }
+
+    TEST("cgs_split_foreach: failed partial match does not skip a match one char later (aab on ab)");
+    {
+        char s[] = "aab";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "ab", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(p[1].len == 0);
+    }
+
+    TEST("cgs_split_foreach: failed two-char partial match does not skip a match (aaab on aab)");
+    {
+        char s[] = "aaab";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "aab", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(p[1].len == 0);
+    }
+
+    TEST("cgs_split_foreach: partial match followed by a real match (abcabd on abd)");
+    {
+        char s[] = "abcabd";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "abd", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "abc") && p[0].chars == &s[0]);
+        ASSERT_TRUE(p[1].len == 0);
+    }
+
+    /* ===== pieces are views into base ===== */
+
+    TEST("cgs_split_foreach: pieces and delimiters tile base exactly");
+    {
+        char s[] = "ab,cd,,ef";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        bool tiled = n == 4 && p[0].chars == &s[0];
+        for (unsigned int i = 0; i + 1 < n; i++)
+        {
+            tiled = tiled && p[i].chars + p[i].len + 1 == p[i + 1].chars;
+        }
+        tiled = tiled && n > 0 && p[n - 1].chars + p[n - 1].len == &s[sizeof(s) - 1];
+        ASSERT_TRUE(tiled);
+    }
+
+    TEST("cgs_split_foreach: piece lengths plus delimiter lengths add up to base length");
+    {
+        char s[] = "a<>bb<><>c";
+        unsigned int n = 0;
+        unsigned int total = 0;
+        cgs_split_foreach(s, "<>", it)
+        {
+            if (n == 8) break;
+            total += it.len;
+            n++;
+        }
+        ASSERT_TRUE(n == 4);
+        ASSERT_TRUE(total + (n - 1) * 2 == cgs_len(s));
+    }
+
+    TEST("cgs_split_foreach: base is not modified during or after iteration");
+    {
+        char s[] = "a,b,c";
+        bool intact = true;
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            intact = intact && it.len == 1 && strcmp(s, "a,b,c") == 0;
+            n++;
+        }
+        ASSERT_TRUE(n == 3 && intact && strcmp(s, "a,b,c") == 0);
+    }
+
+    TEST("cgs_split_foreach: delimiter is not modified");
+    {
+        char s[] = "a, b";
+        char delim[] = ", ";
+        unsigned int n = 0;
+        cgs_split_foreach(s, delim, it)
+        {
+            if (n == 8) break;
+            n += (it.len == 1);
+        }
+        ASSERT_TRUE(n == 2 && strcmp(delim, ", ") == 0);
+    }
+
+    /* ===== characters and bytes ===== */
+
+    TEST("cgs_split_foreach: split lines, trailing newline gives a trailing empty piece");
+    {
+        char s[] = "l1\nl2\nl3\n";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "\n", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 4);
+        ASSERT_TRUE(cgs_equal(p[0], "l1") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "l2") && p[1].chars == &s[3]);
+        ASSERT_TRUE(cgs_equal(p[2], "l3") && p[2].chars == &s[6]);
+        ASSERT_TRUE(p[3].len == 0);
+    }
+
+    TEST("cgs_split_foreach: CRLF delimiter");
+    {
+        char s[] = "a\r\nb\r\n";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "\r\n", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == &s[3]);
+        ASSERT_TRUE(p[2].len == 0);
+    }
+
+    TEST("cgs_split_foreach: lone LF does not match a CRLF delimiter");
+    {
+        char s[] = "a\nb\r\nc";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "\r\n", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a\nb") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "c") && p[1].chars == &s[5]);
+    }
+
+    TEST("cgs_split_foreach: tab delimiter, spaces stay inside pieces");
+    {
+        char s[] = "a b\tc d";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "\t", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a b") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "c d") && p[1].chars == &s[4]);
+    }
+
+    TEST("cgs_split_foreach: high-bit byte delimiter");
+    {
+        char s[] = "a\xff" "b\xff" "c";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "\xff", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == &s[2]);
+        ASSERT_TRUE(cgs_equal(p[2], "c") && p[2].chars == &s[4]);
+    }
+
+    TEST("cgs_split_foreach: multi-byte UTF-8 delimiter");
+    {
+        char s[] = "a\xc3\xa9" "b\xc3\xa9" "c";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "\xc3\xa9", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == &s[3]);
+        ASSERT_TRUE(cgs_equal(p[2], "c") && p[2].chars == &s[6]);
+    }
+
+    TEST("cgs_split_foreach: single bytes of a multi-byte delimiter do not split");
+    {
+        char s[] = "a\xc3" "b\xa9" "c";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, "\xc3\xa9", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 1);
+        ASSERT_TRUE(p[0].len == 5 && p[0].chars == &s[0]);
+    }
+
+    TEST("cgs_split_foreach: UTF-8 pieces split on an ASCII delimiter");
+    {
+        char s[] = "\xc3\xa9t\xc3\xa9,x";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "\xc3\xa9t\xc3\xa9") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "x") && p[1].chars == &s[6]);
+    }
+
+    TEST("cgs_split_foreach: NUL byte inside a base view is an ordinary char");
+    {
+        char buf[] = {'a', '\0', 'b', ',', 'c'};
+        CGS_StrView v = {.chars = buf, .len = 5};
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(v, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(p[0].len == 3 && p[0].chars == &buf[0]);
+        ASSERT_TRUE(p[1].len == 1 && p[1].chars == &buf[4]);
+    }
+
+    /* ===== view lengths ===== */
+
+    TEST("cgs_split_foreach: respects base view length");
+    {
+        char buf[] = "a,b,c";
+        CGS_StrView v = cgs_strv(buf, 0, 3);
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(v, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &buf[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == &buf[2]);
+    }
+
+    TEST("cgs_split_foreach: base view ending right after a delimiter gives a trailing empty piece");
+    {
+        char buf[] = "a,b";
+        CGS_StrView v = cgs_strv(buf, 0, 2);
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(v, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &buf[0]);
+        ASSERT_TRUE(p[1].len == 0);
+    }
+
+    TEST("cgs_split_foreach: delimiter match crossing the end of the base view is not found");
+    {
+        char buf[] = "a,b";
+        CGS_StrView v = cgs_strv(buf, 0, 2);
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(v, ",b", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 1);
+        ASSERT_TRUE(p[0].len == 2 && p[0].chars == &buf[0]);
+    }
+
+    TEST("cgs_split_foreach: base view starting mid-buffer");
+    {
+        char buf[] = "x,a,b";
+        CGS_StrView v = cgs_strv(buf, 2);
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(v, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &buf[2]);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == &buf[4]);
+    }
+
+    TEST("cgs_split_foreach: respects delim view length");
+    {
+        char s[] = "a,b;c";
+        char dbuf[] = ",;";
+        CGS_StrView comma = cgs_strv(dbuf, 0, 1);
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, comma, it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "b;c") && p[1].chars == &s[2]);
+    }
+
+    TEST("cgs_split_foreach: multi-character delim view cut to one char");
+    {
+        char s[] = "a, b";
+        char dbuf[] = ", ";
+        CGS_StrView comma = cgs_strv(dbuf, 0, 1);
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, comma, it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], " b") && p[1].chars == &s[2]);
+    }
+
+    /* ===== anystr argument types ===== */
+
+    TEST("cgs_split_foreach: base as char*");
+    {
+        char buf[] = "a,b";
+        char *s = buf;
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &buf[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == &buf[2]);
+    }
+
+    TEST("cgs_split_foreach: base as unsigned char[] and unsigned char*");
+    {
+        unsigned char s[] = {'a', ',', 'b', 0};
+        unsigned char *sp = s;
+        CGS_StrView p1[8] = {0}, p2[8] = {0};
+        unsigned int n1 = 0, n2 = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n1 == 8) break;
+            p1[n1++] = it;
+        }
+        cgs_split_foreach(sp, ",", it)
+        {
+            if (n2 == 8) break;
+            p2[n2++] = it;
+        }
+        ASSERT_TRUE(n1 == 2);
+        ASSERT_TRUE(cgs_equal(p1[0], "a") && p1[0].chars == (char *)&s[0]);
+        ASSERT_TRUE(cgs_equal(p1[1], "b") && p1[1].chars == (char *)&s[2]);
+        ASSERT_TRUE(n2 == 2);
+        ASSERT_TRUE(cgs_equal(p2[0], "a") && p2[0].chars == (char *)&s[0]);
+        ASSERT_TRUE(cgs_equal(p2[1], "b") && p2[1].chars == (char *)&s[2]);
+    }
+
+    TEST("cgs_split_foreach: base as CGS_StrView");
+    {
+        CGS_StrView v = cgs_strv("a,b");
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(v, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == v.chars);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == v.chars + 2);
+    }
+
+    TEST("cgs_split_foreach: base as CGS_DStr and CGS_DStr*, pieces point into its buffer");
+    {
+        CGS_DStr d = cgs_dstr_init_from("a,b");
+        char *base = cgs_chars(d);
+        CGS_StrView p1[8] = {0}, p2[8] = {0};
+        unsigned int n1 = 0, n2 = 0;
+        cgs_split_foreach(d, ",", it)
+        {
+            if (n1 == 8) break;
+            p1[n1++] = it;
+        }
+        cgs_split_foreach(&d, ",", it)
+        {
+            if (n2 == 8) break;
+            p2[n2++] = it;
+        }
+        ASSERT_TRUE(n1 == 2);
+        ASSERT_TRUE(cgs_equal(p1[0], "a") && p1[0].chars == base);
+        ASSERT_TRUE(cgs_equal(p1[1], "b") && p1[1].chars == base + 2);
+        ASSERT_TRUE(n2 == 2);
+        ASSERT_TRUE(cgs_equal(p2[0], "a") && p2[0].chars == base);
+        ASSERT_TRUE(cgs_equal(p2[1], "b") && p2[1].chars == base + 2);
+        cgs_dstr_deinit(&d);
+    }
+
+    TEST("cgs_split_foreach: base as CGS_StrBuf and CGS_StrBuf*");
+    {
+        char buf[64] = "a,b";
+        CGS_StrBuf sb = cgs_strbuf_init_from_cstr(buf, sizeof(buf));
+        CGS_StrView p1[8] = {0}, p2[8] = {0};
+        unsigned int n1 = 0, n2 = 0;
+        cgs_split_foreach(sb, ",", it)
+        {
+            if (n1 == 8) break;
+            p1[n1++] = it;
+        }
+        cgs_split_foreach(&sb, ",", it)
+        {
+            if (n2 == 8) break;
+            p2[n2++] = it;
+        }
+        ASSERT_TRUE(n1 == 2);
+        ASSERT_TRUE(cgs_equal(p1[0], "a") && p1[0].chars == &buf[0]);
+        ASSERT_TRUE(cgs_equal(p1[1], "b") && p1[1].chars == &buf[2]);
+        ASSERT_TRUE(n2 == 2);
+        ASSERT_TRUE(cgs_equal(p2[0], "a") && p2[0].chars == &buf[0]);
+        ASSERT_TRUE(cgs_equal(p2[1], "b") && p2[1].chars == &buf[2]);
+    }
+
+    TEST("cgs_split_foreach: base as CGS_MutStrRef");
+    {
+        char buf[] = "a,b";
+        CGS_MutStrRef ref = cgs_mutstr_ref(buf);
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(ref, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && p[0].chars == &buf[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "b") && p[1].chars == &buf[2]);
+    }
+
+    TEST("cgs_split_foreach: delim as each anystr type");
+    {
+        char s[] = "a, b, c";
+        char d_arr[] = ", ";
+        unsigned char d_uarr[] = {',', ' ', 0};
+        CGS_StrView d_sv = cgs_strv(", ");
+        CGS_DStr d_dstr = cgs_dstr_init_from(", ");
+        char d_buf[8] = ", ";
+        CGS_StrBuf d_sb = cgs_strbuf_init_from_cstr(d_buf, sizeof(d_buf));
+        char d_buf2[] = ", ";
+        CGS_MutStrRef d_msr = cgs_mutstr_ref(d_buf2);
+        unsigned int cnt[8] = {0}, len[8] = {0};
+        cgs_split_foreach(s, d_arr,   it) { cnt[0]++; len[0] += it.len; }
+        cgs_split_foreach(s, d_uarr,  it) { cnt[1]++; len[1] += it.len; }
+        cgs_split_foreach(s, d_sv,    it) { cnt[2]++; len[2] += it.len; }
+        cgs_split_foreach(s, d_dstr,  it) { cnt[3]++; len[3] += it.len; }
+        cgs_split_foreach(s, &d_dstr, it) { cnt[4]++; len[4] += it.len; }
+        cgs_split_foreach(s, d_sb,    it) { cnt[5]++; len[5] += it.len; }
+        cgs_split_foreach(s, &d_sb,   it) { cnt[6]++; len[6] += it.len; }
+        cgs_split_foreach(s, d_msr,   it) { cnt[7]++; len[7] += it.len; }
+        bool all_ok = true;
+        for (unsigned int i = 0; i < 8; i++)
+        {
+            all_ok = all_ok && cnt[i] == 3 && len[i] == 3;
+        }
+        ASSERT_TRUE(all_ok);
+        cgs_dstr_deinit(&d_dstr);
+    }
+
+    /* ===== loop control ===== */
+
+    TEST("cgs_split_foreach: break after the first piece");
+    {
+        char s[] = "a,b,c";
+        CGS_StrView first = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            first = it;
+            n++;
+            break;
+        }
+        ASSERT_TRUE(n == 1);
+        ASSERT_TRUE(cgs_equal(first, "a") && first.chars == &s[0]);
+    }
+
+    TEST("cgs_split_foreach: break in the middle stops the loop");
+    {
+        char s[] = "a,b,c";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+            if (cgs_equal(it, "b")) break;
+        }
+        ASSERT_TRUE(n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && cgs_equal(p[1], "b"));
+    }
+
+    TEST("cgs_split_foreach: break on the last piece");
+    {
+        char s[] = "a,b";
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            n++;
+            if (cgs_equal(it, "b")) break;
+            if (n == 8) break;
+        }
+        ASSERT_TRUE(n == 2);
+    }
+
+    TEST("cgs_split_foreach: continue skips the rest of the body and moves to the next piece");
+    {
+        char s[] = "a,b,c";
+        CGS_StrView p[8] = {0};
+        unsigned int seen = 0, n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (seen == 8) break;
+            seen++;
+            if (cgs_equal(it, "b")) continue;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(seen == 3 && n == 2);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && cgs_equal(p[1], "c"));
+    }
+
+    TEST("cgs_split_foreach: continue on every piece still visits all pieces");
+    {
+        char s[] = "a,,b,";
+        unsigned int seen = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (seen == 8) break;
+            seen++;
+            (void)it;
+            continue;
+        }
+        ASSERT_TRUE(seen == 4);
+    }
+
+    TEST("cgs_split_foreach: single-statement body without braces");
+    {
+        char s[] = "ab,c,def";
+        unsigned int total = 0;
+        cgs_split_foreach(s, ",", it) total += it.len;
+        ASSERT_TRUE(total == 6);
+    }
+
+    TEST("cgs_split_foreach: works as the body of an unbraced if/else");
+    {
+        char s[] = "a,b,c";
+        unsigned int n = 0;
+        int other = 0;
+        if (n == 0)
+            cgs_split_foreach(s, ",", it) n += (it.len == 1);
+        else
+            other++;
+        ASSERT_TRUE(n == 3 && other == 0);
+
+        n = 0;
+        if (n != 0)
+            cgs_split_foreach(s, ",", it) n += (it.len == 1);
+        else
+            other++;
+        ASSERT_TRUE(n == 0 && other == 1);
+    }
+
+    /* ===== nesting ===== */
+
+    TEST("cgs_split_foreach: nested loops with different names");
+    {
+        char s[] = "a,b;c,d";
+        CGS_StrView cells[8] = {0};
+        unsigned int rows = 0, n = 0;
+        cgs_split_foreach(s, ";", row)
+        {
+            if (rows == 8) break;
+            rows++;
+            cgs_split_foreach(row, ",", cell)
+            {
+                if (n == 8) break;
+                cells[n++] = cell;
+            }
+        }
+        ASSERT_TRUE(rows == 2 && n == 4);
+        ASSERT_TRUE(cgs_equal(cells[0], "a") && cells[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(cells[1], "b") && cells[1].chars == &s[2]);
+        ASSERT_TRUE(cgs_equal(cells[2], "c") && cells[2].chars == &s[4]);
+        ASSERT_TRUE(cgs_equal(cells[3], "d") && cells[3].chars == &s[6]);
+    }
+
+    TEST("cgs_split_foreach: nested loops with uneven rows and a trailing empty row");
+    {
+        char s[] = "a;b,c;";
+        CGS_StrView cells[8] = {0};
+        unsigned int rows = 0, n = 0;
+        cgs_split_foreach(s, ";", row)
+        {
+            if (rows == 8) break;
+            rows++;
+            cgs_split_foreach(row, ",", cell)
+            {
+                if (n == 8) break;
+                cells[n++] = cell;
+            }
+        }
+        ASSERT_TRUE(rows == 3 && n == 4);
+        ASSERT_TRUE(cgs_equal(cells[0], "a") && cgs_equal(cells[1], "b"));
+        ASSERT_TRUE(cgs_equal(cells[2], "c") && cells[3].len == 0);
+    }
+
+    TEST("cgs_split_foreach: break in the inner loop only exits the inner loop");
+    {
+        char s[] = "a,b;c,d";
+        CGS_StrView cells[8] = {0};
+        unsigned int rows = 0, n = 0;
+        cgs_split_foreach(s, ";", row)
+        {
+            if (rows == 8) break;
+            rows++;
+            cgs_split_foreach(row, ",", cell)
+            {
+                if (n == 8) break;
+                cells[n++] = cell;
+                break;
+            }
+        }
+        ASSERT_TRUE(rows == 2 && n == 2);
+        ASSERT_TRUE(cgs_equal(cells[0], "a") && cgs_equal(cells[1], "c"));
+    }
+
+    TEST("cgs_split_foreach: continue in the inner loop does not skip outer iterations");
+    {
+        char s[] = "a,b;c,d";
+        unsigned int rows = 0, seen = 0;
+        cgs_split_foreach(s, ";", row)
+        {
+            if (rows == 8) break;
+            rows++;
+            cgs_split_foreach(row, ",", cell)
+            {
+                if (seen == 8) break;
+                seen++;
+                (void)cell;
+                continue;
+            }
+        }
+        ASSERT_TRUE(rows == 2 && seen == 4);
+    }
+
+    /* ===== macro hygiene ===== */
+
+    TEST("cgs_split_foreach: two loops in a row in the same block can reuse the name");
+    {
+        char s[] = "a,b";
+        unsigned int n1 = 0, n2 = 0;
+        cgs_split_foreach(s, ",", it) n1 += it.len;
+        cgs_split_foreach(s, ",", it) n2 += it.len;
+        ASSERT_TRUE(n1 == 2 && n2 == 2);
+    }
+
+    TEST("cgs_split_foreach: base expression is evaluated exactly once");
+    {
+        char s[] = "a,b,c";
+        int evals = 0;
+        unsigned int n = 0;
+        cgs_split_foreach((evals++, s), ",", it)
+        {
+            if (n == 8) break;
+            (void)it;
+            n++;
+        }
+        ASSERT_TRUE(n == 3 && evals == 1);
+    }
+
+    TEST("cgs_split_foreach: delim expression is evaluated exactly once");
+    {
+        char s[] = "a,b,c";
+        int evals = 0;
+        unsigned int n = 0;
+        cgs_split_foreach(s, (evals++, ","), it)
+        {
+            if (n == 8) break;
+            (void)it;
+            n++;
+        }
+        ASSERT_TRUE(n == 3 && evals == 1);
+    }
+
+    /* ===== many pieces ===== */
+
+    TEST("cgs_split_foreach: 100 pieces");
+    {
+        char s[200];
+        for (unsigned int i = 0; i < 100; i++)
+        {
+            s[2 * i] = 'a';
+            s[2 * i + 1] = ',';
+        }
+        s[199] = '\0';
+        unsigned int n = 0;
+        bool all_ok = true;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 200) break;
+            all_ok = all_ok && cgs_equal(it, "a") && it.chars == &s[2 * n];
+            n++;
+        }
+        ASSERT_TRUE(n == 100 && all_ok);
+    }
+
+    TEST("cgs_split_foreach: 1000 empty pieces");
+    {
+        char s[1000];
+        memset(s, ',', 999);
+        s[999] = '\0';
+        unsigned int n = 0;
+        bool all_empty = true;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 2000) break;
+            all_empty = all_empty && it.len == 0;
+            n++;
+        }
+        ASSERT_TRUE(n == 1000 && all_empty);
+    }
+
+    /* ===== assumed behaviour (adjust if your implementation differs) ===== */
+
+    TEST("cgs_split_foreach: empty pieces point at their position in base");
+    {
+        char s[] = ",a,,b,";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+        }
+        ASSERT_TRUE(n == 5);
+        ASSERT_TRUE(p[0].len == 0 && p[0].chars == &s[0]);
+        ASSERT_TRUE(cgs_equal(p[1], "a") && p[1].chars == &s[1]);
+        ASSERT_TRUE(p[2].len == 0 && p[2].chars == &s[3]);
+        ASSERT_TRUE(cgs_equal(p[3], "b") && p[3].chars == &s[4]);
+        ASSERT_TRUE(p[4].len == 0 && p[4].chars == &s[6]);
+    }
+
+    TEST("cgs_split_foreach: assigning to the loop variable does not change iteration");
+    {
+        char s[] = "a,b,c";
+        CGS_StrView p[8] = {0};
+        unsigned int n = 0;
+        cgs_split_foreach(s, ",", it)
+        {
+            if (n == 8) break;
+            p[n++] = it;
+            it = cgs_strv("zzzz");
+        }
+        ASSERT_TRUE(n == 3);
+        ASSERT_TRUE(cgs_equal(p[0], "a") && cgs_equal(p[1], "b") && cgs_equal(p[2], "c"));
+    }
+
+    TEST("cgs_split_foreach: nested loop can reuse the outer name and split the outer piece");
+    {
+        char s[] = "a,b;c,d";
+        CGS_StrView cells[8] = {0};
+        unsigned int rows = 0, n = 0;
+        cgs_split_foreach(s, ";", it)
+        {
+            if (rows == 8) break;
+            rows++;
+            cgs_split_foreach(it, ",", it)
+            {
+                if (n == 8) break;
+                cells[n++] = it;
+            }
+        }
+        ASSERT_TRUE(rows == 2 && n == 4);
+        ASSERT_TRUE(cgs_equal(cells[0], "a") && cgs_equal(cells[1], "b"));
+        ASSERT_TRUE(cgs_equal(cells[2], "c") && cgs_equal(cells[3], "d"));
+    }
+}

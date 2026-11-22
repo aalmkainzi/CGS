@@ -1963,6 +1963,7 @@ void test_zstrv();
 void test_chain_writer();
 void test_custom_writer();
 void test_starts_with_tokens();
+void test_split_foreach();
 
 int test_count;
 int passed_count;
@@ -2008,6 +2009,7 @@ int main() {
     test_chain_writer();
     test_custom_writer();
     test_starts_with_tokens();
+    test_split_foreach();
 
     printf("\n========================================\n");
     printf("Test Results: %d/%d passed\n", passed_count, test_count);

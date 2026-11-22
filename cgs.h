@@ -644,6 +644,21 @@ cgs__strv_split(cgs__strv_1(anystr), cgs__strv_1(anystr_delim), CGS__VA_OR(cgs_g
 #define cgs_split_iter(anystr, anystr_delim, callback, ...) \
 cgs__strv_split_iter(cgs__strv_1(anystr), cgs__strv_1(anystr_delim), callback, CGS__VA_OR(NULL, __VA_ARGS__))
 
+typedef struct CGS__SplitForeachIter
+{
+    CGS_StrView *base;
+    CGS_StrView *view;
+    CGS_StrView delim;
+    bool next_done;
+    bool done;
+} CGS__SplitForeachIter;
+
+#define cgs_split_foreach(base, delim, name) \
+for (bool _b = true; _b; _b = false) \
+for (CGS_StrView cgs__base = cgs__strv_1(base); _b; _b = false) \
+for (CGS_StrView name = {}; _b; _b = false) \
+for (CGS__SplitForeachIter cgs__iter = cgs__split_foreach_begin(&cgs__base, &name, cgs__strv_1(delim)); !cgs__iter.done; cgs__split_foreach_next(&cgs__iter))
+
 #define cgs_join(mutstr_dst, strv_arr, anystr_delim) \
 _Generic(mutstr_dst, \
     CGS_MutStrRef : cgs__strv_arr_join(cgs__coerce((mutstr_dst), CGS_MutStrRef), strv_arr, cgs__strv_1(anystr_delim)), \
@@ -1612,8 +1627,10 @@ CGS_API CGS_Error       cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int beg
 CGS_API CGS_Error       cgs__strv_arr_join_into_dstr(CGS_DStr *dstr, CGS_StrViewArray strs, CGS_StrView delim);
 
 CGS__NODISCARD("str_split returns a heap allocated array")
-CGS_API CGS_StrViewArray cgs__strv_split(CGS_StrView str, CGS_StrView delim, CGS_Allocator* allocator);
-CGS_API CGS_Error        cgs__strv_split_iter(CGS_StrView str, CGS_StrView delim, bool(*cb)(CGS_StrView found, void *ctx), void *ctx);
+CGS_API CGS_StrViewArray      cgs__strv_split(CGS_StrView str, CGS_StrView delim, CGS_Allocator* allocator);
+CGS_API CGS_Error             cgs__strv_split_iter(CGS_StrView str, CGS_StrView delim, bool(*cb)(CGS_StrView found, void *ctx), void *ctx);
+CGS_API CGS__SplitForeachIter cgs__split_foreach_begin(CGS_StrView *base, CGS_StrView *view, CGS_StrView delim);
+CGS_API void                  cgs__split_foreach_next(CGS__SplitForeachIter *iter);
 
 CGS_API CGS_StrViewArray cgs__strv_arr_from(const CGS_StrView *carr, unsigned int nb);
 
