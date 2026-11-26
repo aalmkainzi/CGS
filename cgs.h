@@ -510,7 +510,7 @@ _Generic((__typeof__(anystr)*)0,                                              \
     CGS__T_ALL_STRINGS(cgs__cap_generic_assoc, anystr)                        \
     char(*)[sizeof(anystr)]: cgs__return_as_u32,                              \
     unsigned char(*)[sizeof(anystr)]: cgs__return_as_u32                      \
-)(_Generic((__typeof__(anystr)*){},                                          \
+)(_Generic((__typeof__(anystr)*){},                                           \
     char(*)[sizeof(__typeof__(anystr))]: sizeof(__typeof__(anystr)),          \
     unsigned char(*)[sizeof(__typeof__(anystr))]: sizeof(__typeof__(anystr)), \
     default: cgs__strv_type_erasure(anystr)                                   \
@@ -678,8 +678,14 @@ cgs__skip(cgs__strv_1(anystr_src), delim)
 #define cgs_skip_any(anystr_src, delim_set) \
 cgs__skip_any(cgs__strv_1(anystr_src), cgs__strv_1(delim_set))
 
+#define cgs_advance(strv_ptr, by) \
+cgs__advance(strv_ptr, by)
+
 #define cgs_starts_with_tokens(anystr_src, delim_set, ...) \
 cgs__starts_with_tokens(cgs__strv_1(anystr_src), cgs__strv_1(delim_set), cgs_strv_arr(__VA_ARGS__))
+
+#define cgs_find_token_sequence(anystr_src, delim_set, ...) \
+cgs__find_token_sequence(cgs__strv_1(anystr_src), cgs__strv_1(delim_set), cgs_strv_arr(__VA_ARGS__))
 
 #define cgs_del(mutstr_dst, begin, end) \
 cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(mutstr_dst), begin, end)
@@ -803,7 +809,7 @@ cgs__strv_1(anystr),
 CGS__MACRO_OVERLOAD(cgs__strbuf_init_from_cstr, cstr __VA_OPT__(,) __VA_ARGS__)
 
 #define cgs__strbuf_init_from_cstr_1(cstr)                                                                                \
-_Generic(&(__typeof__(cstr)){},                                                                                          \
+_Generic(&(__typeof__(cstr)){},                                                                                           \
     char(*)[sizeof(__typeof__(cstr))]         : cgs__strbuf_from_cstr_cap((const char*)(cstr), sizeof(__typeof__(cstr))), \
     unsigned char(*)[sizeof(__typeof__(cstr))]: cgs__strbuf_from_cstr_cap((const char*)(cstr), sizeof(__typeof__(cstr))), \
     char**                                    : cgs__strbuf_from_cstr((const char*)(cstr)),                               \
@@ -853,7 +859,7 @@ _Generic((__typeof__(carr)*){}, \
 CGS__JOIN(cgs__mutstr_ref, __VA_OPT__(2))((mutstr) __VA_OPT__(,) __VA_ARGS__)
 
 #define cgs__mutstr_ref(mutstr)                                               \
-_Generic((__typeof__(mutstr)*){},                                            \
+_Generic((__typeof__(mutstr)*){},                                             \
 char**                                       : cgs__cstr_as_mutstr_ref,       \
 unsigned char**                              : cgs__ucstr_as_mutstr_ref,      \
 CGS_DStr**                                   : cgs__dstr_ptr_as_mutstr_ref,   \
@@ -861,7 +867,7 @@ CGS_StrBuf**                                 : cgs__strbuf_ptr_as_mutstr_ref, \
 CGS_MutStrRef*                               : cgs__mutstr_ref_as_mutstr_ref, \
 char(*)[sizeof(__typeof__(mutstr))]          : cgs__buf_as_mutstr_ref,        \
 unsigned char(*)[sizeof(__typeof__(mutstr))] : cgs__buf_as_mutstr_ref         \
-)(_Generic((__typeof__(mutstr)*){},                                          \
+)(_Generic((__typeof__(mutstr)*){},                                           \
     char(*)[sizeof(__typeof__(mutstr))]          : (CGS_Buffer){.ptr =         cgs__coerce((mutstr), char*),          .cap = sizeof(__typeof__(mutstr))}, \
     unsigned char(*)[sizeof(__typeof__(mutstr))] : (CGS_Buffer){.ptr = (char*) cgs__coerce((mutstr), unsigned char*), .cap = sizeof(__typeof__(mutstr))}, \
     default: (mutstr) \
@@ -1295,73 +1301,73 @@ CGS__FLOATING_TOSTR_LAST_GENERIC_ASSOC(ty, extra),
 #define CGS__FLOATING_TOSTR_P_GENERIC_ASSOC(ty, extra) \
 CGS__FLOATING_TOSTR_P_LAST_GENERIC_ASSOC(ty, extra),
 
-#define CGS__DEFAULT_TOSTR_GENERIC_ASSOCIATIONS             \
-bool                      : cgs__bool_tostr,                \
-char*                     : cgs__cstr_tostr,                \
-unsigned char*            : cgs__ucstr_tostr,               \
-char                      : cgs__char_tostr,                \
-signed char               : cgs__schar_tostr,               \
-unsigned char             : cgs__uchar_tostr,               \
-short                     : cgs__short_tostr,               \
-unsigned short            : cgs__ushort_tostr,              \
-int                       : cgs__int_tostr,                 \
-unsigned int              : cgs__uint_tostr,                \
-long                      : cgs__long_tostr,                \
-unsigned long             : cgs__ulong_tostr,               \
-long long                 : cgs__llong_tostr,               \
-unsigned long long        : cgs__ullong_tostr,              \
-float                     : cgs__float_tostr,               \
-double                    : cgs__double_tostr,              \
-CGS_DStr                  : cgs__dstr_tostr,                \
-CGS_DStr*                 : cgs__dstr_ptr_tostr,            \
-CGS_StrView               : cgs__strv_tostr,                \
-CGS_ZStrView              : cgs__zstrv_tostr,               \
-CGS_StrBuf                : cgs__strbuf_tostr,              \
-CGS_StrBuf*               : cgs__strbuf_ptr_tostr,          \
-CGS_MutStrRef             : cgs__mutstr_ref_tostr,          \
-const char*               : cgs__cstr_tostr,                \
-const unsigned char*      : cgs__ucstr_tostr,               \
-const CGS_DStr*           : cgs__dstr_ptr_tostr,            \
-const CGS_StrBuf*         : cgs__strbuf_ptr_tostr,          \
-CGS_Error                 : cgs__error_tostr,               \
-CGS_ArrayFmt              : cgs__arrayfmt_tostr,           \
-CGS__AlignFmt             : cgs__alignfmt_tostr,           \
-CGS__RepeatFmt            : cgs__repeatfmt_tostr,          \
+#define CGS__DEFAULT_TOSTR_GENERIC_ASSOCIATIONS              \
+bool                      : cgs__bool_tostr,                 \
+char*                     : cgs__cstr_tostr,                 \
+unsigned char*            : cgs__ucstr_tostr,                \
+char                      : cgs__char_tostr,                 \
+signed char               : cgs__schar_tostr,                \
+unsigned char             : cgs__uchar_tostr,                \
+short                     : cgs__short_tostr,                \
+unsigned short            : cgs__ushort_tostr,               \
+int                       : cgs__int_tostr,                  \
+unsigned int              : cgs__uint_tostr,                 \
+long                      : cgs__long_tostr,                 \
+unsigned long             : cgs__ulong_tostr,                \
+long long                 : cgs__llong_tostr,                \
+unsigned long long        : cgs__ullong_tostr,               \
+float                     : cgs__float_tostr,                \
+double                    : cgs__double_tostr,               \
+CGS_DStr                  : cgs__dstr_tostr,                 \
+CGS_DStr*                 : cgs__dstr_ptr_tostr,             \
+CGS_StrView               : cgs__strv_tostr,                 \
+CGS_ZStrView              : cgs__zstrv_tostr,                \
+CGS_StrBuf                : cgs__strbuf_tostr,               \
+CGS_StrBuf*               : cgs__strbuf_ptr_tostr,           \
+CGS_MutStrRef             : cgs__mutstr_ref_tostr,           \
+const char*               : cgs__cstr_tostr,                 \
+const unsigned char*      : cgs__ucstr_tostr,                \
+const CGS_DStr*           : cgs__dstr_ptr_tostr,             \
+const CGS_StrBuf*         : cgs__strbuf_ptr_tostr,           \
+CGS_Error                 : cgs__error_tostr,                \
+CGS_ArrayFmt              : cgs__arrayfmt_tostr,             \
+CGS__AlignFmt             : cgs__alignfmt_tostr,             \
+CGS__RepeatFmt            : cgs__repeatfmt_tostr,            \
 CGS__INTEGER_TYPES(CGS__INTEGER_TOSTR_GENERIC_ASSOC, ignore) \
 CGS__FLOATING_TYPES(CGS__FLOATING_TOSTR_GENERIC_ASSOC, ignore, CGS__FLOATING_TOSTR_LAST_GENERIC_ASSOC)
 
-#define CGS__DEFAULT_TOSTR_P_GENERIC_ASSOCIATIONS                 \
-bool                       : cgs__bool_tostr_p,                \
-char*                      : cgs__cstr_tostr_p,                \
-unsigned char*             : cgs__ucstr_tostr_p,               \
-char                       : cgs__char_tostr_p,                \
-signed char                : cgs__schar_tostr_p,               \
-unsigned char              : cgs__uchar_tostr_p,               \
-short                      : cgs__short_tostr_p,               \
-unsigned short             : cgs__ushort_tostr_p,              \
-int                        : cgs__int_tostr_p,                 \
-unsigned int               : cgs__uint_tostr_p,                \
-long                       : cgs__long_tostr_p,                \
-unsigned long              : cgs__ulong_tostr_p,               \
-long long                  : cgs__llong_tostr_p,               \
-unsigned long long         : cgs__ullong_tostr_p,              \
-float                      : cgs__float_tostr_p,               \
-double                     : cgs__double_tostr_p,              \
-CGS_DStr                   : cgs__dstr_tostr_p,                \
-CGS_DStr*                  : cgs__dstr_ptr_tostr_p,            \
-CGS_StrView                : cgs__strv_tostr_p,                \
-CGS_ZStrView               : cgs__zstrv_tostr_p,               \
-CGS_StrBuf                 : cgs__strbuf_tostr_p,              \
-CGS_StrBuf*                : cgs__strbuf_ptr_tostr_p,          \
-CGS_MutStrRef              : cgs__mutstr_ref_tostr_p,          \
-const char*                : cgs__cstr_tostr_p,                \
-const unsigned char*       : cgs__ucstr_tostr_p,               \
-const CGS_DStr*            : cgs__dstr_ptr_tostr_p,            \
-const CGS_StrBuf*          : cgs__strbuf_ptr_tostr_p,          \
-CGS_Error                  : cgs__error_tostr_p,               \
-CGS_ArrayFmt               : cgs__arrayfmt_tostr_p,           \
-CGS__AlignFmt              : cgs__alignfmt_tostr_p,           \
-CGS__RepeatFmt             : cgs__repeatfmt_tostr_p,          \
+#define CGS__DEFAULT_TOSTR_P_GENERIC_ASSOCIATIONS               \
+bool                       : cgs__bool_tostr_p,                 \
+char*                      : cgs__cstr_tostr_p,                 \
+unsigned char*             : cgs__ucstr_tostr_p,                \
+char                       : cgs__char_tostr_p,                 \
+signed char                : cgs__schar_tostr_p,                \
+unsigned char              : cgs__uchar_tostr_p,                \
+short                      : cgs__short_tostr_p,                \
+unsigned short             : cgs__ushort_tostr_p,               \
+int                        : cgs__int_tostr_p,                  \
+unsigned int               : cgs__uint_tostr_p,                 \
+long                       : cgs__long_tostr_p,                 \
+unsigned long              : cgs__ulong_tostr_p,                \
+long long                  : cgs__llong_tostr_p,                \
+unsigned long long         : cgs__ullong_tostr_p,               \
+float                      : cgs__float_tostr_p,                \
+double                     : cgs__double_tostr_p,               \
+CGS_DStr                   : cgs__dstr_tostr_p,                 \
+CGS_DStr*                  : cgs__dstr_ptr_tostr_p,             \
+CGS_StrView                : cgs__strv_tostr_p,                 \
+CGS_ZStrView               : cgs__zstrv_tostr_p,                \
+CGS_StrBuf                 : cgs__strbuf_tostr_p,               \
+CGS_StrBuf*                : cgs__strbuf_ptr_tostr_p,           \
+CGS_MutStrRef              : cgs__mutstr_ref_tostr_p,           \
+const char*                : cgs__cstr_tostr_p,                 \
+const unsigned char*       : cgs__ucstr_tostr_p,                \
+const CGS_DStr*            : cgs__dstr_ptr_tostr_p,             \
+const CGS_StrBuf*          : cgs__strbuf_ptr_tostr_p,           \
+CGS_Error                  : cgs__error_tostr_p,                \
+CGS_ArrayFmt               : cgs__arrayfmt_tostr_p,             \
+CGS__AlignFmt              : cgs__alignfmt_tostr_p,             \
+CGS__RepeatFmt             : cgs__repeatfmt_tostr_p,            \
 CGS__INTEGER_TYPES(CGS__INTEGER_TOSTR_P_GENERIC_ASSOC, ignore)  \
 CGS__FLOATING_TYPES(CGS__FLOATING_TOSTR_P_GENERIC_ASSOC, ignore, CGS__FLOATING_TOSTR_P_LAST_GENERIC_ASSOC)
 
@@ -1607,6 +1613,8 @@ CGS_API CGS_Result(CGS_StrView) cgs__next_tok_any(CGS_StrView *base, CGS_StrView
 CGS_API CGS_StrView             cgs__skip(CGS_StrView src, char delim);
 CGS_API CGS_StrView             cgs__skip_any(CGS_StrView src, CGS_StrView delim_set);
 CGS_API CGS_Result(int)         cgs__starts_with_tokens(CGS_StrView src, CGS_StrView delim_set, CGS_StrViewArray tokens);
+CGS_API CGS_Result(CGS_StrView) cgs__find_token_sequence(CGS_StrView src, CGS_StrView delim_set, CGS_StrViewArray tokens);
+CGS_API void                    cgs__advance(CGS_StrView *v, unsigned int by);
 
 CGS_API CGS_Error       cgs__fmutstr_ref_putc(CGS__FixedMutStrRef dst, char c);
 CGS_API CGS_Error       cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, CGS_StrView src);
@@ -1752,7 +1760,7 @@ CGS__INTEGER_TYPES(CGS__X, ignore)
 
 #undef CGS__X
 
-#define CGS__X(ty, extra)                                                                                                  \
+#define CGS__X(ty, extra)                                                                                                   \
     CGS_API CGS_Error cgs__Floating_f_Fmt_##ty##_tostr(CGS_Writer *dst, CGS__Floating_f_Fmt_##ty obj, CGS_StrView fmt_arg); \
     CGS_API CGS_Error cgs__Floating_g_Fmt_##ty##_tostr(CGS_Writer *dst, CGS__Floating_g_Fmt_##ty obj, CGS_StrView fmt_arg); \
     CGS_API CGS_Error cgs__Floating_e_Fmt_##ty##_tostr(CGS_Writer *dst, CGS__Floating_e_Fmt_##ty obj, CGS_StrView fmt_arg); \
@@ -1761,7 +1769,7 @@ CGS__INTEGER_TYPES(CGS__X, ignore)
     CGS_API CGS_Error cgs__Floating_G_Fmt_##ty##_tostr(CGS_Writer *dst, CGS__Floating_G_Fmt_##ty obj, CGS_StrView fmt_arg); \
     CGS_API CGS_Error cgs__Floating_E_Fmt_##ty##_tostr(CGS_Writer *dst, CGS__Floating_E_Fmt_##ty obj, CGS_StrView fmt_arg); \
     CGS_API CGS_Error cgs__Floating_A_Fmt_##ty##_tostr(CGS_Writer *dst, CGS__Floating_A_Fmt_##ty obj, CGS_StrView fmt_arg); \
-                                                                                                                           \
+                                                                                                                            \
     CGS_API CGS_Error cgs__Floating_f_Fmt_##ty##_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);            \
     CGS_API CGS_Error cgs__Floating_g_Fmt_##ty##_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);            \
     CGS_API CGS_Error cgs__Floating_e_Fmt_##ty##_tostr_p(CGS_Writer *dst, const void *obj, CGS_StrView fmt_arg);            \

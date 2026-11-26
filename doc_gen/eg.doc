@@ -1,0 +1,23 @@
+
+// @ API: cgs_dup
+// @ Overloads:
+//  - CGS_DStr cgs_dup(anystr_t src, CGS_Allocator *allocator = cgs_get_default_allocator());
+// @ Description
+// alias for cgs_dstr_init_from
+#define cgs_dup(anystr_src, ...)
+
+// @ API: cgs_dstr_init_from
+// @ Overloads:
+//  - CGS_DStr cgs_dstr_init_from(anystr_t src, CGS_Allocator *allocator = cgs_get_default_allocator());
+// @ Description
+// returns a new CGS_DStr using the provided allocator,
+// or the default allocator if none provided.
+// Allocates exactly the amount of bytes needed (src.len + 1).
+#define cgs_dstr_init_from(anystr_src, ...)
+
+// @ API: cgs_skip
+// @ Overloads:
+//  - CGS_StrView cgs_skip(anystr_t src, char delim);
+// @ Description:
+// returns a view of the passed src with leading delims skipped.
+#define #define cgs_skip(anystr_src, delim)

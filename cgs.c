@@ -1328,6 +1328,13 @@ CGS_API CGS_StrView cgs__skip_any(CGS_StrView src, CGS_StrView delim_set)
     return src;
 }
 
+CGS_API void cgs__advance(CGS_StrView *v, unsigned int by)
+{
+    assert(v->len >= by);
+    v->chars += by;
+    v->len -= by;
+}
+
 CGS_API CGS_Result(int) cgs__starts_with_tokens(CGS_StrView src, CGS_StrView delim_set, CGS_StrViewArray tokens)
 {
     const char *src_start          = src.chars;
@@ -1354,6 +1361,18 @@ CGS_API CGS_Result(int) cgs__starts_with_tokens(CGS_StrView src, CGS_StrView del
         end_of_last_match = src.chars - src_start;
     }
     return (CGS_Result(int)) {.err.ec = CGS_OK, .val = end_of_last_match};
+}
+
+CGS_API CGS_Result(CGS_StrView) cgs__find_token_sequence(CGS_StrView src, CGS_StrView delim_set, CGS_StrViewArray tokens)
+{
+    CGS_StrView first_non_delim_tok;
+    for (unsigned int i = 0; i < tokens.len; i++)
+    {
+        if (cgs_starts_with(tokens.strs[i], ))
+        {
+            
+        }
+    }
 }
 
 CGS_API CGS_Error cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int begin, unsigned int end, CGS_StrView replacement)
