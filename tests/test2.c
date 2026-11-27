@@ -4658,4 +4658,132 @@ void test_find_tokens()
         CGS_Result(CGS_StrView) r2 = cgs_find_tokens(s2, " ", " ");
         ASSERT_TRUE(r2.err.ec == CGS_NOT_FOUND && r2.val.len == 0);
     }
+
+    TEST("cgs_find_tokens: token starting and ending with a delimiter never matches");
+    {
+        char s1[] = "x  a  ";
+        CGS_Result(CGS_StrView) r1 = cgs_find_tokens(s1, " ", " a ");
+        ASSERT_TRUE(r1.err.ec == CGS_NOT_FOUND && r1.val.len == 0);
+
+        char s2[] = "x a b";
+        CGS_Result(CGS_StrView) r2 = cgs_find_tokens(s2, " ", "x", " a ", "b");
+        ASSERT_TRUE(r2.err.ec == CGS_NOT_FOUND && r2.val.len == 0);
+    }
+
+    TEST("cgs_find_tokens: token starting with a delimiter, src starts with that token literally");
+    {
+        char s[] = " a";
+        CGS_Result(CGS_StrView) r = cgs_find_tokens(s, " ", " a");
+        ASSERT_TRUE(r.err.ec == CGS_NOT_FOUND && r.val.len == 0);
+    }
+
+    TEST("cgs_find_tokens: token starting with a non-space delimiter never matches");
+    {
+        char s[] = "x\ta";
+        CGS_Result(CGS_StrView) r = cgs_find_tokens(s, " \t", "\ta");
+        ASSERT_TRUE(r.err.ec == CGS_NOT_FOUND && r.val.len == 0);
+    }
+
+    TEST("cgs_find_tokens: token starting with a char not in delim_set is an ordinary token");
+    {
+        char s[] = "x\ta";
+        CGS_Result(CGS_StrView) r = cgs_find_tokens(s, " ", "\ta");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r.val, "\ta") && r.val.chars == &s[1]);
+    }
+
+    TEST("cgs_find_tokens: token ending with a delimiter must end with that exact delimiter");
+    {
+        char s1[] = "x a\tb";
+        CGS_Result(CGS_StrView) r1 = cgs_find_tokens(s1, " \t", "a ");
+        ASSERT_TRUE(r1.err.ec == CGS_NOT_FOUND && r1.val.len == 0);
+
+        char s2[] = "x a\tb a b";
+        CGS_Result(CGS_StrView) r2 = cgs_find_tokens(s2, " \t", "a ");
+        ASSERT_TRUE(r2.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r2.val, "a ") && r2.val.chars == &s2[6]);
+    }
+
+    TEST("cgs_find_tokens: token ending with a high-bit delimiter");
+    {
+        char s1[] = "x a\xff" "b";
+        CGS_Result(CGS_StrView) r1 = cgs_find_tokens(s1, "\xff", "a\xff");
+        ASSERT_TRUE(r1.err.ec == CGS_OK);
+        ASSERT_TRUE(r1.val.len == 2 && r1.val.chars == &s1[2]);
+
+        char s2[] = "x a b";
+        CGS_Result(CGS_StrView) r2 = cgs_find_tokens(s2, " \xff", "a\xff");
+        ASSERT_TRUE(r2.err.ec == CGS_NOT_FOUND && r2.val.len == 0);
+    }
+
+    TEST("cgs_find_tokens: token ending with a delimiter, src ends right after the letter");
+    {
+        char s[] = "x a";
+        CGS_Result(CGS_StrView) r = cgs_find_tokens(s, " ", "a ");
+        ASSERT_TRUE(r.err.ec == CGS_NOT_FOUND && r.val.len == 0);
+    }
+
+    TEST("cgs_find_tokens: token ending with a delimiter, src ends right after the delimiter");
+    {
+        char s[] = "x a ";
+        CGS_Result(CGS_StrView) r = cgs_find_tokens(s, " ", "a ");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r.val, "a ") && r.val.chars == &s[2]);
+    }
+
+    TEST("cgs_find_tokens: token ending with a delimiter, next char is not a delimiter");
+    {
+        char s1[] = "x ab";
+        CGS_Result(CGS_StrView) r1 = cgs_find_tokens(s1, " ", "a ");
+        ASSERT_TRUE(r1.err.ec == CGS_NOT_FOUND && r1.val.len == 0);
+
+        char s2[] = "x ab a ";
+        CGS_Result(CGS_StrView) r2 = cgs_find_tokens(s2, " ", "a ");
+        ASSERT_TRUE(r2.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r2.val, "a ") && r2.val.chars == &s2[5]);
+    }
+
+    TEST("cgs_find_tokens: token ending with a delimiter, view stops before a following mixed run");
+    {
+        char s[] = "x a \t\tb";
+        CGS_Result(CGS_StrView) r = cgs_find_tokens(s, " \t", "a ");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r.val, "a ") && r.val.chars == &s[2]);
+    }
+
+    TEST("cgs_find_tokens: later token ending with a delimiter, then another token");
+    {
+        char s[] = "y x a  b";
+        CGS_Result(CGS_StrView) r = cgs_find_tokens(s, " ", "x", "a ", "b");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r.val, "x a  b") && r.val.chars == &s[2]);
+    }
+
+    TEST("cgs_find_tokens: later token ending with a delimiter as the last token");
+    {
+        char s[] = "y x a  b";
+        CGS_Result(CGS_StrView) r = cgs_find_tokens(s, " ", "x", "a ");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r.val, "x a ") && r.val.chars == &s[2]);
+    }
+
+    TEST("cgs_find_tokens: later token ending with a delimiter, first occurrence lacks it");
+    {
+        char s[] = "x ab x a b";
+        CGS_Result(CGS_StrView) r = cgs_find_tokens(s, " ", "x", "a ", "b");
+        ASSERT_TRUE(r.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r.val, "x a b") && r.val.chars == &s[5]);
+    }
+
+    TEST("cgs_find_tokens: token ending with a delimiter, then an explicit delimiter token");
+    {
+        char s1[] = "x a  b";
+        CGS_Result(CGS_StrView) r1 = cgs_find_tokens(s1, " ", "a ", " ");
+        ASSERT_TRUE(r1.err.ec == CGS_OK);
+        ASSERT_TRUE(cgs_equal(r1.val, "a  ") && r1.val.chars == &s1[2]);
+
+        char s2[] = "x a b";
+        CGS_Result(CGS_StrView) r2 = cgs_find_tokens(s2, " ", "a ", " ");
+        ASSERT_TRUE(r2.err.ec == CGS_NOT_FOUND && r2.val.len == 0);
+    }
 }

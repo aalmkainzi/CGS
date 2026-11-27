@@ -1,7 +1,6 @@
 #include "test_common.h"
 
-#define CGS_debug_break()
-#define CGS_SHORT_NAMES
+#define cgs_debug_break()
 #include "../cgs.c"
 // Forward declaration for appender state
 

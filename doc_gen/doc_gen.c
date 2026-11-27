@@ -16,11 +16,10 @@ int main()
     cgs_fread_until(&cgs_h, f, EOF);
     
     CGS_StrView walk = cgs_strv(cgs_h);
-    CGS_Result(int) found_api;
-    while((found_api = cgs_find(walk, "// @ API:")), found_api.err.ec == CGS_OK)
+    CGS_Result(CGS_StrView) found_api;
+    while((found_api = cgs_find_tokens(walk, non_newline_whitespace, "//", "@", "API", ":")), found_api.err.ec == CGS_OK)
     {
-        walk = cgs_strv(walk, found_api.val);
-        cgs_advance(&walk, strlen("// @ API:"));
+        walk = cgs_strv(walk, (found_api.val.chars + found_api.val.len) - walk.chars);
         walk = cgs_skip_any(walk, non_newline_whitespace);
     }
 }
