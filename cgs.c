@@ -1,7 +1,6 @@
 #ifndef CGS__STR_C_INCLUDED
 #define CGS__STR_C_INCLUDED
 
-#include <assert.h>
 #include <ctype.h>
 #include <limits.h>
 #include <stdbool.h>
@@ -23,51 +22,58 @@
     #define CGS_NDEBUG
 #endif
 
-#ifndef CGS_debug_break
+#ifndef cgs_debug_break
     #ifndef CGS_NDEBUG
         #if defined(_MSC_VER)
-            #define CGS_debug_break() __debugbreak()
+            #define cgs_debug_break() __debugbreak()
         #elif defined(__clang__)
-            #define CGS_debug_break() __builtin_debugtrap()
+            #define cgs_debug_break() __builtin_debugtrap()
         #elif defined(__GNUC__) && defined(_WIN32)
-            #define CGS_debug_break() __debugbreak()
+            #define cgs_debug_break() __debugbreak()
         #else
             #include <signal.h>
-            #define CGS_debug_break() raise(SIGTRAP)
+            #define cgs_debug_break() raise(SIGTRAP)
         #endif
     #else
-        #define CGS_debug_break() CGS_unreachable()
+        #define cgs_debug_break() cgs_unreachable()
     #endif
 #endif
 
-#ifndef CGS_unreachable
+#ifndef cgs_unreachable
     #if defined(_MSC_VER)
-        #define CGS_unreachable() __assume(0)
+        #define cgs_unreachable() __assume(0)
     #elif defined(__GNUC__)
-        #define CGS_unreachable() __builtin_unreachable()
+        #define cgs_unreachable() __builtin_unreachable()
     #elif defined(unreachable)
-        #define CGS_unreachable() unreachable()
+        #define cgs_unreachable() unreachable()
     #else
-        #define CGS_unreachable() (*(volatile int *)0 = 0)
+        #define cgs_unreachable() (*(volatile int *)0 = 0)
     #endif
 #endif
 
-#ifndef CGS_assume
+#ifndef cgs_assume
     #if defined(_MSC_VER)
-        #define CGS_assume(...) __assume(__VA_ARGS__)
+        #define cgs_assume(...) __assume(__VA_ARGS__)
     #elif defined(__clang__)
-        #define CGS_assume(...) [[clang::assume(__VA_ARGS__)]]
+        #define cgs_assume(...) [[clang::assume(__VA_ARGS__)]]
     #elif defined(__GNUC__)
-        #define CGS_assume(...) [[gnu::assume(__VA_ARGS__)]]
+        #define cgs_assume(...) [[gnu::assume(__VA_ARGS__)]]
     #else
-        #define CGS_assume(...)       \
+        #define cgs_assume(...)       \
             do                        \
             {                         \
                 if (!(__VA_ARGS__))   \
-                    CGS_unreachable() \
+                    cgs_unreachable() \
             } while (0)
     #endif
 #endif
+
+#define cgs_assert(x)          \
+    do                         \
+    {                          \
+        if (!(x))              \
+            cgs_debug_break(); \
+    } while(0)
 
 CGS_PRIVATE CGS_Allocation cgs__default_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n);
 CGS_PRIVATE void cgs__default_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n);
@@ -330,7 +336,7 @@ CGS_API CGS__FixedMutStrRef cgs__mutstr_ref_as_fmutstr_ref2(CGS_MutStrRef mutstr
         case CGS__BUF_TY:
             return cgs__buf_as_fmutstr_ref(mutstr_ref.str.buf, len_ptr);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     }
 }
 
@@ -345,7 +351,7 @@ CGS_API CGS__FixedMutStrRef cgs__mutstr_ref_as_fmutstr_ref_zero_len(CGS_MutStrRe
         case CGS__BUF_TY:
             return cgs__buf_as_fmutstr_ref_zero_len(mutstr_ref.str.buf, len_ptr);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     }
 }
 
@@ -387,7 +393,7 @@ CGS_API CGS_Allocation cgs__default_allocator_realloc(CGS_Allocator *allocator, 
 
 CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_alloc(CGS_Allocator *allocator, size_t align, size_t n)
 {
-    CGS_unreachable();
+    cgs_unreachable();
     (void)allocator;
     (void)align;
     (void)n;
@@ -396,7 +402,7 @@ CGS_PRIVATE CGS_Allocation cgs__dstr_append_allocator_alloc(CGS_Allocator *alloc
 
 CGS_PRIVATE void cgs__dstr_append_allocator_dealloc(CGS_Allocator *allocator, void *ptr, size_t n)
 {
-    CGS_unreachable();
+    cgs_unreachable();
     (void)allocator;
     (void)ptr;
     (void)n;
@@ -411,8 +417,8 @@ cgs__dstr_append_allocator_realloc(CGS_Allocator *allocator, void *ptr, size_t a
 
     CGS_DStr *owner = dstr_append_allocator->owner;
 
-    assert(old_size == owner->cap - owner->len);
-    assert(((char *)ptr - owner->chars) == owner->len);
+    cgs_assert(old_size == owner->cap - owner->len);
+    cgs_assert(((char *)ptr - owner->chars) == owner->len);
 
     cgs_dstr_ensure_cap(owner, owner->cap + (unsigned int)(new_size - old_size));
     return (CGS_Allocation) {
@@ -489,7 +495,7 @@ CGS_API CGS_MutStrRef cgs__make_appender_mutstr_ref(CGS_MutStrRef owner, CGS_App
             *ret.str.strbuf   = cgs__make_appender_strbuf(owner);
             return ret;
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     }
 }
 
@@ -750,7 +756,7 @@ CGS_API char *cgs__mutstr_ref_as_cstr(const CGS_MutStrRef str)
         case CGS__BUF_TY:
             return str.str.buf.ptr;
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -768,7 +774,7 @@ CGS_API CGS_Error cgs__mutstr_ref_commit_appender(CGS_MutStrRef owner, CGS_MutSt
         case CGS__BUF_TY:
             break;
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 
     return (CGS_Error) {CGS_OK};
@@ -810,7 +816,7 @@ CGS_API unsigned int cgs__mutstr_ref_cap(const CGS_MutStrRef str)
         case CGS__BUF_TY:
             return str.str.buf.cap;
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -825,7 +831,7 @@ CGS_API unsigned int cgs__mutstr_ref_len(const CGS_MutStrRef str)
         case CGS__BUF_TY:
             return (unsigned int)strlen(str.str.buf.ptr);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -863,7 +869,7 @@ CGS_API CGS_Error cgs__mutstr_ref_insert(CGS_MutStrRef dst, CGS_StrView src, uns
         case CGS__BUF_TY:
             return cgs__fmutstr_ref_insert(cgs__fmutstr_ref(dst.str.buf, &(unsigned int) {0}), src, idx);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -874,12 +880,12 @@ CGS_API bool cgs__strv_equal(CGS_StrView str1, CGS_StrView str2)
     return (str1.len == str2.len) && (memcmp(str1.chars, str2.chars, str1.len) == 0);
 }
 
-CGS_API CGS_Result(int) cgs__find(CGS_StrView hay, CGS_StrView needle)
+CGS_API CGS_Result(unsigned) cgs__find(CGS_StrView hay, CGS_StrView needle)
 {
     if (needle.len == 0)
-        return (CGS_Result(int)) {.val = 0};
+        return (CGS_Result(unsigned)) {.val = 0};
     if (needle.len > hay.len)
-        return (CGS_Result(int)) {.err.ec = CGS_NOT_FOUND};
+        return (CGS_Result(unsigned)) {.err.ec = CGS_NOT_FOUND};
 
     unsigned int scan_end        = hay.len - needle.len;
     const char *max_possible_ptr = &hay.chars[scan_end];
@@ -889,13 +895,13 @@ CGS_API CGS_Result(int) cgs__find(CGS_StrView hay, CGS_StrView needle)
     while (first_char && first_char <= max_possible_ptr)
     {
         if (memcmp(first_char, needle.chars, needle.len) == 0)
-            return (CGS_Result(int)) {.val = first_char - hay.chars};
+            return (CGS_Result(unsigned)) {.val = first_char - hay.chars};
 
         remaining_len = scan_end - (unsigned int)(first_char - hay.chars);
         first_char    = memchr(first_char + 1, needle.chars[0], remaining_len);
     }
 
-    return (CGS_Result(int)) {.err = {CGS_NOT_FOUND}};
+    return (CGS_Result(unsigned)) {.err = {CGS_NOT_FOUND}};
 }
 
 CGS_API CGS_Error cgs__fmutstr_ref_copy(CGS__FixedMutStrRef dst, CGS_StrView src)
@@ -940,7 +946,7 @@ CGS_API CGS_Error cgs__mutstr_ref_copy(CGS_MutStrRef dst, CGS_StrView src)
         case CGS__BUF_TY:
             return cgs__fmutstr_ref_copy(cgs__fmutstr_ref(dst.str.buf, &(unsigned int) {0}), src);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -982,7 +988,7 @@ CGS_API CGS_Error cgs__mutstr_ref_putc(CGS_MutStrRef dst, char c)
         case CGS__BUF_TY:
             return cgs__fmutstr_ref_putc(cgs__fmutstr_ref(dst.str.buf, &(unsigned int) {0}), c);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     }
 }
 
@@ -1019,7 +1025,7 @@ CGS_API CGS_Error cgs__mutstr_ref_append(CGS_MutStrRef dst, CGS_StrView src)
         case CGS__BUF_TY:
             return cgs__fmutstr_ref_append(cgs__fmutstr_ref(dst.str.buf, &(unsigned int) {0}), src);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -1063,7 +1069,7 @@ CGS_API CGS_Error cgs__mutstr_ref_delete_range(CGS_MutStrRef str, unsigned int b
         case CGS__BUF_TY:
             return cgs__fmutstr_ref_delete_range(cgs__fmutstr_ref(str.str.buf, &(unsigned int) {0}), begin, end);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -1129,7 +1135,7 @@ CGS_API CGS_Error cgs__strv_split_iter(CGS_StrView str, CGS_StrView delim, bool 
 
 CGS_PRIVATE bool cgs__split_foreach_next_impl(CGS__SplitForeachIter *iter)
 {
-    CGS_Result(int) found = cgs__find(*iter->base, iter->delim);
+    CGS_Result(unsigned) found = cgs__find(*iter->base, iter->delim);
     if (found.err.ec == CGS_OK)
     {
         CGS_StrView view = {.chars = iter->base->chars, .len = found.val};
@@ -1251,7 +1257,7 @@ CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, CGS_StrViewArray strs, C
         case CGS__BUF_TY:
             return cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref(dst.str.buf, &(unsigned int) {0}), strs, delim);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -1266,7 +1272,7 @@ CGS_API CGS_Result(CGS_StrView) cgs__next_tok(CGS_StrView *base, char delim)
         return (CGS_Result(CGS_StrView)) {.val = rest, .err = {CGS_NOT_FOUND}};
     }
 
-    CGS_Result(int) found = cgs_find(*base, delim);
+    CGS_Result(unsigned) found = cgs_find(*base, delim);
     if (found.err.ec == CGS_OK)
     {
         unsigned int index = found.val;
@@ -1330,49 +1336,83 @@ CGS_API CGS_StrView cgs__skip_any(CGS_StrView src, CGS_StrView delim_set)
 
 CGS_API void cgs__advance(CGS_StrView *v, unsigned int by)
 {
-    assert(v->len >= by);
+    cgs_assert(v->len >= by);
     v->chars += by;
     v->len -= by;
 }
 
-CGS_API CGS_Result(int) cgs__starts_with_tokens(CGS_StrView src, CGS_StrView delim_set, CGS_StrViewArray tokens)
+CGS_PRIVATE CGS_Result(unsigned) cgs__cspn_result(CGS_StrView src, CGS_StrView charset)
+{
+    CGS_StrView sv = cgs__strv_cspn(src, charset);
+    return sv.len == src.len ?
+        (CGS_Result(unsigned)){.err.ec = CGS_NOT_FOUND} :
+        (CGS_Result(unsigned)){.val = sv.chars - src.chars};
+}
+
+CGS_API CGS_Result(unsigned) cgs__starts_with_tokens(CGS_StrView src, CGS_StrView delim_set, CGS_StrViewArray tokens)
 {
     const char *src_start          = src.chars;
     unsigned int end_of_last_match = 0;
     for (unsigned int i = 0; i < tokens.len; i++)
     {
+        // token cannot start with delim, unless it's an *explicit delim token*,
+        // which is a token of length 1 and contains one of the delims in the set.
+        // An explicit delim token matches any of the delims, even if it isn't the delim it contains.
+        // e.g.
+        // given:
+        // str1 = "AB";
+        // str2 = "A\tB";
+        // then
+        // cgs_starts_with(str1, " \t", "A", "B"); // returns CGS_OK
+        // cgs_starts_with(str2, " \t", "A", "B"); // returns CGS_OK
+        // cgs_starts_with(str1, " \t", "A", " ", "B"); // returns CGS_NOT_FOUND
+        // cgs_starts_with(str2, " \t", "A", " ", "B"); // returns CGS_OK, even though " " is not in str2
+        cgs_assert(tokens.strs[i].len == 1 || !memchr(delim_set.chars, tokens.strs[i].chars[0], delim_set.len));
+
         unsigned int before_skip_len = src.len;
 
-        src = cgs_skip_any(src, delim_set);
+        src = cgs__skip_any(src, delim_set);
         if (before_skip_len != src.len && tokens.strs[i].len == 1 && memchr(delim_set.chars, tokens.strs[i].chars[0], delim_set.len))
         {
-            ; // explicit whitespace as a token
+            ; // explicit delim. ok
         }
-        else if (cgs_starts_with(src, tokens.strs[i]))
+        else if (cgs__strv_starts_with(src, tokens.strs[i]))
         {
             src.chars += tokens.strs[i].len;
             src.len -= tokens.strs[i].len;
         }
         else
         {
-            return (CGS_Result(int)) {.err.ec = CGS_NOT_FOUND, .val = end_of_last_match};
+            return (CGS_Result(unsigned)) {.err.ec = CGS_NOT_FOUND, .val = end_of_last_match};
         }
 
         end_of_last_match = src.chars - src_start;
     }
-    return (CGS_Result(int)) {.err.ec = CGS_OK, .val = end_of_last_match};
+    return (CGS_Result(unsigned)) {.err.ec = CGS_OK, .val = end_of_last_match};
 }
 
-CGS_API CGS_Result(CGS_StrView) cgs__find_token_sequence(CGS_StrView src, CGS_StrView delim_set, CGS_StrViewArray tokens)
+CGS_API CGS_Result(CGS_StrView) cgs__find_tokens(CGS_StrView src, CGS_StrView delim_set, CGS_StrViewArray tokens)
 {
-    CGS_StrView first_non_delim_tok;
-    for (unsigned int i = 0; i < tokens.len; i++)
+    if (tokens.len == 0)
+        return (CGS_Result(CGS_StrView)){.val = cgs__strv_strv3(src, 0, 0)};
+
+    bool leading_delims = tokens.strs[0].len == 1 && memchr(delim_set.chars, tokens.strs[0].chars[0], delim_set.len);
+
+    CGS_Result(unsigned) found;
+    while (leading_delims ?
+        (found = cgs__cspn_result(src, tokens.strs[0])).err.ec == CGS_OK :
+        (found = cgs__find(src, tokens.strs[0])).err.ec        == CGS_OK
+    )
     {
-        if (cgs_starts_with(tokens.strs[i], ))
+        CGS_StrView possible_match = cgs__strv_strv2(src, found.val);
+        CGS_Result(unsigned) starts_with_toks = cgs__starts_with_tokens(possible_match, delim_set, tokens);
+        if (starts_with_toks.err.ec == CGS_OK)
         {
-            
+            return (CGS_Result(CGS_StrView)){.val = cgs__strv_strv3(possible_match, 0, starts_with_toks.val)};
         }
+        cgs_advance(&src, 1);
     }
+    return (CGS_Result(CGS_StrView)){.err.ec = CGS_NOT_FOUND};
 }
 
 CGS_API CGS_Error cgs__dstr_replace_range(CGS_DStr *dstr, unsigned int begin, unsigned int end, CGS_StrView replacement)
@@ -1469,7 +1509,7 @@ CGS_API CGS_Error cgs__mutstr_ref_replace_range(CGS_MutStrRef str, unsigned int 
         case CGS__BUF_TY:
             return cgs__fmutstr_ref_replace_range(cgs__fmutstr_ref(str.str.buf, &(unsigned int) {0}), begin, end, replacement);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -1498,7 +1538,7 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, CGS_St
     {
         for (unsigned int i = 0; i <= *str.len - target.len;)
         {
-            CGS_Result(int) found = cgs__find(cgs__strv_fmutstr_ref2(str, i), target);
+            CGS_Result(unsigned) found = cgs__find(cgs__strv_fmutstr_ref2(str, i), target);
             if (found.err.ec == CGS_OK)
             {
                 unsigned int idx = found.val + i;
@@ -1535,7 +1575,7 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, CGS_St
     {
         for (unsigned int i = 0; i <= *str.len - target.len;)
         {
-            CGS_Result(int) found = cgs__find(cgs__strv_fmutstr_ref2(str, i), target);
+            CGS_Result(unsigned) found = cgs__find(cgs__strv_fmutstr_ref2(str, i), target);
             if (found.err.ec == CGS_OK)
             {
                 unsigned int idx = found.val + i;
@@ -1564,7 +1604,7 @@ CGS_API CGS_Result(int) cgs__fmutstr_ref_replace(CGS__FixedMutStrRef str, CGS_St
     {
         for (unsigned int i = 0; i <= *str.len - target.len;)
         {
-            CGS_Result(int) found = cgs__find(cgs__strv_fmutstr_ref2(str, i), target);
+            CGS_Result(unsigned) found = cgs__find(cgs__strv_fmutstr_ref2(str, i), target);
             if (found.err.ec == CGS_OK)
             {
                 err.ec           = CGS_OK;
@@ -1619,7 +1659,7 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, CGS_StrView target, CG
     {
         for (unsigned int i = 0; i <= dstr->len - target.len;)
         {
-            CGS_Result(int) found = cgs__find(cgs__strv_dstr_ptr2(dstr, i), target);
+            CGS_Result(unsigned) found = cgs__find(cgs__strv_dstr_ptr2(dstr, i), target);
             if (found.err.ec == CGS_OK)
             {
                 unsigned int idx = found.val + i;
@@ -1650,7 +1690,7 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, CGS_StrView target, CG
     {
         for (unsigned int i = 0; i <= dstr->len - target.len;)
         {
-            CGS_Result(int) found = cgs__find(cgs__strv_dstr_ptr2(dstr, i), target);
+            CGS_Result(unsigned) found = cgs__find(cgs__strv_dstr_ptr2(dstr, i), target);
             if (found.err.ec == CGS_OK)
             {
                 unsigned int idx = found.val + i;
@@ -1679,7 +1719,7 @@ CGS_API CGS_Result(int) cgs__dstr_replace(CGS_DStr *dstr, CGS_StrView target, CG
     {
         for (unsigned int i = 0; i <= dstr->len - target.len;)
         {
-            CGS_Result(int) found = cgs__find(cgs__strv_dstr_ptr2(dstr, i), target);
+            CGS_Result(unsigned) found = cgs__find(cgs__strv_dstr_ptr2(dstr, i), target);
             if (found.err.ec == CGS_OK)
             {
                 unsigned int idx = found.val + i;
@@ -1717,7 +1757,7 @@ CGS_API CGS_Result(int) cgs__mutstr_ref_replace(CGS_MutStrRef str, CGS_StrView t
         case CGS__BUF_TY:
             return cgs__fmutstr_ref_replace(cgs__fmutstr_ref(str.str.buf, &(unsigned int) {0}), target, replacement);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -1725,7 +1765,7 @@ CGS_API CGS_Error cgs__dstr_replace_first(CGS_DStr *dstr, CGS_StrView target, CG
 {
     CGS_Error err = {CGS_NOT_FOUND};
 
-    CGS_Result(int) found = cgs__find(cgs__strv_dstr_ptr2(dstr, 0), target);
+    CGS_Result(unsigned) found = cgs__find(cgs__strv_dstr_ptr2(dstr, 0), target);
     if (found.err.ec == CGS_OK)
     {
         unsigned int begin = found.val;
@@ -1740,7 +1780,7 @@ CGS_API CGS_Error cgs__fmutstr_ref_replace_first(CGS__FixedMutStrRef str, CGS_St
 {
     CGS_Error err = {CGS_NOT_FOUND};
 
-    CGS_Result(int) found = cgs__find(cgs__strv_fmutstr_ref2(str, 0), target);
+    CGS_Result(unsigned) found = cgs__find(cgs__strv_fmutstr_ref2(str, 0), target);
     if (found.err.ec == CGS_OK)
     {
         // TODO make this fill as much as possible. just call replace_range
@@ -1781,7 +1821,7 @@ CGS_API CGS_Error cgs__mutstr_ref_replace_first(CGS_MutStrRef str, CGS_StrView t
         case CGS__BUF_TY:
             return cgs__fmutstr_ref_replace_first(cgs__fmutstr_ref(str.str.buf, &(unsigned int) {0}), target, replacement);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -1791,7 +1831,7 @@ CGS_API unsigned int cgs__count(CGS_StrView hay, CGS_StrView needle)
         return hay.len + 1;
 
     unsigned int count    = 0;
-    CGS_Result(int) found = cgs__find(hay, needle);
+    CGS_Result(unsigned) found = cgs__find(hay, needle);
     while (found.err.ec == CGS_OK)
     {
         hay.chars += found.val + needle.len;
@@ -1982,7 +2022,7 @@ CGS_API CGS_Error cgs__mutstr_ref_clear(CGS_MutStrRef str)
             return cgs__fmutstr_ref_clear(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int) {0}));
             break;
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     }
 }
 
@@ -2167,7 +2207,7 @@ CGS_API CGS_StrView cgs__strv_mutstr_ref1(const CGS_MutStrRef str)
         case CGS__BUF_TY:
             return cgs__strv_cstr1(str.str.buf.ptr);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     }
 }
 
@@ -2271,7 +2311,7 @@ CGS_API CGS_StrView cgs__strv_mutstr_ref2(const CGS_MutStrRef str, unsigned int 
         case CGS__BUF_TY:
             return cgs__strv_fmutstr_ref2(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int) {0}), begin);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     }
 }
 
@@ -2322,7 +2362,7 @@ CGS_API CGS_StrView cgs__strv_cstr3(const char *str, unsigned int begin, unsigne
     const char *found_nul = memchr(str + begin, 0, end - begin);
     if (found_nul)
     {
-        CGS_debug_break();
+        cgs_debug_break();
         return (CGS_StrView) {
             .len   = 0,
             .chars = NULL,
@@ -2382,7 +2422,7 @@ CGS_API CGS_StrView cgs__strv_mutstr_ref3(CGS_MutStrRef str, unsigned int begin,
         case CGS__BUF_TY:
             return cgs__strv_fmutstr_ref3(cgs__buf_as_fmutstr_ref(str.str.buf, &(unsigned int) {0}), begin, end);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     }
 }
 
@@ -2499,7 +2539,7 @@ CGS_API CGS_Error cgs__dstr_fread_until(CGS_DStr *dstr, FILE *stream, int delim)
 
 CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, int delim)
 {
-    assert(delim == EOF || (delim >= 0 && delim <= 255));
+    cgs_assert(delim == EOF || (delim >= 0 && delim <= 255));
     CGS_Error err = {CGS_OK};
     int c         = 256;
     while (c != EOF && c != delim)
@@ -2532,7 +2572,7 @@ CGS_API CGS_Error cgs__dstr_append_fread_until(CGS_DStr *dstr, FILE *stream, int
 
 CGS_API CGS_Error cgs__fmutstr_ref_fread_until(CGS__FixedMutStrRef dst, FILE *stream, int delim)
 {
-    assert(delim == EOF || (delim >= 0 && delim <= 255));
+    cgs_assert(delim == EOF || (delim >= 0 && delim <= 255));
 
     // TODO delim may be EOF, so dont ret here?
     if (dst.cap == 0)
@@ -2577,7 +2617,7 @@ CGS_API CGS_Error cgs__mutstr_ref_fread_until(CGS_MutStrRef dst, FILE *stream, i
         case CGS__BUF_TY:
             return cgs__fmutstr_ref_fread_until(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int) {0}), stream, delim);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -2610,7 +2650,7 @@ CGS_API CGS_Error cgs__mutstr_ref_append_fread_until(CGS_MutStrRef dst, FILE *st
         case CGS__BUF_TY:
             return cgs__fmutstr_ref_append_fread_until(cgs__buf_as_fmutstr_ref(dst.str.buf, &(unsigned int) {0}), stream, delim);
         default:
-            CGS_unreachable();
+            cgs_unreachable();
     };
 }
 
@@ -2743,7 +2783,7 @@ CGS_PRIVATE CGS_Error cgs__parse_optional_grouping(const char **fmt_walk, char c
 
 CGS_PRIVATE CGS_Error cgs__parse_optional_format_string(const char **fmt_walk, CGS_StrView *fmt_arg)
 {
-    assert((*fmt_walk)[-1] == '(');
+    cgs_assert((*fmt_walk)[-1] == '(');
 
     fmt_arg->chars = *fmt_walk;
     CGS_Error err  = cgs__parse_optional_grouping(fmt_walk, ')');
@@ -2796,7 +2836,7 @@ CGS_API CGS_Error cgs__append_fmt(
                 {
                     if (index_mode == SPECIFY_INDEX_MODE)
                     {
-                        CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
+                        cgs_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
                         err.ec = CGS_BAD_FORMAT;
                         goto out;
                     }
@@ -2809,7 +2849,7 @@ CGS_API CGS_Error cgs__append_fmt(
 
                     if (how_many_formatted >= nargs)
                     {
-                        CGS_debug_break(); // not enough format args
+                        cgs_debug_break(); // not enough format args
                         err.ec = CGS_NOT_ENOUGH_ARGS;
                         goto out;
                     }
@@ -2821,7 +2861,7 @@ CGS_API CGS_Error cgs__append_fmt(
                 {
                     if (index_mode == AUTO_INDEX_MODE)
                     {
-                        CGS_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
+                        cgs_debug_break(); // cannot change arg indexing mode. either all formats use index, or all automatic index
                         err.ec = CGS_BAD_FORMAT;
                         goto out;
                     }
@@ -2833,7 +2873,7 @@ CGS_API CGS_Error cgs__append_fmt(
 
                     if (end == fmt_walk)
                     {
-                        CGS_debug_break();
+                        cgs_debug_break();
                         err.ec = CGS_BAD_FORMAT;
                         goto out;
                     }
@@ -2852,14 +2892,14 @@ CGS_API CGS_Error cgs__append_fmt(
 
                     if (fmt_walk[-1] != ']')
                     {
-                        CGS_debug_break();
+                        cgs_debug_break();
                         err.ec = CGS_BAD_FORMAT;
                         goto out;
                     }
 
                     if (arg_index >= nargs)
                     {
-                        CGS_debug_break(); // not enough format args
+                        cgs_debug_break(); // not enough format args
                         err.ec = CGS_INDEX_OUT_OF_BOUNDS;
                         goto out;
                     }
@@ -2880,7 +2920,7 @@ CGS_API CGS_Error cgs__append_fmt(
                 break;
                 default:
                 {
-                    CGS_debug_break(); // lone percent
+                    cgs_debug_break(); // lone percent
                     err.ec = CGS_BAD_FORMAT;
                     goto out;
                 }
@@ -3115,7 +3155,7 @@ static const char *cgs__2digits_decimal_representation = {"00010203040506070809"
         unsigned int numlen = cgs__numstr_len((unsigned long long)obj);                     \
         char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))];                 \
         if (numlen >= sizeof(cgs__tmp_buf))                                                 \
-            CGS_unreachable();                                                              \
+            cgs_unreachable();                                                              \
                                                                                             \
         if (isneg)                                                                          \
         {                                                                                   \
@@ -3161,7 +3201,7 @@ static const char *cgs__2digits_decimal_representation = {"00010203040506070809"
         unsigned int numlen = cgs__numstr_len(obj);                                         \
         char cgs__tmp_buf[cgs__buf_size_for_integer_type(__typeof__(obj))];                 \
         if (numlen >= sizeof(cgs__tmp_buf))                                                 \
-            CGS_unreachable();                                                              \
+            cgs_unreachable();                                                              \
                                                                                             \
         {                                                                                   \
             unsigned int cgs__pos = numlen;                                                 \
@@ -3410,7 +3450,7 @@ CGS_API CGS_Error cgs__alignfmt_tostr(CGS_Writer *dst, CGS__AlignFmt obj, CGS_St
             }
 
             default:
-                CGS_unreachable();
+                cgs_unreachable();
         }
 
         return err;

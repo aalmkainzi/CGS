@@ -20,7 +20,7 @@ do { \
     if ((a) == (b)) { \
         passed_count++; \
     } else { \
-        printf("  FAILED: Expected %d, got %d at line %d\n", (int)(b), (int)(a), __LINE__); \
+        printf("  \033[31mFAILED\033[0m: Expected %d, got %d at line %d\n", (int)(b), (int)(a), __LINE__); \
     } \
 } while(0)
 
@@ -30,7 +30,7 @@ do { \
     if (cond) { \
         passed_count++; \
     } else { \
-        printf("  FAILED: Condition false at line %d\n", __LINE__); \
+        printf("  \033[31mFAILED\033[0m: Condition false at line %d\n", __LINE__); \
     } \
 } while(0)
 
@@ -40,7 +40,7 @@ do { \
     if (!(cond)) { \
         passed_count++; \
     } else { \
-        printf("  FAILED: Condition true at line %d\n", __LINE__); \
+        printf("  \033[31mFAILED\033[0m: Condition true at line %d\n", __LINE__); \
     } \
 } while(0)
 
@@ -53,7 +53,7 @@ do { \
     if ((ptr) == NULL) { \
         passed_count++; \
     } else { \
-        printf("  FAILED: Expected NULL at line %d\n", __LINE__); \
+        printf("  \033[31mFAILED\033[0m: Expected NULL at line %d\n", __LINE__); \
     } \
 } while(0)
 
@@ -63,6 +63,6 @@ do { \
     if ((ptr) != NULL) { \
         passed_count++; \
     } else { \
-        printf("  FAILED: Expected non-NULL at line %d\n", __LINE__); \
+        printf("  \033[31mFAILED\033[0m: Expected non-NULL at line %d\n", __LINE__); \
     } \
 } while(0)

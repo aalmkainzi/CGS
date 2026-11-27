@@ -554,7 +554,7 @@ void test_stress_cases() {
         char buf[10] = "apple"; // capacity 10
         // Result would be "appleapple", length 10 + 1 for null = 11.
         // This should return CGS_DST_TOO_SMALL
-        CGS_Result(int) res = cgs_replace(buf, "apple", "appleapple");
+        auto res = cgs_replace(buf, "apple", "appleapple");
         ASSERT_TRUE(res.err.ec == CGS_DST_TOO_SMALL);
     }
     
@@ -577,7 +577,7 @@ void test_stress_cases() {
         char buf[10] = "apple"; // capacity 10
         // Result would be "appleapple", length 10 + 1 for null = 11.
         // This should return CGS_DST_TOO_SMALL
-        CGS_Result(int) res = cgs_replace(buf, "apple", "appleapple");
+        auto res = cgs_replace(buf, "apple", "appleapple");
         ASSERT_TRUE(res.err.ec == CGS_DST_TOO_SMALL);
     }
     
@@ -679,7 +679,7 @@ void test_replace_all()
     TEST("cgs_replace: standard multiple replacement");;;
     {
         CGS_DStr s = cgs_dstr_init_from("banana");
-        CGS_Result(int) res = cgs_replace(&s, "a", "o");
+        auto res = cgs_replace(&s, "a", "o");
         // Result: "bonono", count: 3
         ASSERT_TRUE(res.val == 3 && cgs_equal(&s, "bonono"));
         cgs_dstr_deinit(&s);
@@ -690,7 +690,7 @@ void test_replace_all()
         CGS_DStr s = cgs_dstr_init_from("abc");
         // Standard behavior (Python/JS): Replace "" with "-"
         // This usually results in "-a-b-c-"
-        CGS_Result(int) res = cgs_replace(&s, "", "-");
+        auto res = cgs_replace(&s, "", "-");
         ASSERT_TRUE(cgs_equal(&s, "-a-b-c-"));
         cgs_dstr_deinit(&s);
     }
@@ -699,7 +699,7 @@ void test_replace_all()
     {
         CGS_DStr s = cgs_dstr_init_from("a");
         // Replacing "a" with "aa" should only happen once per original match
-        CGS_Result(int) res = cgs_replace(&s, "a", "aa");
+        auto res = cgs_replace(&s, "a", "aa");
         ASSERT_TRUE(res.val == 1 && cgs_equal(&s, "aa"));
         cgs_dstr_deinit(&s);
     }
@@ -707,7 +707,7 @@ void test_replace_all()
     TEST("cgs_replace: non-overlapping counts");;;
     {
         CGS_DStr s = cgs_dstr_init_from("aaaaa"); 
-        CGS_Result(int) res = cgs_replace(&s, "aa", "b");
+        auto res = cgs_replace(&s, "aa", "b");
         // Result must be "bba", count must be 2
         ASSERT_TRUE(res.val == 2);
         ASSERT_TRUE(cgs_equal(&s, "bba"));
@@ -717,7 +717,7 @@ void test_replace_all()
     TEST("cgs_replace: target longer than source");;;
     {
         CGS_DStr s = cgs_dstr_init_from("abc");
-        CGS_Result(int) res = cgs_replace(&s, "abcd", "x");
+        auto res = cgs_replace(&s, "abcd", "x");
         ASSERT_TRUE(res.val == 0 && cgs_equal(&s, "abc"));
         cgs_dstr_deinit(&s);
     }
@@ -726,7 +726,7 @@ void test_replace_all()
     {
         CGS_DStr s = cgs_dstr_init_from("1-2-3");
         // Growing the string: "1" -> "one"
-        CGS_Result(int) res = cgs_replace(&s, "-", "---");
+        auto res = cgs_replace(&s, "-", "---");
         ASSERT_TRUE(cgs_equal(&s, "1---2---3"));
         cgs_dstr_deinit(&s);
     }
@@ -734,7 +734,7 @@ void test_replace_all()
     TEST("cgs_replace: fixed buffer too small");;;
     {
         char buf[5] = "abc"; // Small fixed buffer
-        CGS_Result(int) res = cgs_replace(buf, "b", "verylongstring");
+        auto res = cgs_replace(buf, "b", "verylongstring");
         ASSERT_TRUE(res.err.ec == CGS_DST_TOO_SMALL);
     }
     
@@ -748,7 +748,7 @@ void test_replace_all()
     TEST("cgs_replace: target not found");;;
     {
         CGS_DStr s = cgs_dstr_init_from("hello");
-        CGS_Result(int) res = cgs_replace(&s, "world", "earth");
+        auto res = cgs_replace(&s, "world", "earth");
         ASSERT_TRUE(res.val == 0 && res.err.ec == CGS_NOT_FOUND);
         cgs_dstr_deinit(&s);
     }
@@ -1963,6 +1963,7 @@ void test_zstrv();
 void test_chain_writer();
 void test_custom_writer();
 void test_starts_with_tokens();
+void test_find_tokens();
 void test_split_foreach();
 
 int test_count;
@@ -2009,6 +2010,7 @@ int main() {
     test_chain_writer();
     test_custom_writer();
     test_starts_with_tokens();
+    test_find_tokens();
     test_split_foreach();
 
     printf("\n========================================\n");
