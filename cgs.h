@@ -529,6 +529,14 @@ cgs__strv_equal(cgs__strv_1(anystr1), cgs__strv_1(anystr2))
 #define cgs_dup(anystr_src, ...) \
 cgs_dstr_init_from((anystr_src), __VA_ARGS__)
 
+// @ API: cgs_copy
+// @ Overloads:
+//   cgs_copy(mutstr_t dst, anystr_t src);
+// @ Description:
+//   Copies the src string into the dst string.
+// @ Return:
+//   If the dst is fixed and its capacity is smaller than the length of src CGS_DST_TOO_SMALL is returned.
+//   If the dst is a CGS_DStr and an allocation error occured, that error is returned.
 #define cgs_copy(mutstr_dst, anystr_src) \
 _Generic(mutstr_dst, \
     CGS_MutStrRef : cgs__mutstr_ref_copy(cgs__coerce((mutstr_dst), CGS_MutStrRef), cgs__strv_1(anystr_src)), \
@@ -664,11 +672,8 @@ _Generic(mutstr_dst, \
     default       : cgs__strv_arr_join_into_fmutstr_ref(cgs__fmutstr_ref_zero_len(cgs__coerce_not(mutstr_dst, CGS_MutStrRef, CGS_StrBuf*)), strv_arr, cgs__strv_1(anystr_delim)) \
 )
 
-#define cgs_next_tok(strv_ptr, delim) \
-cgs__next_tok(strv_ptr, delim)
-
-#define cgs_next_tok_any(strv_ptr, delim_set) \
-cgs__next_tok_any(strv_ptr, cgs__strv_1(delim_set))
+#define cgs_next_token(strv_ptr, delim_set) \
+cgs__next_token(strv_ptr, cgs__strv_1(delim_set))
 
 #define cgs_skip(anystr_src, delim) \
 cgs__skip(cgs__strv_1(anystr_src), delim)
@@ -1598,8 +1603,7 @@ CGS_API CGS_Error cgs__dstr_ensure_cap(CGS_DStr *dstr, unsigned int at_least);
 
 CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, CGS_StrViewArray strs, CGS_StrView delim);
 
-CGS_API CGS_Result(CGS_StrView) cgs__next_tok(CGS_StrView *base, char delim);
-CGS_API CGS_Result(CGS_StrView) cgs__next_tok_any(CGS_StrView *base, CGS_StrView delim_set);
+CGS_API CGS_Result(CGS_StrView) cgs__next_token(CGS_StrView *base, CGS_StrView delim_set);
 CGS_API CGS_StrView             cgs__skip(CGS_StrView src, char delim);
 CGS_API CGS_StrView             cgs__skip_any(CGS_StrView src, CGS_StrView delim_set);
 CGS_API CGS_Result(unsigned)    cgs__starts_with_tokens(CGS_StrView src, CGS_StrView delim_set, CGS_StrViewArray tokens);

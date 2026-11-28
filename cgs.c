@@ -1261,40 +1261,7 @@ CGS_API CGS_Error cgs__strv_arr_join(CGS_MutStrRef dst, CGS_StrViewArray strs, C
     };
 }
 
-CGS_API CGS_Result(CGS_StrView) cgs__next_tok(CGS_StrView *base, char delim)
-{
-    CGS_StrView rest = cgs__skip(*base, delim);
-    *base            = rest;
-
-    if (rest.len == 0)
-    {
-        // string consists entirely of delims
-        return (CGS_Result(CGS_StrView)) {.val = rest, .err = {CGS_NOT_FOUND}};
-    }
-
-    CGS_Result(unsigned) found = cgs_find(*base, delim);
-    if (found.err.ec == CGS_OK)
-    {
-        unsigned int index = found.val;
-        CGS_StrView ret    = {.chars = base->chars, .len = index};
-
-        base->chars += index;
-        base->len -= index;
-
-        return (CGS_Result(CGS_StrView)) {.val = ret, .err = {CGS_OK}};
-    }
-    else
-    {
-        CGS_StrView ret = *base;
-        base->chars += base->len;
-        base->len = 0;
-
-        return (CGS_Result(CGS_StrView)) {.val = ret, .err = {CGS_OK}};
-        ;
-    }
-}
-
-CGS_API CGS_Result(CGS_StrView) cgs__next_tok_any(CGS_StrView *base, CGS_StrView delim_set)
+CGS_API CGS_Result(CGS_StrView) cgs__next_token(CGS_StrView *base, CGS_StrView delim_set)
 {
     CGS_StrView rest = cgs__skip_any(*base, delim_set);
     *base            = rest;
